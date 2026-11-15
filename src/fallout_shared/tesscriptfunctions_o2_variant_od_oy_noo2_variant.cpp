@@ -417,7 +417,7 @@ struct ObjX
     virtual void w105();
     virtual void w106();
     virtual void Gate41c(float);
-    void FadeIn();
+    void FadeIn_008bcd20();
     void TESObjectREFR_SetHealth(float);
 };
 struct DataHandlerS
@@ -625,7 +625,7 @@ bool Cmd_PlaceAtReticle_Execute(const ScriptParameter* a0, const char* a1, TESOb
             {
                 ObjX* objX2 = objX;
                 objX2->Gate41c(0.0f);
-                objX2->FadeIn();
+                objX2->FadeIn_008bcd20();
             }
             if (hf)
             {
@@ -818,7 +818,7 @@ bool Cmd_PlaceAtReticle_Execute(const ScriptParameter* a0, const char* a1, TESOb
             {
                 ObjX* objX2 = objX;
                 objX2->Gate41c(0.0f);
-                objX2->FadeIn();
+                objX2->FadeIn_008bcd20();
             }
             if (hf)
             {

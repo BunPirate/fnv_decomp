@@ -15,10 +15,10 @@ void __fastcall NiPSysModifierCtlr_NiPSysModifierCtlr(void*);
 extern int DAT_010c0d2c;
 
 // @fnv 0x00c32b60
-// src: XBOX_RETAIL_PDB 0x00c32b60
+// src: EXE 0x00c32b60
 // pdb: NiPSysModifierBoolCtlr::NiPSysModifierBoolCtlr | NiPSysModifierBoolCtlr.obj | retail, upstream name already matches, high
 // pdb params: pcModifierName
-void* __fastcall NiPSysModifierBoolCtlr_ctor(void* pcModifierName)
+void* __fastcall NiPSysModifierBoolCtlr_NiPSysModifierBoolCtlr(void* pcModifierName)
 {
     NiPSysModifierCtlr_NiPSysModifierCtlr(pcModifierName);
     *(int**)pcModifierName = &DAT_010c0d2c;

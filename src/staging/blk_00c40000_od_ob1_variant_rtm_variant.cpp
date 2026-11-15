@@ -5547,7 +5547,7 @@ struct List332 : EmptyBase332
         pool.NiTPointerAllocator_unsigned_int_Deallocate(memory);
     }
 // src: XBOX_PDB 0x004a4650
-    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll()
+    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll()
     {
         ListNode332* current = head;
         while (current)
@@ -9757,7 +9757,7 @@ struct Q5Obj
         return Object_DispatchCommandFour(amount);
     }
     Q5Obj();
-    bool InitializeData(Q5Item* pkBoneRoot);
+    bool InitializeData_00c52d80(Q5Item* pkBoneRoot);
     bool NiBSBoneLODController_SetBoneLOD(unsigned iLOD);
 };
 struct Q5Item

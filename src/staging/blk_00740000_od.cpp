@@ -55,7 +55,7 @@ struct AX
 
 // Sets the object's vtable pointer to DAT_01071aec, calls FUN_006b3eb0(0, 0), and returns this.
 // @fnv 0x00753070
-// src: XBOX_DEBUG_PDB 0x00753070
+// src: XBOX_DEBUG_PDB 0x00753070 (was EXE)
 // pdb: BSSimpleArray<NiAVObject *,1024>::BSSimpleArray<NiAVObject *,1024> | CaravanMenu.obj | debug, call graph (shared callers), high
 AX* __thiscall AX::BSSimpleArray_NiAVObject_1024_ctor()
 {

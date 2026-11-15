@@ -21,14 +21,14 @@ inline bool IsCachePaused(BSFileCache* m_pAabbCache)
 struct Cls00b01220
 {
     unsigned char unk00;
-    Cls00b01220* __thiscall AutoPauseFileCaching_ctor(int apMessage);
+    Cls00b01220* __thiscall AutoPauseFileCaching_AutoPauseFileCaching(int apMessage);
 };
 
 // @fnv 0x00b01220
-// src: XBOX_RETAIL_PDB 0x00b01220
+// src: COMMUNITY 0x00b01220
 // pdb: AutoPauseFileCaching::AutoPauseFileCaching | BSFileCache.obj | retail, upstream name already matches, high
 // pdb params: apMessage
-Cls00b01220* __thiscall Cls00b01220::AutoPauseFileCaching_ctor(int apMessage)
+Cls00b01220* __thiscall Cls00b01220::AutoPauseFileCaching_AutoPauseFileCaching(int apMessage)
 {
     BSFileCache* pCache1 = FUN_00aff100();
     if (!IsCacheFinished(pCache1))

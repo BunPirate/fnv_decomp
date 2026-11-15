@@ -35,7 +35,7 @@ void NiBlendAccumTransformInterpolator::ClearAccumulatedTransform()
     }
     else
     {
-        m_kAccumulatedTransformValue.SetTranslate(const_cast<NiPoint3*>(&NiPoint3::ZERO));
+        m_kAccumulatedTransformValue.GetTransformScale(const_cast<NiPoint3*>(&NiPoint3::ZERO));
         m_kAccumulatedTransformValue.SetLocalRotation(const_cast<NiQuaternion*>(&NiQuaternion::IDENTITY));
         m_kAccumulatedTransformValue.SetScale(1.0f);
     }

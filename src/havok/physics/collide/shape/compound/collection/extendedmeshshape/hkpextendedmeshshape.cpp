@@ -171,7 +171,7 @@ __forceinline hkAabb::hkAabb() {}
 __forceinline hkTransform::hkTransform() {}
 __forceinline hkQuaternion::hkQuaternion() {}
 __forceinline void hkVector4::setZero4() { m_vComponents = _mm_setzero_ps(); }
-__forceinline void hkVector4::setAll(float f) { m_vComponents = _mm_set_ps1(f); }
+__forceinline void hkVector4::SetAllComponents(float f) { m_vComponents = _mm_set_ps1(f); }
 __forceinline void hkVector4::set(float x, float y, float z, float w)
 {
     m_vComponents = _mm_setr_ps(x, y, z, w);
@@ -1447,12 +1447,12 @@ static const float DAT_0104e148 = -3.40282e+38f;
 FUN_00d569c0::FUN_00d569c0(float afTriangleRadius, int iNumBitsForSubpartIndex) throw() : FUN_00d21410(0xe, 1)
 {
     m_fTriangleRadius = afTriangleRadius;
-    m_kScaling.setAll(1.0f);
+    m_kScaling.SetAllComponents(1.0f);
     m_uiShapeFlags = 0;
     m_iFinishingFlag = 0;
     m_iNumBitsForSubpartIndex = iNumBitsForSubpartIndex;
     m_eWeldingType = 6;
-    m_kAabbHalfExtents.setAll(DAT_0104e148);
+    m_kAabbHalfExtents.SetAllComponents(DAT_0104e148);
     m_kAabbCenter.setZero4();
 }
 }  // namespace fnv_00d569c0
@@ -1617,7 +1617,7 @@ struct TrianglesSubpart
 // pdb locals: assertBuf, ostr
 void __cdecl calcAabbExtents(const TrianglesSubpart& part, const hkVector4& scaling, hkAabb& out)
 {
-    out.m_kMinimumCorner.setAll(3.40282e+38f);
+    out.m_kMinimumCorner.SetAllComponents(3.40282e+38f);
     out.m_kMaximumCorner.m_vComponents = _mm_xor_ps(out.m_kMinimumCorner.m_vComponents, DAT_010c44d0);
     for (int i = 0; i < part.m_iTriangleCount; i++)
     {
@@ -1713,7 +1713,7 @@ struct HelperC9E340
 };
 struct HelperD5D7A0
 {
-    const hkpShape* hkpConvexTransformShape_ctor(const hkpShape* child, const void* transform, int ref);
+    const hkpShape* hkpConvexTransformShape_hkpConvexTransformShape(const hkpShape* child, const void* transform, int ref);
 };
 
 struct MeshSubpartTriangle
@@ -1976,7 +1976,7 @@ const hkpShape* ExtendedMeshShape::hkpExtendedMeshShape_getChildShape(unsigned i
 
             if (buffer)
             {
-                return ((HelperD5D7A0*)buffer)->hkpConvexTransformShape_ctor(childShape, &transform, 0);
+                return ((HelperD5D7A0*)buffer)->hkpConvexTransformShape_hkpConvexTransformShape(childShape, &transform, 0);
             }
         }
         return 0;
@@ -2442,7 +2442,7 @@ void hkpD563Shape::hkpExtendedMeshShape_addTrianglesSubpart(void* part)
 
     hkVector4 tolerance;
 
-    tolerance.setAll(m_fScalar);
+    tolerance.SetAllComponents(m_fScalar);
 
     hkAabb expanded;
 

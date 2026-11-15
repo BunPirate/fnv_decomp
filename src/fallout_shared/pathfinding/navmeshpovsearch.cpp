@@ -347,7 +347,7 @@ float FUN_006a0840_shell::AngleSinCos_GetAngle()
 }
 
 void __stdcall compiler_vector_constructor_iterator(void*, unsigned int, int, void*(__fastcall*)(void*));
-void* __fastcall TESWorldSpace_OFFSET_DATA_ctor(void*);
+void* __fastcall TESWorldSpace_OFFSET_DATA_OFFSET_DATA(void*);
 
 struct Dummy_006a0870
 {
@@ -357,7 +357,7 @@ struct Dummy_006a0870
 // @fnv 0x006a0870
 void* __thiscall Dummy_006a0870::Construct()
 {
-    compiler_vector_constructor_iterator((char*)this + 4, 0x14, 2, TESWorldSpace_OFFSET_DATA_ctor);
+    compiler_vector_constructor_iterator((char*)this + 4, 0x14, 2, TESWorldSpace_OFFSET_DATA_OFFSET_DATA);
     return this;
 }
 

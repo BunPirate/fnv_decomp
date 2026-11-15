@@ -3619,15 +3619,15 @@ struct CompareData
     float f1C;
     CompareStrings strings;
     CompareArray entries;
-    bool FootIK_DATA_Compare(CompareData* arData);
+    bool BGSRagdoll_FootIK_Compare(CompareData* arData);
 };
 // Compares entry and string arrays plus flag and float fields against another CompareData, returning whether any differ.
 // @fnv 0x005ec920
-// src: XBOX_DEBUG_PDB 0x005ec920
+// src: COMMUNITY 0x005ec920
 // pdb: FootIK_DATA::Compare | BGSRagdoll.obj | debug, call graph, high
 // pdb params: arData
 // pdb locals: bret, ui
-bool CompareData::FootIK_DATA_Compare(CompareData* arData)
+bool CompareData::BGSRagdoll_FootIK_Compare(CompareData* arData)
 {
     bool different = false;
     if (entries.Size() != arData->entries.Size())
@@ -3678,15 +3678,15 @@ struct Target005ed1e0
     unsigned short unknown_02;
     StringArray005ed1e0 strings_04;
     EntryArray005ed1e0 entries_14;
-    bool GrabIK_DATA_Compare(Target005ed1e0* arData);
+    bool BGSRagdoll_GrabIK_Compare(Target005ed1e0* arData);
 };
 // Compares entry and string array counts and elements plus unknown_00 against another object, returning whether any differ.
 // @fnv 0x005ed1e0
-// src: XBOX_DEBUG_PDB 0x005ed1e0
+// src: COMMUNITY 0x005ed1e0
 // pdb: GrabIK_DATA::Compare | BGSRagdoll.obj | debug, call graph, high
 // pdb params: arData
 // pdb locals: bret, ui
-bool Target005ed1e0::GrabIK_DATA_Compare(Target005ed1e0* arData)
+bool Target005ed1e0::BGSRagdoll_GrabIK_Compare(Target005ed1e0* arData)
 {
     bool different = false;
     if (entries_14.FUN_0044ddc0() != arData->entries_14.FUN_0044ddc0())
@@ -3919,15 +3919,15 @@ struct FUN_005ece50_class
     unsigned char m0;
     BSSimpleArray<const char*, 1024> m4;
     NodeArray m14;
-    unsigned char LookIK_DATA_Compare(FUN_005ece50_class* arData);
+    unsigned char BGSRagdoll_LookIK_Compare(FUN_005ece50_class* arData);
 };
 // Compares two instances by node-array size and per-node equality, string-array size and per-string comparison, and the m0 byte; returns 1 if any differ.
 // @fnv 0x005ece50
-// src: XBOX_DEBUG_PDB 0x005ece50
+// src: COMMUNITY 0x005ece50
 // pdb: LookIK_DATA::Compare | BGSRagdoll.obj | debug, call graph, high
 // pdb params: arData
 // pdb locals: bret, ui
-unsigned char FUN_005ece50_class::LookIK_DATA_Compare(FUN_005ece50_class* arData)
+unsigned char FUN_005ece50_class::BGSRagdoll_LookIK_Compare(FUN_005ece50_class* arData)
 {
     unsigned char bStack_5 = 0;
     unsigned int uStack_18;
@@ -5011,7 +5011,7 @@ bool BGSEntryPointFunction_CheckFunctionArguments(int iArg0, int iArg1, void* pv
 
 // Scales the value pointed to by ppfValue by the result of pkActor->FUN_006b9130() if FUN_005e5b80 succeeds.
 // @fnv 0x005e5d20
-// src: XBOX_RETAIL_PDB 0x005e5d20
+// src: XBOX_RETAIL_PDB 0x005e5d20 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::MultiplyValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pvalue, pfunctionData

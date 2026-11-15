@@ -231,7 +231,7 @@ extern int DAT_011a0bb0;
 extern Flt g_011db63c;
 // If g_011db63c is nonzero, calls the model loader with DAT_011a0bb0, true, true, then sets g_011db63c to 0.
 // @fnv 0x007ffe00
-// src: XBOX_RETAIL_PDB 0x007ffe00
+// src: XBOX_RETAIL_PDB 0x007ffe00 (was COMMUNITY)
 // pdb: FORenderedTerminal::ReleaseStaticGeometry | FORenderedTerminal.obj | retail, call graph (shared callers), high
 void FORenderedTerminal_ReleaseStaticGeometry()
 {

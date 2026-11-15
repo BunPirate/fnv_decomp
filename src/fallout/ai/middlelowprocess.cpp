@@ -445,7 +445,7 @@ struct P09AV
     static bool __cdecl GetFlag(int, unsigned int);
 };
 
-float __cdecl ActorValue_CheckClampDamageModifier(void*, int, float);
+float __cdecl Actor_CheckClampDamageModifier(void*, int, float);
 
 struct ModHack
 {
@@ -464,7 +464,7 @@ void FUN_0092cf30_shell::MiddleLowProcess_GameModActorValueF(Actor* apActor, int
     if (P09AV::GetFlag(aiWhich, 0x100))
         return;
 
-    float fclamped = ActorValue_CheckClampDamageModifier(apActor ? (char*)apActor + 0xa4 : 0, aiWhich, afValue);
+    float fclamped = Actor_CheckClampDamageModifier(apActor ? (char*)apActor + 0xa4 : 0, aiWhich, afValue);
     int eclampStyle = P09AV::GetFlag(aiWhich, 0x200) ? 1 : 0;
 
     ((ModHack*)((char*)this + 0x94))->ModifyModifier((char)aiWhich, fclamped, eclampStyle);

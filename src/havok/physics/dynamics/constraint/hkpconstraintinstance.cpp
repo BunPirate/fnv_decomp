@@ -228,11 +228,11 @@ static inline hkpConstraintData* getCloneData(const hkpConstraintInstance* insta
 
 // Creates a new constraint instance from this one according to eMode, copying the name and returning the new instance.
 // @fnv 0x00cf3fa0
-// src: XBOX_RETAIL_PDB 0x00cf3fa0
+// src: HAVOK_LIB 0x00cf3fa0
 // pdb: hkpConstraintInstance::clone | hkpConstraintInstance.obj | retail, call graph (shared callers), high
 // pdb params: newEntityA, newEntityB, mode
 // pdb locals: assertBuf, ostr
-hkpConstraintInstance* hkpConstraintInstance::clone(hkpEntity* newEntityA, hkpEntity* newEntityB,
+hkpConstraintInstance* hkpConstraintInstance::clone_00cf3fa0(hkpEntity* newEntityA, hkpEntity* newEntityB,
                                                                int mode) const throw()
 {
     hkpConstraintInstance* pkInstance;
@@ -698,10 +698,10 @@ extern char DAT_010cc040;
 
 // Sets the vtable pointer, zeroes most fields, sets m_6 to 1, m_1c to flag, m_1d to 1, m_26 to 0x8000, m_34 to -16, and calls m_28.Init().
 // @fnv 0x00cf3f40
-// src: XBOX_RETAIL_PDB 0x00cf3f40
+// src: HAVOK_LIB 0x00cf3f40
 // pdb: hkpConstraintInstance::hkpConstraintInstance | hkpConstraintInstance.obj | retail, call graph, high
 // pdb params: f
-hkpConstraintInstance* __fastcall hkpConstraintInstance_ctor(hkpConstraintInstance* self, int, bool flag)
+hkpConstraintInstance* __fastcall hkpConstraintInstance_hkpConstraintInstance(hkpConstraintInstance* self, int, bool flag)
 {
     int z = 0;
     *(void* volatile*)&*reinterpret_cast<void**>(self) = (void*)&DAT_010cc040;

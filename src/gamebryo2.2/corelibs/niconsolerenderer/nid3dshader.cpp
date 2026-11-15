@@ -425,7 +425,7 @@ struct ShaderLibrary
 ShaderLibrary* NiD3DShaderFactory_GetD3DShaderFactory();
 
 // NiDX9Renderer::PurgeShader (0x00e75310) is not declared by the shared header.
-void NiXenonRenderer_ReleaseD3DShader();
+void PurgeD3DShader();
 typedef void (__thiscall *PurgeD3DShaderFunction)(NiDX9Renderer*, NiD3DShaderInterface*);
 
 void FUN_00e7f6b0(void* pkGroup);
@@ -449,7 +449,7 @@ NiD3DShader::~NiD3DShader() throw()
         }
     }
     if (m_pkD3DRenderer)
-        reinterpret_cast<PurgeD3DShaderFunction>(&NiXenonRenderer_ReleaseD3DShader)(
+        reinterpret_cast<PurgeD3DShaderFunction>(&PurgeD3DShader)(
             reinterpret_cast<NiDX9Renderer*>(m_pkD3DRenderer), this);
     m_bInitialized = false;
     FUN_00e7f6b0(m_pkRenderStateGroup);

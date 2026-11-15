@@ -167,7 +167,7 @@ int strcpy_s(char*, unsigned int, const char*);
 extern const char* DAT_011f4a78;
 extern char* EmptyFS;
 // @fnv 0x00a76960
-// src: XBOX_RETAIL_PDB 0x00a76960
+// src: XBOX_RETAIL_PDB 0x00a76960 (was COMMUNITY)
 // pdb: NiImageConverter::ConvertFilenameToPlatformSpecific | NiImageConverter.obj | retail, object-file run extension, high
 // pdb params: pcPath
 // pdb locals: pcPlatformPath, kPlatform

@@ -147,7 +147,7 @@ public:
     bool GetEdgeVertices_0068f0c0(unsigned short, int, NiPoint3*, NiPoint3*);
     void GetEdgeVertices_0068f0c0(unsigned short, int, P3&, P3&);
     NavMeshTriangle* FUN_005582f0(unsigned short);
-    void NiPointer_NavMesh_ctor(int);
+    void NiPointer_NavMesh_NiPointer_NavMesh_0042fd70(int);
     EdgeExtraInfo* GetEdgeExtraInfo(unsigned short, int);
     NiPoint3 FUN_00558220(unsigned short);
     void FUN_00558220(NiPoint3*, unsigned short);

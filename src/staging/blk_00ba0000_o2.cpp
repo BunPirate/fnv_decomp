@@ -866,7 +866,7 @@ struct FUN_00ba63a0_Class
     bool __thiscall ParticleShader_LoadStagesAndPasses();
 };
 // @fnv 0x00ba63a0
-// src: XBOX_RETAIL_PDB 0x00ba63a0
+// src: XBOX_RETAIL_PDB 0x00ba63a0 (was COMMUNITY)
 // pdb: ParticleShader::LoadStagesAndPasses | ParticleShader.obj | retail, object-file gap fill, high
 bool __thiscall FUN_00ba63a0_Class::ParticleShader_LoadStagesAndPasses()
 {
@@ -1277,14 +1277,14 @@ struct FUN_00bb3070_Class
     char m_0x20[0x58 - 0x20];
     int m_0x58;
     void __thiscall FUN_00bb3500(int a);
-    void* __thiscall SpeedTreeBranchShaderProperty_ctor(int apData);
+    void* __thiscall SpeedTreeBranchShaderProperty_SpeedTreeBranchShaderProperty(int apData);
 };
 // Calls FUN_00bb3500, sets the vtable to DAT_010b9338 and initializes m_0x58 to 4 and m_0x1c to 10, then returns this.
 // @fnv 0x00bb3070
-// src: XBOX_RETAIL_PDB 0x00bb3070
+// src: COMMUNITY 0x00bb3070
 // pdb: SpeedTreeBranchShaderProperty::SpeedTreeBranchShaderProperty | SpeedTreeBranchShaderProperty.obj | retail, upstream name already matches, high
 // pdb params: apData
-void* __thiscall FUN_00bb3070_Class::SpeedTreeBranchShaderProperty_ctor(int apData)
+void* __thiscall FUN_00bb3070_Class::SpeedTreeBranchShaderProperty_SpeedTreeBranchShaderProperty(int apData)
 {
     FUN_00bb3500(apData);
     m_vft = (void*)&DAT_010b9338;
@@ -4942,7 +4942,7 @@ class FUN_00bafa80_cls
 
 // Replaces a1->m_a4 with m_a8, releasing the old reference and retaining the new one, then calls a1->v57 with m_b4.
 // @fnv 0x00bafa80
-// src: XBOX_RETAIL_PDB 0x00bafa80
+// src: XBOX_RETAIL_PDB 0x00bafa80 (was COMMUNITY)
 // pdb: BSShaderData::SetupTexturesPPLightingShader | BSShaderData.obj | retail, object-file gap fill, high
 // pdb params: apShaderProp
 void FUN_00bafa80_cls::BSShaderData_SetupTexturesPPLightingShader(TargetObject_cls* apShaderProp)
@@ -7896,14 +7896,14 @@ struct FUN_00bb4080_Class
     int unk78;
     int unk7C;
 
-    void* GeometryDecalShaderProperty_ctor();
+    void* GeometryDecalShaderProperty_GeometryDecalShaderProperty();
 };
 
 // Calls FUN_00b71720, sets unk00 to &DAT_010b9828 and initializes unk7C, unk58 and unk1C, then returns this.
 // @fnv 0x00bb4080
-// src: XBOX_RETAIL_PDB 0x00bb4080
+// src: COMMUNITY 0x00bb4080
 // pdb: GeometryDecalShaderProperty::GeometryDecalShaderProperty | GeometryDecalShaderProperty.obj | retail, upstream name already matches, high
-void* FUN_00bb4080_Class::GeometryDecalShaderProperty_ctor()
+void* FUN_00bb4080_Class::GeometryDecalShaderProperty_GeometryDecalShaderProperty()
 {
     Object_InitializeFields_00b71720();
     this->unk00 = &DAT_010b9828;

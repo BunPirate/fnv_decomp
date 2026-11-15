@@ -569,7 +569,7 @@ inline const LocalM128& hkSimdReal::getQuad() const
 {
     return m_vValue;
 }
-inline void hkVector4::setAll(float a)
+inline void hkVector4::SetAllComponents(float a)
 {
     m_vComponents = _mm_set_ps1(a);
 }
@@ -659,8 +659,8 @@ struct hkAabbW
     }
     inline void setEmpty()
     {
-        m_kMinimumCorner.setAll(3.40282e+38f);
-        m_kMaximumCorner.setAll(-3.40282e+38f);
+        m_kMinimumCorner.SetAllComponents(3.40282e+38f);
+        m_kMaximumCorner.SetAllComponents(-3.40282e+38f);
     }
     inline void includePoint(const hkVector4& point)
     {

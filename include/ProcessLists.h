@@ -107,7 +107,7 @@ class ProcessLists
     void ProcessLists_AddReference(RefX*, int, bool, int, bool);
     void ProcessLists_RemoveReference(MobileObject*, int);                              // 0x0096d470: forwards to m_kMobileObjectProcessList (0x0096aaf0)
     TESObjectREFR* ProcessLists_GetActorRefInHigh(TESForm*, bool);                        // 0x00970a20
-    TESObjectREFR* ProcessLists_GetActorRefInHigh(TESForm*, int, int);                    // 0x00970b30
+    TESObjectREFR* ProcessLists_GetActorRefInHigh_00970b30(TESForm*, int, int);                    // 0x00970b30
     BSSimpleList<Actor*>* ProcessLists_SendActorsYellAlarm(void*, void*);              // 0x009711e0
     BSSimpleList<Actor*>* CollectCombatTargets(int, void*);             // 0x009715c0
     Crime* FindCrime(Actor*, int, int aiCrimeType);                     // 0x00972570: searches m_pkCrimeLists[aiCrimeType]

@@ -3791,7 +3791,7 @@ struct CIndexedGeometry
     DataVector<float> blendFactors;
     DataVector<unsigned char> transformIndices;
 // src: XBOX_PDB 0x00b0a9a0
-    inline U16 GetNumStrips(short sLodLevel)
+    inline U16 CIndexedGeometry_GetNumStrips(short sLodLevel)
     {
         return sLodLevel > -1 ? (U16)vertexIndices[sLodLevel].indices.size() : 0;
     }
@@ -3813,7 +3813,7 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 #pragma intrinsic(memcpy)
 
 // @fnv 0x00b30800
-// src: XBOX_RETAIL_PDB 0x00b30800
+// src: XBOX_RETAIL_PDB 0x00b30800 (was COMMUNITY)
 // pdb: CIndexedGeometry::ComputeWindEffect | IndexedGeometry.obj | retail, upstream name already matches, high
 // pdb params: nLodLevel
 // pdb locals: bGeometryUpdated, cInterpWindEffect, usVertexCount, cFullWindEffect, i, nStrip, nVertex, nIndex, fWeight, usWindGroup, pOrigCoord
@@ -3831,7 +3831,7 @@ unsigned char CIndexedGeometry::ComputeWindEffect(U16 nLodLevel)
         InitializeOrigin(transformed);
         LocalVec3 _interpolatedPosition;
         InitializeOrigin(_interpolatedPosition);
-        for (int group4 = 0; group4 < GetNumStrips(nLodLevel); ++group4)
+        for (int group4 = 0; group4 < CIndexedGeometry_GetNumStrips(nLodLevel); ++group4)
         {
             for (int kEntry = 0; kEntry < vertexCounts[nLodLevel].counts[group4]; ++kEntry)
             {

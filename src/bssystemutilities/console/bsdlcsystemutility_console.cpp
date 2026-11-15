@@ -101,9 +101,9 @@ unsigned int DownloadableContentManager::BSDLCSystemUtility_MountDLC(unsigned in
 
 // Zeroes the object's first three words and clears three list nodes at offsets 0xc, 0x14 and 0x1c, then returns self.
 // @fnv 0x00af27c0
-// src: XBOX_DEBUG_PDB 0x00af27c0
+// src: XBOX_PDB 0x00af27c0
 // pdb: BSDLCSystemUtility::BSDLCSystemUtility | BSDLCSystemUtility_Xenon.obj | debug, upstream name already matches, high
-DownloadableContentManager* __fastcall BSDLCSystemUtility_ctor(DownloadableContentManager* self)
+DownloadableContentManager* __fastcall BSDLCSystemUtility_BSDLCSystemUtility(DownloadableContentManager* self)
 {
     *(unsigned int*)((char*)self + 0) = 0;
     *(unsigned int*)((char*)self + 4) = 0;

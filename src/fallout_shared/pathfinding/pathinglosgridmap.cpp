@@ -183,7 +183,7 @@ void __thiscall PathingLOSGridMap::Reset()
 {
     m_fCellSize = 0.0f;
     ClearMap();
-    Initialize(&m_1C, fRadius);
+    Initialize_006e0320(&m_1C, fRadius);
 }
 
 void* __cdecl operator new(unsigned int);
@@ -578,11 +578,11 @@ unsigned char __cdecl Pathing_FindConnectedNavmeshesForLocation(void* aLocation,
 
 
 // @fnv 0x006e0320
-// src: XBOX_RETAIL_PDB 0x006e0320
+// src: COMMUNITY 0x006e0320
 // pdb: PathingLOSGridMap::Initialize | PathingLOSGridMap.obj | retail, object-file run extension, high
 // pdb params: arCenter, afRadius
 // pdb locals: navmeshes
-void PathingLOSGridMap::Initialize(void* arCenter, float afRadius)
+void PathingLOSGridMap::Initialize_006e0320(void* arCenter, float afRadius)
 {
     reinterpret_cast<Sub4c*>(reinterpret_cast<char*>(this) + 0x4c)->AcquireLock();
     *reinterpret_cast<PathingLocation*>(&m_1C) = *static_cast<const PathingLocation*>(arCenter);

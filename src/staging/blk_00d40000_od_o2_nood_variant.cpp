@@ -199,14 +199,14 @@ struct FUN_00d56470_cls
     hkQuaternion m_rotation;
     hkVector4 m_vTranslation;
 
-    FUN_00d56470_cls* hkpExtendedMeshShape_ShapesSubpart_ctor(int flag);
+    FUN_00d56470_cls* hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int flag);
 };
 
 // @fnv 0x00d56470
-// src: XBOX_RETAIL_PDB 0x00d56470
+// src: XBOX_PDB 0x00d56470
 // pdb: hkpExtendedMeshShape::ShapesSubpart::ShapesSubpart | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
 // pdb params: flag
-FUN_00d56470_cls* FUN_00d56470_cls::hkpExtendedMeshShape_ShapesSubpart_ctor(int flag)
+FUN_00d56470_cls* FUN_00d56470_cls::hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int flag)
 {
     if (flag)
     {

@@ -315,9 +315,9 @@ extern int DAT_011f3330;
 __declspec(dllimport) void __stdcall EnterCriticalSection(void* lpCriticalSection);
 
 // @fnv 0x00a044f0
-// src: XBOX_DEBUG_PDB 0x00a044f0
+// src: XBOX_PDB 0x00a044f0
 // pdb: AutoTileLock::AutoTileLock | Tile.obj | debug, upstream name already matches, high
-void __cdecl AutoTileLock_ctor()
+void __cdecl AutoTileLock_AutoTileLock()
 {
     EnterCriticalSection(&DAT_011f3330);
 }
@@ -887,7 +887,7 @@ struct FUN_00a03d40_shell : public Tile {
     Tile* Tile_GetMenuTile();
 };
 
-void __cdecl AutoTileLock_ctor();
+void __cdecl AutoTileLock_AutoTileLock();
 namespace fnv_00a04500 { void __cdecl Object___imp__LeaveCriticalSection_Thunk(); }
 
 // @fnv 0x00a03d40
@@ -896,7 +896,7 @@ namespace fnv_00a04500 { void __cdecl Object___imp__LeaveCriticalSection_Thunk()
 // pdb locals: __my_auto_tile_lock, ptile
 Tile* FUN_00a03d40_shell::Tile_GetMenuTile()
 {
-    AutoTileLock_ctor();
+    AutoTileLock_AutoTileLock();
     Tile* ptile = this;
     EmptyPolymorphicObject lock;
     Tile* r;

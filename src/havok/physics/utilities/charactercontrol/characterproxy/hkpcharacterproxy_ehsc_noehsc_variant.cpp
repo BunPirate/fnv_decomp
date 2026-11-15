@@ -816,7 +816,7 @@ struct S_00caf4d0_Tracker : S_00caf4d0_TrackerBase, S_00caf4d0_EntityListener, S
 };
 struct ContactQuery {
     void ahkpCharacterProxy_checkSupportWithCollector(void*, unsigned, hkpAllCdPointCollector*) throw();
-    void hkpCharacterProxy_checkSupport(void*, unsigned);
+    void ahkpCharacterProxy_checkSupport(void*, unsigned);
 };
 struct CadColl {
     int unk00;

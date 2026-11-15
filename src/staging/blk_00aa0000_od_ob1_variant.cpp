@@ -177,7 +177,7 @@ extern "C" void* DAT_010a2708;
 struct FUN_00aa4c60_class
 {
     void* m_p;
-    void* BSCoreMessage_ctor();
+    void* BSCoreMessage_BSCoreMessage();
 };
 struct AbstractHeapLogger
 {

@@ -8143,7 +8143,7 @@ struct BoxIterator {
     BoxFace* m_tri;
     int m_uiEdgeIndex;
     void FUN_00d7d220(BoxEdge first);
-    void hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next();
+    void hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next();
     operator const void*() const { return m_tri ? this : 0; }
 };
 
@@ -8294,7 +8294,7 @@ int result=DAT_01268360->message(3, 0x79f9d886, (const char*)buf, str_010d3540, 
         BoxIterator it;
         BoxVector e;
         BoxVector n;
-        for (it.FUN_00d7d220(BoxEdge(m_firstTri, 0)); it; it.hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next()) {
+        for (it.FUN_00d7d220(BoxEdge(m_firstTri, 0)); it; it.hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next()) {
             BoxFace* o = (BoxFace*)(it.m_tri->m_ppLinks[it.m_uiEdgeIndex] & ~3);
             int pb = o->m_kTriangleNormal;
             int pa = it.m_tri->m_kTriangleNormal;

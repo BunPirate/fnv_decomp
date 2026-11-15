@@ -276,7 +276,7 @@ extern const char* DAT_011a4ed0[4];
 
 // Copies apName into a 260-byte buffer, lowercases it, then compares it against four names and returns the matching index's value or 0.
 // @fnv 0x00990250
-// src: XBOX_DEBUG_PDB 0x00990250
+// src: XBOX_DEBUG_PDB 0x00990250 (was COMMUNITY)
 // pdb: CombatGroupStrategy::GetCombatGroupStrategyByName | CombatGroupStrategy.obj | debug, call graph, high
 // pdb params: apName
 // pdb locals: psearchName, ptemp, i

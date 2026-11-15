@@ -558,14 +558,14 @@ struct T_
 struct PD_
 {
     void bhkPickData_SetLength(void*);
-    void bhkPickData_SetTo(void*);
+    void bhkPickData_SetTo_004a3f40(void*);
 };
 // Calls ForwardToSubObject with the result of FUN_00458b20, then forwards p to FUN_004a3f10 on the object at this+0x10.
 // @fnv 0x004a3f40
-// src: XBOX_DEBUG_PDB 0x004a3f40
+// src: XBOX_PDB 0x004a3f40
 // pdb: bhkPickData::SetTo | BGSDecalManager.obj | debug, call graph, high
 // pdb params: arTo
-void PD_::bhkPickData_SetTo(void* arTo)
+void PD_::bhkPickData_SetTo_004a3f40(void* arTo)
 {
     bhkPickData_SetLength(hkVector4_getZero());
     ((T_*)((char*)this + 0x10))->SetValue(arTo);
@@ -1347,7 +1347,7 @@ void FUN_004a2c00_shell::AssignGo(void* arg)
 
 struct FUN_004a3cc0_Class
 {
-    FUN_004a3cc0_Class* hkpWorldRayCastInput_ctor(void);
+    FUN_004a3cc0_Class* hkpWorldRayCastInput_hkpWorldRayCastInput(void);
 };
 
 struct Holder
@@ -1369,7 +1369,7 @@ struct FUN_004a3c20
 // pdb: bhkPickData::bhkPickData | BGSDecalManager.obj | debug, call graph, high
 FUN_004a3c20::FUN_004a3c20()
 {
-    ((FUN_004a3cc0_Class*)((char*)this + 0x00))->hkpWorldRayCastInput_ctor();
+    ((FUN_004a3cc0_Class*)((char*)this + 0x00))->hkpWorldRayCastInput_hkpWorldRayCastInput();
     hkpWorldRayCastOutput_hkpWorldRayCastOutput((char*)this + 0x30);
     ((Holder*)((char*)this + 0x90))->FUN_004a3c90((Holder*)hkVector4_getZero());
     *(int*)((char*)this + 0xa0) = 0;

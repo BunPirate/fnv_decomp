@@ -208,9 +208,9 @@ void __fastcall hkpShapeRayCastCollectorOutput_hkpShapeRayCastCollectorOutput(vo
 void __fastcall hkpShapeRayCastOutput__reset(void* pThis);
 
 // @fnv 0x004a3d20
-// src: XBOX_DEBUG_PDB 0x004a3d20
+// src: XBOX_PDB 0x004a3d20
 // pdb: hkpShapeRayCastOutput::hkpShapeRayCastOutput | BGSDecalManager.obj | debug, call graph, high
-void* __fastcall hkpShapeRayCastOutput_ctor(void* pThis)
+void* __fastcall hkpShapeRayCastOutput_hkpShapeRayCastOutput(void* pThis)
 {
     hkpShapeRayCastCollectorOutput_hkpShapeRayCastCollectorOutput(pThis);
     hkpShapeRayCastOutput__reset(pThis);
@@ -3588,7 +3588,7 @@ struct GridCell
 void NavMesh::CreateGrid()
 {
     int count2 = NavMesh_GetTriangleCount();
-    MeshGrid.NavMeshGrid_Clear();
+    MeshGrid.Clear_0069d2d0();
     if (count2 == 0)
         return;
     NiPoint3 boundsMin5, boundsMaxX;

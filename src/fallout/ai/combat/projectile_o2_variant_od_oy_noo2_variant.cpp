@@ -1901,7 +1901,7 @@ class Listener9C
 {
   public:
     virtual void Add(void* pvEntry);
-    void hkpAllRayHitCollector_sortHits();
+    void Update();
 };
 
 class World9C
@@ -2021,6 +2021,6 @@ bool __cdecl Projectile_PickSceneGraph(World9C* apPickData, NiAVObject9C* apObje
         }
     }
     if (abSort)
-        apPickData->GetListener()->hkpAllRayHitCollector_sortHits();
+        apPickData->GetListener()->Update();
     return bStateChanged;
 }

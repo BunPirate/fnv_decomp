@@ -217,7 +217,7 @@ void FUN_0068ab80_class::NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_dtor(
     NiTMallocInterface<ActorCombatGroup*>::Deallocate(q);
 }
 
-extern "C" void __cdecl NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll(void*);
+extern "C" void __cdecl NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll(void*);
 
 struct FUN_0068e740_class
 {
@@ -229,7 +229,7 @@ struct FUN_0068e740_class
 // pdb: NiAVObject::DetachAllProperties | BSTempEffectSimpleDecal.obj | debug, upstream name already matches, high
 void FUN_0068e740_class::NiAVObject_DetachAllProperties()
 {
-    ((void(__thiscall*)(void*))NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll)((char*)this + 0x24);
+    ((void(__thiscall*)(void*))NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll)((char*)this + 0x24);
 }
 
 extern int DAT_0106a038;
@@ -555,13 +555,13 @@ extern int DAT_0106b1e0;
 struct Dummy_0069af30
 {
     void ResetAndWrite(int, int);
-    int* BSSimpleArray_FastNavMeshEdgeHandle_1024_ctor();
+    int* BSSimpleArray_FastNavMeshEdgeHandle_1024_BSSimpleArray_FastNavMeshEdgeHandle_1024();
 };
 
 // @fnv 0x0069b2c0
-// src: XBOX_DEBUG_PDB 0x0069b2c0
+// src: COMMUNITY 0x0069b2c0
 // pdb: BSSimpleArray<FastNavMeshEdgeHandle,1024>::BSSimpleArray<FastNavMeshEdgeHandle,1024> | NavMesh_Util.obj | debug, call graph, high
-int* Dummy_0069af30::BSSimpleArray_FastNavMeshEdgeHandle_1024_ctor()
+int* Dummy_0069af30::BSSimpleArray_FastNavMeshEdgeHandle_1024_BSSimpleArray_FastNavMeshEdgeHandle_1024()
 {
     *(int*)this = (int)&DAT_0106b1e0;
     ResetAndWrite(0, 0);
@@ -914,7 +914,7 @@ bool BSSoundHandle::SetPosition(const NiPoint3& aPosition)
 
 struct BaseForAbb0
 {
-    void __thiscall NiTPrimitiveArray_NiAVObject_ctor(int uiMaxSize, int uiGrowBy);
+    void __thiscall NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(int uiMaxSize, int uiGrowBy);
 };
 extern int DAT_01069d84;
 struct FUN_0068abb0 : BaseForAbb0
@@ -925,7 +925,7 @@ struct FUN_0068abb0 : BaseForAbb0
 // @fnv 0x0068abb0
 FUN_0068abb0::FUN_0068abb0(int a, int b)
 {
-    NiTPrimitiveArray_NiAVObject_ctor(a, b);
+    NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(a, b);
     *(int*)this = (int)&DAT_01069d84;
 }
 
@@ -1890,14 +1890,14 @@ struct FUN_0068ac40_class
     unsigned short m_usElementCount;
     unsigned short m_usUnknown2;
     unsigned short m_usUnknown;
-    void* NiTPrimitiveArray_NiAVObject_ctor(unsigned short uiMaxSize, unsigned short uiGrowBy);
+    void* NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned short uiMaxSize, unsigned short uiGrowBy);
 };
 
 // @fnv 0x0068ac40
-// src: XBOX_RETAIL_PDB 0x0068ac40
+// src: COMMUNITY 0x0068ac40
 // pdb: NiTPrimitiveArray<NiAVObject *>::NiTPrimitiveArray<NiAVObject *> | BSTempEffectParticle.obj | retail, call graph (shared callers), high
 // pdb params: uiMaxSize, uiGrowBy
-void* FUN_0068ac40_class::NiTPrimitiveArray_NiAVObject_ctor(unsigned short uiMaxSize, unsigned short uiGrowBy)
+void* FUN_0068ac40_class::NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned short uiMaxSize, unsigned short uiGrowBy)
 {
     m_pData = &DAT_01069d7c;
     m_usSize = uiMaxSize;
@@ -6213,8 +6213,8 @@ BSSimpleArray<unsigned short, 1024>::~BSSimpleArray()
 
 // Copies scalar and block fields from this NavMeshGrid into apGrid, allocates a matching BSSimpleArray, and copies each element via FUN_00694f80.
 // @fnv 0x0069dd50
-// src: XBOX_RETAIL_PDB 0x0069d2d0
-void NavMeshGrid::NavMeshGrid_Clear()
+// src: COMMUNITY 0x0069d2d0
+void NavMeshGrid::Clear_0069d2d0()
 
 {}
 
@@ -6229,7 +6229,7 @@ void NavMeshGrid::CopyTo_0069dd50(NavMeshGrid* apGrid) const
 
 {
 
-    apGrid->NavMeshGrid_Clear();
+    apGrid->Clear_0069d2d0();
 
 
 

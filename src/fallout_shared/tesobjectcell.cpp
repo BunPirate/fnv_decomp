@@ -407,7 +407,7 @@ void TESObjectCELL::ClearCellReferenceList()
     {
         BGSPerkEntry* reference = node->GetItem();
         if (reference)
-            DAT_011c95c8->AddReference(reference);
+            DAT_011c95c8->AddReference_00526f20(reference);
         node = node->GetNext();
     }
     CellRefLockLeave();
@@ -1312,7 +1312,7 @@ NiNode* TESObjectCELL::GetActorNode()
 }
 
 // @fnv 0x0054aa60
-// src: XBOX_DEBUG_PDB 0x0054aa60
+// src: XBOX_DEBUG_PDB 0x0054aa60 (was COMMUNITY)
 // pdb: TESObjectCELL::StaticNode | TESObjectCELL.obj | debug, call graph, high
 NiAVObject* __fastcall TESObjectCELL_StaticNode(TESObjectCELL* apCell)
 {
@@ -1745,7 +1745,7 @@ struct _Helper_005534f0
 };
 
 // @fnv 0x005534f0
-// src: XBOX_DEBUG_PDB 0x005534f0
+// src: XBOX_DEBUG_PDB 0x005534f0 (was COMMUNITY)
 // pdb: bhkWorld::AddAcousticSpaceListener | TESObjectCELL.obj | debug, call graph, high
 // pdb params: apListener
 void _Helper_005534f0::bhkWorld_AddAcousticSpaceListener(void* apListener)
@@ -6424,7 +6424,7 @@ struct FUN_00545590_Class
 
 // If owner is set, forwards value to the owner's list via FUN_00905330.
 // @fnv 0x00545590
-// src: XBOX_DEBUG_PDB 0x00545590
+// src: XBOX_DEBUG_PDB 0x00545590 (was COMMUNITY)
 // pdb: TESObjectCELL::RemoveScriptedRef | TESObjectCELL.obj | debug, call graph, high
 // pdb params: apRef
 void FUN_00545590_Class::TESObjectCELL_RemoveScriptedRef(unsigned int* apRef)
@@ -10102,11 +10102,11 @@ extern const char DAT_0102cf28[];
 extern TypeForm* DAT_011ca264;
 bool FUN_00481f30(unsigned char);
 // @fnv 0x00526f20
-// src: XBOX_RETAIL_PDB 0x00526f20
+// src: XBOX_PDB 0x00526f20
 // pdb: BGSLoadedReferenceCollection::AddReference | BGSLoadedReferenceCollection.obj | retail, call graph (shared callers), high
 // pdb params: apRef
 // pdb locals: eformType, tempMemContext, prefMap
-void BGSLoadedReferenceCollection::AddReference(BGSPerkEntry* apRef)
+void BGSLoadedReferenceCollection::AddReference_00526f20(BGSPerkEntry* apRef)
 {
     AutoMemContext p((MEM_CONTEXT)44, true, DAT_0102cf28, 104);
     unsigned int a = reinterpret_cast<ReferenceView*>(apRef)->BGSSaveFormBuffer_GetForm()->FUN_00401170();
@@ -17949,7 +17949,7 @@ void Cell::TESObjectCELL_RemoveReference(Ref* ref)
     GetRefList_009604f0()->RemoveMatchingItem(&ref);
     TESObjectCELL_CellRefLockLeave();
     if (TESObjectCELL_GetAttached() || TESObjectCELL_GetAttaching())
-        reinterpret_cast<BGSLoadedReferenceCollection*>(DAT_011c95c8)->RemoveReference(reinterpret_cast<TESObjectREFR*>(ref));
+        reinterpret_cast<BGSLoadedReferenceCollection*>(DAT_011c95c8)->RemoveReference_005270b0(reinterpret_cast<TESObjectREFR*>(ref));
     if (data)
     {
         bool enabled = false;
@@ -18613,7 +18613,7 @@ void S_005574d0_Owner::TESObjectCELL_RemoveReferencesFromLoadedReferenceCollecti
         BGSPerkEntry* entry = list->GetItem();
         if (entry != 0)
         {
-            DAT_011c95c8->RemoveReference(reinterpret_cast<TESObjectREFR*>(entry));
+            DAT_011c95c8->RemoveReference_005270b0(reinterpret_cast<TESObjectREFR*>(entry));
             if (DAT_011dea10->FUN_005f36f0() == 0 && DAT_011dea10->FUN_004fd3e0() != 0 &&
                 reinterpret_cast<S_00549580_Owner*>(entry->BGSSaveFormBuffer_GetForm())->TESForm_GetHasSpokenFlag())
             {

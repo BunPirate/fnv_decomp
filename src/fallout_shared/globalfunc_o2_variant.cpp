@@ -655,7 +655,7 @@ class Item
     int unk00;
     int unk04;
     int matchingValue;
-    void bhkWorld_Add(int);
+    void bhkWorld_Add_00c6b3c0(int);
 };
 // @fnv 0x00c86ab0
 // src: XBOX_PDB 0x00c86ab0
@@ -675,7 +675,7 @@ bool ObjectCandidate::bhkUnaryAction_Add(Item* apWorld)
             {
                 Reset();
                 ProcessEntity(apWorld);
-                apWorld->bhkWorld_Add(current);
+                apWorld->bhkWorld_Add_00c6b3c0(current);
                 result = true;
             }
         }
@@ -2416,7 +2416,7 @@ bool S00c87a70_Obj::bhkAction_Add(Item* apWorld)
             if (v != apWorld->matchingValue)
             {
                 Reset();
-                apWorld->bhkWorld_Add(active);
+                apWorld->bhkWorld_Add_00c6b3c0(active);
                 result = true;
             }
         }
@@ -2667,7 +2667,7 @@ class World6b3c0
     void bhkWorld_AddBatchedPhantoms();                                // 0xc676e0
     void Step2();                                // 0xc6aac0
     void bhkWorld_AddBatchedConstraints();                                // 0xc67850
-    void bhkWorld_Add(Entry6b3c0* apObject);
+    void bhkWorld_Add_00c6b3c0(Entry6b3c0* apObject);
 };
 
 // Defined here (as in the original unit) so the compiler sees Insert never modifies its argument.
@@ -2685,10 +2685,10 @@ void RefSet6b3c0::BSSimpleList_NiPointer_ObstacleData_AddHead(const RefPtr6b3c0&
 }
 
 // @fnv 0x00c6b3c0
-// src: XBOX_RETAIL_PDB 0x00c6b3c0
+// src: XBOX_PDB 0x00c6b3c0
 // pdb: bhkWorld::Add | bhkWorld.obj | retail, call graph, high
 // pdb params: apObj
-void World6b3c0::bhkWorld_Add(Entry6b3c0* apObject)
+void World6b3c0::bhkWorld_Add_00c6b3c0(Entry6b3c0* apObject)
 {
     TlsFlagGuard guard;
     if (this != 0)

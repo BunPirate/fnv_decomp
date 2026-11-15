@@ -1313,7 +1313,7 @@ struct FUN_00ae5870_t
     IdentifierState __thiscall BSAudioManager_GetSoundHandleByNumericID(const char* aiBaseID, unsigned int aiTypeFlags);
 };
 // @fnv 0x00ae5870
-// src: XBOX_RETAIL_PDB 0x00ae5870
+// src: XBOX_RETAIL_PDB 0x00ae5870 (was COMMUNITY)
 // pdb: BSAudioManager::GetSoundHandleByNumericID | BSAudioManager.obj | retail, call graph, high
 // pdb params: aiBaseID, aiTypeFlags
 // pdb locals: filename, pSettingsContext, returnHandle, isoundTypeFlags, pfncallback
@@ -2416,7 +2416,7 @@ inline BSAudio* GetAudioSystemD570()
 class AudioManagerD570
 {
   public:
-    void BSAudioManager_Precache(const char* apFilenameToCache, unsigned int aiFlags, unsigned int apSettingsContext);
+    void BSAudioManager_Precache_00add6f0(const char* apFilenameToCache, unsigned int aiFlags, unsigned int apSettingsContext);
     void BSAudioManager_Precache(const char* apToCache, unsigned int aiFlags);
 };
 
@@ -2434,7 +2434,7 @@ void AudioManagerD570::BSAudioManager_Precache(const char* apToCache, unsigned i
         char acPath[264];
         if (!AudioSystemReadyD570(GetAudioSystemD570()) || !pfnResolve || !pfnResolve(apToCache, acPath, &uiFlagsCopy, &uiExtra))
             return;
-        BSAudioManager_Precache(acPath, aiFlags, uiExtra);
+        BSAudioManager_Precache_00add6f0(acPath, aiFlags, uiExtra);
     }
 }
 
@@ -2502,15 +2502,15 @@ struct OwnerQ3 : ObjRegistry
 {
     char padf4[0x180 - 0xf4];
     int m_iNextID;
-    void BSAudioManager_Precache(SoundQ3*);
-    void BSAudioManager_Precache(const char* apFilenameToCache, int aiFlags, int apSettingsContext);
+    void BSAudioManager_Precache_00add960(SoundQ3*);
+    void BSAudioManager_Precache_00add6f0(const char* apFilenameToCache, int aiFlags, int apSettingsContext);
 };
 // @fnv 0x00add6f0
-// src: XBOX_RETAIL_PDB 0x00add6f0
+// src: COMMUNITY 0x00add6f0
 // pdb: BSAudioManager::Precache | BSAudioManager.obj | retail, call graph (shared callers), high
 // pdb params: apToCache, aiFlags
 // pdb locals: filename, pSettingsContext, isoundTypeFlags, pfncallback
-void OwnerQ3::BSAudioManager_Precache(const char* apFilenameToCache, int aiFlags, int apSettingsContext)
+void OwnerQ3::BSAudioManager_Precache_00add6f0(const char* apFilenameToCache, int aiFlags, int apSettingsContext)
 {
     if (!apFilenameToCache || !GetAudioQ3()->IsReady())
         return;
@@ -2537,7 +2537,7 @@ void OwnerQ3::BSAudioManager_Precache(const char* apFilenameToCache, int aiFlags
     if (pfnB4 && pfnB4(apSettingsContext, &a9, &b2))
         pSound7->SetAB(a9, b2);
     pSound7->SetExtra(iExtraTmp);
-    BSAudioManager_Precache(pSound7);
+    BSAudioManager_Precache_00add960(pSound7);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
@@ -3637,11 +3637,11 @@ static __forceinline UInt32 GetThreadID_adf080()
 } // namespace fnv_00adf080
 
 // @fnv 0x00adf080
-// src: XBOX_RETAIL_PDB 0x00adf080
+// src: COMMUNITY 0x00adf080
 // pdb: BSAudioManager::ProcessMessage | BSAudioManager.obj | retail, string-set bridge, high
 // pdb params: apMsg
 // pdb locals: ptmpSoundPtr, tempMemContext, uicurrentTime, bresetList, ikey, mapIt, pCachedSound, bneedsNameResolved, pTask, psoundcontext, spobj, spobjTest, bsetAtListener, pqueuedMsg, bmaskMatch, fcurrentFreq, fvariance, uiendTime, uistartTime, inewMsg, uidelay, uitargetAttenuation, imillibels, iTargetType ...
-bool BSAudioManager::ProcessMessage(::SoundMessageRecord* apMsg)
+bool BSAudioManager::ProcessMessage_00adf080(::SoundMessageRecord* apMsg)
 {
     using namespace fnv_00adf080;
     AutoMemContext m_uiMemoryContext(11);
@@ -3684,7 +3684,7 @@ bool BSAudioManager::ProcessMessage(::SoundMessageRecord* apMsg)
                     }
                     else if (prior->SameResource148(pkSound->GetResource148()))
                     {
-                        BSAudioManager_Precache(pkSound);
+                        BSAudioManager_Precache_00add960(pkSound);
                     }
                     pkSound = prior;
                     pkSound->SetID(reinterpret_cast<fnv_00adf080::SoundMessageRecord*>(apMsg)->GetID());
@@ -5664,7 +5664,7 @@ struct HostA
     void BSAudioManager_FreeQueueMessage(MessageA*);
 };
 // @fnv 0x00adafa0
-// src: XBOX_RETAIL_PDB 0x00adafa0
+// src: XBOX_RETAIL_PDB 0x00adafa0 (was COMMUNITY)
 // pdb: BSAudioManager::FreeQueueMessage | BSAudioManager.obj | retail, call graph, high
 // pdb params: apMsgToFree
 // pdb locals: spAVObject
@@ -5934,7 +5934,7 @@ struct FUN_00adba70_cls
     void BSAudioManager_SetMinMax(int aiSoundID, float afMin, float afMax);
 };
 // @fnv 0x00adba70
-// src: XBOX_RETAIL_PDB 0x00adba70
+// src: XBOX_RETAIL_PDB 0x00adba70 (was COMMUNITY)
 // pdb: BSAudioManager::SetMinMax | BSAudioManager.obj | retail, call graph, high
 // pdb params: aiSoundID, afMin, afMax
 void FUN_00adba70_cls::BSAudioManager_SetMinMax(int aiSoundID, float afMin, float afMax)
@@ -7129,7 +7129,7 @@ struct AudioUpdate
     unsigned int unk180;
     bool forceVolume;
     void AddToCache(GameSound*);
-    bool ProcessMessage(Message*);
+    bool ProcessMessage_00adf080(Message*);
     void BSAudioManager_FreeQueueMessage(Message*);
     void BSAudioManager_SetVoiceState(unsigned int, GameSound*);
     void BSAudioManager_UpdateMovingSounds();
@@ -7189,13 +7189,13 @@ void AudioUpdate::BSAudioManager_ProcessSoundUpdates()
                         if (message10)
                         {
                             if (message10->Type() == 30)
-                                ProcessMessage(message10);
+                                ProcessMessage_00adf080(message10);
                         }
                     }
                     while (!temporary.Empty())
                     {
                         message10 = temporary.FUN_00ae7f90();
-                        result = ProcessMessage(message10);
+                        result = ProcessMessage_00adf080(message10);
                         BSAudioManager_FreeQueueMessage(message10);
                         message10 = 0;
                     }
@@ -7765,7 +7765,7 @@ typedef int(__cdecl* PFn1_00ae5a50)(R_00ae5a50*, void*, int*);
 typedef bool(__cdecl* PFn2_00ae5a50)(void*, int*, int*);
 
 // @fnv 0x00ae5a50
-// src: XBOX_RETAIL_PDB 0x00ae5a50
+// src: XBOX_RETAIL_PDB 0x00ae5a50 (was COMMUNITY)
 // pdb: BSAudioManager::GetSoundHandleByFilename | BSAudioManager.obj | retail, string-set bridge, high
 // pdb params: apFilename, aiTypeFlags, apSettingsContext
 // pdb locals: pfnApplySettings, psoundInfo, pNewSound, returnHandle, ibegin, ithisSoundID, iadjustFlags, imodFlags, iend, pfnLoopPointsCallback
@@ -8861,14 +8861,14 @@ struct OwnerQ4 : ObjRegistry
     char padf4[0x10c - 0xf4];
     CritSecA m_kCS2;
     TaskListQ4 m_kTasks;
-    void BSAudioManager_Precache(SoundQ4* apToCache);
+    void BSAudioManager_Precache_00add960(SoundQ4* apToCache);
 };
 // @fnv 0x00add960
-// src: XBOX_RETAIL_PDB 0x00add960
+// src: COMMUNITY 0x00add960
 // pdb: BSAudioManager::Precache | BSAudioManager.obj | retail, call graph (shared callers), high
 // pdb params: apToCache, aiFlags
 // pdb locals: filename, pSettingsContext, isoundTypeFlags, pfncallback
-void OwnerQ4::BSAudioManager_Precache(SoundQ4* apToCache)
+void OwnerQ4::BSAudioManager_Precache_00add960(SoundQ4* apToCache)
 {
     if (AudioReadyQ4(GetAudioQ4()) && apToCache->cEnabled && !(apToCache->GetFlags() & 0x10000) &&
         !BSAudioManager_IsInCache(apToCache->GetID(), false))
@@ -9428,7 +9428,7 @@ struct AudioSystem
     DebugList* __thiscall BSAudioManager_GetDebugString(unsigned int);
 };
 // @fnv 0x00ae5ff0
-// src: XBOX_DEBUG_PDB 0x00ae5ff0
+// src: XBOX_DEBUG_PDB 0x00ae5ff0 (was COMMUNITY)
 // pdb: BSAudioManager::GetDebugString | BSAudioManager.obj | debug, unique string literal, high
 // pdb params: aiPage
 // pdb locals: pdbgInfo, icount, bSilent, ikey, tAtt, ptmp, tmp, pList, pstr, itypeMask, tmpString, it, isndID, point

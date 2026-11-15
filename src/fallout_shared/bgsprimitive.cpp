@@ -1213,7 +1213,7 @@ void* __cdecl BGSPrimitive_CreateBox(NiPoint3*, NiColorA*);
 void* __cdecl BGSPrimitive_CreateSphere(float, NiColorA*);
 
 // @fnv 0x004a4e90
-// src: XBOX_RETAIL_PDB 0x004a4e90
+// src: XBOX_RETAIL_PDB 0x004a4e90 (was COMMUNITY)
 // pdb: BGSPrimitive::CreateAbstract | BGSPrimitive.obj | retail, object-file run extension, high
 // pdb params: eType, aRadii, aColor
 // pdb locals: extents

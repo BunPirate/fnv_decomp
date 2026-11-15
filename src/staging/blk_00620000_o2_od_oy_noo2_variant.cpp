@@ -245,8 +245,8 @@ void CellBoundaryCollector::LoadedAreaBound_CheckForDynamicBodiesOutsideBound()
     Box_006286f0 box;
     hkVector4 mn;
     hkVector4 mx;
-    mx.setAll(DAT_0104e148);
-    mn.setAll(DAT_0104da48);
+    mx.SetAllComponents(DAT_0104e148);
+    mn.SetAllComponents(DAT_0104da48);
     for (unsigned int i = 0; i < 6; i++)
     {
         Box_006286f0 b;
@@ -2083,8 +2083,8 @@ bool SpawnAreaB::LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* apCell, GridB*
         hkAabbB kAabb;
         hkVector4 kMinBoundsCur;
         hkVector4 kMaxPoint;
-        kMaxPoint.setAll(-3.40282e38f);
-        kMinBoundsCur.setAll(3.40282e38f);
+        kMaxPoint.SetAllComponents(-3.40282e38f);
+        kMinBoundsCur.SetAllComponents(3.40282e38f);
         if (apCell->IsActor())
         {
             SkeletonB* pkSkeleton = pk3D->GetSkeleton();
@@ -2152,7 +2152,7 @@ const hkVector4& hkVector4_getZero();  // shared zero vector
 
 struct S006288c0_Aabb
 {
-    S006288c0_Aabb& hkAabb_ctor(const hkVector4& min, const hkVector4& max);  // FUN_00628950
+    S006288c0_Aabb& Construct(const hkVector4& min, const hkVector4& max);  // FUN_00628950
     hkVector4 m_kMinimumCorner;
     hkVector4 m_kMaximumCorner;
 };
@@ -2196,7 +2196,7 @@ void S006288c0_Object::bhkAabbPhantom_GetAabb(S006288c0_Bounds* arB)
     else
     {
         LocalM128 zeroBounds[2];
-        arB->AssignFields_006281a0(reinterpret_cast<S006288c0_Aabb*>(zeroBounds)->hkAabb_ctor(hkVector4_getZero(), hkVector4_getZero()));
+        arB->AssignFields_006281a0(reinterpret_cast<S006288c0_Aabb*>(zeroBounds)->Construct(hkVector4_getZero(), hkVector4_getZero()));
     }
 }
 #pragma strict_gs_check(pop)
@@ -3083,7 +3083,7 @@ void TESHavokUtilities_AddAngularVelocity(void* obj, const NiPoint3& pos, bool f
 struct WorldObject62BAE0
 {
     void* bhkRigidBody_GetAngularVelocity();
-    void bhkRigidBody_SetAngularVelocity(hkVector4& arVel);
+    void bhkRigidBody_SetAngularVelocity_005617c0(hkVector4& arVel);
 };
 struct Collision62BAE0
 {
@@ -3125,7 +3125,7 @@ void __cdecl TESHavokUtilities_AddAngularVelocity_0062bae0(Object62BAE0* apObjec
                 kVector.set((*aVelocity)(0), (*aVelocity)(1), (*aVelocity)(2), 0.0f);
                 if (!abReset)
                     kVector.add4(*static_cast<const hkVector4*>(pkWorldObject->bhkRigidBody_GetAngularVelocity()));
-                pkWorldObject->bhkRigidBody_SetAngularVelocity(kVector);
+                pkWorldObject->bhkRigidBody_SetAngularVelocity_005617c0(kVector);
             }
         }
         Node62BAE0* pkNode = apObject->GetAsNode();

@@ -709,7 +709,7 @@ struct FUN_00b8bc80_shell
 };
 // Sets the bool array at offset 0x58: index 0, 1 and 3 to true and index 2 to false.
 // @fnv 0x00b8bc80
-// src: XBOX_RETAIL_PDB 0x00b8bc80
+// src: XBOX_RETAIL_PDB 0x00b8bc80 (was COMMUNITY)
 // pdb: ImageSpaceEffectDepthOfField::DoStandardMask | ImageSpaceManager.obj | retail, call graph, high
 void __thiscall FUN_00b8bc80_shell::ImageSpaceEffectDepthOfField_DoStandardMask()
 {

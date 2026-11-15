@@ -205,7 +205,7 @@ struct FUN_00dc1670_Obj
 
 struct FUN_00e02bb0_Obj
 {
-    void hkPlatformObjectWriter_ctor(void* layout);
+    void hkPlatformObjectWriter_hkPlatformObjectWriter(void* layout);
 };
 
 struct FUN_00e02ef0_Obj
@@ -233,7 +233,7 @@ void __cdecl chasePointers(void* pointer, void* klass, void* reloc)
     FUN_00dbdb10_buf buf;
 
     reinterpret_cast<FUN_00dc1670_Obj*>(&buf.unk00)->hkStructureLayout_hkStructureLayout();
-    reinterpret_cast<FUN_00e02bb0_Obj*>(&buf.unk14)->hkPlatformObjectWriter_ctor(&buf);
+    reinterpret_cast<FUN_00e02bb0_Obj*>(&buf.unk14)->hkPlatformObjectWriter_hkPlatformObjectWriter(&buf);
     reinterpret_cast<FUN_00e02ef0_Obj*>(&buf.unk04)->FUN_00e02ef0();
     reinterpret_cast<FUN_00e02a80_Obj*>(&buf.unk14)->hkPlatformObjectWriter_writeObject(&buf.unk04, pointer, klass, reloc);
     buf.unk04 = (int)&DAT_0102e388;

@@ -1774,7 +1774,7 @@ struct HitResultList
     int field00, field04, field08, field0c;
     Result* result;
     int count;
-    void hkpAllRayHitCollector_sortHits();
+    void hknpAllHitsCollector_sortHits();
 };
 struct World
 {
@@ -1811,7 +1811,7 @@ struct World
     int field78;
     int field7c;
     void hkpWorld_castRay(Query*, void*);
-    void hkpWorld_castRay(Query*, Result*);
+    void hkpWorld_castRay_00c92040(Query*, Result*);
 };
 struct __declspec(align(16)) CastVector
 {

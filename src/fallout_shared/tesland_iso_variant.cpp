@@ -287,7 +287,7 @@ class S_00e8c0d0
 {
   public:
     unsigned int NiDX9VertexBufferManager_LockVB(void* p1, unsigned int p2, unsigned int p3, int p4);
-    bool NiXenonVertexBufferManager_PackSkinnedVB(void* p1, void* p2, void* p3, int p4, UploadBatchPart* p5, unsigned int p6);
+    bool NiDX9VertexBufferManager_PackSkinnedVB(void* p1, void* p2, void* p3, int p4, UploadBatchPart* p5, unsigned int p6);
     bool NiDX9VertexBufferManager_PackUntransformedVB(void* p1, void* p2, int p3, UploadBatchPart* p4, unsigned int p5);
     bool FUN_00e8c0d0(void* p1);
 };
@@ -911,7 +911,7 @@ void Mgr_e74120::NiDX9Renderer_PerformPrecache()
                         !it->unk0c->FUN_00e74288(it->unk00, it->unk04, it->unk08, 0xfff, sub, index, offset, 0, 0))
                     {
                         if (it->unk08)
-                            helper8bc->NiXenonVertexBufferManager_PackSkinnedVB(it->unk00, it->unk04, it->unk08, 0xfff, sub, offset);
+                            helper8bc->NiDX9VertexBufferManager_PackSkinnedVB(it->unk00, it->unk04, it->unk08, 0xfff, sub, offset);
                         else
                             helper8bc->NiDX9VertexBufferManager_PackUntransformedVB(it->unk00, it->unk04, 0xfff, sub, offset);
                     }

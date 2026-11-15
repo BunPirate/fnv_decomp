@@ -70,7 +70,7 @@ struct FUN_00dd0420_Class
     int m_14;
     int m_18;
     int m_1c;
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int f);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int f);
 };
 struct FUN_00dd4b70_class
 {

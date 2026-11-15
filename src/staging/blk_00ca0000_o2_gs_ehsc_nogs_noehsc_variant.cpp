@@ -3305,7 +3305,7 @@ struct FUN_00cbe820_cls
     FUN_00cbe820_sub m_97;
     float m_98;
 
-    FUN_00cbe820_cls* hkpHingeConstraintData_Atoms_ctor();
+    FUN_00cbe820_cls* hkpHingeConstraintData_Atoms_Atoms();
 };
 struct FUN_00cbe880_Class
 {
@@ -5004,7 +5004,7 @@ class CBADDynamicArray : public CA0E60Array
   public:
     void Runtime_ProcessEntries_00cb9d50(void** elements, unsigned int count);
     void ReleaseItems(void** elements, unsigned int count);
-    void BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
+    void BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 class GlobalObjectO2_00a7b610;
 extern GlobalObjectO2_00a7b610 bhkRagdollTemplate_ms_RTTI;
@@ -5724,7 +5724,7 @@ struct FUN_00cbaf90 : public ObjectCBAF90
 };
 struct CBB050Array
 {
-    void BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
+    void BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 struct CBB050Object
 {

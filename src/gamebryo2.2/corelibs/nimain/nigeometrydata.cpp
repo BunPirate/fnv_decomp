@@ -1697,7 +1697,7 @@ struct FUN_00a67660_cls
 
 // When enabled, it may return early; otherwise it writes data and stride from the entry object or defaults.
 // @fnv 0x00a67660
-// src: XBOX_RETAIL_PDB 0x00a67660
+// src: XBOX_RETAIL_PDB 0x00a67660 (was COMMUNITY)
 // pdb: NiGeometryData::GetColorsIterator | NiGeometryData.obj | retail, object-file gap fill, high
 // pdb params: arIterator
 // pdb locals: pucData, pkAGD, bcompressed, uiStride, usCount, uiType, pkPackedAGD, uiStream, bResult, uiTotalSize, uiUnitSize, uiIndex

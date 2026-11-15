@@ -30,7 +30,7 @@ struct FUN_00ec1dc0_Class
 struct FUN_00ec1f20Class
 {
     void Movie_ClearData();
-    void* Movie_ctor();
+    void* Movie_Movie();
 };
 struct FUN_00ec1f40Class
 {

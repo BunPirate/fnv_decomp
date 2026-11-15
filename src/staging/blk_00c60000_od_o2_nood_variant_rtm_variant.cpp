@@ -1741,7 +1741,7 @@ struct HitResultList
     int field00, field04, field08, field0c;
     Result* result;
     int count;
-    void hkpAllRayHitCollector_sortHits();
+    void hknpAllHitsCollector_sortHits();
 };
 struct World
 {
@@ -1778,7 +1778,7 @@ struct World
     int field78;
     int field7c;
     void hkpWorld_castRay(Query*, void*);
-    void hkpWorld_castRay(Query*, Result*);
+    void hkpWorld_castRay_00c92040(Query*, Result*);
 };
 struct __declspec(align(16)) CastVector
 {
@@ -6734,7 +6734,7 @@ struct PointerArrayC
     }
 };
 void hkArrayUtil__reserve(HeapAllocator*, PointerArrayC*, int, int);
-void anonymous_namespace_ExtractStiltCapsuleInfo(ShapeC*, const void*, SimdC::LocalM128*);
+void ExtractStiltCapsuleInfo(ShapeC*, const void*, SimdC::LocalM128*);
 bool bhkCharacterController_IsHurtfulBody(BodyC*);
 extern float DAT_011c3d18;
 struct ComponentC
@@ -7000,12 +7000,12 @@ void ParentC::bhkCharacterController_processConstraintsCallback(void*, ContactLi
             ShapeC* firstSphere = wrappedShape->children->first;
             if (firstSphere && firstSphere->kind == 5)
             {
-                anonymous_namespace_ExtractStiltCapsuleInfo(firstSphere, &sphereTransformBody->transform, &sphere0.value);
+                ExtractStiltCapsuleInfo(firstSphere, &sphereTransformBody->transform, &sphere0.value);
                 ShapeC* b;
                 b = wrappedShape->children->second;
                 if (b && b->kind == 5)
                 {
-                    anonymous_namespace_ExtractStiltCapsuleInfo(b, &sphereTransformBody->transform, &sphere1.value);
+                    ExtractStiltCapsuleInfo(b, &sphereTransformBody->transform, &sphere1.value);
                     float accumulated = b->radius;
                     radiusSquared = (float)(accumulated * DAT_010c4ab0);
                     radiusSquared *= radiusSquared;

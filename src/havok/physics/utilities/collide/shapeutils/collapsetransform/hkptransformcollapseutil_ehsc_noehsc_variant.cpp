@@ -58,7 +58,7 @@ struct ShapeData
     int m_kPointB;
     int m_iThirdValue;
     int m_iFourthElementInteger;
-    void SharedShapeData_recursivelyParseShapeReferences(int);
+    void _SharedShapeData_recursivelyParseShapeReferences(int);
     void removeSingleReferencedShapeData();
     ShapeData* SharedShapeData_ctor(ShapeRefArray* rigidBodies);
 };
@@ -79,7 +79,7 @@ struct FUN_00d74420_Context
     int m_kPointA;  // +0x00
     int m_kPointB;  // +0x04
     int m_iThirdValue;  // +0x08, initialized to 0x80000000
-    void SharedShapeData_recursivelyParseShapeReferences(int shape);
+    void _SharedShapeData_recursivelyParseShapeReferences(int shape);
     void removeSingleReferencedShapeData();
     void SharedShapeData_dtor();
 };
@@ -215,15 +215,15 @@ static __forceinline void addShapeD738(ShapeData* self, int value)
     hkArray<hkpShape*> children;
     _getShapeChildren((hkpShape*)value, &children);
     for (int i = 0; i < children.m_iElementCount; i++)
-        self->SharedShapeData_recursivelyParseShapeReferences((int)children.m_data[i]);
+        self->_SharedShapeData_recursivelyParseShapeReferences((int)children.m_data[i]);
 }
 
 // @fnv 0x00d738f0
-// src: XBOX_RETAIL_PDB 0x00d738f0
+// src: HAVOK_LIB 0x00d738f0
 // pdb: _SharedShapeData::recursivelyParseShapeReferences | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high
 // pdb params: shape
 // pdb locals: children, sharedShape
-void ShapeData::SharedShapeData_recursivelyParseShapeReferences(int shape)
+void ShapeData::_SharedShapeData_recursivelyParseShapeReferences(int shape)
 {
     int index = indexOfD738(this, shape);
     if (index >= 0)
@@ -342,7 +342,7 @@ extern "C" void FUN_00cf5990();
 extern "C" void FUN_00d22590();
 extern "C" void FUN_00d571a0();
 extern "C" void hkpCylinderShape_hkpCylinderShape();
-extern "C" void hkpConvexTransformShape_ctor();
+extern "C" void hkpConvexTransformShape_hkpConvexTransformShape();
 __forceinline void transformPoint(hkVector4& result, const hkTransform* transform, const hkVector4* point)
 {
     reinterpret_cast<void(__thiscall*)(hkVector4*, const hkTransform*, const hkVector4*)>(setTransformedPos_00c7f640)(&result, transform, point);
@@ -625,7 +625,7 @@ const hkpShape* hkpShape_ProcessEntries_00d739f0(const hkpShape* transformShape,
         if (transformShapeType == 15)
         {
             hkpConvexTransformShape* newShapeMem = static_cast<hkpConvexTransformShape*>(shapeNew(0x60));
-            hkpConvexTransformShape* pRemappedShape = reinterpret_cast<hkpConvexTransformShape*(__thiscall*)(hkpConvexTransformShape*, const hkpConvexShape*, const hkTransform*, int)>(hkpConvexTransformShape_ctor)(newShapeMem, childConvexShape, &parentFromChild, 1);
+            hkpConvexTransformShape* pRemappedShape = reinterpret_cast<hkpConvexTransformShape*(__thiscall*)(hkpConvexTransformShape*, const hkpConvexShape*, const hkTransform*, int)>(hkpConvexTransformShape_hkpConvexTransformShape)(newShapeMem, childConvexShape, &parentFromChild, 1);
             sharedShapeData.SetEntryValue(reinterpret_cast<int>(transformShape), reinterpret_cast<int>(pRemappedShape));
             resultsOut.m_iThirdResult++;
             return pRemappedShape;

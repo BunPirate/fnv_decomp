@@ -232,9 +232,9 @@ class QuestStageItemList
 };
 
 // @fnv 0x0060f210
-// src: XBOX_DEBUG_PDB 0x0060f210
+// src: COMMUNITY 0x0060f210
 // pdb: TESQuestStage::TESQuestStage | TESQuestStage.obj | debug, upstream name already matches, high
-void* __fastcall TESQuestStage_ctor(char* pThis)
+void* __fastcall TESQuestStage_TESQuestStage(char* pThis)
 {
     ResetFlags(pThis);
     ((QuestStageItemList*)(pThis + 4))->QuestStageItemList::QuestStageItemList();

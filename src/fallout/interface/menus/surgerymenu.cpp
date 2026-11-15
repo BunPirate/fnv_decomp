@@ -3707,7 +3707,7 @@ extern BipPointer DAT_011dae5c;
 
 // Looks up the "Bip01" node, calls two methods with global float values and arguments, then updates the current root.
 // @fnv 0x007e4fe0
-// src: XBOX_RETAIL_PDB 0x007e4fe0
+// src: XBOX_RETAIL_PDB 0x007e4fe0 (was COMMUNITY)
 // pdb: SurgeryMenu::SetSurgeryPlayer3DPosition | SurgeryMenu.obj | retail, object-file run extension, high
 // pdb params: afX, afY, afScale
 // pdb locals: update

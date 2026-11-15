@@ -1417,7 +1417,7 @@ struct FUN_00d61b10 {
 };
 int __cdecl hkClassMember_getSubtypeOf(const char* name) throw();
 struct FUN_00d87180_cls : S {
-    FUN_00d87180_cls* hkClassMemberAccessor_ctor(unsigned int obj, B* mem);
+    FUN_00d87180_cls* hkClassMemberAccessor_hkClassMemberAccessor(unsigned int obj, B* mem);
 };
 class OwnerD87A {
 public:

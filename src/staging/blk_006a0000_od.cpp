@@ -424,16 +424,16 @@ FUN_006a62c0_class* FUN_006a62c0_class::NiTMap_TESObjectCELL_NiPointer_NiNode_Ni
 struct Dummy0042f800
 {
     void FUN_0042fcb0(int, int);
-    void* __thiscall BSSimpleArray_NiPoint3_1024_ctor(int aiInitialSize);
+    void* __thiscall BSSimpleArray_NiPoint3_1024_BSSimpleArray_NiPoint3_1024(int aiInitialSize);
 };
 
 extern int DAT_010159d4;
 
 // @fnv 0x006a65e0
-// src: XBOX_RETAIL_PDB 0x006a65e0
+// src: XBOX_PDB 0x006a65e0
 // pdb: BSSimpleArray<NiPoint3,1024>::BSSimpleArray<NiPoint3,1024> | NavMeshRender.obj | retail, call graph (shared callers), high
 // pdb params: aiInitialSize
-void* __thiscall Dummy0042f800::BSSimpleArray_NiPoint3_1024_ctor(int aiInitialSize)
+void* __thiscall Dummy0042f800::BSSimpleArray_NiPoint3_1024_BSSimpleArray_NiPoint3_1024(int aiInitialSize)
 {
     *(int**)this = &DAT_010159d4;
     FUN_0042fcb0(aiInitialSize, aiInitialSize);

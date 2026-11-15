@@ -23,13 +23,13 @@ struct FUN_00af30a0_Class
     int m_iValueAt90;
     char m_cValueAt94;
     char m_cValueAt95;
-    void* BSSystemUtility_ctor();
+    void* BSSystemUtility_BSSystemUtility();
 };
 
 // @fnv 0x00af30a0
-// src: XBOX_RETAIL_PDB 0x00af30a0
+// src: XBOX_PDB 0x00af30a0
 // pdb: BSSystemUtility::BSSystemUtility | BSSystemUtility.obj | retail, upstream name already matches, high
-void* FUN_00af30a0_Class::BSSystemUtility_ctor()
+void* FUN_00af30a0_Class::BSSystemUtility_BSSystemUtility()
 {
     vtbl = &DAT_010a42b4;
     m_pObjectAt84 = 0;
@@ -206,13 +206,13 @@ struct FUN_00af38d0_Class
     void* vtbl;
     char bVisible;
     void* m_pObjectAt84;
-    void* BSCacheDriveSystemUtility_ctor();
+    void* BSCacheDriveSystemUtility_BSCacheDriveSystemUtility();
 };
 
 // @fnv 0x00af38d0
-// src: XBOX_DEBUG_PDB 0x00af38d0
+// src: COMMUNITY 0x00af38d0
 // pdb: BSCacheDriveSystemUtility::BSCacheDriveSystemUtility | BSCacheDriveSystemUtility.obj | debug, upstream name already matches, high
-void* FUN_00af38d0_Class::BSCacheDriveSystemUtility_ctor()
+void* FUN_00af38d0_Class::BSCacheDriveSystemUtility_BSCacheDriveSystemUtility()
 {
     vtbl = &DAT_010a42ec;
     bVisible = 0;
@@ -256,13 +256,13 @@ struct FUN_00af3b20_Class
 {
     void* vtbl;
     int i;
-    void* __thiscall BSSysInfoSystemUtility_ctor();
+    void* __thiscall BSSysInfoSystemUtility_BSSysInfoSystemUtility();
 };
 // Sets the object's vtbl to DAT_010a4328 and its i field to 0x10, then returns this.
 // @fnv 0x00af3b20
-// src: XBOX_DEBUG_PDB 0x00af3b20
+// src: COMMUNITY 0x00af3b20
 // pdb: BSSysInfoSystemUtility::BSSysInfoSystemUtility | BSSysInfoSystemUtility.obj | debug, upstream name already matches, high
-void* __thiscall FUN_00af3b20_Class::BSSysInfoSystemUtility_ctor()
+void* __thiscall FUN_00af3b20_Class::BSSysInfoSystemUtility_BSSysInfoSystemUtility()
 {
     vtbl = &DAT_010a4328;
     i = 0x10;
@@ -465,14 +465,14 @@ struct FUN_00af3570_Class
 {
     void* vtbl;
     int a[8];
-    void* __thiscall BSSystemUtilitiesStrings_ctor();
+    void* __thiscall BSSystemUtilitiesStrings_BSSystemUtilitiesStrings();
 };
 // Sets vtbl to &DAT_010a42dc and zeroes the eight-element array a, then returns this.
 // @fnv 0x00af3570
-// src: XBOX_DEBUG_PDB 0x00af3570
+// src: COMMUNITY 0x00af3570
 // pdb: BSSystemUtilitiesStrings::BSSystemUtilitiesStrings | BSSystemUtilitiesStrings.obj | debug, upstream name already matches, high
 // pdb locals: i
-void* __thiscall FUN_00af3570_Class::BSSystemUtilitiesStrings_ctor()
+void* __thiscall FUN_00af3570_Class::BSSystemUtilitiesStrings_BSSystemUtilitiesStrings()
 {
     vtbl = &DAT_010a42dc;
     for (unsigned int i = 0; i < 8; ++i)
@@ -627,13 +627,13 @@ struct FUN_00afd8b0_Class
     unsigned int uiHash;
     unsigned int uiCRC;
     unsigned short m_usPassCountLocal;
-    void* __thiscall BSArchiveHeader_ctor();
+    void* __thiscall BSArchiveHeader_BSArchiveHeader();
 };
 
 // @fnv 0x00afd8b0
-// src: XBOX_DEBUG_PDB 0x00afd8b0
+// src: COMMUNITY 0x00afd8b0
 // pdb: BSArchiveHeader::BSArchiveHeader | BSArchive.obj | debug, upstream name already matches, high
-void* __thiscall FUN_00afd8b0_Class::BSArchiveHeader_ctor()
+void* __thiscall FUN_00afd8b0_Class::BSArchiveHeader_BSArchiveHeader()
 {
     void* pSub = (char*)this + 0xc;
     *(int*)pSub = 0;
@@ -740,14 +740,14 @@ struct FUN_00af2ed0_Class
     int i2;
     char pad2[0x14];
     int i3;
-    FUN_00af2ed0_Class* BSSaveDataSystemUtility_ctor();
+    FUN_00af2ed0_Class* BSSaveDataSystemUtility_BSSaveDataSystemUtility();
 };
 
 // Sets the vtable pointer and zeroes the object's fields, then returns this.
 // @fnv 0x00af2ed0
-// src: XBOX_DEBUG_PDB 0x00af2ed0
+// src: COMMUNITY 0x00af2ed0
 // pdb: BSSaveDataSystemUtility::BSSaveDataSystemUtility | BSSaveDataSystemUtility.obj | debug, upstream name already matches, high
-FUN_00af2ed0_Class* FUN_00af2ed0_Class::BSSaveDataSystemUtility_ctor()
+FUN_00af2ed0_Class* FUN_00af2ed0_Class::BSSaveDataSystemUtility_BSSaveDataSystemUtility()
 {
     char* p;
     vtbl = &DAT_010a4288;

@@ -91,7 +91,7 @@ bool SystemColorManager::GetColor(int aiID, NiColor& aOutColor)
     SystemColor* systemColor = Find(aiID);
     if (systemColor)
     {
-        systemColor->GetColor(aOutColor);
+        systemColor->SystemColorManager_SystemColor_GetColor(aOutColor);
         return true;
     }
     else

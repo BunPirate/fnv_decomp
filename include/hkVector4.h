@@ -100,7 +100,7 @@ class hkVector4
 
     void set(float x, float y, float z, float w = 0.0f);
     void setZero4();
-    void setAll(float value);
+    void SetAllComponents(float value);
     __forceinline void SetAllComponents(const hkSimdReal& value);
     void broadcast(int index);
     void setBroadcast(const hkVector4& vector, int index);
@@ -229,7 +229,7 @@ class hkVector4
     Vector4Comparison compareLessThan4(const hkVector4& vector) const;
     Vector4Comparison compareEqual4(const hkVector4& vector) const;
     CompareBits compareLessThanEqual4(const hkVector4& vector) const;
-    int equals3(const hkVector4& v, float epsilon) const;
+    int equals4(const hkVector4& v, float epsilon) const;
 #ifdef FNV64_HKVECTOR4_PACKET_BODIES
     __forceinline void set(__m128 value) { m_vComponents = value; }
 #else

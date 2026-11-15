@@ -144,7 +144,7 @@ class NiControllerSequence : public NiObject
 
     void NiControllerSequence_DetachInterpolators();
     void AttachInterpolators(char cPriority);
-    float ComputeScaledTime(float fTime, bool bStoreLastTime);
+    float ComputeScaledTime_00a30970(float fTime, bool bStoreLastTime);
     bool CanSyncTo(void* pkTargetSequence);
     bool RegisterStreamables_00a30ea0(NiStream& kStream);
     unsigned char IsEqual_00a30fb0(NiControllerSequence* pkObject);

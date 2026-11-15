@@ -66,7 +66,7 @@ struct CollidableArray : hkArray<hkpCollidable*> {
 };
 struct Tree {
     unsigned short hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_add(hkAabb*, hkpCollidable*);
-    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(unsigned short);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(unsigned short);
 };
 struct ScanToken;
 struct TablePair { unsigned long key; unsigned long value; };
@@ -158,7 +158,7 @@ static __forceinline void hkAddValue(const char* name, float value) {
     }
 }
 // @fnv 0x00d099d0
-// src: XBOX_RETAIL_PDB 0x00d099d0
+// src: XBOX_RETAIL_PDB 0x00d099d0 (was HAVOK_LIB)
 // pdb: hkpAabbTreeWorldManager::incrementalBuild | hkpAabbTreeWorldManager.obj | retail, string-set bridge, high
 // pdb params: jobQueue, jobThreadPool
 // pdb locals: inactivated, deferUpdate, aabb
@@ -188,7 +188,7 @@ void hkpAabbTreeWorldManager::incrementalBuild(int jobQueue, int jobThreadPool) 
             int state = entries.getValue(it);
             if (isActive(state, node) && node->m_broadPhaseHandle.m_type == 1) {
                 hkAddValue("MiNum of Removed Nodes", 1.0f);
-                currentTree->hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(hkpAabbTreeWorldManager_getNodeIdx(node));
+                currentTree->hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(hkpAabbTreeWorldManager_getNodeIdx(node));
                 hkpAabbTreeWorldManager_pushBackToActiveList(node);
             }
         }

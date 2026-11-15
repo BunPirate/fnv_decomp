@@ -434,9 +434,9 @@ void* __fastcall Object_InitializeFields_0070a8a0(void* pThis)
 void __fastcall ResetEntries(void*);
 
 // @fnv 0x0070a8e0
-// src: XBOX_DEBUG_PDB 0x0070a8e0
+// src: COMMUNITY 0x0070a8e0
 // pdb: InterfaceManager::TutorialManager::TutorialManager | InterfaceManager.obj | debug, upstream name already matches, high
-void* __fastcall InterfaceManager_TutorialManager_ctor(void* p)
+void* __fastcall InterfaceManager_TutorialManager_TutorialManager(void* p)
 {
     ResetEntries(p);
     return p;
@@ -1920,15 +1920,15 @@ struct SystemColor
 {
     virtual void v0();
     virtual int GetValue() const;
-    void GetColor(NiColorA* aOutColor) const;
+    void SystemColorManager_SystemColor_GetColor(NiColorA* aOutColor) const;
 };
 
 // @fnv 0x007193b0
-// src: XBOX_RETAIL_PDB 0x007193b0
+// src: XBOX_PDB 0x007193b0
 // pdb: SystemColorManager::SystemColor::GetColor | InterfaceManager.obj | retail, upstream name already matches, high
 // pdb params: aOutColor
 // pdb locals: igreen, ired, iblue, ialpha
-void SystemColor::GetColor(NiColorA* aOutColor) const
+void SystemColor::SystemColorManager_SystemColor_GetColor(NiColorA* aOutColor) const
 {
     unsigned int igreen;
     unsigned int ired;
@@ -4614,7 +4614,7 @@ extern FaderManager* DAT_011d8804;
 
 // Creates or reuses a SceneGraph, sets its camera rotation, aspect-based frustum and position, and adds main/cursor root nodes when not a buffer.
 // @fnv 0x00712e90
-// src: XBOX_RETAIL_PDB 0x00712e90
+// src: XBOX_RETAIL_PDB 0x00712e90 (was COMMUNITY)
 // pdb: InterfaceManager::CreateSceneGraph | InterfaceManager.obj | retail, unique string literal, high
 // pdb params: apGraph, apName, abIsBuffer
 // pdb locals: faspectRatio, tempMemContext, rot, pscene_graph, pr, frust, xyz

@@ -63,7 +63,7 @@ struct RefObj
 struct Obj : RefObj
 {
     int pad[14];
-    Obj* hkpBvTreeStreamAgent_ctor(int, int, int, int);
+    Obj* hkpBvTreeStreamAgent_hkpBvTreeStreamAgent(int, int, int, int);
 };
 inline void* hkAlloc(int n)
 {

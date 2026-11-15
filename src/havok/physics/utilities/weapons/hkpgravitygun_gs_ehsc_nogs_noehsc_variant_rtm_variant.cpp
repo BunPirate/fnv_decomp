@@ -66,7 +66,7 @@ inline void hkVector4::setInterpolate4(const hkVector4& a, const hkVector4& b, c
     __m128 one_minus_t = _mm_sub_ps(DAT_010ec7f0, tv);
     *(__m128*)this = _mm_add_ps(_mm_mul_ps(one_minus_t, *(__m128*)&a), _mm_mul_ps(tv, *(__m128*)&b));
 }
-inline int hkVector4::equals3(const hkVector4& v, float epsilon) const
+inline int hkVector4::equals4(const hkVector4& v, float epsilon) const
 {
     __m128 diff = _mm_sub_ps(*(__m128*)this, *(__m128*)&v);
     __m128 absDiff = _mm_and_ps(diff, DAT_01017d10);
@@ -143,7 +143,7 @@ __declspec(noinline) void hkpGravityGun::gravityGunStep(float timeStep, const hk
         __m128 deltaPos = _mm_sub_ps(*(__m128*)&targetPos, *(__m128*)&rb->m_motion.m_kMotionState.m_kSweptTransform.m_vCenterOfMass1);
         __m128 invDTimeVec = hkSimdReal(invDTime).broadcast();
         *(__m128*)&newLinearVelocity = _mm_add_ps(_mm_mul_ps(deltaPos, invDTimeVec), *(__m128*)&newLinearVelocity);
-        if (!newLinearVelocity.equals3(rb->m_motion.m_kTranslationalVelocity, 0.001f))
+        if (!newLinearVelocity.equals4(rb->m_motion.m_kTranslationalVelocity, 0.001f))
         {
             rb->activate_00c9c1d0();
             rb->m_motion.SetTranslationalVelocity(newLinearVelocity);
@@ -154,7 +154,7 @@ __declspec(noinline) void hkpGravityGun::gravityGunStep(float timeStep, const hk
             _mm_mul_ps(hkSimdReal(0.8f).broadcast(), *(__m128*)&rb->m_motion.m_kAngularVelocity);
         if (float(newAngularVelocity.lengthSquared3()) > minSq)
         {
-            if (!newAngularVelocity.equals3(rb->m_motion.m_kAngularVelocity, 0.001f))
+            if (!newAngularVelocity.equals4(rb->m_motion.m_kAngularVelocity, 0.001f))
             {
                 rb->activate_00c9c1d0();
                 rb->m_motion.SetRotationalVelocity(newAngularVelocity);

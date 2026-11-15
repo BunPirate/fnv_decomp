@@ -294,7 +294,7 @@ struct CameraViewerAppender
 };
 
 // The shared frustum and rect types do not declare these viewer formatting helpers.
-void GetViewerString();
+void FormatFrustum();
 void FormatCameraPort();
 
 struct NiPoint3ViewerProxy
@@ -332,7 +332,7 @@ void FUN_00a71920_shell::NiCamera_GetViewerStrings(StrArr* pkStrings)
     pkStrings->SetAt(index, value);
 
     value =
-        reinterpret_cast<char* (__thiscall*)(NiFrustum*, const char*)>(GetViewerString)(
+        reinterpret_cast<char* (__thiscall*)(NiFrustum*, const char*)>(FormatFrustum)(
             &reinterpret_cast<NiCamera*>(this)->m_kViewFrustum, "m_kViewFrustum");
     index = pkStrings->m_usSize;
     size = pkStrings->m_usMaxSize;

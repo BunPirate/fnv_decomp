@@ -671,13 +671,13 @@ extern int _DAT_011f4274;
 
 struct FUN_00bc2bd0_class
 {
-    int* __thiscall BSOrderedNode_ctor();
+    int* __thiscall BSOrderedNode_BSOrderedNode();
 };
 
 // @fnv 0x00bc2bd0
-// src: XBOX_RETAIL_PDB 0x00bc2bd0
+// src: XBOX_PDB 0x00bc2bd0
 // pdb: BSOrderedNode::BSOrderedNode | BSOrderedNode.obj | retail, upstream name already matches, high
-int* __thiscall FUN_00bc2bd0_class::BSOrderedNode_ctor()
+int* __thiscall FUN_00bc2bd0_class::BSOrderedNode_BSOrderedNode()
 {
     FUN_00c5f570();
     *(int**)(char*)this = &DAT_010ba730;
@@ -887,7 +887,7 @@ void __stdcall BSRefractionFirePeriodController_GetViewerStrings(StrArr* pkStrin
 
 // Adds a pass (0x1e5 or 0x1e6 depending on a and type) to pPasses, or increments count when type is not 1; clears out and returns 0.
 // @fnv 0x00bd9e60
-// src: XBOX_RETAIL_PDB 0x00bd9e60
+// src: XBOX_RETAIL_PDB 0x00bd9e60 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddRenderNormalsClearPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
 // pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
 // pdb locals: ppass
@@ -924,7 +924,7 @@ struct FUN_00bd9f90_class : Shader_00bd9540
 
 // Adds geom to pPasses with pass 5 or 4 depending on a and type, or increments count when type is not 1; clears out and returns 0.
 // @fnv 0x00bd9f90
-// src: XBOX_RETAIL_PDB 0x00bd9f90
+// src: XBOX_RETAIL_PDB 0x00bd9f90 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddZOnlyTextureEffectPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, call graph, high
 // pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
 // pdb locals: ppass
@@ -1701,7 +1701,7 @@ struct FUN_00bd9d00_class
 
 // Adds a pass to pPasses for type 1 (0x24f when flag is set, else 0x24e), otherwise increments *count, and clears *enabled; returns 0.
 // @fnv 0x00bd9d00
-// src: XBOX_RETAIL_PDB 0x00bd9d00
+// src: XBOX_RETAIL_PDB 0x00bd9d00 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddTextureEffectPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, call graph, high
 // pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
 // pdb locals: ppass
@@ -1748,7 +1748,7 @@ struct FUN_00bdc030_class
 
 // Adds geometry to pPasses with pass id 0x251 or 0x250 when type is 1, otherwise increments count; always clears out and returns 0.
 // @fnv 0x00bdc030
-// src: XBOX_RETAIL_PDB 0x00bdc030
+// src: XBOX_RETAIL_PDB 0x00bdc030 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddTextureEffectPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, call graph, high
 // pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
 // pdb locals: ppass
@@ -8213,7 +8213,7 @@ struct Shader9840
 };
 // Chooses a pass index from the boolean flags and type, calls the pass array for type 1 or increments count otherwise, then clears out and returns 0.
 // @fnv 0x00bd9840
-// src: XBOX_RETAIL_PDB 0x00bd9840
+// src: XBOX_RETAIL_PDB 0x00bd9840 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddDiffusePass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file run extension, high
 // pdb params: apGeom, apLight, asCount, abUpdateList, abFirst, abSkinned, abPointLight, abMultitexture, abTreeBranch
 // pdb locals: ppass
@@ -8328,7 +8328,7 @@ struct Shader_00bd9bc0
 };
 
 // @fnv 0x00bd9bc0
-// src: XBOX_RETAIL_PDB 0x00bd9bc0
+// src: XBOX_RETAIL_PDB 0x00bd9bc0 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddFogPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, call graph, high
 // pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned, abTreeBranch, abAlphaBlend
 // pdb locals: ppass
@@ -8731,7 +8731,7 @@ struct ShaderPassSelector : Shader_00bd9540
 };
 // Picks a shadow pass id from the a/b/d/e flags and type, adds it via FUN_00ba9ee0 when type==1, otherwise increments *count, then clears *out.
 // @fnv 0x00bdda20
-// src: XBOX_RETAIL_PDB 0x00bdda20
+// src: XBOX_RETAIL_PDB 0x00bdda20 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddDiffusePt2Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
 // pdb params: apGeom, apPtLight1, apPtLight2, asCount, abUpdateList, abFirst, abSkinned, abFacegenBlend, abMultitexture, abParallax, abTreeBranch
 // pdb locals: ppass
@@ -8920,7 +8920,7 @@ struct Shader_00bdde10
 };
 
 // @fnv 0x00bdde10
-// src: XBOX_RETAIL_PDB 0x00bdde10
+// src: XBOX_RETAIL_PDB 0x00bdde10 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddSpecularPt2Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
 // pdb params: apGeom, apLight, apLight2, asCount, abUpdateList, abFirst, abSkinned, abParallax, abTreeBranch, abHair
 // pdb locals: ppass
@@ -9039,7 +9039,7 @@ struct Shader_bddfb0
 };
 
 // @fnv 0x00bddfb0
-// src: XBOX_RETAIL_PDB 0x00bddfb0
+// src: XBOX_RETAIL_PDB 0x00bddfb0 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddSpecularPt3Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
 // pdb params: apGeom, apLight, apLight2, apLight3, asCount, abUpdateList, abFirst, abSkinned, abParallax, abTreeBranch, abHair
 // pdb locals: ppass
@@ -14580,7 +14580,7 @@ struct SelectShader
                      bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i, bool j, bool k);
 };
 // @fnv 0x00bde1d0
-// src: XBOX_DEBUG_PDB 0x00bde1d0
+// src: XBOX_DEBUG_PDB 0x00bde1d0 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddAmbDiffTexSpecularPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | debug, call graph, high
 // pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abGlowMap, abFacegenBlend, abMultitexture, abProjShadow, abParallax, abTreeBranch, abHair
 // pdb locals: ppass
@@ -19682,7 +19682,7 @@ struct Shader_00bd9f00 : Shader9840
 
 // If ucType is 1 adds pass 3 (bFirst) or 1 or 2 (bSecond) via passes->FUN_00ba9ee0, else increments *puiPassCount; then clears *pbEnabled.
 // @fnv 0x00bd9f00
-// src: XBOX_RETAIL_PDB 0x00bd9f00
+// src: XBOX_RETAIL_PDB 0x00bd9f00 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddZOnlyPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
 // pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned, abAlphaTest
 // pdb locals: ppass
@@ -20041,7 +20041,7 @@ struct FUN_00bddbc0_class : Shader_00bd9540
 
 // If type is 1, adds a pass to pPasses for geom and the three lights (id chosen by flags a, b, d, e), else increments *count; then clears *out.
 // @fnv 0x00bddbc0
-// src: XBOX_RETAIL_PDB 0x00bddbc0
+// src: XBOX_RETAIL_PDB 0x00bddbc0 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddDiffusePt3Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
 // pdb params: apGeom, apPtLight1, apPtLight2, apPtLight3, asCount, abUpdateList, abFirst, abSkinned, abFacegenBlend, abMultitexture, abParallax, abTreeBranch
 // pdb locals: ppass

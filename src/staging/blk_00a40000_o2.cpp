@@ -521,7 +521,7 @@ void __cdecl NiStandardizeFilePath(NiFixedString* kString)
 extern int DAT_0109b00c;
 struct FUN_004a4650_ListBase
 {
-    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
 };
 struct FUN_00a5a390_shell
 {
@@ -541,7 +541,7 @@ void FUN_00a5a390_shell::ReleaseStorage_00a5a390()
         _g_memoryManager.Deallocate(old);
     *(unsigned int*)(p + 0x30) &= 0xfff7ffff;
     *(void**)(p + 0x20) = 0;
-    ((FUN_004a4650_ListBase*)(p + 0x24))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    ((FUN_004a4650_ListBase*)(p + 0x24))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
     char* obj = (char*)*(void**)(p + 0x1c);
     if (obj)
     {
@@ -549,7 +549,7 @@ void FUN_00a5a390_shell::ReleaseStorage_00a5a390()
             (*(void(__thiscall*)(void*))(*(void***)obj)[1])(obj);
         *(void**)(p + 0x1c) = 0;
     }
-    ((FUN_004a4650_ListBase*)(p + 0x24))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    ((FUN_004a4650_ListBase*)(p + 0x24))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
     obj = (char*)*(void**)(p + 0x1c);
     if (obj)
     {
@@ -2295,7 +2295,7 @@ struct ControllerFields
 struct ConvertedController : ControllerFields
 {
     NiPointer<ConvertedController> next;
-    ConvertedController* NiTransformController_ctor();
+    ConvertedController* NiTransformController_NiTransformController();
 };
 struct ControllerInterpolator : ControllerFields
 {
@@ -2434,7 +2434,7 @@ void __cdecl NiOldAnimationConverter_ConvertPathController(StubController* pkCon
     else
     {
         ConvertedController* fresh = static_cast<ConvertedController*>(NiObject::operator new(0x38));
-        fresh = fresh ? fresh->NiTransformController_ctor() : 0;
+        fresh = fresh ? fresh->NiTransformController_NiTransformController() : 0;
         if (controller != fresh)
         {
             if (controller)
@@ -5161,7 +5161,7 @@ struct Holder : NiObjectNET
 };
 // Inserts p into the sorted texture array, growing it as needed, and returns false if a duplicate name is found.
 // @fnv 0x00a5ba40
-// src: XBOX_RETAIL_PDB 0x00a5ba40
+// src: XBOX_RETAIL_PDB 0x00a5ba40 (was COMMUNITY)
 // pdb: NiObjectNET::InsertExtraData | NiObjectNET.obj | retail, call graph (shared callers), high
 // pdb params: pkExtra
 // pdb locals: i, uiDestSize, ppkNewExtra, dtCompare, pkTmpED

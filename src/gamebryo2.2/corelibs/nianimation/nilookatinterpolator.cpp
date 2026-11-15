@@ -329,7 +329,7 @@ NiObject* NiLookAtInterpolator::MakeClone(CloningProcess& kCloning)
 {
     NiLookAtInterpolator* allocated = static_cast<NiLookAtInterpolator*>(NiLookAtInterpolator::operator new(0x44));
     NiLookAtInterpolator* node = allocated ? ::new (allocated) NiLookAtInterpolator(0, 0, 0) : 0;
-    CopyMembers(node, kCloning);
+    CopyMembers_00a4c4b0(node, kCloning);
     return node;
 }
 
@@ -1072,11 +1072,11 @@ struct S_00a4c4b0_Xform
 using namespace fnv_00a4c4b0;
 
 // @fnv 0x00a4c4b0
-// src: XBOX_RETAIL_PDB 0x00a4c4b0
+// src: XBOX_PDB 0x00a4c4b0
 // pdb: NiLookAtInterpolator::CopyMembers | NiLookAtInterpolator.obj | retail, object-file gap fill, high
 // pdb params: pkDest, kCloning
 // pdb locals: ui
-void __thiscall NiLookAtInterpolator::CopyMembers(NiLookAtInterpolator* pkDest, CloningProcess& kCloning)
+void __thiscall NiLookAtInterpolator::CopyMembers_00a4c4b0(NiLookAtInterpolator* pkDest, CloningProcess& kCloning)
 {
     ((NiObject*)this)->CopyMemberData(pkDest, kCloning);
     unsigned int f = m_uFlags;

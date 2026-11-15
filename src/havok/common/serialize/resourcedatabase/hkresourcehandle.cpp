@@ -208,7 +208,7 @@ struct FUN_00e2ea20_class
     FUN_00e2ea20_class* hkMemoryResourceHandle_ctor(int flag);
 };
 // @fnv 0x00e2ea20
-// src: XBOX_RETAIL_PDB 0x00e2ea20
+// src: XBOX_RETAIL_PDB 0x00e2ea20 (was HAVOK_LIB)
 // pdb: hkMemoryResourceHandle::hkMemoryResourceHandle | hkResourceHandle.obj | retail, object-file gap fill, high
 FUN_00e2ea20_class* FUN_00e2ea20_class::hkMemoryResourceHandle_ctor(int flag)
 {

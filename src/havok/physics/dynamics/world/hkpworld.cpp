@@ -8399,7 +8399,7 @@ static __declspec(noinline) void __cdecl SyncOverlap(PhantomInterface* phantom, 
     }
 }
 void hkpWorldAgentUtil_removeAgentAndItsToiEvents(Agent*);
-void hkAgentNnMachine_UpdateShapeCollectionFilter(Agent*, void*, EntityState*);
+void _hkAgentNnMachine_UpdateShapeCollectionFilter(Agent*, void*, EntityState*);
 void hkpTypedBroadPhaseDispatcher_removeDuplicates(PairArray*, PairArray*);
 struct BroadphaseDispatcher {
     void hkpTypedBroadPhaseDispatcher_addPairs(OverlapPair*, int, CollisionFilterInterface*);
@@ -8489,7 +8489,7 @@ copyAlignedWords<sizeof(OverlapPair)>(&pairs.data[i], &pairs.data[pairs.size]);
     hkArray<CollisionAgentEntry>* agents = collidable->hkpLinkedCollidable_getCollisionEntriesDeterministicUnchecked_00d081e0();
     for (int i = 0; i < agents->m_iElementCount; ++i) {
         CollisionAgentEntry& entry = agents->m_data[i];
-CollisionObject* other; if(!((CollisionFilter*)m_collisionFilter)->filter.enabled(collidable, entry.other).value) goto ResetAgent; other=entry.other; if(!((CollisionDispatcher*)m_collisionDispatcher)->qualityEnabled[quality][other->handle.quality]) goto ResetAgent; if(updateShapeCollectionFilter==1) { EntityState* state; if((*(unsigned char*)&entity->m_motion.m_type)==5) state=((EntityState*)((hkpEntity*)((char*)other + other->ownerOffset))->m_simulationIsland); else state=((EntityState*)entity->m_simulationIsland); hkAgentNnMachine_UpdateShapeCollectionFilter(entry.agent,m_collisionInput,state); } goto nextAgent; ResetAgent: hkpWorldAgentUtil_removeAgentAndItsToiEvents(entry.agent); --i; ((EntityState*)entity->m_simulationIsland)->flags = (((EntityState*)entity->m_simulationIsland)->flags & ~2) | 1; nextAgent:;
+CollisionObject* other; if(!((CollisionFilter*)m_collisionFilter)->filter.enabled(collidable, entry.other).value) goto ResetAgent; other=entry.other; if(!((CollisionDispatcher*)m_collisionDispatcher)->qualityEnabled[quality][other->handle.quality]) goto ResetAgent; if(updateShapeCollectionFilter==1) { EntityState* state; if((*(unsigned char*)&entity->m_motion.m_type)==5) state=((EntityState*)((hkpEntity*)((char*)other + other->ownerOffset))->m_simulationIsland); else state=((EntityState*)entity->m_simulationIsland); _hkAgentNnMachine_UpdateShapeCollectionFilter(entry.agent,m_collisionInput,state); } goto nextAgent; ResetAgent: hkpWorldAgentUtil_removeAgentAndItsToiEvents(entry.agent); --i; ((EntityState*)entity->m_simulationIsland)->flags = (((EntityState*)entity->m_simulationIsland)->flags & ~2) | 1; nextAgent:;
     }
     if (pairs.size > 0) {
         timer("StaddAgts");
@@ -10292,7 +10292,7 @@ struct S96_IslandArray {S96_Island** data; int size; int capacity;};
 struct S96_FilterCheck {virtual void slot0(); virtual S96_BoolResult Check(S96_Collidable*,S96_Collidable*);};
 struct S96_Filter {int unk00,unk04; S96_FilterCheck unk08;};
 struct S96_Operation {unsigned char unk00,unk01,unk02,unk03;};
-void __cdecl hkAgentNnMachine_UpdateShapeCollectionFilter(S96_Constraint*,void*,S96_Island*);
+void __cdecl _hkAgentNnMachine_UpdateShapeCollectionFilter(S96_Constraint*,void*,S96_Island*);
 void __cdecl hkpWorldAgentUtil_removeAgentAndItsToiEvents(S96_Constraint*);
 struct S96_RemovalList {S96_Constraint** data; int size; int capacity; S96_Constraint* local[32]; void clear(){size=0;} int GetLogicalSize() const {return size;} S96_Constraint*& back(){return data[size-1];} void popBack(){--size;}};
 struct S96_WorldShell : hkpWorld {
@@ -10382,7 +10382,7 @@ void S96_WorldShell::hkpWorld_updateCollisionFilterOnWorld(int updateMode,int up
        if(removed.size==(removed.capacity&0x3fffffff)) ResizeAudioStream(holder->unk10,&removed,4);
        removed.data[removed.size++]=current;
        island->unk25=(island->unk25&~2)|1;
-      } else if(updateShapeCollectionFilter==1) hkAgentNnMachine_UpdateShapeCollectionFilter(current,(void*)m_collisionInput,island);
+      } else if(updateShapeCollectionFilter==1) _hkAgentNnMachine_UpdateShapeCollectionFilter(current,(void*)m_collisionInput,island);
      }
     }
     while(removed.GetLogicalSize()) {
@@ -10784,15 +10784,15 @@ struct S00c92040_Obj {
     void* unk78;
     int p7C;
 
-    void hkpWorld_castRay(int input, int output);
+    void hkpWorld_castRay_00c92040(int input, int output);
 };
 
 // @fnv 0x00c92040
-// src: XBOX_RETAIL_PDB 0x00c92040
+// src: HAVOK_LIB 0x00c92040
 // pdb: hkpWorld::castRay | hkpWorld.obj | retail, string-set bridge, high
 // pdb params: input, collector
 // pdb locals: rayCaster, assertBuf, ostr
-void S00c92040_Obj::hkpWorld_castRay(int input, int output)
+void S00c92040_Obj::hkpWorld_castRay_00c92040(int input, int output)
 {
     extern void* DAT_00fdf044;
     extern unsigned long DAT_0126835c;

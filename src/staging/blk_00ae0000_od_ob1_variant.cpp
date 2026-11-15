@@ -29,7 +29,7 @@ struct FUN_00af30a0_Class
     int m_iValueAt90;
     char m_cValueAt94;
     char m_cValueAt95;
-    void* BSSystemUtility_ctor();
+    void* BSSystemUtility_BSSystemUtility();
 };
 struct FUN_00ae8dc0_Class
 {
@@ -101,7 +101,7 @@ struct FUN_00af38d0_Class
     void* vtbl;
     char bVisible;
     void* m_pObjectAt84;
-    void* BSCacheDriveSystemUtility_ctor();
+    void* BSCacheDriveSystemUtility_BSCacheDriveSystemUtility();
 };
 extern int DAT_010a42fc;
 struct FUN_00af39c0_Class
@@ -120,7 +120,7 @@ struct FUN_00af3b20_Class
 {
     void* vtbl;
     int i;
-    void* __thiscall BSSysInfoSystemUtility_ctor();
+    void* __thiscall BSSysInfoSystemUtility_BSSysInfoSystemUtility();
 };
 extern int DAT_010a4328;
 struct FUN_00af3b50_Class
@@ -190,7 +190,7 @@ struct FUN_00af3570_Class
 {
     void* vtbl;
     int a[8];
-    void* __thiscall BSSystemUtilitiesStrings_ctor();
+    void* __thiscall BSSystemUtilitiesStrings_BSSystemUtilitiesStrings();
 };
 void __cdecl _sprintf_s(char* dst, unsigned int size, const char* fmt, ...);
 struct FUN_00afd860_Class
@@ -248,7 +248,7 @@ struct FUN_00afd8b0_Class
     unsigned int uiHash;
     unsigned int uiCRC;
     unsigned short m_usPassCountLocal;
-    void* __thiscall BSArchiveHeader_ctor();
+    void* __thiscall BSArchiveHeader_BSArchiveHeader();
 };
 extern BSAudio* DAT_011f6d98;
 struct FUN_00af1ba0_Class
@@ -283,7 +283,7 @@ struct FUN_00af2ed0_Class
     int i2;
     char pad2[0x14];
     int i3;
-    FUN_00af2ed0_Class* BSSaveDataSystemUtility_ctor();
+    FUN_00af2ed0_Class* BSSaveDataSystemUtility_BSSaveDataSystemUtility();
 };
 extern int DAT_010a42ec;
 struct FUN_00af3900_Class

@@ -1892,8 +1892,8 @@ struct EquipEntry
     EquipForm* form;
     EquipEntry(EquipForm*, int);
     ~EquipEntry();
-    int GetExtraTotalCount(bool);
-    int GetExtraTotalDefaultCount();
+    int ItemChange_GetExtraTotalCount(bool);
+    int ItemChange_GetExtraTotalDefaultCount();
     bool ItemChange_GetWorn(bool);
     int FUN_00726070();
     EquipForm* FUN_0044ddc0();
@@ -3076,7 +3076,7 @@ struct Change64
     int FUN_00726070();
     ExtraNode64* Modelloader_GetReferencedThis();
     int CountAndPruneEntries();
-    int GetExtraTotalCount(int);
+    int ItemChange_GetExtraTotalCount(int);
     void FUN_00403550(Form64*);
     void* FUN_004bde40();
     int FindFirstNonNegativeValue();
@@ -3361,7 +3361,7 @@ struct Inventory
     void InventoryChanges_DuplicateAllItems(void*, void*);
 };
 // @fnv 0x004cd9c0
-// src: XBOX_RETAIL_PDB 0x004cd9c0
+// src: XBOX_RETAIL_PDB 0x004cd9c0 (was COMMUNITY)
 // pdb: InventoryChanges::DuplicateAllItems | InventoryChanges.obj | retail, call graph, high
 // pdb params: apRef, apDupContainer
 // pdb locals: pInventoryItem, pleveled, pObj, pNewItem, pdupchange, pListInv, pList, pitem, ioriginalcount, iorigcount, iamount, pNewForm, icount, plistextra, pscriptExtra, pextra
@@ -3727,7 +3727,7 @@ struct WeightEntry : InventoryStackRecord
     int FUN_00726070();
     WeightExtraNode* Modelloader_GetReferencedThis();
     WeightWeapon* FUN_0044ddc0();
-    int GetExtraTotalCount(bool);
+    int ItemChange_GetExtraTotalCount(bool);
     bool ItemChange_GetWorn(bool);
 };
 struct WeightChangeNode
@@ -3964,7 +3964,7 @@ struct Item
     bool FUN_004bcb70();
     int ItemChange_NumberLeveledExtra();
     bool ItemChange_GetWorn(int);
-    int GetExtraTotalCount(int);
+    int ItemChange_GetExtraTotalCount(int);
     int ItemChange_GetTypeforMenu();
 };
 struct BaseEntry
@@ -4026,13 +4026,13 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* apCopy, void* apRef
                 delete transferSlot3;
                 transferSlot3 = 0;
             }
-            else if (entrySlot7 && (!current || (current && !current->GetExtraTotalCount(0))))
+            else if (entrySlot7 && (!current || (current && !current->ItemChange_GetExtraTotalCount(0))))
             {
                 int magnitude = baseCountSlot38;
                 if (magnitude < 0)
                     magnitude *= -1;
                 if (current)
-                    transferSlot3->count = magnitude + current->count - current->GetExtraTotalCount(0);
+                    transferSlot3->count = magnitude + current->count - current->ItemChange_GetExtraTotalCount(0);
                 else
                     transferSlot3->count = magnitude;
                 transferSlot3->FUN_00403550(entrySlot7->form);
@@ -4068,7 +4068,7 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* apCopy, void* apRef
             {
                 int extraCountSlot33 = 0;
                 if (current->list)
-                    extraCountSlot33 = current->GetExtraTotalCount(0);
+                    extraCountSlot33 = current->ItemChange_GetExtraTotalCount(0);
                 ExtraNode* extrasSlot23 = current->list;
                 while (extrasSlot23 && *extrasSlot23->FUN_006815c0() && !transferSlot3)
                 {
@@ -4083,12 +4083,12 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* apCopy, void* apRef
                         apCopy->FUN_004c3380(transferSlot3, 1);
                     extrasSlot23 = extrasSlot23->FUN_00726070();
                 }
-                if (current->GetExtraTotalCount(0) < baseCountSlot38 + current->count)
+                if (current->ItemChange_GetExtraTotalCount(0) < baseCountSlot38 + current->count)
                 {
                     if (!transferSlot3->list)
                         transferSlot3->list = new ExtraNode;
                     if (current)
-                        transferSlot3->count = baseCountSlot38 + current->count - current->GetExtraTotalCount(0);
+                        transferSlot3->count = baseCountSlot38 + current->count - current->ItemChange_GetExtraTotalCount(0);
                     else
                         transferSlot3->count = baseCountSlot38;
                     transferSlot3->FUN_00403550(entrySlot7->form);
@@ -4129,7 +4129,7 @@ void Inventory::InventoryChanges_CreateCopyofList(Inventory* apCopy, void* apRef
         Item* changed = *nodeSlot1->FUN_006815c0();
         if (changed && changed->FUN_00726070() > 0 && (!FUN_004bffb0() || !FUN_004bffb0()->FUN_00481eb0(changed->form)))
         {
-            if (changed->GetExtraTotalCount(0) || changed->FUN_004bde40())
+            if (changed->ItemChange_GetExtraTotalCount(0) || changed->FUN_004bde40())
             {
                 ExtraNode* walkSlot1 = changed->list;
                 int countSlot56 = 0;
@@ -6882,7 +6882,7 @@ struct XExtra17
 struct XChange17
 {
     int _ref_00726070();
-    int GetExtraTotalCount(bool);
+    int ItemChange_GetExtraTotalCount(bool);
     void* Modelloader_GetReferencedThis();
     ~XChange17();
 };

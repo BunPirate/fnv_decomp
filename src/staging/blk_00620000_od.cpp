@@ -738,13 +738,13 @@ struct FUN_0062a480_Class
     int* m_vtbl;
     int m_auiShapeKeys;
     void __thiscall FUN_0061f4d0(int);
-    FUN_0062a480_Class* __thiscall bhkArrowTargetListener_ctor();
+    FUN_0062a480_Class* __thiscall bhkArrowTargetListener_bhkArrowTargetListener();
 };
 // Calls FUN_0061f4d0(0), sets m_vtbl to &DAT_0104e254, and returns this.
 // @fnv 0x0062a480
-// src: XBOX_DEBUG_PDB 0x0062a480
+// src: EXE 0x0062a480
 // pdb: bhkArrowTargetListener::bhkArrowTargetListener | TESArrowTargetListener.obj | debug, upstream name already matches, high
-FUN_0062a480_Class* __thiscall FUN_0062a480_Class::bhkArrowTargetListener_ctor()
+FUN_0062a480_Class* __thiscall FUN_0062a480_Class::bhkArrowTargetListener_bhkArrowTargetListener()
 {
     FUN_0061f4d0(0);
     m_vtbl = &DAT_0104e254;
@@ -1020,15 +1020,15 @@ FUN_00626630_Class* __thiscall FUN_00626630_Class::InitializeFields_00626630()
 struct Holder
 {
     void FUN_004a3c90(Holder* p);
-    Holder* hkAabb_ctor(Holder* a, Holder* b);
+    Holder* hkAabb_hkAabb(Holder* a, Holder* b);
 };
 
 // Calls FUN_004a3c90 on a for this and on b for the object at this+0x10, then returns this.
 // @fnv 0x00628950
-// src: XBOX_DEBUG_PDB 0x00628950
+// src: XBOX_PDB 0x00628950
 // pdb: hkAabb::hkAabb | LoadedAreaBound.obj | debug, call graph (shared callers), high
 // pdb params: min, max
-Holder* Holder::hkAabb_ctor(Holder* apFirst, Holder* apSecond)
+Holder* Holder::hkAabb_hkAabb(Holder* apFirst, Holder* apSecond)
 {
     this->FUN_004a3c90(apFirst);
     (reinterpret_cast<Holder*>(reinterpret_cast<char*>(this) + 0x10))->FUN_004a3c90(apSecond);
@@ -1125,7 +1125,7 @@ struct FUN_006206d0_Class : public FUN_006205e0_shell
     void __thiscall BGSZoneTargetListener_RemoveTargetFromZone(AnimIdle* apZone, int apTarget);
 };
 // @fnv 0x006206d0
-// src: XBOX_RETAIL_PDB 0x006206d0
+// src: XBOX_RETAIL_PDB 0x006206d0 (was COMMUNITY)
 // pdb: BGSZoneTargetListener::RemoveTargetFromZone | BGSZoneTargetListener.obj | retail, call graph (shared callers), high
 // pdb params: apZone, apTarget
 // pdb locals: pZone
@@ -2176,13 +2176,13 @@ struct S632
     M16815 m_kPointB;
     int m_iThirdValue;
     int m_iFourthElementInteger;
-    S632* __thiscall hkpShapeRayCastInput_ctor();
+    S632* __thiscall hkpShapeRayCastInput_hkpShapeRayCastInput();
 };
 // Calls FUN_006815c0 on both embedded members, zeroes the two int fields, and returns this.
 // @fnv 0x00632ca0
-// src: XBOX_DEBUG_PDB 0x00632ca0
+// src: COMMUNITY 0x00632ca0
 // pdb: hkpShapeRayCastInput::hkpShapeRayCastInput | ViewCaster.obj | debug, upstream name already matches, high
-S632* __thiscall S632::hkpShapeRayCastInput_ctor()
+S632* __thiscall S632::hkpShapeRayCastInput_hkpShapeRayCastInput()
 {
     m_kPointA.FUN_006815c0();
     m_kPointB.FUN_006815c0();
@@ -2699,14 +2699,14 @@ struct FUN_0056df00_class
 
 struct FUN_00621930_Class
 {
-    void* __thiscall hkpCollisionInput_ctor(void);
+    void* __thiscall hkpCollisionInput_hkpCollisionInput(void);
 };
 
 // Calls GetItem on six BSSimpleList members at offsets 0x0-0x14, invokes FUN_00621990 on the object at 0x20, and returns this.
 // @fnv 0x00621930
-// src: XBOX_DEBUG_PDB 0x00621930
+// src: XBOX_PDB 0x00621930
 // pdb: hkpCollisionInput::hkpCollisionInput | CameraCaster.obj | debug, upstream name already matches, high
-void* FUN_00621930_Class::hkpCollisionInput_ctor(void)
+void* FUN_00621930_Class::hkpCollisionInput_hkpCollisionInput(void)
 {
     ((BSSimpleList<int*>*)this)->GetItem();
     ((BSSimpleList<int*>*)((char*)this + 4))->GetItem();
@@ -2746,7 +2746,7 @@ struct FUN_0062a460_Class : FUN_0062a480_Class
 // pdb: TESArrowTargetListener::TESArrowTargetListener | TESArrowTargetListener.obj | debug, call graph, high
 FUN_0062a460_Class::FUN_0062a460_Class()
 {
-    FUN_0062a480_Class::bhkArrowTargetListener_ctor();
+    FUN_0062a480_Class::bhkArrowTargetListener_bhkArrowTargetListener();
     m_vtbl = (int*)&DAT_0104e228;
 }
 
@@ -7130,7 +7130,7 @@ struct BoundaryPointer
 struct BoundaryFilter
 {
     unsigned int value;
-    BoundaryFilter* CFilter_ctor(int, unsigned int, int);
+    BoundaryFilter* CFilter_CFilter(int, unsigned int, int);
     void* Modelloader_GetReferencedThis();
 };
 struct BoundaryWorld
@@ -7217,7 +7217,7 @@ void BoundaryOwner::LoadedAreaBound_Create(TESObjectCELL* apCell, const Boundary
         box.min.SetValue(&lowerCorner);
         wallDescriptor.box.AssignFields_006281a0(&box);
         BoundaryFilter filter;
-        wallDescriptor.shape = filter.CFilter_ctor(0, bhkCollisionFilter_GetNewSystemGroup(), 0)->Modelloader_GetReferencedThis();
+        wallDescriptor.shape = filter.CFilter_CFilter(0, bhkCollisionFilter_GetNewSystemGroup(), 0)->Modelloader_GetReferencedThis();
         walls[i].FUN_0066b0d0(new FUN_0056e550(&wallDescriptor));
         world->bhkWorld_Add(walls[i].Modelloader_GetReferencedThis());
     }
@@ -7483,7 +7483,7 @@ struct Body628
     BodyCollection628* GetReferenceFlags();
     void bhkRigidBody_SetNiPosition(const NiPoint3*);
     void bhkRigidBody_SetLinearVelocity_00561690(const Vec628*);
-    void bhkRigidBody_SetAngularVelocity(const Vec628*);
+    void bhkRigidBody_SetAngularVelocity_005617c0(const Vec628*);
     Smart628* FUN_00931ed0(Smart628*);
     void bhkRigidBody_GetAabbLocal(Bounds628*);
 };
@@ -7559,7 +7559,7 @@ void Mover628::MoveToDestination(Body628* body, Group628* moved)
                 Vec628 velocity;
                 velocity.hkVector4_hkVector4(0.0f, 0.0f, 0.0f, 0.0f);
                 member->bhkRigidBody_SetLinearVelocity_00561690(&rotation);
-                member->bhkRigidBody_SetAngularVelocity(&velocity);
+                member->bhkRigidBody_SetAngularVelocity_005617c0(&velocity);
             }
             if (reference && reference->isActor())
             {

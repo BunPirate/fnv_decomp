@@ -624,7 +624,7 @@ struct Base2_d632c0
 };
 struct Obj_d632c0 : Base1_d632c0, Base2_d632c0
 {
-    Obj_d632c0* hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts);
+    Obj_d632c0* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
 Base2_d632c0* hkpWorldMemoryViewer_create(int contexts);
 struct hkContainerD633
@@ -1595,7 +1595,7 @@ __forceinline hkQuadReal& hkVector4::getQuad()
 }
 
 
-__forceinline void hkVector4::setAll(hkReal a)
+__forceinline void hkVector4::SetAllComponents(hkReal a)
 {
     m_vComponents = _mm_set_ps1(a);
 }
@@ -1705,13 +1705,13 @@ __forceinline CompareBits hkVector4::compareLessThanEqual4(const hkVector4& v) c
     return c;
 }
 
-__forceinline int hkVector4::equals3(const hkVector4& v, hkReal epsilon) const
+__forceinline int hkVector4::equals4(const hkVector4& v, hkReal epsilon) const
 {
     hkVector4 kDiff;
     kDiff.setSub4(*this, v);
     kDiff.setAbs4(kDiff);
     hkVector4 kTol;
-    kTol.setAll(epsilon);
+    kTol.SetAllComponents(epsilon);
     return kDiff.compareLessThanEqual4(kTol).allAreSet(CompareBits::ALL);
 }
 
@@ -2070,7 +2070,7 @@ __declspec(noinline) void __cdecl hkaKeyFrameHierarchyUtility_applyKeyFrame(hkRe
                 output[i].m_fOutputValue = stress;
             linearNew.add4(snapVelocity);
         }
-        if (!rigidBody->getLinearVelocity().equals3(linearNew, 0.001f))
+        if (!rigidBody->getLinearVelocity().equals4(linearNew, 0.001f))
             rigidBody->OnTrigger(linearNew);
 
         // Angular velocity
@@ -2115,7 +2115,7 @@ __declspec(noinline) void __cdecl hkaKeyFrameHierarchyUtility_applyKeyFrame(hkRe
                 output[i].m_fOutputValue += stress;
             angularNew.add4(snapVelocity);
         }
-        if (!rigidBody->getAngularVelocity().equals3(angularNew, 0.001f))
+        if (!rigidBody->getAngularVelocity().equals4(angularNew, 0.001f))
             rigidBody->hkpRigidBody_setAngularVelocity(angularNew);
     }
     matrixCache.destroy();

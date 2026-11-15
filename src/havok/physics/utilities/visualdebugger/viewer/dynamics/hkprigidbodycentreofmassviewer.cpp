@@ -158,7 +158,7 @@ class D6A140Object : public D6A140ReferencedObject, public D6A140Interface
 
 // Allocates a D6A140Object with the given info and returns it as a D6A140Interface pointer.
 // @fnv 0x00d6a140
-// src: XBOX_RETAIL_PDB 0x00d6a140
+// src: XBOX_RETAIL_PDB 0x00d6a140 (was COMMUNITY)
 // pdb: hkpRigidBodyCentreOfMassViewer::create | hkpRigidBodyCentreOfMassViewer.obj | retail, object-file gap fill, high
 // pdb params: contexts
 D6A140Interface* __cdecl hkpRigidBodyCentreOfMassViewer_create(const void* contexts)

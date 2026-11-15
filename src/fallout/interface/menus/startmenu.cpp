@@ -1015,7 +1015,7 @@ struct SaveListPopulation : StartMenu
     void StartMenu_PopulateSaveLoadListBox();
 };
 // @fnv 0x007d4b40
-// src: XBOX_DEBUG_PDB 0x007d4b40
+// src: XBOX_DEBUG_PDB 0x007d4b40 (was COMMUNITY)
 // pdb: StartMenu::PopulateSaveLoadListBox | StartMenu.obj | debug, call graph, high
 // pdb locals: pnode
 void SaveListPopulation::StartMenu_PopulateSaveLoadListBox()
@@ -2958,7 +2958,7 @@ struct BSContentPackage
 };
 
 // @fnv 0x00b008d0
-// src: XBOX_DEBUG_PDB 0x00b008d0
+// src: XBOX_DEBUG_PDB 0x00b008d0 (was XBOX_PDB)
 // pdb: BSContentPackage::DisplayName | BSContentPackage_Xenon.obj | debug, upstream name already matches, high
 void* BSContentPackage::DisplayName()
 {
@@ -3013,7 +3013,7 @@ struct IdleTimer
 };
 
 // @fnv 0x007d5120
-// src: XBOX_DEBUG_PDB 0x007d5120
+// src: XBOX_DEBUG_PDB 0x007d5120 (was XBOX_PDB)
 // pdb: StartMenu::IdleTimer::Start | StartMenu.obj | debug, upstream name already matches, high
 void __thiscall IdleTimer::Start()
 {
@@ -5128,7 +5128,7 @@ void __cdecl SMUnk0078d280(bool abFlag);
 void __cdecl SMUnk007cc6e0();
 Menu* __cdecl SMGetMenuByType(int aiType);
 float __cdecl SMGetMenuDepth();
-void __cdecl AutoTileLock_ctor();
+void __cdecl SMBeginLoad();
 void __cdecl SMEndLoad();
 int __cdecl SMGetStartMenuID();
 
@@ -5180,7 +5180,7 @@ bool __cdecl InitStartMenu(bool abInGame, bool abForceReload)
         delete pOldMenu3;
 
     float fDepth2 = SMGetMenuDepth();
-    AutoTileLock_ctor();
+    SMBeginLoad();
     Tile* pTileA =
         SMInterfaceManager::GetSingleton()->GetMenuRoot()->ReadFile("Data\\Menus\\Options\\start_menu.xml");
     Menu* pMenu2 = pTileA->GetMenu();

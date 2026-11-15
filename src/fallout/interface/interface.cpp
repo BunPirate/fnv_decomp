@@ -1252,7 +1252,7 @@ void __fastcall ResetWidget(InterfaceManager*);
 
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, calls ResetWidget with that InterfaceManager.
 // @fnv 0x007059d0
-// src: XBOX_DEBUG_PDB 0x007059d0
+// src: XBOX_DEBUG_PDB 0x007059d0 (was COMMUNITY)
 // pdb: Interface::ResetPipboy | Interface.obj | debug, call graph, high
 void Interface_ResetPipboy()
 {
@@ -2735,7 +2735,7 @@ void LevelUpMenu_Create();
 
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, calls FUN_00784c80.
 // @fnv 0x00706270
-// src: XBOX_DEBUG_PDB 0x00706270
+// src: XBOX_DEBUG_PDB 0x00706270 (was COMMUNITY)
 // pdb: Interface::CreateLevelUpMenu | Interface.obj | debug, call graph, high
 void Interface_CreateLevelUpMenu()
 {

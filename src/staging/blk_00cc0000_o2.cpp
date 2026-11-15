@@ -990,12 +990,12 @@ struct FUN_00cca950_class {
     unsigned int m_uiValue1;
     unsigned int m_uiValue2;
     unsigned int m_uiExtra2;
-    FUN_00cca950_class* bhkTriangleShape_ctor();
+    FUN_00cca950_class* bhkTriangleShape_bhkTriangleShape();
 };
 // @fnv 0x00cca950
-// src: XBOX_RETAIL_PDB 0x00cca950
+// src: EXE 0x00cca950
 // pdb: bhkTriangleShape::bhkTriangleShape | bhkTriangleShape.obj | retail, upstream name already matches, high
-FUN_00cca950_class* FUN_00cca950_class::bhkTriangleShape_ctor()
+FUN_00cca950_class* FUN_00cca950_class::bhkTriangleShape_bhkTriangleShape()
 {
     ((BhkReferenceState*)this)->Initialize();
     m_uiValue2 = 0;
@@ -1134,13 +1134,13 @@ struct BhkReferenceState {
     int m_iUnk3;
 };
 struct FUN_00ccf7c0_class : BhkReferenceState {
-    FUN_00ccf7c0_class* bhkConvexListShape_ctor();
+    FUN_00ccf7c0_class* bhkConvexListShape_bhkConvexListShape();
 };
 // Calls Initialize, zeroes m_iUnk2 and m_iUnk3, sets m_pVtable through four vtable assignments and increments four counters, then returns this.
 // @fnv 0x00ccf7c0
-// src: XBOX_RETAIL_PDB 0x00ccf7c0
+// src: EXE 0x00ccf7c0
 // pdb: bhkConvexListShape::bhkConvexListShape | bhkConvexListShape.obj | retail, upstream name already matches, high
-FUN_00ccf7c0_class* FUN_00ccf7c0_class::bhkConvexListShape_ctor()
+FUN_00ccf7c0_class* FUN_00ccf7c0_class::bhkConvexListShape_bhkConvexListShape()
 {
     Initialize();
     m_iUnk2 = 0;
@@ -5242,14 +5242,14 @@ public:
     float m_20;
     float m_24;
 
-    FUN_00cc4500_cls* hkAngularDashpotActionCinfo_ctor();
+    FUN_00cc4500_cls* hkAngularDashpotActionCinfo_hkAngularDashpotActionCinfo();
 };
 
 // Zeroes the first fields, then stores the global float constants into m_20, m_24 and m_10 through m_1c, and returns this.
 // @fnv 0x00cc4500
-// src: XBOX_DEBUG_PDB 0x00cc4500
+// src: COMMUNITY 0x00cc4500
 // pdb: hkAngularDashpotActionCinfo::hkAngularDashpotActionCinfo | bhkAngularDashpotAction.obj | debug, upstream name already matches, high
-FUN_00cc4500_cls* FUN_00cc4500_cls::hkAngularDashpotActionCinfo_ctor() {
+FUN_00cc4500_cls* FUN_00cc4500_cls::hkAngularDashpotActionCinfo_hkAngularDashpotActionCinfo() {
     float zero = 0.0f;
     m_00 = 0;
     m_04 = 0;
@@ -16535,7 +16535,7 @@ struct FiveIntegerLoadRecord {
     int unk10;
     FiveIntegerLoadRecord();
     ~FiveIntegerLoadRecord();
-    void bhkExtendedMeshSubPart_LoadBinary(LoadContext* arStream);
+    void Load(LoadContext* arStream);
     static void* operator new[](unsigned int size) { return g_memoryHeap.Allocate(size); }
 };
 
@@ -16558,7 +16558,7 @@ void FUN_00ccc7e0_class::LoadEntries(LoadContext* ctx)
     ctx->m_pBinaryStream->ReadUInt(&m_uiCount);
     m_pEntries = new FiveIntegerLoadRecord[m_uiCount];
     for (unsigned int i = 0; i < m_uiCount; i++)
-        m_pEntries[i].bhkExtendedMeshSubPart_LoadBinary(ctx);
+        m_pEntries[i].Load(ctx);
 }
 }  // namespace fnv_00ccc7e0
 
@@ -17554,7 +17554,7 @@ C200125Object* C200125Owner::bhkMotorAction_CreateClone(unsigned int arCloneData
 
 struct CC4560Obj
 {
-    void* __thiscall hkAngularDashpotActionCinfo_ctor();
+    void* __thiscall hkAngularDashpotActionCinfo_hkAngularDashpotActionCinfo();
 };
 struct CC4560Owner
 {
@@ -17578,7 +17578,7 @@ void* __thiscall CC4560Owner::bhkAngularDashpotAction_CreateCinfo(bool* arCreate
     if (bEmpty)
     {
         unsigned char* pMem = DAT_011f6238.Alloc(0x30);
-        m_q = pMem ? ((CC4560Obj*)pMem)->hkAngularDashpotActionCinfo_ctor() : 0;
+        m_q = pMem ? ((CC4560Obj*)pMem)->hkAngularDashpotActionCinfo_hkAngularDashpotActionCinfo() : 0;
         if (m_p != 0)
             bhkAngularDashpotAction_CopyCinfo(m_q);
     }
@@ -22187,14 +22187,14 @@ public:
     CdfSubObject m_12b; // +0x12b
     float m_12c; // +0x12c
 
-    CdfObject* hkpRagdollConstraintData_Atoms_ctor();
+    CdfObject* hkpRagdollConstraintData_Atoms_Atoms();
 };
 
 // Sets fixed initial values in several fields, initializes m_12b via FUN_00ca9360 with 1.0f, and returns this.
 // @fnv 0x00cdf460
-// src: XBOX_RETAIL_PDB 0x00cdf460
+// src: HAVOK_LIB 0x00cdf460
 // pdb: hkpRagdollConstraintData::Atoms::Atoms | hkpRagdollConstraintData.obj | retail, upstream name already matches, high
-CdfObject* CdfObject::hkpRagdollConstraintData_Atoms_ctor()
+CdfObject* CdfObject::hkpRagdollConstraintData_Atoms_Atoms()
 {
     float one = 1.0f;
     m_00 = 2;
@@ -25029,14 +25029,14 @@ struct S00cd8920_Obj {
     float unk70;
     bool unk74;
 
-    S00cd8920_Obj* hkaFootPlacementIkSolver_Setup_ctor();
+    S00cd8920_Obj* hkaFootPlacementIkSolver_Setup_Setup();
 };
 
 // Initializes the object: null pointer, shorts set to -1, four vectors copied from one global, floats set to fixed defaults, flag cleared; returns this.
 // @fnv 0x00cd8920
-// src: XBOX_RETAIL_PDB 0x00cd8920
+// src: HAVOK_LIB 0x00cd8920
 // pdb: hkaFootPlacementIkSolver::Setup::Setup | hkaFootPlacementIkSolver.obj | retail, upstream name already matches, high
-S00cd8920_Obj* S00cd8920_Obj::hkaFootPlacementIkSolver_Setup_ctor()
+S00cd8920_Obj* S00cd8920_Obj::hkaFootPlacementIkSolver_Setup_Setup()
 {
     unk00 = 0;
     unk04a = -1;

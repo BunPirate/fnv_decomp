@@ -50,7 +50,7 @@ void FUN_0092c890_class::BSCloneReserverPtr_Free()
 
 int __fastcall bhkCharacterController_GetState(char*);
 // @fnv 0x009306b0
-// src: XBOX_DEBUG_PDB 0x009306b0
+// src: XBOX_DEBUG_PDB 0x009306b0 (was COMMUNITY)
 // pdb: bhkCharacterController::QIsSwimming | MobileObject.obj | debug, call graph (shared callers), high
 bool __fastcall bhkCharacterController_QIsSwimming(bhkCharacterController* self)
 {

@@ -261,11 +261,11 @@ extern "C" bool __cdecl TESForm_QEndianSwapOnSave();
 extern "C" void __cdecl AppendChunk(int id, FormValueEntry* data, unsigned int size);
 
 // @fnv 0x006802f0
-// src: XBOX_RETAIL_PDB 0x006802f0
+// src: XBOX_PDB 0x006802f0
 // pdb: PackageTarget::Save | PackageTarget.obj | retail, upstream name already matches, high
 // pdb params: aeChunk
 // pdb locals: ptfile
-void PackageTargetRecord::Save(int aeChunk)
+void PackageTargetRecord::PackageTarget_Save(int aeChunk)
 {
     FormValueEntry record;
     memset(&record, 0, 16);

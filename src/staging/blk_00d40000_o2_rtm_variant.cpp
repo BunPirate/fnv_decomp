@@ -262,7 +262,7 @@ struct KeyTemp
     unsigned int m_00;
     unsigned int m_04;
     unsigned int m_08;
-    KeyTemp* hkIstream_ctor(void* mem, void* memSize);
+    KeyTemp* Init(void* mem, void* memSize);
     void Dispose();
 };
 struct KeyTempRef
@@ -400,7 +400,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00d4b2c0();
 class FUN_00d4b2d0_cls
 {
   public:
-    void hkpExtendedMeshShape_ShapesSubpart_ctor(int flag);
+    void hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int flag);
 };
 void __cdecl hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart_ProcessState_00d4b2d0(FUN_00d4b2d0_cls* pObject, int aiValue);
 extern int hkpExtendedMeshShapeShapesSubpartClass;
@@ -1894,7 +1894,7 @@ class FUN_00d21ce0_cls
 class FUN_00dd0420_Class
 {
   public:
-    FUN_00dd0420_Class* hkpGenericConstraintDataScheme_ctor(int f);
+    FUN_00dd0420_Class* hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int f);
 
     int unk00;
 };

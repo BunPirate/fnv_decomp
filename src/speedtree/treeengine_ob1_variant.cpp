@@ -355,11 +355,11 @@ struct CTreeFileAccessImpl : ElementIterator
 };
 
 // @fnv 0x00b2b550
-// src: XBOX_RETAIL_PDB 0x00b2b550
+// src: XBOX_PDB 0x00b2b550
 // pdb: CTreeEngine::Parse | TreeEngine.obj | retail, string-set bridge, high
 // pdb params: cFile
 // pdb locals: nToken, bSuccess, strHeader
-bool CTreeEngine::Parse(CTreeFileAccessImpl* cFile)
+bool CTreeEngine::Parse_00b2b550(CTreeFileAccessImpl* cFile)
 {
     bool bSuccess = false;
 

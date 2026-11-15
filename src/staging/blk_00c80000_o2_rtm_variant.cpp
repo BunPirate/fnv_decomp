@@ -12280,7 +12280,7 @@ struct BodyLocal
     virtual void GetRotation(QuatLocal&);
 
     void bhkRigidBody_SetLinearVelocity_00561690(const VecLocal&);
-    void bhkRigidBody_SetAngularVelocity(const VecLocal&);
+    void bhkRigidBody_SetAngularVelocity_005617c0(const VecLocal&);
     void bhkRigidBody_ApplyKeyframe(const VecLocal&, const QuatLocal&, float, float);
 };
 struct TargetLocal
@@ -12427,7 +12427,7 @@ void BlendLocal::bhkBlendCollisionObject_hktoNiTransform()
         else if (rigid)
         {
             rigid->bhkRigidBody_SetLinearVelocity_00561690(DAT_01267e30);
-            rigid->bhkRigidBody_SetAngularVelocity(DAT_01267e30);
+            rigid->bhkRigidBody_SetAngularVelocity_005617c0(DAT_01267e30);
         }
         DAT_01267b80.BSSpinLock_Lock(0);
         bhkCollisionObject_SetMotionType(desiredMotion, rigid, false);

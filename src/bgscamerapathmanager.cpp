@@ -78,11 +78,11 @@ struct FUN_0058b510_shell
 bool __fastcall IsTESFileFlag80Set(TESFile* file);
 bool __fastcall _ref_008256d0(const char* s);
 // @fnv 0x0058bb50
-// src: XBOX_RETAIL_PDB 0x0058bb50
+// src: COMMUNITY 0x0058bb50
 // pdb: BGSCameraPathManager::GetCameraPathToPlay | BGSCameraPathManager.obj | retail, upstream name already matches, high
 // pdb params: apActionRef, apTargetRef
 // pdb locals: pretpath, icount, i, ppath
-TESFile* CameraPathManager::GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef)
+TESFile* CameraPathManager::BGSCameraPathManager_GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef)
 {
     TESFile* pFile = 0;
     if (apActionRef)

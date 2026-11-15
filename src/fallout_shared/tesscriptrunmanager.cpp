@@ -546,7 +546,7 @@ extern bool __fastcall IsScriptRunnerActive(ScriptRunner* runner);
 
 // Creates a ScriptRunner if needed, then calls RunScript on either it or a temporary runner.
 // @fnv 0x005e2730
-// src: XBOX_RETAIL_PDB 0x005e2730
+// src: XBOX_RETAIL_PDB 0x005e2730 (was XBOX_PDB)
 // pdb: ScriptRunManager::InitActionList | TESScriptRunManager.obj | retail, upstream name already matches, high
 // pdb params: apScript, apOwnerObject, apOwnerVars
 // pdb locals: pTempScriptRunner

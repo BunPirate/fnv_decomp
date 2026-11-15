@@ -3848,7 +3848,7 @@ struct HackAnim
 };
 // Looks up the sequence for asGroup in the map and returns the anim group from its sequence, or null if not found.
 // @fnv 0x00496500
-// src: XBOX_RETAIL_PDB 0x00496500
+// src: XBOX_RETAIL_PDB 0x00496500 (was COMMUNITY)
 // pdb: Animation::GetTESAnimGroup | Animation.obj | retail, call graph, high
 // pdb params: asGroup
 // pdb locals: panimSeq
@@ -4159,7 +4159,7 @@ struct Flt
 };
 struct FUN_004efb10_shell
 {
-    unsigned short GetSaveSize();
+    unsigned short GetSaveSize_004efb10();
 };
 struct FUN_00497100_shell
 {
@@ -4179,7 +4179,7 @@ unsigned short FUN_00497100_shell::AnimIdle_GetSaveSize()
     v += 1;
     if ((unsigned int)*(Flt*)((char*)this + 0x18))
         v += (unsigned short)(unsigned short)((FUN_004efb10_shell*)((unsigned int)*(Flt*)((char*)this + 0x18)))
-                 ->GetSaveSize() +
+                 ->GetSaveSize_004efb10() +
              1;
     return v;
 }
@@ -7809,7 +7809,7 @@ void FUN_004994f0_shell::Animation_BlendOut(int aeSection, bool abIronSightsTogg
 
 struct SequenceSize : BSAnimGroupSequence
 {
-    unsigned short GetSaveSize();
+    unsigned short GetSaveSize_004efb10();
 };
 struct SaveVersion : ActiveManager
 {
@@ -7921,7 +7921,7 @@ unsigned short FakeAnim::Animation_GetSaveSize(void* apRef)
             p += 4;
             p += 1;
             if (((Animation*)this)->pCurrentSequence[h])
-                p += ((SequenceSize*)((Animation*)this)->pCurrentSequence[h])->GetSaveSize();
+                p += ((SequenceSize*)((Animation*)this)->pCurrentSequence[h])->GetSaveSize_004efb10();
         }
     }
     Actor* a = 0;
@@ -7952,7 +7952,7 @@ unsigned short FakeAnim::Animation_GetSaveSize(void* apRef)
                         SequenceSize* sequence = controller->NiControllerManager_GetSequenceByName(get_g_SpecialIdle_Cast());
                         if (sequence)
                         {
-                            p += sequence->GetSaveSize();
+                            p += sequence->GetSaveSize_004efb10();
                             p += 4;
                         }
                     }
@@ -9941,7 +9941,7 @@ void AnimIdle_SaveAnimIdle(void* apActor, SavedAnim* apAnimIdle, int apAnimation
 
 // May free an idle, add a model, obtain a sequence, and pass it to an idle method.
 // @fnv 0x00498290
-// src: XBOX_RETAIL_PDB 0x00498290
+// src: XBOX_RETAIL_PDB 0x00498290 (was COMMUNITY)
 // pdb: Animation::SpecialIdlePlay | Animation.obj | retail, call graph (shared callers), high
 // pdb params: apActor
 bool Animation::SpecialIdlePlay()

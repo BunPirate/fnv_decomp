@@ -5513,13 +5513,13 @@ struct T_008fdb90;
 void* __fastcall PathingAvoidNode_PathingAvoidNode(T_008fdb90*);
 struct T_008fdb90
 {
-    void* AvoidAreaStruct_ctor();
+    void* AvoidAreaStruct_AvoidAreaStruct();
 };
 // Calls FUN_00692710 on this, sets fields at offsets 0x24-0x30 to max float, 0, 0.0 and 0, then returns this.
 // @fnv 0x008fdb90
-// src: XBOX_DEBUG_PDB 0x008fdb90
+// src: XBOX_PDB 0x008fdb90
 // pdb: AvoidAreaStruct::AvoidAreaStruct | HighProcess.obj | debug, upstream name already matches, high
-void* T_008fdb90::AvoidAreaStruct_ctor()
+void* T_008fdb90::AvoidAreaStruct_AvoidAreaStruct()
 {
     PathingAvoidNode_PathingAvoidNode(this);
     *(float*)((char*)this + 0x24) = 3.4028234663852886e+38F;
@@ -5804,7 +5804,7 @@ struct This00902640 : Base00902640<51>
 };
 // Calls Target with the given arguments, then invokes ClearField0C and ResetValue on b.
 // @fnv 0x00902640
-// src: XBOX_DEBUG_PDB 0x00902640
+// src: XBOX_DEBUG_PDB 0x00902640 (was COMMUNITY)
 // pdb: HighProcess::ProcessGuardInit | HighProcess.obj | debug, call graph (shared callers), high
 // pdb params: apActor, apData
 void This00902640::HighProcess_ProcessGuardInit(int apActor, Arg00902640* apData)
@@ -12483,13 +12483,13 @@ class FUN_008fdb10_cls
     int m_10;
     int m_14;
     int m_18;
-    FUN_008fdb10_cls* DetectionEvent_ctor();
+    FUN_008fdb10_cls* DetectionEvent_DetectionEvent();
 };
 
 // @fnv 0x008fdb10
-// src: XBOX_DEBUG_PDB 0x008fdb10
+// src: COMMUNITY 0x008fdb10
 // pdb: DetectionEvent::DetectionEvent | HighProcess.obj | debug, upstream name already matches, high
-FUN_008fdb10_cls* FUN_008fdb10_cls::DetectionEvent_ctor()
+FUN_008fdb10_cls* FUN_008fdb10_cls::DetectionEvent_DetectionEvent()
 {
     FUN_008fdb10_Tmp tmp;
     reinterpret_cast<FUN_008fdb10_Sub04*>(&m_04)->Init();
@@ -14028,7 +14028,7 @@ void Actor::DoDeathStuff()
                 else if (pOwner->GetFormType() == 8)
                 {
                     TESForm* pFaction = pOwner;
-                    pTarget = (Actor*)g_processLists.ProcessLists_GetActorRefInHigh(pFaction, 0, 0);
+                    pTarget = (Actor*)g_processLists.ProcessLists_GetActorRefInHigh_00970b30(pFaction, 0, 0);
                 }
             }
             Script_SetActionFlag(pMyKiller, ::BSFile_GetDevice(this), 0x20);

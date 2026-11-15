@@ -1764,7 +1764,7 @@ struct CompareData
     float f1C;
     CompareStrings strings;
     CompareArray entries;
-    bool FootIK_DATA_Compare(CompareData* arData);
+    bool BGSRagdoll_FootIK_Compare(CompareData* arData);
 };
 struct Entry005ed1e0
 {
@@ -1794,7 +1794,7 @@ struct Target005ed1e0
     unsigned short unknown_02;
     StringArray005ed1e0 strings_04;
     EntryArray005ed1e0 entries_14;
-    bool GrabIK_DATA_Compare(Target005ed1e0* arData);
+    bool BGSRagdoll_GrabIK_Compare(Target005ed1e0* arData);
 };
 void* __cdecl operator new(unsigned int, void*);
 struct SpawnItem : FUN_005ef7f0_Data
@@ -1902,7 +1902,7 @@ struct FUN_005ece50_class
     unsigned char m0;
     BSSimpleArray<const char*, 1024> m4;
     NodeArray m14;
-    unsigned char LookIK_DATA_Compare(FUN_005ece50_class* arData);
+    unsigned char BGSRagdoll_LookIK_Compare(FUN_005ece50_class* arData);
 };
 struct TESSound;
 struct SoundDataHandler
@@ -2414,7 +2414,7 @@ bool BGSEntryPointFunction_CheckFunctionArguments(int iArg0, int iArg1, void* pv
                   Actor* pkActor);
 
 // @fnv 0x005e5d20
-// src: XBOX_RETAIL_PDB 0x005e5d20
+// src: XBOX_RETAIL_PDB 0x005e5d20 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::MultiplyValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pvalue, pfunctionData

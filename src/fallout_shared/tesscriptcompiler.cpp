@@ -378,7 +378,7 @@ bool ScriptCompiler::CompilePartialScript(Script* apScript, TESObjectREFR* apOwn
     else
         ((::BSStringT<char>*)&compileData.m_pName)->Set(((TESForm*)compileData.pScript)->GetName(), 0);
     compileData.pText = apScript->GetText();
-    bResult = Compile(apScript, (CStringArgument*)&compileData);
+    bResult = Compile_005aeb90(apScript, (CStringArgument*)&compileData);
     return bResult;
 }
 
@@ -980,11 +980,11 @@ struct ScriptHeaderView
     unsigned char flags;
 };
 // @fnv 0x005aeb90
-// src: XBOX_RETAIL_PDB 0x005aeb90
+// src: XBOX_PDB 0x005aeb90
 // pdb: ScriptCompiler::Compile | TESScriptCompiler.obj | retail, string-set bridge, high
 // pdb params: apScript, apCompileData
 // pdb locals: pCurrentLine, pList, eExp, pLastList, pFirstLine
-bool ScriptCompiler::Compile(Script* apScript, CStringArgument* apCompileData)
+bool ScriptCompiler::Compile_005aeb90(Script* apScript, CStringArgument* apCompileData)
 {
     if (!apScript || !apCompileData)
         return false;
@@ -2094,7 +2094,7 @@ void __cdecl ReportScriptError(void*, const char*, ...);
 
 // Parses and compiles a MessageBox script line into binary output, handling literal text, parameters, variables, buttons, and duration.
 // @fnv 0x005b3cd0
-// src: XBOX_RETAIL_PDB 0x005b3cd0
+// src: XBOX_RETAIL_PDB 0x005b3cd0 (was COMMUNITY)
 // pdb: ScriptCompiler::MessageBoxCompile | TESScriptCompiler.obj | retail, unique string literal, high
 // pdb params: asParamCount, apParameters, apScriptLine, apCompileData
 bool __cdecl ScriptCompiler_MessageBoxCompile(unsigned short asParamCount, MessageParameter_5b3c* apParameters, ScriptLineBuffer* apScriptLine,

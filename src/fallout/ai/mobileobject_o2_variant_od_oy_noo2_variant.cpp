@@ -1352,7 +1352,7 @@ class Base9BE
     float GetX();
     float GetY();
     float GetZ();
-    float GetGravity();
+    float GetHeight();
 };
 
 // Projectile physics view: +0xFC is a target reference (Projectile::WeaponHitData); Actor has a pointer list there.
@@ -1676,7 +1676,7 @@ void ProjectilePhysicsReference::Projectile_InitHavok()
                 kInfo.SetShape(new Shape9BE(0.1f, 1));
             kInfo.SetMode(0);
             kInfo.SetFlags(0);
-            float m_fGlyphExtent = GetBaseObject()->GetGravity();
+            float m_fGlyphExtent = GetBaseObject()->GetHeight();
             if (m_pkTarget && m_pkTarget->IsActor())
             {
                 Target9BE* pkTarget = m_pkTarget;

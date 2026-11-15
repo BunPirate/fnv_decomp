@@ -684,7 +684,7 @@ __forceinline Vector4Comparison hkVector4::compareLessThan4(const hkVector4& b) 
 __forceinline hkAabb::hkAabb() {}
 __forceinline const LocalM128& hkVector4::getQuad() const { return m_vComponents; }
 __forceinline void hkVector4::set(float a, float b, float c, float d) { m_vComponents = _mm_setr_ps(a, b, c, d); }
-__forceinline void hkVector4::setAll(float a) { m_vComponents = _mm_set_ps1(a); }
+__forceinline void hkVector4::SetAllComponents(float a) { m_vComponents = _mm_set_ps1(a); }
 __forceinline void hkVector4::setAdd4(const hkVector4& a, const hkVector4& b) { m_vComponents = _mm_add_ps(a.m_vComponents, b.m_vComponents); }
 __forceinline void hkVector4::add4(const hkVector4& v) { m_vComponents = _mm_add_ps(m_vComponents, v.m_vComponents); }
 __forceinline void hkVector4::sub4(const hkVector4& v) { m_vComponents = _mm_sub_ps(m_vComponents, v.m_vComponents); }

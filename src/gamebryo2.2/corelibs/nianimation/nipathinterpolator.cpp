@@ -756,7 +756,7 @@ inline bool PointEquals(const NiPoint3& a, const NiPoint3& b)
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
-inline void NiQuatTransform::SetTranslate(void* kTranslate)
+inline void NiQuatTransform::GetTransformScale(void* kTranslate)
 {
     *reinterpret_cast<NiPoint3*>(&m_kTranslate) = *static_cast<const NiPoint3*>(kTranslate);
 }
@@ -796,7 +796,7 @@ bool NiPathInterpolator::UpdateTransform(float fTime, NiObjectNET* pkTarget, NiQ
             kValue.MakeInvalid();
             return false;
         }
-        kValue.SetTranslate(&m_kPosition);
+        kValue.GetTransformScale(&m_kPosition);
         if (GetFollow())
             kValue.SetLocalRotation(&m_kRotation);
         return true;
@@ -834,7 +834,7 @@ bool NiPathInterpolator::UpdateTransform(float fTime, NiObjectNET* pkTarget, NiQ
 
     m_kPosition = GenPathInterp(iI1, iI2, fPct);
 
-    kValue.SetTranslate(&m_kPosition);
+    kValue.GetTransformScale(&m_kPosition);
     if (GetFollow())
         kValue.SetLocalRotation(&m_kRotation);
 

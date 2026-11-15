@@ -133,7 +133,7 @@ void TESSpellList::InitItem(TESForm* apOwner)
                                 reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(listCursor.previous)->GetNext());
                         }
                         if (spellTypes.leveled)
-                            TESSpellList_AddSpell(spellTypes.leveled);
+                            TESSpellList_AddSpell_0048d210(spellTypes.leveled);
                     }
                 }
             }
@@ -204,7 +204,7 @@ struct FUN_0048d290_shell : public TESSpellList
 struct ZX2
 {
     bool TESSpellList_AddSpell(SpellItem*);
-    bool TESSpellList_AddSpell(TESLevSpell*);
+    bool TESSpellList_AddSpell_0048d210(TESLevSpell*);
 };
 // @fnv 0x0048d290
 // src: XBOX_PDB 0x0048d290
@@ -223,7 +223,7 @@ bool FUN_0048d290_shell::TESSpellList_AddSpell_0048d290(TESForm* apSpellIn)
     if (pSpell)
         return ((ZX2*)this)->TESSpellList_AddSpell(pSpell);
     else if (pLevSpell)
-        return ((ZX2*)this)->TESSpellList_AddSpell(pLevSpell);
+        return ((ZX2*)this)->TESSpellList_AddSpell_0048d210(pLevSpell);
     return false;
 }
 }  // namespace fnv_0048d290
@@ -301,7 +301,7 @@ struct SpellListHandle
 struct SpellListTask
 {
     SpellListHandle* GetOffsetC(TESLevSpell*& spell);
-    bool TESSpellList_AddSpell(TESLevSpell* apSpellIn);
+    bool TESSpellList_AddSpell_0048d210(TESLevSpell* apSpellIn);
 };
 struct PlayerBaseData
 {
@@ -345,10 +345,10 @@ struct PlayerProcessAccessor
     PlayerProcess* FUN_004181e0();
 };
 // @fnv 0x0048d210
-// src: XBOX_DEBUG_PDB 0x0048d210
+// src: XBOX_PDB 0x0048d210
 // pdb: TESSpellList::AddSpell | TESSpellList.obj | debug, call graph, high
 // pdb params: apSpellIn
-bool SpellListTask::TESSpellList_AddSpell(TESLevSpell* apSpellIn)
+bool SpellListTask::TESSpellList_AddSpell_0048d210(TESLevSpell* apSpellIn)
 {
     if (!apSpellIn)
         return false;
@@ -563,7 +563,7 @@ struct TESSpellListShell : TESSpellList
 };
 void __cdecl TESForm_AddChunk_00485910(unsigned int type, unsigned int formId);
 // @fnv 0x0048d330
-// src: XBOX_DEBUG_PDB 0x0048d330
+// src: XBOX_DEBUG_PDB 0x0048d330 (was COMMUNITY)
 // pdb: TESSpellList::Save | TESSpellList.obj | debug, call graph, high
 // pdb locals: pSpell, pList, tempint
 void TESSpellListShell::TESSpellList_Save()

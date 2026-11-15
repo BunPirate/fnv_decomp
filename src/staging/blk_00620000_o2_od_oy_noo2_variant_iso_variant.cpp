@@ -1705,7 +1705,7 @@ void TESHavokUtilities_AddAngularVelocity(void* obj, const NiPoint3& pos, bool f
 struct WorldObject62BAE0
 {
     void* bhkRigidBody_GetAngularVelocity();
-    void bhkRigidBody_SetAngularVelocity(hkVector4& arVel);
+    void bhkRigidBody_SetAngularVelocity_005617c0(hkVector4& arVel);
 };
 struct Collision62BAE0
 {

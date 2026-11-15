@@ -1410,7 +1410,7 @@ struct FUN_006e3d30_cls
     int m_04;
     int m_08;
     int m_0c;
-    void BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(int aiNewSize, int aiCopyCount);
+    void BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount);
     void ProcessEntries_006e3e70(int a, int b, int c);
     void FUN_006a8500();
 };

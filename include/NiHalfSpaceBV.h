@@ -49,7 +49,7 @@ public:
 
     void LoadBinary_00e9cb50(NiStream& stream);
     void SaveBinary_00e9cb80(NiStream& stream);
-    NiBoundingVolume* NiHalfSpaceBV_ctor(const NiPoint3& kPoint, const NiPoint3& kNormal);
+    NiBoundingVolume* NiHalfSpaceBV_00e9e680(const NiPoint3& kPoint, const NiPoint3& kNormal);
     NiBoundingVolume* Clone_00e9e730();
     void SetWaterColorParameter();
 };

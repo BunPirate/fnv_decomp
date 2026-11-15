@@ -2142,7 +2142,7 @@ void* __cdecl FUN_00553fc0(void* arhkV, const NiPoint3& arNiP);
 void bhkCharacterController::bhkRigidBody_SetAngularVelocity(const NiPoint3& arVel)
 {
     HKVector4 local;
-    bhkRigidBody_SetAngularVelocity(FUN_00553fc0(&local, arVel));
+    bhkRigidBody_SetAngularVelocity_005617c0(FUN_00553fc0(&local, arVel));
 }
 
 class S00561730_Comparison
@@ -2158,7 +2158,7 @@ class S00561730_Vector
     S00561730_Vector();                                                       // FUN_006815c0
     void hkVector4_setSub4(const S00561730_Vector* a, const S00561730_Vector* b);  // setSub4
     void hkVector4_setAbs4(const S00561730_Vector* v);                             // setAbs4
-    void setAll(float f);
+    void hkVector4_setAll(float f);
     S00561730_Comparison hkVector4_compareLessThanEqual4(const S00561730_Vector* v) const;  // compareLessThan4
     bool hkVector4_equals4(const S00561730_Vector* v, float epsilon) const;   // equals4
     __m128 m_vComponents;
@@ -2175,7 +2175,7 @@ bool S00561730_Vector::hkVector4_equals4(const S00561730_Vector* v, float epsilo
     kDiff.hkVector4_setSub4(this, v);
     kDiff.hkVector4_setAbs4(&kDiff);
     S00561730_Vector kEpsilon;
-    kEpsilon.setAll(epsilon);
+    kEpsilon.hkVector4_setAll(epsilon);
     return kDiff.hkVector4_compareLessThanEqual4(&kEpsilon).hkVector4Comparison_allAreSet(0xf);
 }
 
@@ -2995,7 +2995,7 @@ void ReferencePhysicsAttachment::TESObjectREFR_InitHavok()
                             BodyQ* pkBody = pkBodyRef ? pkBodyRef->Get() : 0;
                             hkVector4 kPos(*pkBody->GetPosition());
                             if (((g_pkSettingsQ->IsEnabled() || IsInWaterVolume()) && pkBody &&
-                                 kPos.equals3(*static_cast<const hkVector4*>(hkVector4_getZero()), 0.001f)) ||
+                                 kPos.equals4(*static_cast<const hkVector4*>(hkVector4_getZero()), 0.001f)) ||
                                 !IsSubmerged())
                                 bhkWorld_SetMotion(pkRoot, 5, 1, 0, 1);
                         }

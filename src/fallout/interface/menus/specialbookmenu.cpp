@@ -480,7 +480,7 @@ extern const char str_01076c94[];
 
 
 // @fnv 0x007cadd0
-// src: XBOX_RETAIL_PDB 0x007cadd0
+// src: XBOX_RETAIL_PDB 0x007cadd0 (was COMMUNITY)
 // pdb: SPECIALBookMenu::LoadButtonAndTextImages | SPECIALBookMenu.obj | retail, string-set bridge, high
 // pdb locals: strPlatform, strtmp, pfilepath, i
 void SPECIALBookMenu::LoadButtonAndTextImages()

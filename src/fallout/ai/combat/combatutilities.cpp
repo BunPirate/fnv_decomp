@@ -257,9 +257,9 @@ int ExpandFlagBits(int flags, char index)
 }
 
 // @fnv 0x00966980
-// src: XBOX_DEBUG_PDB 0x00966980
+// src: XBOX_PDB 0x00966980
 // pdb: BGSProjectile::GetGravity | PlayerCharacter.obj | debug, call graph, high
-float __thiscall BGSProjectile::GetGravity()
+float __thiscall BGSProjectile::GetGravity_00966980()
 {
     return ((BGSProjectile*)this)->GetFlag(0x20000) ? 1.0f : this->Data.afGravity;
 }
@@ -331,7 +331,7 @@ float __cdecl CombatUtilities_GetProjectileMaximumRange(BGSProjectile* apProject
     float a = apProjectile->FUN_009a7c40();
     if (apProjectile->GetHitScan())
         return a;
-    float value = apProjectile->GetGravity();
+    float value = apProjectile->GetGravity_00966980();
     if (value <= DAT_01012060)
         return a;
     value *= DAT_011f1c00;
@@ -1070,7 +1070,7 @@ bool CombatUtilities_CheckProjectileArc_009a7670(void* apAttacker, int apTarget,
         afMinHitFraction = *DAT_011cf95c.Setting_Float_00403e20();
     float dist8 = 0.0f;
     int found = 0;
-    float v = apProjectile->GetGravity() * DAT_011f1c00;
+    float v = apProjectile->GetGravity_00966980() * DAT_011f1c00;
     if (v == DAT_01012060)
     {
         S_009a7670_P3 hit = CombatUtilities_GetProjectedPointForTarget(aStartLocation, aTargetLocation, aTargetVelocity, apProjectile->GetFloatAtOffset68(), v, *arbHighArc);
@@ -1123,7 +1123,7 @@ float __cdecl ComputeProjectileFlightTime(BGSProjectile* actor, NiPoint3 from, N
     {
         fVel = actor->GetFloatAtOffset68();
     }
-    if (actor->GetGravity() != DAT_01012060)
+    if (actor->GetGravity_00966980() != DAT_01012060)
     {
         if (flag && speed == DAT_01012060)
         {
@@ -1132,7 +1132,7 @@ float __cdecl ComputeProjectileFlightTime(BGSProjectile* actor, NiPoint3 from, N
         float fAngleDifference = vDelta.z;
         float afGravity = vDelta.NiPoint3_XYLength();
         float m_fGlyphExtent =
-            ComputeLaunchAngle(afGravity, fAngleDifference, speed, actor->GetGravity() * DAT_011f1c00, false);
+            ComputeLaunchAngle(afGravity, fAngleDifference, speed, actor->GetGravity_00966980() * DAT_011f1c00, false);
         return CombatUtilities_ComputeProjectileTime(afGravity, m_fGlyphExtent, fVel);
     }
     return vDelta.FUN_00457990() / speed;
@@ -1384,7 +1384,7 @@ TrajOut* __cdecl ComputeTrajectory(TrajOut* apAttacker, Actor* aTargetLocation, 
         }
     }
 
-    if (abHighArc && apProjectile->GetGravity() != DAT_01012060)
+    if (abHighArc && apProjectile->GetGravity_00966980() != DAT_01012060)
     {
         mode = 2;
     }
@@ -1492,7 +1492,7 @@ FUN_009a8df0_vec* __cdecl BGSProjectile_UpdateState_009a8df0(FUN_009a8df0_vec* o
         FUN_009a8df0_vec T;
         L = *CombatUtilities_GetAttackerFiringLocation(&T, a2);
     }
-    f = obj->GetGravity() * DAT_011f1c00;
+    f = obj->GetGravity_00966980() * DAT_011f1c00;
     if ((double)a30 == DAT_01012060)
     {
         a30 = obj->GetFloatAtOffset68();

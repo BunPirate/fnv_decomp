@@ -11,7 +11,7 @@ class Main
 {
   public:
     void RunFrame();
-    void Main_KillMenuBGTexture();
+    void RefreshAfterSave();
 };
 
 // pdb: class NiParallelUpdateTaskManager, size 0x200 (here 0x1), bases: NiTaskManager, 8 members

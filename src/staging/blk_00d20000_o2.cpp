@@ -3955,7 +3955,7 @@ struct C85Ret
 };
 
 void hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
-int hkpCollectionCollectionAgent3_process(O1T* o1, int a2, int a3, int a4, int a5);
+int process_00d35770(O1T* o1, int a2, int a3, int a4, int a5);
 
 static __forceinline int maxSize(int minimum, int value) {
     _ReadWriteBarrier();
@@ -4007,7 +4007,7 @@ int hkpCollectionAgent3_process(A1Rec* input, int entry, int agentData, int sepa
     o1.unk00 = &cb.z;
     cb.z.unk00 = cfret;
     cb.z.unk04 = -1;
-    result = hkpCollectionCollectionAgent3_process(&o1, entry, agentData, separatingNormal, output);
+    result = process_00d35770(&o1, entry, agentData, separatingNormal, output);
     int* r18 = &shape->r18_00;
     hkMemoryRouter* q = hkMemoryRouter_getInstance();
     void* mgr = q->m_heap;

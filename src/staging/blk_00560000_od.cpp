@@ -304,13 +304,13 @@ struct FUN_0056d610_base
 struct FUN_0056d5f0_class : FUN_0056d610_base
 {
     void SetVtableAndProcessState_0056d610();
-    void* bhkWaterPhantomCallbackShape_ctor();
+    void* bhkWaterPhantomCallbackShape_bhkWaterPhantomCallbackShape();
 };
 
 // @fnv 0x0056d5f0
-// src: XBOX_DEBUG_PDB 0x0056d5f0
+// src: EXE 0x0056d5f0
 // pdb: bhkWaterPhantomCallbackShape::bhkWaterPhantomCallbackShape | TESObjectREFR.obj | debug, upstream name already matches, high
-void* FUN_0056d5f0_class::bhkWaterPhantomCallbackShape_ctor()
+void* FUN_0056d5f0_class::bhkWaterPhantomCallbackShape_bhkWaterPhantomCallbackShape()
 {
     SetVtableAndProcessState_0056d610();
     *reinterpret_cast<void**>(this) = &DAT_01030534;
@@ -989,12 +989,12 @@ extern "C" int DAT_012681fc;
 struct FUN_0056d410_Class
 {
     void __thiscall FUN_0056d440();
-    void* __thiscall bhkEntity_ctor();
+    void* __thiscall bhkEntity_bhkEntity();
 };
 // @fnv 0x0056d410
-// src: XBOX_RETAIL_PDB 0x0056d410
+// src: EXE 0x0056d410
 // pdb: bhkEntity::bhkEntity | TESObjectREFR.obj | retail, upstream name already matches, high
-void* __thiscall FUN_0056d410_Class::bhkEntity_ctor()
+void* __thiscall FUN_0056d410_Class::bhkEntity_bhkEntity()
 {
     FUN_0056d440();
     *(void**)(this) = &DAT_010302bc;

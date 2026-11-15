@@ -417,7 +417,7 @@ extern const void* DAT_010c14a8;
 // src: EXE 0x00c3bcf0
 MessageHandler* __thiscall MessageHandler::MessageHandler_00c3bcf0(bool abStatic)
 {
-    BSCoreMessage_ctor();
+    BSCoreMessage_BSCoreMessage();
     *(const void**)this = &DAT_010c14a8;
     bStatic = abStatic;
     MessageHandler::pHandler = this;

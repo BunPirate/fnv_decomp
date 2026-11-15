@@ -44,7 +44,7 @@ int __cdecl MinInt(int iA, int iB);
 struct FUN_004a8f50_shell
 {
     void NiTMap_NiTexture_TEX_USER_DATA_NiTMap(int a);
-    void* BGSTextureUseMap_ctor();
+    void* BGSTextureUseMap_BGSTextureUseMap();
 };
 struct GlobalObject2_0040c150
 {

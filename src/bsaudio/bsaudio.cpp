@@ -351,7 +351,7 @@ void BSAudio::SetMasterVolume(float afNewVol)
 
 // Stores value into the audio manager's field and calls FUN_00adc160 on it.
 // @fnv 0x00ad7b40
-// src: XBOX_RETAIL_PDB 0x00ad7b40
+// src: XBOX_RETAIL_PDB 0x00ad7b40 (was COMMUNITY)
 // pdb: BSAudio::SetFootVolume | BSAudio.obj | retail, object-file gap fill, high
 // pdb params: afNewVol
 void BSAudio::SetFootVolume(float afNewVol)
@@ -374,7 +374,7 @@ void BSAudio::SetVoiceVolume(float afNewVol)
 
 // Stores value into the audio manager's field and calls FUN_00adc160 on it.
 // @fnv 0x00ad7ba0
-// src: XBOX_RETAIL_PDB 0x00ad7ba0
+// src: XBOX_RETAIL_PDB 0x00ad7ba0 (was COMMUNITY)
 // pdb: BSAudio::SetEffectVolume | BSAudio.obj | retail, object-file gap fill, high
 // pdb params: afNewVol
 void BSAudio::SetEffectVolume(float afNewVol)
@@ -1019,7 +1019,7 @@ struct MemContextGuard
 void BSAudio::ForwardToManager(unsigned int iArg0, unsigned int iArg1)
 {
     sad8050::MemContextGuard kGuard(0xb);
-    BSAudioManager::GetRandomGenerator().Precache(iArg0, iArg1);
+    BSAudioManager::GetRandomGenerator().Precache_00add630(iArg0, iArg1);
 }
 
 namespace fnv_00ad8100 {
@@ -1066,5 +1066,5 @@ struct MemContextScope
 void BSAudio::Precache_00ad8100(unsigned int apFilenameToCache, unsigned int aiFlags, unsigned int apSettingsContext)
 {
     fnv_00ad8100::MemContextScope tempMemContext(11);
-    BSAudioManager::GetRandomGenerator().BSAudioManager_Precache(apFilenameToCache, aiFlags, apSettingsContext);
+    BSAudioManager::GetRandomGenerator().BSAudioManager_Precache_00add6f0(apFilenameToCache, aiFlags, apSettingsContext);
 }

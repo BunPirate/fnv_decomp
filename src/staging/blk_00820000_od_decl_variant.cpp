@@ -53,7 +53,7 @@ struct FUN_00827200_class
 {
     void __thiscall _ref_006815c0();
     void __thiscall FUN_00cb26e0(int);
-    FUN_00827200_class* __thiscall hkQuaternion_ctor(int a);
+    FUN_00827200_class* __thiscall hkQuaternion_hkQuaternion(int a);
 };
 extern int DAT_0107ca44;
 void __cdecl InitArray(int);
@@ -431,7 +431,7 @@ TESForm* __cdecl _ref_004839c0(unsigned int formID);
 extern void* _DAT_01183028;
 struct FUN_0083fbe0_Class
 {
-    void __thiscall MenuTopic_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
+    void __thiscall ExtraInfoGeneralTopic_Data_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 // FUN_00822440 - 0x00822440, 99 bytes.
 //

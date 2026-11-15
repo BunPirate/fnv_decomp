@@ -811,7 +811,7 @@ struct HKThreadMemory : ThreadMemoryBase
     unsigned char freeList[0x29];
     int bigBlocks[8];
     void InitSizeClasses();
-    HKThreadMemory* hkThreadMemory_ctor();
+    HKThreadMemory* hkThreadMemory_hkThreadMemory();
 };
 
 // src: HAVOK_LIB 0x00d2c3a0
@@ -912,9 +912,9 @@ __declspec(noinline) void HKThreadMemory::InitSizeClasses()
 
 // Sets m0, clears 17 block entries, calls FUN_00d2c100 and FUN_00d2c3a0(0, 8), then returns this.
 // @fnv 0x00d2c720
-// src: XBOX_RETAIL_PDB 0x00d2c720
+// src: HAVOK_LIB 0x00d2c720
 // pdb: hkThreadMemory::hkThreadMemory | hkThreadMemory.obj | retail, object-file gap fill, high
-HKThreadMemory* HKThreadMemory::hkThreadMemory_ctor()
+HKThreadMemory* HKThreadMemory::hkThreadMemory_hkThreadMemory()
 {
     m0 = &DAT_010cacd0;
     BlockEntry* p = blocks;
@@ -950,7 +950,7 @@ struct ThreadMemoryView : FUN_00d2c3a0_class
     int bigBlocks[8];
     void InitSizeClasses();
     void hkThreadMemory_setMemory(void* allocator, int limit);
-    ThreadMemoryView* hkThreadMemory_ctor(void* memoryInstance);
+    ThreadMemoryView* hkThreadMemory_hkThreadMemory_00d2c760(void* memoryInstance);
 };
 
 // src: HAVOK_LIB 0x00d2c3a0
@@ -966,9 +966,9 @@ __declspec(noinline) void ThreadMemoryView::InitSizeClasses()
 
 // Zeroes the 17 BlockEntry slots, calls FUN_00d2c100 and FUN_00d2c3a0(allocator, 8), then returns this.
 // @fnv 0x00d2c760
-// src: XBOX_RETAIL_PDB 0x00d2c760
+// src: HAVOK_LIB 0x00d2c760
 // pdb: hkThreadMemory::hkThreadMemory | hkThreadMemory.obj | retail, object-file gap fill, high
-ThreadMemoryView* ThreadMemoryView::hkThreadMemory_ctor(void* memoryInstance)
+ThreadMemoryView* ThreadMemoryView::hkThreadMemory_hkThreadMemory_00d2c760(void* memoryInstance)
 {
     m0 = &DAT_010cacd0;
     BlockEntry* entry = blocks;

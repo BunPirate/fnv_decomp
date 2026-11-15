@@ -46,10 +46,10 @@ public:
     void AttachAllLand3D();
     void AttachToWorld(NiNode* root, unsigned int gridX, unsigned int gridY);
     void UpdateManagedNodeTransforms();
-    void RunAnimations();
-    void UpdateRefSounds();
+    void RunAnimations_004baba0();
+    void UpdateRefSounds_004bac20();
     void ShowLandBorders(bool show);
-    void ToggleCollisionGeometry();
+    void ToggleCollisionGeometry_004bad40();
     void ShowPrimitives(bool abShow);
     void ClearCanopyShadowMaskTexture();
     void RecreateCanopyShadowMaskTexture();

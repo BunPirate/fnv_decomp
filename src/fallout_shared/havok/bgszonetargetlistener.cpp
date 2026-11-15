@@ -68,15 +68,15 @@ struct FUN_0062d840_shell
 {
     void* m_iWordAt00;
     void* m_iWordAt04;
-    void* __thiscall TrapEntry_ctor(unsigned int apRef, unsigned int apCol);
+    void* __thiscall TrapEntry_TrapEntry(unsigned int apRef, unsigned int apCol);
 };
 
 // Calls FUN_0061fc10 with a and b, sets the first field to point at DAT_0104e3e8, and returns this.
 // @fnv 0x0062d840
-// src: XBOX_DEBUG_PDB 0x0062d840
+// src: EXE 0x0062d840
 // pdb: TrapEntry::TrapEntry | TESTrapListener.obj | debug, upstream name already matches, high
 // pdb params: apRef, apCol
-void* __thiscall FUN_0062d840_shell::TrapEntry_ctor(unsigned int apRef, unsigned int apCol)
+void* __thiscall FUN_0062d840_shell::TrapEntry_TrapEntry(unsigned int apRef, unsigned int apCol)
 {
     ((FUN_0061fc10_shell*)this)->FUN_0061fc10(apRef, apCol);
     m_iWordAt00 = &DAT_0104e3e8;
@@ -111,7 +111,7 @@ struct FUN_0061fe70_shell
 {
     void* m_iWordAt00;
     void* m_iWordAt04;
-    void __thiscall TargetEntry_ctor(unsigned int apRef, unsigned int apCol);
+    void __thiscall TargetEntry_TargetEntry(unsigned int apRef, unsigned int apCol);
     void* __thiscall Construct(unsigned int a, unsigned int b);
 };
 // Calls FUN_0061fba0 with a and b, stores the address of DAT_0104d9d8 at this, and returns this.
@@ -120,7 +120,7 @@ struct FUN_0061fe70_shell
 // pdb params: apRef, apCol
 void* __thiscall FUN_0061fe70_shell::Construct(unsigned int a, unsigned int b)
 {
-    TargetEntry_ctor(a, b);
+    TargetEntry_TargetEntry(a, b);
     *reinterpret_cast<void**>(this) = &DAT_0104d9d8;
     return this;
 }
@@ -349,14 +349,14 @@ struct S_0061fba0_Obj
     S_0061fba0_Sub m_20;
     S_0061fba0_Sub m_30;
     int unk40;
-    S_0061fba0_Obj* __thiscall TargetEntry_ctor(unsigned int apRef, unsigned int apCol);
+    S_0061fba0_Obj* __thiscall TargetEntry_TargetEntry(unsigned int apRef, unsigned int apCol);
 };
 
 // @fnv 0x0061fba0
-// src: XBOX_DEBUG_PDB 0x0061fba0
+// src: XBOX_PDB 0x0061fba0
 // pdb: TargetEntry::TargetEntry | BGSZoneTargetListener.obj | debug, upstream name already matches, high
 // pdb params: apRef, apCol
-S_0061fba0_Obj* __thiscall S_0061fba0_Obj::TargetEntry_ctor(unsigned int apRef, unsigned int apCol)
+S_0061fba0_Obj* __thiscall S_0061fba0_Obj::TargetEntry_TargetEntry(unsigned int apRef, unsigned int apCol)
 {
     m_10.bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(apRef, apCol);
     vtbl = (const void*)&DAT_0104d9c4;

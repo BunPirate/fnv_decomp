@@ -164,9 +164,9 @@ void __fastcall FindTriangleForLocationFilter_FindTriangleForLocationFilter(void
 extern int DAT_0106c92c;
 
 // @fnv 0x006c8dd0
-// src: XBOX_DEBUG_PDB 0x006c8dd0
+// src: EXE 0x006c8dd0
 // pdb: PathBuilder::FindTriangleForLocationWaterFilter::FindTriangleForLocationWaterFilter | PathBuilder.obj | debug, upstream name already matches, high
-void* __fastcall PathBuilder_FindTriangleForLocationWaterFilter_ctor(void* pThis)
+void* __fastcall PathBuilder_FindTriangleForLocationWaterFilter_FindTriangleForLocationWaterFilter(void* pThis)
 {
     FindTriangleForLocationFilter_FindTriangleForLocationFilter(pThis);
     *(int**)pThis = &DAT_0106c92c;
@@ -1294,14 +1294,14 @@ struct S_006cb900
     int unk08;
     S_006cb900_Vec m_0c;
     void FastNavMeshEdgeHandle_FastNavMeshEdgeHandle(const S_006cb900* p);
-    S_006cb900& NavMeshEdgeLocation_ctor(const S_006cb900* aFastEdgeLocation);
+    S_006cb900& NavMeshEdgeLocation_NavMeshEdgeLocation(const S_006cb900* aFastEdgeLocation);
 };
 
 // @fnv 0x006cb900
-// src: XBOX_RETAIL_PDB 0x006cb900
+// src: COMMUNITY 0x006cb900
 // pdb: NavMeshEdgeLocation::NavMeshEdgeLocation | NavMeshHandles.obj | retail, upstream name already matches, high
 // pdb params: aTriHandle
-S_006cb900& S_006cb900::NavMeshEdgeLocation_ctor(const S_006cb900* aFastEdgeLocation)
+S_006cb900& S_006cb900::NavMeshEdgeLocation_NavMeshEdgeLocation(const S_006cb900* aFastEdgeLocation)
 {
     FastNavMeshEdgeHandle_FastNavMeshEdgeHandle(aFastEdgeLocation);
     m_0c.FUN_006815c0();
@@ -1849,7 +1849,7 @@ struct Edge501
     unsigned short flags;
     int edge;
     PointStorage position;
-    Edge501& NavMeshEdgeLocation_ctor(const Edge501*);
+    Edge501& NavMeshEdgeLocation_NavMeshEdgeLocation(const Edge501*);
 };
 struct EdgeInput501
 {
@@ -1882,7 +1882,7 @@ void __cdecl GetClosestPointOnSegment(NiPoint3*, const NiPoint3&, const NiPoint3
 bool Builder501::PathBuilder_CheckClosestEdgeToGoal(unsigned int aiLastVirtualNodeIndex, EdgeInput501* aEndEdges, BSSimpleArray<PathingLocation, 1024>* aEndNodes)
 {
     Edge501 edge;
-    edge.NavMeshEdgeLocation_ctor(aEndEdges->GetFirstEntry());
+    edge.NavMeshEdgeLocation_NavMeshEdgeLocation(aEndEdges->GetFirstEntry());
     PointStorage mesh;
     ((NiPoint3&)mesh).FUN_006815c0();
     PointStorage start;

@@ -90,7 +90,7 @@ struct NavQueryResult
 struct CellNavInfo
 {
     void TESObjectLAND_GetCoordData(NavQueryResult* cdata, NiPoint3* coord, int forcetovertex);
-    MaterialRecord* TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex);
+    MaterialRecord* TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex);
 };
 struct FootstepCell
 {

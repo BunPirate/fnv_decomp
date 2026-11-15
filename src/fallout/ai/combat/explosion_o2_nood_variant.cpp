@@ -159,7 +159,7 @@ struct FUN_009ae0f0
     float mC;
     float m10;
     float m14;
-    void __thiscall hkUnaryActionCinfo_ctor();
+    void __thiscall hkUnaryActionCinfo_hkUnaryActionCinfo();
     FUN_009ae0f0();
 };
 void* __cdecl operator new(unsigned int);

@@ -23,6 +23,6 @@ void NiParallelUpdateTaskManager::Main_OnIdle_HandleMenuBackground()
              !Interface::IsMenuActive(Interface::Menu_439, 0) && !Interface::IsMenuActive(Interface::Menu_43a, 0) &&
              !Interface::IsMenuActive(Interface::Menu_43b, 0))
     {
-        reinterpret_cast<Main*>(this)->Main_KillMenuBGTexture();
+        reinterpret_cast<Main*>(this)->RefreshAfterSave();
     }
 }

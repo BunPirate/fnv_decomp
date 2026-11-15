@@ -40,7 +40,7 @@ class NiBoolInterpolator : public NiKeyBasedInterpolator
     void SetAnimationKeys(void* keys, unsigned int keyType, unsigned int count);
     void CopyMembers(NiBoolInterpolator*, CloningProcess&);
     void SetPoseValue(bool);
-    NiStream* NiBoolInterpolator_ctor(NiStream*);
+    NiStream* LinkObject(NiStream*);
     bool __thiscall RegisterStreamables_00a3c5b0(NiStream*);
 
     bool m_bBoolValue;

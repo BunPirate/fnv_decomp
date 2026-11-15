@@ -1079,16 +1079,16 @@ extern "C" Actor* g_thePlayer;
 struct Cls
 {
     char pad00[4];
-    Actor* ProcessLists_GetActorRefInHigh(TESFaction* apFaction, bool abDetection, bool abClosetoPlayer);
+    Actor* ProcessLists_GetActorRefInHigh_00970b30(TESFaction* apFaction, bool abDetection, bool abClosetoPlayer);
 };
 
 // Scans the actor array for a faction member passing the rank and process checks, optionally picking the one with the lowest value from FUN_005723b0.
 // @fnv 0x00970b30
-// src: XBOX_RETAIL_PDB 0x00970b30
+// src: XBOX_PDB 0x00970b30
 // pdb: ProcessLists::GetActorRefInHigh | ProcessLists.obj | retail, call graph (shared callers), high
 // pdb params: apNpc, abDetection
 // pdb locals: pmob, pretactor, i, pactor, pnpc
-Actor* Cls::ProcessLists_GetActorRefInHigh(TESFaction* apFaction, bool abDetection, bool abClosetoPlayer)
+Actor* Cls::ProcessLists_GetActorRefInHigh_00970b30(TESFaction* apFaction, bool abDetection, bool abClosetoPlayer)
 {
     Actor* pB = 0;
     Actor* g4 = 0;

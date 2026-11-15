@@ -15,12 +15,12 @@
 // pdb: class BGSTextureUseMap, size 0x14 (here 0x1), 2 members
 struct BGSTextureUseMap
 {
-    void CollectTexUseDataRecursive(int a, char b);
+    void BGSTextureUseMap_CollectTexUseDataRecursive(int a, char b);
     void CollectTexUseData(int apNode, int apDefaultUser, char abCheckActors);
 };
 
 // src: XBOX_PDB 0x004aa3d0
-void BGSTextureUseMap::CollectTexUseDataRecursive(int a, char b)
+void BGSTextureUseMap::BGSTextureUseMap_CollectTexUseDataRecursive(int a, char b)
 {}
 
 // Stores b into the object's first field and forwards a and c to FUN_004aa3d0.
@@ -31,7 +31,7 @@ void BGSTextureUseMap::CollectTexUseDataRecursive(int a, char b)
 void BGSTextureUseMap::CollectTexUseData(int apNode, int apDefaultUser, char abCheckActors)
 {
     *(int*)this = apDefaultUser;
-    CollectTexUseDataRecursive(apNode, abCheckActors);
+    BGSTextureUseMap_CollectTexUseDataRecursive(apNode, abCheckActors);
 }
 
 struct FUN_004aa830;
@@ -591,16 +591,16 @@ struct WalkCtx
 struct TextureWalker
 {
     int m0;
-    void CollectTexUseDataRecursive(NiAVObject* obj, bool b);
+    void BGSTextureUseMap_CollectTexUseDataRecursive(NiAVObject* obj, bool b);
 };
 
 // Recursively walks a NiAVObject tree, tracking the current WalkRef from fade nodes and invoking a texture callback on geometry properties.
 // @fnv 0x004aa3d0
-// src: XBOX_RETAIL_PDB 0x004aa3d0
+// src: XBOX_PDB 0x004aa3d0
 // pdb: BGSTextureUseMap::CollectTexUseDataRecursive | BGSTextureUseMap.obj | retail, upstream name already matches, high
 // pdb params: ap3D, abCheckActors
 // pdb locals: pnode, pfadenode, bignore, bsetref, pref, bisactor, icount, i, pchild, pgeom, pbssprop, pprop, kparam
-void TextureWalker::CollectTexUseDataRecursive(NiAVObject* obj, bool b)
+void TextureWalker::BGSTextureUseMap_CollectTexUseDataRecursive(NiAVObject* obj, bool b)
 {
     if (obj && !obj->IsCulledFlag())
     {
@@ -640,7 +640,7 @@ void TextureWalker::CollectTexUseDataRecursive(NiAVObject* obj, bool b)
                 for (unsigned int i = 0; i < count; i++)
                 {
                     NiAVObject* child = node->FUN_0043b4a0(i);
-                    CollectTexUseDataRecursive(child, b);
+                    BGSTextureUseMap_CollectTexUseDataRecursive(child, b);
                 }
             }
             if (bSet)

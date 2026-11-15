@@ -255,10 +255,10 @@ struct Dummy658aa0
 };
 
 // @fnv 0x0064fd80
-// src: XBOX_RETAIL_PDB 0x0064fd80
+// src: EXE 0x0064fd80
 // pdb: BSFaceGenModelMap::BSFaceGenModelMap | BSFaceGenManager.obj | retail, upstream name already matches, high
 // pdb locals: cnt
-void* __fastcall BSFaceGenModelMap_ctor(void* pThis)
+void* __fastcall BSFaceGenModelMap_BSFaceGenModelMap(void* pThis)
 {
     *(int**)pThis = &DAT_01065678;
     ((Dummy658aa0*)((char*)pThis + 4))->Initialize(0x25, 1);
@@ -616,11 +616,11 @@ NiNode* __cdecl GetNodeFromGeometry(void*);
 void* __cdecl DynamicCastByRTTI(void*, NiNode*);
 
 // @fnv 0x00653230
-// src: XBOX_DEBUG_PDB 0x00653230
+// src: COMMUNITY 0x00653230
 // pdb: BSFaceGenManager::GetFaceGenMorphDataHead | BSFaceGenManager.obj | debug, call graph, high
 // pdb params: apGeom
 // pdb locals: pmorph
-void* __cdecl BSFaceGenManager_GetFaceGenMorphDataHead(void* apGeom)
+void* __cdecl BSFaceGenUtils_GetFaceGenMorphDataHead(void* apGeom)
 {
     NiNode* pGeometryNode = GetNodeFromGeometry(apGeom);
     if (pGeometryNode == 0)

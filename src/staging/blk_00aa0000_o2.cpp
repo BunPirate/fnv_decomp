@@ -1553,7 +1553,7 @@ extern void* _DAT_011f6078;
 
 // Allocates 8 bytes from the memory manager, stores the processor count and performance frequency, and sets the global pointer to the block.
 // @fnv 0x00aa1920
-// src: XBOX_RETAIL_PDB 0x00aa1920
+// src: XBOX_RETAIL_PDB 0x00aa1920 (was COMMUNITY)
 // pdb: NiSystemDesc::InitSystemDesc | NiSystemDesc.obj | retail, call graph, high
 void __cdecl NiSystemDesc_InitSystemDesc()
 {

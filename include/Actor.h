@@ -459,7 +459,7 @@ public:
     // Explicit aggregate result types retain their own return and copy conventions.
     template <class Result>
     Result TESObjectREFR_GetWorldLocation();
-    void FadeIn();
+    void FadeIn_008bcd20();
     void Actor_SetWantWeaponDrawn(bool);
     void MobileObject_UpdateTopicInfoSayOnce();                        // 0x00935ae0
     void DoDeathStuff();                        // 0x008b01c0

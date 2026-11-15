@@ -114,7 +114,7 @@ public:
     void UpdateFields_00b2bdc0(float a, float b);
     void InitSeed(unsigned int seed);
     void CTreeEngine_SetSeed(int nSeed);
-    bool Parse(CTreeFileAccessImpl* cFile);
+    bool Parse_00b2b550(CTreeFileAccessImpl* cFile);
     void ParseTreeInfo(ElementIterator* cFile);
     void ParseLeafCluster(ElementIterator* cFile);
     void CTreeEngine_ParseFlareSeed(ElementIterator* a);

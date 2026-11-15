@@ -533,7 +533,7 @@ struct LoadingTileAnimation : Tile3D
 
 // Calls UpdateAnimation on the object at offset 0x54 with -1.0f and 0.
 // @fnv 0x0078a230
-// src: XBOX_DEBUG_PDB 0x0078a230
+// src: XBOX_DEBUG_PDB 0x0078a230 (was COMMUNITY)
 // pdb: LoadingMenu::UpdateWheel | LoadingMenu.obj | debug, call graph, high
 void LoadingMenu::UpdateWheel()
 {
@@ -725,11 +725,11 @@ float __cdecl InterfaceManager_GetScreenSafeY(void);
 extern const double DAT_0106e7f8;
 
 // @fnv 0x0078b9b0
-// src: XBOX_RETAIL_PDB 0x0078b9b0
-// pdb: LoadingMenu::CalcLoadScreenTypeTextWindowFaces | LoadingMenu.obj | retail, object-file run extension, high
+// src: EXE 0x0078b9b0
+// pdb: LoadingMenu::CalcLoadScreenTypeTextWindowFaces | LoadingMenu.obj | retail, object-file run extension, high, not renamed: the function's own message names it LoadingMenu::CalcLoadScreenTypeTextWindowVerts
 // pdb params: apData
 // pdb locals: fSafeWidth, fConvertedYPos, fSafeHeight, fConvertedHeight, fCurrentScreenWidth, fCurrentScreenHeight, fConvertedWidth, fConvertedXPos
-void LoadingMenu::CalcLoadScreenTypeTextWindowFaces(void* apData)
+void LoadingMenu::CalcLoadScreenTypeTextWindowVerts(void* apData)
 {
     if (apData == 0)
     {
@@ -896,9 +896,9 @@ namespace fnv_0078d880 {
 extern int DAT_0107410c;
 
 // @fnv 0x0078d880
-// src: XBOX_DEBUG_PDB 0x0078d880
+// src: COMMUNITY 0x0078d880
 // pdb: BSSimpleArray<TESLoadScreen *,1024>::BSSimpleArray<TESLoadScreen *,1024> | LoadingMenu.obj | debug, call graph, high
-void* __fastcall BSSimpleArray_TESLoadScreen_1024_ctor(void* pThis)
+void* __fastcall BSSimpleArray_TESLoadScreen_1024_BSSimpleArray_TESLoadScreen_1024(void* pThis)
 {
     *reinterpret_cast<int**>(pThis) = &DAT_0107410c;
     reinterpret_cast<BSSimpleArray<NavMeshInfo*, 1024>*>(pThis)->BSSimpleArray_float_1024_InitialSetup(0, false);
@@ -2611,7 +2611,7 @@ void LoadingMenu::UpdatePlayerTileSettings(BGSPerkEntry* pLoadScreen)
     if (((fnv_0078bb60::PerkEntryX*)pLoadScreen)->FUN_005f36f0())
     {
         int x = ((fnv_0078bb60::PerkEntryX*)pLoadScreen)->TESLoadScreen_GetTypeData();
-        CalcLoadScreenTypeTextWindowFaces(x);
+        CalcLoadScreenTypeTextWindowVerts(x);
         switch (((fnv_0078bb60::PerkEntryX*)pLoadScreen)->FUN_005a7130())
         {
         case 4:

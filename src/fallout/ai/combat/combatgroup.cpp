@@ -362,14 +362,14 @@ struct FUN_0098ed30_class
 {
     void* vtable;
     void BSSimpleArray_CombatTarget_1024_InitialSetup(int a, int b);
-    void* BSSimpleArray_CombatTarget_1024_ctor();
+    void* BSSimpleArray_CombatTarget_1024_BSSimpleArray_CombatTarget_1024();
 };
 
 // Sets the vtable to DAT_0108d6f4, calls FUN_0098fab0 with 0 and 0, and returns this.
 // @fnv 0x0098ed30
-// src: XBOX_DEBUG_PDB 0x0098ed30
+// src: XBOX_PDB 0x0098ed30
 // pdb: BSSimpleArray<CombatTarget,1024>::BSSimpleArray<CombatTarget,1024> | CombatGroup.obj | debug, call graph, high
-void* FUN_0098ed30_class::BSSimpleArray_CombatTarget_1024_ctor()
+void* FUN_0098ed30_class::BSSimpleArray_CombatTarget_1024_BSSimpleArray_CombatTarget_1024()
 {
     vtable = &DAT_0108d6f4;
     BSSimpleArray_CombatTarget_1024_InitialSetup(0, 0);
@@ -7520,7 +7520,7 @@ struct Shape
     {}
     float FUN_004a7bd0();
     void Reset();
-    void Initialize(const Region&, float);
+    void Initialize_006e0320(const Region&, float);
     void PathingLOSGridMap_SetSightRadius(float);
 };
 void* Object_DispatchCommandFour(unsigned int);
@@ -7721,7 +7721,7 @@ void Group::CombatGroup_UpdateSearch()
                                 region.FUN_006f4ed0(location.FUN_006815c0());
                                 if (!shape.Modelloader_GetReferencedThis())
                                     shape.FUN_0066b0d0(new Shape);
-                                shape.Modelloader_GetReferencedThis()->Initialize(region, radius);
+                                shape.Modelloader_GetReferencedThis()->Initialize_006e0320(region, radius);
                                 shape.Modelloader_GetReferencedThis()->PathingLOSGridMap_SetSightRadius(*DAT_011cf42c.Setting_Float_00403e20());
                                 changed = 1;
                             }
@@ -9337,7 +9337,7 @@ struct Owner_9862e0
 };
 // Stores target in m28; when non-null, creates CombatCtx, calls FUN_0098a3c0 and target->v4, updates m40, m44, and m2c; otherwise clears m2c.
 // @fnv 0x009862e0
-// src: XBOX_DEBUG_PDB 0x009862e0
+// src: XBOX_DEBUG_PDB 0x009862e0 (was COMMUNITY)
 // pdb: CombatGroup::ForceCombatGroupStrategy | CombatGroup.obj | debug, call graph, high
 // pdb params: apStrategy
 // pdb locals: groupData

@@ -1304,14 +1304,14 @@ struct FUN_0043a9a0_class
     unsigned int x;
     unsigned int y;
     unsigned int z;
-    void __thiscall DoorTeleportData_LoadGame();
+    void __thiscall LoadFields();
 };
 
 // @fnv 0x0043a9a0
-// src: XBOX_RETAIL_PDB 0x0043a9a0
-// pdb: DoorTeleportData::LoadGame | TeleportData.obj | retail, object-file run extension, high
+// src: GUESS 0x0043a9a0 (confidence: medium)
+// pdb: DoorTeleportData::LoadGame | TeleportData.obj | retail, object-file run extension, high, not renamed: the debug build links this name to 0x0043aaa0
 // pdb locals: ilinkedDoorID
-void __thiscall FUN_0043a9a0_class::DoorTeleportData_LoadGame()
+void __thiscall FUN_0043a9a0_class::LoadFields()
 {
     g_TESSaveLoadGame->ReadTypedData((char*)this + 4, 0xc);
     g_TESSaveLoadGame->ReadTypedData((char*)this + 0x10, 0xc);

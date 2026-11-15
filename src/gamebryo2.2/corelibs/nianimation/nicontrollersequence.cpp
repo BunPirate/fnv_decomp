@@ -464,11 +464,11 @@ extern "C" double __cdecl fmod(double, double);
 
 // Advances the sequence's accumulated time by frequency times the delta, wraps it into [begin,end] when cycleType is 0, and optionally stores the new state.
 // @fnv 0x00a30970
-// src: XBOX_RETAIL_PDB 0x00a30970
+// src: XBOX_PDB 0x00a30970
 // pdb: NiControllerSequence::ComputeScaledTime | NiControllerSequence.obj | retail, call graph (shared callers), high
 // pdb params: fTime, bStoreLastTime
 // pdb locals: fDeltaTime, fScaledTime, fWeightedLastTime, fSpan, fdeltaTime
-float NiControllerSequence::ComputeScaledTime(float fTime, bool bStoreLastTime)
+float NiControllerSequence::ComputeScaledTime_00a30970(float fTime, bool bStoreLastTime)
 {
     float accumulated = m_fWeightAdjustedLastTime;
     float delta;
@@ -1333,7 +1333,7 @@ struct FUN_00a30750_shell
 extern int EmptyFS;
 
 // @fnv 0x00a30750
-// src: XBOX_DEBUG_PDB 0x00a30750
+// src: XBOX_DEBUG_PDB 0x00a30750 (was COMMUNITY)
 // pdb: NiControllerSequence::IDTag::~IDTag | NiControllerSequence.obj | debug, call graph (shared callers), high
 void FUN_00a30750_shell::NiControllerSequence_IDTag_dtor()
 {
@@ -1712,7 +1712,7 @@ void NiControllerSequence::Update_00a34ba0(float fTime, bool bUpdateInterpolator
         }
         else
             localTime = fTime + m_fSequenceOffset;
-        NiControllerSequence_SetInterpsWeightAndTime(m_fWeight * transition, ease, ComputeScaledTime(localTime, true));
+        NiControllerSequence_SetInterpsWeightAndTime(m_fWeight * transition, ease, ComputeScaledTime_00a30970(localTime, true));
         if (((UpdateNote**)m_pkAnimNotes))
         {
             if (fOldScaledTime > m_fScaledLastTime)
@@ -2189,11 +2189,11 @@ extern "C" int __cdecl atexit(void(__cdecl*)());
 void* __cdecl Object_DispatchCommandFour(unsigned int);
 // The shared NiInterpController has no explicit constructor declaration.
 // Initialize that base through the original constructor before the shared fields.
-void* __fastcall NiInterpController_ctor(void*);
+void* __fastcall NiInterpController_NiInterpController(void*);
 static inline NiMultiTargetTransformController* ConstructMultiTargetController(
     NiMultiTargetTransformController* controller, unsigned short count)
 {
-    NiInterpController_ctor(controller);
+    NiInterpController_NiInterpController(controller);
     *reinterpret_cast<void**>(controller) = &DAT_01096444;
     controller->m_usNumInterps = 0;
     controller->m_pkBlendInterpolators = 0;
@@ -2469,7 +2469,7 @@ int __cdecl FUN_00aa1360(const char*, const char*);
 float NiControllerSequence::FindCorrespondingMorphFrame(NiControllerSequence* pkSourceSequence, float fSourceSequenceTime)
 {
     TimedTextEntry* pkNextKey = 0;
-    float fPartnerTime = pkSourceSequence->ComputeScaledTime(fSourceSequenceTime, false);
+    float fPartnerTime = pkSourceSequence->ComputeScaledTime_00a30970(fSourceSequenceTime, false);
 
     unsigned int uiNumPartnerKeys;
     TimedTextEntry* pkPartnerKeys = ((NiTextKeyExtraData*)pkSourceSequence->m_spTextKeyData.m_pObject)->GetKeys(uiNumPartnerKeys);

@@ -192,11 +192,11 @@ struct DiagLogger
 extern const char str_010c85ac[];
 
 // @fnv 0x00cb1750
-// src: XBOX_RETAIL_PDB 0x00cb1750
+// src: HAVOK_LIB 0x00cb1750
 // pdb: hkErrorMessage | hkError.obj | retail, string-set bridge, high
 // pdb params: c
 // pdb locals: assertBuf, ostr
-void hkErrorMessage(const char* apMsg)
+void _hkErrorMessage(const char* apMsg)
 {
     DiagBuffer buf;
     buf.FUN_00cb1600(buf.m_buf, 0x200);

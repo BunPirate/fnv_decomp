@@ -698,7 +698,7 @@ struct FUN_00b78980_shell
     void __thiscall ShadowLightShader_PresetADTPasses_2x();
     void __thiscall ShadowLightShader_PresetADTSPasses_2x();
     void __thiscall ShadowLightShader_PresetADPasses_2x();
-    void __thiscall ShadowLightShader_PresetDiffusePtPasses_2x();
+    void __thiscall ShadowLightShader_PresetDiffusePasses_2x();
     void __thiscall ShadowLightShader_PresetSpecularPasses_2x();
     void __thiscall ShadowLightShader_PresetEnvMapPasses_2x();
     void __thiscall ShadowLightShader_PresetLandscape_2x();
@@ -732,7 +732,7 @@ void __thiscall FUN_00b78980_shell::ShadowLightShader_ReloadShaders()
         ShadowLightShader_PresetADPasses_2x();
         ShadowLightShader_PresetADTPasses_2x();
         ShadowLightShader_PresetADTSPasses_2x();
-        ShadowLightShader_PresetDiffusePtPasses_2x();
+        ShadowLightShader_PresetDiffusePasses_2x();
         ShadowLightShader_PresetSpecularPasses_2x();
         ShadowLightShader_PresetEnvMapPasses_2x();
         ShadowLightShader_PresetLandscape_2x();
@@ -1113,7 +1113,7 @@ struct FUN_00b78980_shell
     void ShadowLightShader_PresetADTPasses_2x();
     void ShadowLightShader_PresetADTSPasses_2x();
     void ShadowLightShader_PresetADPasses_2x();
-    void ShadowLightShader_PresetDiffusePtPasses_2x();
+    void ShadowLightShader_PresetDiffusePasses_2x();
     void ShadowLightShader_PresetSpecularPasses_2x();
     void ShadowLightShader_PresetEnvMapPasses_2x();
     void ShadowLightShader_PresetLandscape_2x();
@@ -1151,7 +1151,7 @@ bool FUN_00b78980_shell::InitializePasses()
         ShadowLightShader_PresetADPasses_2x();
         ShadowLightShader_PresetADTPasses_2x();
         ShadowLightShader_PresetADTSPasses_2x();
-        ShadowLightShader_PresetDiffusePtPasses_2x();
+        ShadowLightShader_PresetDiffusePasses_2x();
         ShadowLightShader_PresetSpecularPasses_2x();
         ShadowLightShader_PresetEnvMapPasses_2x();
         ShadowLightShader_PresetLandscape_2x();
@@ -8951,10 +8951,10 @@ extern unsigned int DAT_011fd154, DAT_011fc574;
 extern unsigned int DAT_011fd178, DAT_011fc598;
 extern unsigned int DAT_011fd184, DAT_011fc5a4;
 // @fnv 0x00bf8f70
-// src: XBOX_RETAIL_PDB 0x00bf8f70
+// src: COMMUNITY 0x00bf8f70
 // pdb: ShadowLightShader::PresetDiffusePtPasses_2x | ShadowLightShader_Preset_2x.obj | retail, object-file gap fill, high
 // pdb locals: sppass, spstage
-void FUN_00b78980_shell::ShadowLightShader_PresetDiffusePtPasses_2x()
+void FUN_00b78980_shell::ShadowLightShader_PresetDiffusePasses_2x()
 {
     ScopedSystem system;
     ScopedTemporary temporary;

@@ -355,7 +355,7 @@ FUN_00a8d850_cls* FUN_00a8d850_cls::DestroyImageReader(unsigned char acFlags)
 
 struct ClsSub
 {
-    ClsSub* NiPalette_ctor(int b, int w, int d);
+    ClsSub* NiPalette_NiPalette_00a8b110(int b, int w, int d);
 };
 extern void* __cdecl Object_DispatchCommandFour(unsigned int size);
 extern void __cdecl _NiFree_00aa10f0(void* p);
@@ -471,7 +471,7 @@ NiPixelData* ClsReader::ReadImage(NiBinaryStream* stream, NiPixelData* image)
         ClsSub* sub;
         if (pSubMem != 0)
         {
-            sub = ((ClsSub*)pSubMem)->NiPalette_ctor((int)(unsigned char)b115, (int)(unsigned short)w106, d16c);
+            sub = ((ClsSub*)pSubMem)->NiPalette_NiPalette_00a8b110((int)(unsigned char)b115, (int)(unsigned short)w106, d16c);
         }
         else
         {

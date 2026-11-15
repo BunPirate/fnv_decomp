@@ -137,7 +137,7 @@ struct FUN_00537d10_Class {
 struct QuantityData { void SetQuantity(unsigned int); };
 #include "../../include/TESConditionItem.h"
 struct TESQuest;
-struct FUN_00537e30_cls { char _pad[24]; int _m18; int _m1c; FUN_00537e30_cls* NiVBChip_ctor(); };
+struct FUN_00537e30_cls { char _pad[24]; int _m18; int _m1c; FUN_00537e30_cls* NiVBChip_NiVBChip(); };
 struct FUN_00537e90 {
     unsigned int quantity;
     void SetQuantity(unsigned int value);
@@ -363,7 +363,7 @@ struct FUN_0053a700_Holder {
 };
 extern float DAT_01015f5c;
 struct FUN_0053a630_Class : public FUN_0053ae30_class {
-    int TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex);
+    int TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex);
 };
 struct A51BF0Base {
     static void* operator new(unsigned int);
@@ -706,7 +706,7 @@ struct LocalObj53a5e0 {
 };
 struct FUN_0053a5e0_cls {
     bool TESObjectLAND_GetCoordData(LocalObj53a5e0* cdata, int coord, int forcetovertex);
-    int TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex);
+    int TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex);
     int TESObjectLAND_GetMainTexture(int aCoord);
 };
 struct FUN_0053a7a0_Tbl {

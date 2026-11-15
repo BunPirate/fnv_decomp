@@ -103,7 +103,7 @@ struct FUN_00527ba0_This
     void BGSWorldLocation_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 // @fnv 0x00527ba0
-// src: XBOX_RETAIL_PDB 0x00527ba0
+// src: XBOX_RETAIL_PDB 0x00527ba0 (was COMMUNITY)
 // pdb: BGSWorldLocation::LoadGame | BGSWorldLocation.obj | retail, call graph (shared callers), high
 // pdb params: apLoadGameBuffer
 void FUN_00527ba0_This::BGSWorldLocation_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)

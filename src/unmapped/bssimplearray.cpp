@@ -1498,7 +1498,7 @@ void BSSimpleArray<PathingGraphNode, 1024>::RemoveAt(unsigned int aiIndex, bool 
 
 struct S5460_FUN_006e3d30_Helper
 {
-    void* __thiscall BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
+    void* __thiscall BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
 };
 
 struct BSSimpleArray_PathingAvoidNode_1024
@@ -1535,7 +1535,7 @@ void BSSimpleArray_PathingAvoidNode_1024::BSSimpleArray_PathingAvoidNode_1024_Se
         }
         else
         {
-            ((S5460_FUN_006e3d30_Helper*)this)->BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(aiNewSize, iSize);
+            ((S5460_FUN_006e3d30_Helper*)this)->BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(aiNewSize, iSize);
             SimpleArrayStorage = aiNewSize;
         }
 
@@ -1551,7 +1551,7 @@ void BSSimpleArray_PathingAvoidNode_1024::BSSimpleArray_PathingAvoidNode_1024_Se
 
             if (abFreeMemory && aiNewSize <= SimpleArrayStorage / 4)
             {
-                ((S5460_FUN_006e3d30_Helper*)this)->BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(aiNewSize, aiNewSize);
+                ((S5460_FUN_006e3d30_Helper*)this)->BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(aiNewSize, aiNewSize);
                 SimpleArrayStorage = aiNewSize;
             }
         }
@@ -1572,7 +1572,7 @@ struct FUN_009f6540_Helper
 
 struct Host9f6340
 {
-    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(int, int);
+    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(int, int);
 };
 
 struct FUN_009f6200_Class
@@ -1612,7 +1612,7 @@ void FUN_009f6200_Class::BSSimpleArray_SandBoxChoiceListItem_1024_SetSize(unsign
             SimpleArrayStorage = aiNewSize;
         }
 
-        reinterpret_cast<Host9f6340*>(this)->BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(reinterpret_cast<int>(pBuffer + iSize * 16),
+        reinterpret_cast<Host9f6340*>(this)->BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(reinterpret_cast<int>(pBuffer + iSize * 16),
                                                           static_cast<int>(aiNewSize - iSize));
         iSize = aiNewSize;
     }
@@ -1629,7 +1629,7 @@ void FUN_009f6200_Class::BSSimpleArray_SandBoxChoiceListItem_1024_SetSize(unsign
     }
     else
     {
-        reinterpret_cast<Host9f6340*>(this)->BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(reinterpret_cast<int>(pBuffer + iSize * 16),
+        reinterpret_cast<Host9f6340*>(this)->BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(reinterpret_cast<int>(pBuffer + iSize * 16),
                                                           static_cast<int>(aiNewSize - iSize));
         iSize = aiNewSize;
     }
@@ -2310,11 +2310,11 @@ struct FUN_009f6500
 
 // Calls the FUN_009f6500 placement constructor on each 16-byte element of the arr array, count times.
 // @fnv 0x009f6460
-// src: XBOX_DEBUG_PDB 0x009f6460
+// src: XBOX_PDB 0x009f6460
 // pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::_ConstructItems | SandBoxPackage.obj | debug, call graph (shared callers), high
 // pdb params: apFirstAddr, aiCount
 // pdb locals: i
-void Host9f6340::BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(int apFirstAddr, int aiCount)
+void Host9f6340::BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(int apFirstAddr, int aiCount)
 {
     for (unsigned int i = 0; i < (unsigned int)aiCount; ++i)
     {

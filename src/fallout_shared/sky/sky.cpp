@@ -994,7 +994,7 @@ void Sky::Update_0063ac70(float afSecondsPassed)
     HandleClimateChange();
     if (g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
         flags |= 1;
-    UpdateWeather();
+    UpdateWeather_0063d1d0();
     UpdateColors();
     UpdateFog();
     UpdateWind();
@@ -1324,7 +1324,7 @@ public:
 };
 
 // @fnv 0x0063e9f0
-// src: XBOX_RETAIL_PDB 0x0063e9f0
+// src: XBOX_RETAIL_PDB 0x0063e9f0 (was COMMUNITY)
 // pdb: Sky::SaveGame | Sky.obj | retail, object-file run extension, high
 // pdb locals: idefaultWeatherID, icurrentWeatherID, ilastWeatherID, ioverrideWeatherID
 void SkyLegacySaveMethods::Sky_SaveGame()
@@ -1379,7 +1379,7 @@ public:
 };
 
 // @fnv 0x0063eb70
-// src: XBOX_RETAIL_PDB 0x0063eb70
+// src: XBOX_RETAIL_PDB 0x0063eb70 (was COMMUNITY)
 // pdb: Sky::SaveGame | Sky.obj | retail, call graph, high
 // pdb locals: idefaultWeatherID, icurrentWeatherID, ilastWeatherID, ioverrideWeatherID
 void SkySaveMethods::Sky_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
@@ -2578,10 +2578,10 @@ TESForm* TESForm_GetFormByNumericID(unsigned int);
 
 // Selects the current weather from the climate, cell or override, updates transition state and fade, and refreshes HDR values.
 // @fnv 0x0063d1d0
-// src: XBOX_RETAIL_PDB 0x0063d1d0
+// src: XBOX_PDB 0x0063d1d0
 // pdb: Sky::UpdateWeather | Sky.obj | retail, object-file run extension, high
 // pdb locals: bloadNewWeather, pNewWeather, pRegionList, pPlayerRegion
-void Sky::UpdateWeather()
+void Sky::UpdateWeather_0063d1d0()
 {
     if (!pCurrentClimate)
         return;

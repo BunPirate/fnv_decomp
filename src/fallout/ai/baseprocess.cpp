@@ -166,9 +166,9 @@ struct Dummy_00527770
 
 // Calls FUN_00527770 with 0x25, sets the first pointer to "@kR", and zeroes the ints at offsets 16 and 20 before returning pThis.
 // @fnv 0x00526b00
-// src: XBOX_RETAIL_PDB 0x00526b00
+// src: EXE 0x00526b00
 // pdb: LoadedReferenceMap::LoadedReferenceMap | BGSLoadedReferenceCollection.obj | retail, upstream name already matches, high
-void* __fastcall LoadedReferenceMap_ctor(void* pThis)
+void* __fastcall LoadedReferenceMap_LoadedReferenceMap(void* pThis)
 {
     ((Dummy_00527770*)pThis)->NiTMap_unsigned_int_TESObjectREFR_NiTMap(0x25);
     *(const char**)pThis = "@kR";

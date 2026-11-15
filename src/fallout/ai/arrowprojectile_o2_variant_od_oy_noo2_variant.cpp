@@ -143,7 +143,7 @@ struct __declspec(align(16)) CObj
     CSub m0;
     CSub m1;
     unsigned int flags20, filter24;
-    void __thiscall hkpShapeRayCastInput_ctor();
+    void __thiscall hkpShapeRayCastInput_hkpShapeRayCastInput();
 };
 
 struct Sub2;
@@ -166,7 +166,7 @@ struct __declspec(align(16)) DObj
     int m_uiExtraInfo, unk18, unk1c;
     unsigned int shapeKeys[8];
     void* rootCollidable;
-    void __thiscall hkpShapeRayCastOutput_ctor();
+    void __thiscall hkpShapeRayCastOutput_hkpShapeRayCastOutput();
     Sub2* __thiscall hkpShapeRayCastCollectorOutput_hasHit(Sub2* b);
 };
 
@@ -214,9 +214,9 @@ void* __cdecl ArrowProjectile_PickSceneGraph(void* apObject, NiPoint3 aPickFrom,
                                 Vec4 vb;
                                 NI2HK(&vb, aPickFrom.FUN_00439e90(aDirection.ApplyScaled(*afPickLength)));
                                 CObj oc;
-                                oc.hkpShapeRayCastInput_ctor();
+                                oc.hkpShapeRayCastInput_hkpShapeRayCastInput();
                                 DObj od;
-                                od.hkpShapeRayCastOutput_ctor();
+                                od.hkpShapeRayCastOutput_hkpShapeRayCastOutput();
                                 EObj oe;
                                 if (NiObject_IsKindOf(&RTTI_01267e64, coll))
                                 {

@@ -131,7 +131,7 @@ struct FUN_00d655e0_class
 void* __cdecl hkMemoryRouter_getInstance();
 struct FUN_00d657d0_class
 {
-    FUN_00d657d0_class* hkpShapeDisplayViewer_ctor(int);
+    FUN_00d657d0_class* hkpShapeDisplayViewer_hkpShapeDisplayViewer(int);
 };
 void* __cdecl hkpShapeDisplayViewer_create(void* contexts);
 struct GlobalObjectO2_00d472a0
@@ -458,7 +458,7 @@ struct FUN_00d657d0_cls
     int m_70;
 
     void FUN_00ddccb0(ShapeList* contexts);
-    FUN_00d657d0_cls* hkpShapeDisplayViewer_ctor(ShapeList* contexts);
+    FUN_00d657d0_cls* hkpShapeDisplayViewer_hkpShapeDisplayViewer(ShapeList* contexts);
 };
 inline hkMemoryAllocator& getMemory_d65f()
 {

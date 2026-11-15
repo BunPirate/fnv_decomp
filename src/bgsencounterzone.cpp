@@ -206,10 +206,10 @@ void BGSEncounterZone::Save()
 }
 
 // @fnv 0x00526070
-// src: XBOX_DEBUG_PDB 0x00526070
+// src: COMMUNITY 0x00526070
 // pdb: BGSEncounterZone::SetDetachTime | BGSEncounterZone.obj | debug, call graph, high
 // pdb params: aiVal
-void BGSEncounterZone::SetDetachTime(unsigned int aiVal)
+void BGSEncounterZone::SetDetachTime_00526070(unsigned int aiVal)
 {
     GameData.m_uiDetachTime = aiVal;
     MarkAsModified(0x80000000);

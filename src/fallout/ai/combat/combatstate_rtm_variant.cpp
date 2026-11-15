@@ -115,7 +115,7 @@ struct LoadInfo
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
     LoadInfo();
-    void CombatLocationTarget_LoadGame(CombatLoadBuffer*);
+    void CombatState_LocationTarget_LoadGame(CombatLoadBuffer*);
 };
 
 struct LoadBoundPair
@@ -357,7 +357,7 @@ struct CombatLoadState
 };
 
 // @fnv 0x009a2040
-// src: XBOX_DEBUG_PDB 0x009a2040
+// src: XBOX_DEBUG_PDB 0x009a2040 (was COMMUNITY)
 // pdb: CombatState::LoadGame | CombatState.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
 // pdb locals: ccombatItems, csavedData, i, isaveGameCount, pembeddedWeapon, unreachableCoverLocation, unreachableLocation
@@ -515,7 +515,7 @@ void CombatLoadState::CombatState_LoadGame(CombatLoadBuffer* apLoadGameBuffer)
         if (presence & 32)
         {
             info = new LoadInfo;
-            info->CombatLocationTarget_LoadGame(apLoadGameBuffer);
+            info->CombatState_LocationTarget_LoadGame(apLoadGameBuffer);
         }
 
         if (presence & 2)

@@ -472,13 +472,13 @@ struct Inner097
 CombatTargetTimestamp* __fastcall CombatTargetTimestamp_ClearTimeStamp(CombatTargetTimestamp*);
 struct FUN_0098fda0_Class
 {
-    Inner097* __thiscall UnreachableLocation_ctor();
+    Inner097* __thiscall UnreachableLocation_UnreachableLocation();
 };
 // Calls FUN_0097ede0 on this, then FUN_004300a0 on the object at this+0x10, and returns this.
 // @fnv 0x0098fda0
-// src: XBOX_DEBUG_PDB 0x0098fda0
+// src: COMMUNITY 0x0098fda0
 // pdb: UnreachableLocation::UnreachableLocation | CombatState.obj | debug, upstream name already matches, high
-Inner097* __thiscall FUN_0098fda0_Class::UnreachableLocation_ctor()
+Inner097* __thiscall FUN_0098fda0_Class::UnreachableLocation_UnreachableLocation()
 {
     ((Inner097*)this)->BGSWorldLocation_BGSWorldLocation();
     CombatTargetTimestamp_ClearTimeStamp((CombatTargetTimestamp*)((char*)this + 0x10));
@@ -491,13 +491,13 @@ struct FUN_0098ff80_class
 {
     int* vfn;
     void __thiscall FUN_0098ffb0(int arg);
-    int* __thiscall CombatGroupStrategyFlank_ctor(int aeType);
+    int* __thiscall CombatGroupStrategyFlank_CombatGroupStrategyFlank(int aeType);
 };
 // @fnv 0x0098ff80
-// src: XBOX_DEBUG_PDB 0x0098ff80
+// src: EXE 0x0098ff80
 // pdb: CombatGroupStrategyFlank::CombatGroupStrategyFlank | CombatGroupStrategy.obj | debug, upstream name already matches, high
 // pdb params: aeType
-int* __thiscall FUN_0098ff80_class::CombatGroupStrategyFlank_ctor(int aeType)
+int* __thiscall FUN_0098ff80_class::CombatGroupStrategyFlank_CombatGroupStrategyFlank(int aeType)
 {
     FUN_0098ffb0(aeType);
     *reinterpret_cast<int**>(this) = &DAT_0108d93c;
@@ -526,14 +526,14 @@ struct FUN_0098ffe0_class
 {
     int* m_p;
     void FUN_0098ffb0(int arg);
-    FUN_0098ffe0_class* CombatGroupStrategyFallBack_ctor(int aeType);
+    FUN_0098ffe0_class* CombatGroupStrategyFallBack_CombatGroupStrategyFallBack(int aeType);
 };
 // Calls FUN_0098ffb0 with arg, sets m_p to the address of DAT_0108d95c, and returns this.
 // @fnv 0x0098ffe0
-// src: XBOX_DEBUG_PDB 0x0098ffe0
+// src: EXE 0x0098ffe0
 // pdb: CombatGroupStrategyFallBack::CombatGroupStrategyFallBack | CombatGroupStrategy.obj | debug, upstream name already matches, high
 // pdb params: aeType
-FUN_0098ffe0_class* FUN_0098ffe0_class::CombatGroupStrategyFallBack_ctor(int aeType)
+FUN_0098ffe0_class* FUN_0098ffe0_class::CombatGroupStrategyFallBack_CombatGroupStrategyFallBack(int aeType)
 {
     FUN_0098ffb0(aeType);
     m_p = &DAT_0108d95c;
@@ -1764,14 +1764,14 @@ FUN_0098f5f0::FUN_0098f5f0(int a, int b, void* c)
 
 struct FUN_0098f8e0_Class : FUN_0098fda0_Class
 {
-    FUN_0098f8e0_Class* __thiscall CombatTarget_ctor();
+    FUN_0098f8e0_Class* __thiscall CombatTarget_CombatTarget();
 };
 // Calls FUN_0097ede0 on four embedded Inner097 members and FUN_004300a0 on six members at offsets 0x4c-0x60, then returns this.
 // @fnv 0x0098f8e0
-// src: XBOX_RETAIL_PDB 0x0098f8e0
+// src: XBOX_PDB 0x0098f8e0
 // pdb: CombatTarget::CombatTarget | CombatGroup.obj | retail, upstream name already matches, high
 // pdb params: apActor, aiSearch
-FUN_0098f8e0_Class* __thiscall FUN_0098f8e0_Class::CombatTarget_ctor()
+FUN_0098f8e0_Class* __thiscall FUN_0098f8e0_Class::CombatTarget_CombatTarget()
 {
     ((Inner097*)((char*)this + 8))->BGSWorldLocation_BGSWorldLocation();
     ((Inner097*)((char*)this + 0x18))->BGSWorldLocation_BGSWorldLocation();
@@ -5492,15 +5492,15 @@ struct FUN_00995780_cls
     int m_08;
     FUN_00995760_cls m_0c;
 
-    FUN_00995780_cls* CombatPlanLink_ctor(int apAction, int aiDesiredValue, int apParentNode);
+    FUN_00995780_cls* CombatPlanLink_CombatPlanLink(int apAction, int aiDesiredValue, int apParentNode);
 };
 
 // Stores a, c and b into m_00, m_04 and m_08, calls FUN_00995760 on m_0c, and returns this.
 // @fnv 0x00995780
-// src: XBOX_DEBUG_PDB 0x00995780
+// src: COMMUNITY 0x00995780
 // pdb: CombatPlanLink::CombatPlanLink | CombatPlanner.obj | debug, upstream name already matches, high
 // pdb params: apAction, aiDesiredValue, apParentNode
-FUN_00995780_cls* FUN_00995780_cls::CombatPlanLink_ctor(int apAction, int aiDesiredValue, int apParentNode)
+FUN_00995780_cls* FUN_00995780_cls::CombatPlanLink_CombatPlanLink(int apAction, int aiDesiredValue, int apParentNode)
 {
     m_00 = apAction;
     m_04 = apParentNode;

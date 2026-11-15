@@ -149,7 +149,7 @@ inline void* hkAlloc(int n)
 }
 
 // @fnv 0x00d6a810
-// src: XBOX_RETAIL_PDB 0x00d6a810
+// src: XBOX_RETAIL_PDB 0x00d6a810 (was COMMUNITY)
 // pdb: hkpMidphaseViewer::create | hkpMidphaseViewer.obj | retail, object-file gap fill, high
 // pdb params: contexts
 void* __cdecl hkpMidphaseViewer_create(int contexts)

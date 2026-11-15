@@ -122,7 +122,7 @@ extern FurnitureSearchManager* DAT_011c3f2c;
 extern FurnitureList DAT_011e0424;
 extern FurnitureSetting DAT_011cd24c;
 extern FurnitureTime DAT_011f6394;
-void __cdecl MiddleHighProcess_EvaluateReferenceforSitSleep(::TESObjectREFR*, ::Actor*);
+void __cdecl EvaluateReferenceforSitSleep(::TESObjectREFR*, ::Actor*);
 struct SearchFurnitureProcess : ::MiddleHighProcess
 {
     void MiddleHighProcess_FindBedChairs(::Actor*, bool, ::TESObjectREFR*);
@@ -160,12 +160,12 @@ void SearchFurnitureProcess::MiddleHighProcess_FindBedChairs(::Actor* apActor, b
     {
         ::NiPoint3* targetPosition = static_cast<const ::TESObjectREFR*>(apRefLoc)->GetPos();
         reinterpret_cast<FurnitureSearchManager*>(DAT_011c3f2c)
-            ->FUN_0046f280(apRefLoc->GetParentCell(), *targetPosition, i, *targetPosition, i, MiddleHighProcess_EvaluateReferenceforSitSleep, apActor);
+            ->FUN_0046f280(apRefLoc->GetParentCell(), *targetPosition, i, *targetPosition, i, EvaluateReferenceforSitSleep, apActor);
     }
     else
     {
         reinterpret_cast<FurnitureSearchManager*>(DAT_011c3f2c)
-            ->FUN_0046f280(a, p, i, f->TESPackage_GetLocationCoord(apActor), i, MiddleHighProcess_EvaluateReferenceforSitSleep, apActor);
+            ->FUN_0046f280(a, p, i, f->TESPackage_GetLocationCoord(apActor), i, EvaluateReferenceforSitSleep, apActor);
     }
     reinterpret_cast<FurnitureList*>(&RefListChairBed)->FUN_00470470();
     FurnitureList* cf = &DAT_011e0424;

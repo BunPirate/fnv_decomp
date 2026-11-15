@@ -18,13 +18,13 @@ The compilers are Microsoft's, from the downloads the CI uses, checked against t
 
 ## What changes
 
-### Renames (29,714)
+### Renames (29,413)
 
 | Kind | Renamed | Example |
 |---|---|---|
 | Parameters | 20,733 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
 | Fields | 4,852 | `CombatProcedureBeInCover` +0x44: `m_waitingOutTimer` → `WaitingOutOfCoverTimer` |
-| Functions | 3,531 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
+| Functions | 3,230 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
 | Globals | 517 | `DAT_0126b1b0` → `hkpVehicleInstanceClass` |
 | Classes | 81 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
 
@@ -44,7 +44,10 @@ Naming rules:
   convention the project already uses for a real name on a stand-in scope.
 - Static members and function-local statics become `Class_member` or `Class_Function_name`.
 - A class is renamed only where the real class is not already defined elsewhere in the tree.
-- A renamed function's provenance tag becomes `XBOX_RETAIL_PDB` or `XBOX_DEBUG_PDB`.
+- A renamed function's provenance tag becomes `XBOX_RETAIL_PDB` or `XBOX_DEBUG_PDB`. When it replaces another tag, the
+  marker keeps it as a second source: `// src: XBOX_RETAIL_PDB 0x0078a230 (was COMMUNITY)`. A `GUESS` tag is dropped.
+- Where the existing name already was the PDB name, spelled differently (an address suffix, a `Class_` prefix, or
+  `Class_Class` for a constructor), the name and its tag stay as they were. The PDB name is in the `// pdb:` comment.
 
 ### Comments on every linked function (37,465) and class (2,509)
 
@@ -100,6 +103,8 @@ linked by their name-string argument, which has to match a public symbol in the 
 | Functions the parser found no definition for | 5,552 | Mostly units clang cannot fully parse (648 of 2,989), or names it decorates differently. |
 | Rejected by the build | 2,045 | They made a unit fail to compile or compile differently, usually through a use the parser missed. |
 | Declared twice under two names in one file | 860 | One address declared twice (for example `GetExtraData` and `FUN_00a5bdd0`); renaming both would collide. |
+| Already named, only spelled differently | 293 | The existing name and its tag already carry the same evidence (see the naming rules). |
+| Conflicts found in review | 8 | 0x0078b9b0, whose own message names it `CalcLoadScreenTypeTextWindowVerts`; 2 names from the public Xbox 360 symbols (probably folded code); 5 whose original is also linked to another PC function by a different build. The comment says why. |
 | Collisions and shadowing | 372 | The name already exists on the class, a base or derived class, in the function body, or as another global. |
 | Classes whose real name is already defined | 2,249 | Stand-ins for real classes; the comment names the real class. |
 | Local variables | all | No safe way to pair the current locals with the originals by position. They are listed in `// pdb locals:`. |
@@ -111,6 +116,11 @@ All of these still get the real name in a comment.
 
 - **Linking errors.** About 1 in 1,000 high-tier retail links is expected to be wrong, and somewhat more for
   debug-only links. A wrong link gives a wrong name, never wrong code.
+- **Object-file position.** Run extension and gap fill link by position inside one object file, so a function missing
+  or reordered on one side shifts its neighbours. Review found one such shift (0x0078b9b0, `Verts` against `Faces`).
+  It is the only renamed function whose own message strings contradict its link. One other message differs from the
+  name (`computeMemberSize`, whose message says `structureLayout::getMemberSize()`), but that link comes from the same
+  string, so the message is Havok's own older wording.
 - **Folded code.** A function the linker folded with identical code stands for several originals, so its name is one
   of several.
 - **Field types.** Field renames follow the PDB layout at an offset. Where a class here models a smaller or

@@ -265,7 +265,7 @@ NiBoundingVolume* NiHalfSpaceBV_Create()
 {
     NiHalfSpaceBV* p = (NiHalfSpaceBV*)g_memoryManager.Allocate(32);
     if (p)
-        return p->NiHalfSpaceBV_ctor(_NiPoint3_ZERO, DAT_011a9478);
+        return p->NiHalfSpaceBV_00e9e680(_NiPoint3_ZERO, DAT_011a9478);
     return 0;
 }
 
@@ -401,10 +401,10 @@ extern void (__cdecl *const __identifier("??_7NiHalfSpaceBV@@6B@")[])();
 // The shared initializer names the constructor entry point without introducing
 // destructor cleanup that the original constructor does not have.
 // @fnv 0x00e9e680
-// src: XBOX_RETAIL_PDB 0x00e9e680
+// src: GAMEBRYO_LIB 0x00e9e680
 // pdb: NiHalfSpaceBV::NiHalfSpaceBV | NiHalfSpaceBV.obj | retail, call graph (shared callers), high
 // pdb params: kABV
-NiBoundingVolume* NiHalfSpaceBV::NiHalfSpaceBV_ctor(const NiPoint3& kPoint, const NiPoint3& kNormal)
+NiBoundingVolume* NiHalfSpaceBV::NiHalfSpaceBV_00e9e680(const NiPoint3& kPoint, const NiPoint3& kNormal)
 {
     *reinterpret_cast<const void**>(this) = reinterpret_cast<const void*>(__identifier("??_7NiHalfSpaceBV@@6B@"));
     m_kHalfSpacePlane.NiPlane::NiPlane();
@@ -457,7 +457,7 @@ NiBoundingVolume* __cdecl NiHalfSpaceBV_CreateFromStream(void* kStream)
     NiBoundingVolume* result;
 
     if (helper)
-        result = helper->NiHalfSpaceBV_ctor(DAT_011f426c, DAT_011a9478);
+        result = helper->NiHalfSpaceBV_00e9e680(DAT_011f426c, DAT_011a9478);
     else
         result = 0;
 

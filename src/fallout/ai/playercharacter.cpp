@@ -7040,7 +7040,7 @@ struct MatchNode
 struct MatchWorld;
 struct MatchSelection
 {
-    void SetDetachTime(int);
+    void SetDetachTime_00526070(int);
     void SetAttachTime(int);
 };
 struct MatchPlayer;
@@ -8341,7 +8341,7 @@ void MatchPlayer::PlayerCharacter_PositionPlayer(MatchPoint position, float rise
     {
         int change = DAT_011de7b8.FUN_00867e30();
         if (oldSelection)
-            oldSelection->SetDetachTime(change);
+            oldSelection->SetDetachTime_00526070(change);
         if (selected)
             selected->SetAttachTime(change);
     }
@@ -14845,15 +14845,15 @@ struct FUN_00948000_T
 {
     int* p;
     void* v;
-    FUN_00948000_T* AudioMarkerInfo_ctor(int* ref);
+    FUN_00948000_T* AudioMarkerInfo_AudioMarkerInfo(int* ref);
 };
 
 // Stores the int pointer a into p, resolves v via RefStub::FUN_00569080 when a is non-null, and returns this.
 // @fnv 0x00948000
-// src: XBOX_DEBUG_PDB 0x00948000
+// src: COMMUNITY 0x00948000
 // pdb: AudioMarkerInfo::AudioMarkerInfo | PlayerCharacter.obj | debug, upstream name already matches, high
 // pdb params: ref
-FUN_00948000_T* FUN_00948000_T::AudioMarkerInfo_ctor(int* ref)
+FUN_00948000_T* FUN_00948000_T::AudioMarkerInfo_AudioMarkerInfo(int* ref)
 {
     p = ref;
     if (ref)
@@ -17450,7 +17450,7 @@ struct CameraPlayer
 };
 // Reads input to adjust cameraYaw and cameraPitch, computes a new cameraPosition, and applies it to the camera node.
 // @fnv 0x0094a8c0
-// src: XBOX_RETAIL_PDB 0x0094a8c0
+// src: XBOX_RETAIL_PDB 0x0094a8c0 (was COMMUNITY)
 // pdb: PlayerCharacter::UpdateUFOCamera | PlayerCharacter.obj | retail, object-file run extension, high
 // pdb locals: ufopitchRot, translation, UpdateData, ufocameraRot, fdeltaTimeRatio, iyAxis, ufoheadingRot, fyAxisRatio, pWorldRoot, pcontrols, fxAxisRatio, cimaxAxisValue, ixAxis, icurrentTime
 void CameraPlayer::PlayerCharacter_UpdateUFOCamera()
@@ -19050,7 +19050,7 @@ void Obj117::PlayerCharacter_UpdateCamera(bool force, bool skip)
 }
 }  // namespace fnv_0094ae40
 
-float ActorValue_CheckClampDamageModifier(ActorValueOwner* apActor, ActorValue::Index aiWhich, float afDelta);
+float AdjustModifierForOwner(ActorValueOwner* apActor, ActorValue::Index aiWhich, float afDelta);
 float CombineModifierValue(float current, float delta, Actor* attacker);
 
 struct PlayerModifierAccess : public PlayerCharacter
@@ -19070,7 +19070,7 @@ void PlayerModifierAccess::PlayerCharacter_AlterModifier(ModifierGroup eGroup, A
     switch (eGroup)
     {
     case DAMAGE: {
-        float adjusted = ActorValue_CheckClampDamageModifier(this, aiWhich, afValue);
+        float adjusted = AdjustModifierForOwner(this, aiWhich, afValue);
         switch (aiWhich)
         {
         case 0x10:
@@ -28840,7 +28840,7 @@ struct PlayerQuestTargetOperations : public PlayerCharacter
 
 // Returns the player's current quest target list, refreshing it from the active quest when the flag is set or the quest has no targets.
 // @fnv 0x00952ba0
-// src: XBOX_DEBUG_PDB 0x00952ba0
+// src: XBOX_DEBUG_PDB 0x00952ba0 (was COMMUNITY)
 // pdb: PlayerCharacter::GetCurrentTargetList | PlayerCharacter.obj | debug, call graph, high
 PlayerList<RegionObjectEntry*>* PlayerQuestTargetOperations::PlayerCharacter_GetCurrentTargetList()
 {
@@ -43642,7 +43642,7 @@ struct AimObject
     AimObject* FUN_004181e0();
     int FUN_00401170();
     AimExtra* MiddleHighProcess_GetCurrentFurniture();
-    float GetGravity();
+    float GetGravity_00966980();
     float Projectile_GetSpeed();
     float FUN_00453700();
     void Projectile_SetSpeedMult(float);
@@ -44673,7 +44673,7 @@ void AimPlayer::PlayerCharacter_ApplyAutoAimActor(AimObject* apProjectile, AimOb
             yaw = 0.0f;
             pitch5 = 0.0f;
         }
-        else if (cameraAim && apProjectile && apProjectile->FUN_004181e0()->GetGravity() > 0.0)
+        else if (cameraAim && apProjectile && apProjectile->FUN_004181e0()->GetGravity_00966980() > 0.0)
         {
             if (apProjectile->FUN_00401170() == 62)
             {
@@ -51475,7 +51475,7 @@ int __cdecl ConvertFromUni(int a, int b);
 
 // Sets the byte at offset 0x7c6 to flag if it differs, then calls FUN_008b73f0 with a value from FUN_00950a60 and DAT_011cdd78.
 // @fnv 0x009697c0
-// src: XBOX_DEBUG_PDB 0x009697c0
+// src: XBOX_DEBUG_PDB 0x009697c0 (was COMMUNITY)
 // pdb: PlayerCharacter::SetPCToddler | PlayerCharacter.obj | debug, call graph, high
 // pdb params: abVal
 void FUN_009697c0_cls::PlayerCharacter_SetPCToddler(bool abVal)
@@ -53959,7 +53959,7 @@ struct SpherePtr
 struct BitsRef
 {
     int bits;
-    int CFilter_ctor(int, int, int);
+    int CFilter_CFilter(int, int, int);
     operator int() const;
 };
 
@@ -54777,7 +54777,7 @@ bool Player::PlayerCharacter_GetDropPoint(Bound* apObject, V3* aPoint, bool abAl
             SpherePtr sphere(new Sphere(size / 2.0, true));
             int filterTemp2;
             BitsRef filter;
-            filter.CFilter_ctor(42, DAT_011dea3c->FUN_00931ed0(&filterTemp2)->CFilter_GetGroup(), 0);
+            filter.CFilter_CFilter(42, DAT_011dea3c->FUN_00931ed0(&filterTemp2)->CFilter_GetGroup(), 0);
             AlignedDynamicArray info;
             info.filter = filter;
             info.shape = ((Sphere*)sphere)->Bipedanim_GetReferenceFlagsOrZero();

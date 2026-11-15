@@ -209,7 +209,7 @@ struct Object180
     void* unk00;
     int unk04;
     void* unk08;
-    Object180* __thiscall hkIstream_ctor(void* mem, int memSize);
+    Object180* __thiscall hkIstream_hkIstream_00dcc6a0(void* mem, int memSize);
     void __thiscall SetVirtualTable_00dcc160();
 };
 // @fnv 0x00d48f00
@@ -224,7 +224,7 @@ int __cdecl hkSerializeUtil_load_00d48f00(Header180* buf, int buflen, int result
         hkString_memCmp(&buf->unk10, &DAT_011b7b88, 4) == 0 && hkString_strCmp(&buf->unk28, hkVersionUtil_getCurrentVersion()) == 0)
         return hkNativePackfileUtils_load(buf, buflen, 0);
     Object180 wrapper;
-    Object180* result = wrapper.hkIstream_ctor(buf, buflen);
+    Object180* result = wrapper.hkIstream_hkIstream_00dcc6a0(buf, buflen);
     void* payload = result->unk08;
     int value = hkSerializeUtil_load(payload, resultOut, classReg);
     wrapper.SetVirtualTable_00dcc160();

@@ -43,8 +43,8 @@ public:
     float GetTotalPathLength();
     void GetLengths(unsigned int* keys, unsigned int* count, int* type, unsigned char* stride);
     PositionKey* GetKeys(unsigned int& count, int& type, unsigned char& stride) const;
-    void GetPercentLoc(float fPercent, unsigned int* uiI1, unsigned int* uiI2, float* fNormTime);
-    void GetPercentLoc(float fPercent, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime);
+    void GetPercentLoc_00a4a980(float fPercent, unsigned int* uiI1, unsigned int* uiI2, float* fNormTime);
+    void GetPercentLoc_00a4a980(float fPercent, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime);
     void GetLoc(float fTime, int* uiI1, int* uiI2, float* fNormTime);
     void GetLoc(float fTime, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime);
     void CalcRefFrame(int ui1, int ui2, float fNormTime, NiMatrix3* kRefFrame);

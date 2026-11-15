@@ -26,7 +26,7 @@ class BSAnimGroupSequence : public NiControllerSequence
     float GetScaledTime(float afTime);
     void ValidateTargets();
     bool AttachToOwner(NiAVObject* target, int argument);
-    unsigned short __thiscall GetSaveSize();
+    unsigned short __thiscall GetSaveSize_004efb10();
     void SaveGameTES_004efb20(float afTime);
     void LoadGame_004efbc0(float afTime);
     void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, float afTime);

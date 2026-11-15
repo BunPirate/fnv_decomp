@@ -176,10 +176,10 @@ bool TESEffectShader::Load(TESFile* apFile)
 }
 
 // @fnv 0x00507040
-// src: XBOX_DEBUG_PDB 0x00507040
+// src: XBOX_PDB 0x00507040
 // pdb: TESEffectShader::IsFlagSet | TESEffectShader.obj | debug, call graph (shared callers), high
 // pdb params: aeFlag
-bool TESEffectShader::IsFlagSet(unsigned int aeFlag)
+bool TESEffectShader::IsFlagSet_00507040(unsigned int aeFlag)
 {
     return *(unsigned char*)GetData() & aeFlag;
 }
@@ -472,7 +472,7 @@ void TESEffectShader::StartTextureShader(NiAVObject* apObject, BSShaderPPLightin
                                : 0) != 0)
             {
                 bool bApply = true;
-                if (IsFlagSet(0x20))
+                if (IsFlagSet_00507040(0x20))
                 {
                     NiPropStub* pNameProp = reinterpret_cast<NiPropStub*>(apObject->GetProperty(2));
                     if (!(const char*)pNameProp->GetName() || BSstrcmp(pNameProp->GetName(), "skin"))
@@ -666,7 +666,7 @@ BSShaderPPLightingProperty::TextureEffectData* TESEffectShader::CreateEffectData
     data2->root = root;
     data2->target = target;
     data2->unk70 = (unsigned int)GetEffectShaderCount(this);
-    if (IsFlagSet(16))
+    if (IsFlagSet_00507040(16))
     {
         data2->edge.x += -1.0;
         data2->edge.y += -1.0;

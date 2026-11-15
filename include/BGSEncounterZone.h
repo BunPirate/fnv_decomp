@@ -23,7 +23,7 @@ public:
     unsigned char GetByteAt1D();
 
     void Save();
-    void SetDetachTime(unsigned int aiVal);
+    void SetDetachTime_00526070(unsigned int aiVal);
     void SetAttachTime(unsigned int aiVal);
     bool ShouldCellRecalc(TESObjectCELL* apCell);
     void SetZoneLevel(unsigned short aiVal);

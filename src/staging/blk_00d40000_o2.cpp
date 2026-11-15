@@ -817,7 +817,7 @@ struct KeyTemp
     unsigned int m_00;
     unsigned int m_04;
     unsigned int m_08;
-    KeyTemp* hkIstream_ctor(void* mem, void* memSize);
+    KeyTemp* Init(void* mem, void* memSize);
     void Dispose();
 };
 
@@ -838,7 +838,7 @@ void* __cdecl hkSerializeUtil_loadOnHeap(void* streamIn, void* errorOut, void* c
 void* __cdecl InitAndCall(void* volatile buf, void* volatile buflen, void* volatile errorOut, void* volatile classReg, void* volatile typeReg)
 {
     KeyTemp keyTemp;
-    KeyTempRef* r = (KeyTempRef*)keyTemp.hkIstream_ctor(buf, buflen);
+    KeyTempRef* r = (KeyTempRef*)keyTemp.Init(buf, buflen);
     void* p = r->m_08;
     void* result = hkSerializeUtil_loadOnHeap(p, errorOut, classReg, typeReg);
     keyTemp.Dispose();
@@ -1079,7 +1079,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00d4b2c0()
 class FUN_00d4b2d0_cls
 {
   public:
-    void hkpExtendedMeshShape_ShapesSubpart_ctor(int flag);
+    void hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int flag);
 };
 
 // @fnv 0x00d4b2d0
@@ -1088,7 +1088,7 @@ void __cdecl hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart_ProcessState_00d4b
 {
     if (pObject != 0)
     {
-        pObject->hkpExtendedMeshShape_ShapesSubpart_ctor(aiValue);
+        pObject->hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(aiValue);
     }
 }
 
@@ -4264,7 +4264,7 @@ class FUN_00d21ce0_cls
 class FUN_00dd0420_Class
 {
   public:
-    FUN_00dd0420_Class* hkpGenericConstraintDataScheme_ctor(int f);
+    FUN_00dd0420_Class* hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int f);
 
     int unk00;
 };
@@ -4286,7 +4286,7 @@ class FUN_00d50c00
 // pdb params: f
 FUN_00d50c00::FUN_00d50c00(FinishingFlag f) : m_kListeners(f)
 {
-    m_data.hkpGenericConstraintDataScheme_ctor(f.m_bFinishing);
+    m_data.hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(f.m_bFinishing);
     if (f.m_bFinishing)
         m_kListeners.hkpBridgeConstraintAtom_init(this);
 }

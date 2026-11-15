@@ -346,13 +346,13 @@ NiPoint3 NavMeshTriangleReference::FastNavMeshTriLocation_GetLocation() const
 }
 
 // The shared header does not yet declare the default initializer at 0x00501cd0.
-void __fastcall DoorLock_ctor(DoorAccessData*);
+void __fastcall InitializeDoorAccessData(DoorAccessData*);
 
 // @fnv 0x006a6a40
 // pdb: NavMeshSearch::NavMeshSearch | NavMeshSearch.obj | retail, upstream name already matches, high
 NavMeshSearch::NavMeshSearch()
 {
-    DoorLock_ctor(reinterpret_cast<DoorAccessData*>(&TempDoorLock));
+    InitializeDoorAccessData(reinterpret_cast<DoorAccessData*>(&TempDoorLock));
     m_pPathingRequest = 0;
     m_pNavMeshTriangleEdges = 0;
     m_pNavMeshInfos = 0;

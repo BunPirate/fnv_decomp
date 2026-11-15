@@ -2041,7 +2041,7 @@ static __forceinline void warnAlways(int id, const char* text, int line)
 }
 
 // @fnv 0x00ce5a70
-// src: XBOX_DEBUG_PDB 0x00ce5a70
+// src: XBOX_DEBUG_PDB 0x00ce5a70 (was COMMUNITY)
 // pdb: hkaSkeletonMapper::setMulWithScaling | hkaSkeletonMapper.obj | debug, unique string literal, high
 // pdb params: type, dst, map, src
 // pdb locals: assertBuf, ostr

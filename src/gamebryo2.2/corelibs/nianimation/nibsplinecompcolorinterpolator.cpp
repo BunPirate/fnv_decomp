@@ -143,7 +143,7 @@ void NiBSplineCompColorInterpolator::GetViewerStrings_00a519b0(NiTPrimitiveArray
 static const float DAT_01099c2c = 3.402823466e+38f;
 struct ColorInterpolatorBaseConstruction
 {
-    void NiBSplineColorInterpolator_ctor(int, unsigned int, int) throw();
+    void Construct(int, unsigned int, int) throw();
 };
 extern int DAT_01099c34;
 // Allocates and returns a compressed color interpolator with default scalar values.
@@ -153,7 +153,7 @@ void* CreateSplineCompColorInterpolator()
     NiBSplineCompColorInterpolator* result = (NiBSplineCompColorInterpolator*)NiMemObject::operator new(0x3c);
     if (result)
     {
-        ((ColorInterpolatorBaseConstruction*)result)->NiBSplineColorInterpolator_ctor(0, 0xffff, 0);
+        ((ColorInterpolatorBaseConstruction*)result)->Construct(0, 0xffff, 0);
         *(void**)result = &DAT_01099c34;
         for (int i = 0; i < 2; i++)
             result->m_afScalars[i] = DAT_01099c2c;
@@ -200,7 +200,7 @@ NiBSplineCompColorInterpolator* NiBSplineCompColorInterpolator::CreateClone_00a5
     NiBSplineCompColorInterpolator* __restrict result = (NiBSplineCompColorInterpolator*)Object_DispatchCommandFour(0x3c);
     if (result)
     {
-        ((ColorInterpolatorBaseConstruction*)result)->NiBSplineColorInterpolator_ctor(0, 0xffff, 0);
+        ((ColorInterpolatorBaseConstruction*)result)->Construct(0, 0xffff, 0);
         *(void* volatile*)result = &DAT_01099c34;
         result->m_fStartValue = DAT_01099c2c;
         result->m_fEndValue = DAT_01099c2c;

@@ -2859,7 +2859,7 @@ struct ConstraintRuntimeInfo
 };
 
 void __cdecl hkpWorldOperationUtil_internalActivateIsland(hkpWorld*, hkpSimulationIsland*, hkBool = false);
-void __cdecl hkAgentNnMachine_AppendTrack(void*, void*);
+void __cdecl _hkAgentNnMachine_AppendTrack(void*, void*);
 void __cdecl hkArrayUtil__reserve(void*, void*, int, int);
 void __cdecl ResizeAudioStream(void*, void*, int);
 void __cdecl ClearSlotReference(hkpWorld*, hkpSimulationIsland*);
@@ -2918,7 +2918,7 @@ void __cdecl hkpWorldOperationUtil_internalMergeTwoIslands(hkpWorld* apWorld, hk
     islandA->nullsub_10();
     islandB->nullsub_10();
     static_cast<hkpSimulationIsland*>(o->m_fixedIsland)->nullsub_10();
-    hkAgentNnMachine_AppendTrack(&islandA->unk58, &islandB->unk58);
+    _hkAgentNnMachine_AppendTrack(&islandA->unk58, &islandB->unk58);
     int iTargetCount = islandA->entities.count;
     unsigned short idx = (unsigned short)iTargetCount;
     int total = iTargetCount + islandB->entities.count;
@@ -3818,7 +3818,7 @@ void hkpWorldOperationUtil_replaceMotionObject(MotionObj* body, int newState, Mo
 void hkpWorldOperationUtil_addEntitySI(hkpWorld* s, int entity, int initialActivationState);
 void hkpWorldOperationUtil_addActionsToEntitysIsland(hkpWorld* s, int a8, void* actionsToBeMoved);
 void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(void* trackToScan, MotionObj* entity, void* agentsRemoved, int newMotionType);
-void hkAgentNnMachine_AppendTrack(void* m, void* w);
+void _hkAgentNnMachine_AppendTrack(void* m, void* w);
 void hkpWorldOperationUtil_mergeIslands(hkpWorld* in, MotionObj* entityA, MotionObj* entityB);
 void hkSweptTransformUtil_freezeMotionState(float f, void* motionState);
 void hkpWorldCallbackUtil_fireInactiveEntityMoved(void* p, MotionObj* a3);
@@ -3975,7 +3975,7 @@ void hkpWorldOperationUtil_setRigidBodyMotionType(MotionObj* apMotionObj, int ai
                     hkpWorldOperationUtil_mergeIslands(apMotionObj->m_08, apMotionObj, work);
                 }
             }
-            hkAgentNnMachine_AppendTrack(&apMotionObj->m_cc->unk58, &esi);
+            _hkAgentNnMachine_AppendTrack(&apMotionObj->m_cc->unk58, &esi);
             if (aiNewMode == 5)
             {
                 hkSweptTransformUtil_freezeMotionState(reinterpret_cast<float&>(pForm->pad1C8[8]), &apMotionObj->unk0f0);
@@ -4840,7 +4840,7 @@ struct S00cb3ee0_Sub
 
 int PickIslandByValue(int a, int b, int c);
 void hkAgentNnMachine_CopyAndRelinkAgentEntry(int destTrack, int entry);
-void hkAgentNnMachine_InternalDeallocateEntry(int track, int entry);
+void _hkAgentNnMachine_InternalDeallocateEntry(int track, int entry);
 
 // For each entry, calls FUN_00cfeca0 and FUN_00cfe020 if its owner byte at +0xe8 is 5, or if mode is 5 and PickIslandByValue returns motion+0xcc.
 // @fnv 0x00cb3ee0
@@ -4866,7 +4866,7 @@ void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartn
             {
                 int item = e->item;
                 hkAgentNnMachine_CopyAndRelinkAgentEntry(a3, item);
-                hkAgentNnMachine_InternalDeallocateEntry(a1, item);
+                _hkAgentNnMachine_InternalDeallocateEntry(a1, item);
             }
             else if (a4 == 5)
             {
@@ -4874,7 +4874,7 @@ void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartn
                 {
                     int item = e->item;
                     hkAgentNnMachine_CopyAndRelinkAgentEntry(*(int*)(esi + 0xcc) + 0x58, item);
-                    hkAgentNnMachine_InternalDeallocateEntry(a1, item);
+                    _hkAgentNnMachine_InternalDeallocateEntry(a1, item);
                 }
             }
             ++i;

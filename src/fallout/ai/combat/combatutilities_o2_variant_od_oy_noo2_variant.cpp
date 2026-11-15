@@ -128,7 +128,7 @@ bool __cdecl CombatUtilities_CalculateProjectileLOS(void* a0, void* a1, float a2
     double d28;
     if (a1)
     {
-        d28 = (double)(((BGSProjectile*)a1)->GetGravity() * DAT_011f1c00);
+        d28 = (double)(((BGSProjectile*)a1)->GetGravity_00966980() * DAT_011f1c00);
     }
     else
     {

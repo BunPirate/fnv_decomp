@@ -213,12 +213,12 @@ struct NiTimeController_Call
 };
 struct S_00a36560
 {
-    void* NiTransformController_ctor();
+    void* NiTransformController_NiTransformController();
 };
 // @fnv 0x00a36560
-// src: XBOX_RETAIL_PDB 0x00a36560
+// src: EXE 0x00a36560
 // pdb: NiTransformController::NiTransformController | NiTransformController.obj | retail, upstream name already matches, high
-void* S_00a36560::NiTransformController_ctor()
+void* S_00a36560::NiTransformController_NiTransformController()
 {
     ((NiTimeController_Call*)this)->SetControllerActive();
     *(void**)this = &DAT_0109687c;

@@ -140,7 +140,7 @@ extern const LocalM128 g_brSignMask;
 
 inline void hkVector4::setAbs4(const hkVector4& v) { m_vComponents = _mm_and_ps(v.m_vComponents, DAT_01017d10); }
 inline void hkVector4::setNeg4(const hkVector4& v) { m_vComponents = _mm_xor_ps(v.m_vComponents, g_brSignMask); }
-inline void hkVector4::setAll(float f) { m_vComponents = _mm_set_ps1(f); }
+inline void hkVector4::SetAllComponents(float f) { m_vComponents = _mm_set_ps1(f); }
 
 // Computes an AABB in world space from a transform, a point, and an extra radius, storing the result in kAabbOut.
 // @fnv 0x00c9e120
@@ -156,7 +156,7 @@ void __cdecl ComputeAabbFromTransform(const hkTransform& kLocalToWorld, const hk
     kY.setAbs4(kY);
     kZ.setAbs4(kZ);
     hkVector4 kExtra;
-    kExtra.setAll(fExtraRadius);
+    kExtra.SetAllComponents(fExtraRadius);
     hkVector4 kExtent;
     kExtent.setAdd4(kX, kY);
     kZ.add4(kExtra);
@@ -324,7 +324,7 @@ hkBool hkpBoxShape::castRayImpl(const BRRayCastInput& input, BRRayCastOutput& re
     BRMonitorStream::GetMonitorStream().timerCommand("TtrcBox");
 
     hkVector4 tolerance4;
-    tolerance4.setAll(m_radius);
+    tolerance4.SetAllComponents(m_radius);
     hkVector4 halfExtents;
     halfExtents.setAdd4(tolerance4, m_halfExtents);
     hkVector4 negHalfExtents;

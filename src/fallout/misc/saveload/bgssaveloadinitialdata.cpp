@@ -258,8 +258,8 @@ BGSNumericIDIndex3* __fastcall ClearNumericIDIndex(BGSNumericIDIndex3* self)
 namespace fnv_0084eb20 {
 struct BGSNumericIDIndex3
 {
-    BGSNumericIDIndex3* CreatedReferenceInitialData_ctor();
-    void ReferenceLocationInitialData_ctor();
+    BGSNumericIDIndex3* CreatedReferenceInitialData_CreatedReferenceInitialData();
+    void ReferenceLocationInitialData_ReferenceLocationInitialData();
 };
 struct Dummy84eaf0
 {
@@ -268,11 +268,11 @@ struct Dummy84eaf0
 
 // Calls FUN_0084eac0 on this object, then ClearNumericIDIndex on the sub-object at offset 0x1C, and returns this.
 // @fnv 0x0084eb20
-// src: XBOX_DEBUG_PDB 0x0084eb20
+// src: COMMUNITY 0x0084eb20
 // pdb: CreatedReferenceInitialData::CreatedReferenceInitialData | BGSSaveLoadInitialData.obj | debug, upstream name already matches, high
-BGSNumericIDIndex3* __thiscall BGSNumericIDIndex3::CreatedReferenceInitialData_ctor()
+BGSNumericIDIndex3* __thiscall BGSNumericIDIndex3::CreatedReferenceInitialData_CreatedReferenceInitialData()
 {
-    ReferenceLocationInitialData_ctor();
+    ReferenceLocationInitialData_ReferenceLocationInitialData();
     ((Dummy84eaf0*)((char*)this + 0x1C))->ClearNumericIDIndex();
     return this;
 }
@@ -341,14 +341,14 @@ struct Outer84eac0 : Dummy84eaf0
 {
     NiPoint3 m1;
     NiPoint3 m2;
-    Outer84eac0* ReferenceLocationInitialData_ctor();
+    Outer84eac0* ReferenceLocationInitialData_ReferenceLocationInitialData();
 };
 #pragma pack(pop)
 // Calls ClearNumericIDIndex, then invokes FUN_006815c0 on m1 and m2, and returns this.
 // @fnv 0x0084eac0
-// src: XBOX_DEBUG_PDB 0x0084eac0
+// src: COMMUNITY 0x0084eac0
 // pdb: ReferenceLocationInitialData::ReferenceLocationInitialData | BGSSaveLoadInitialData.obj | debug, upstream name already matches, high
-Outer84eac0* Outer84eac0::ReferenceLocationInitialData_ctor()
+Outer84eac0* Outer84eac0::ReferenceLocationInitialData_ReferenceLocationInitialData()
 {
     Dummy84eaf0::ClearNumericIDIndex();
     m1.FUN_006815c0();
@@ -363,21 +363,21 @@ struct Dummy84eaf0
 };
 struct Base84eac0
 {
-    void ReferenceLocationInitialData_ctor();
+    void ReferenceLocationInitialData_ReferenceLocationInitialData();
 };
 struct S84eb50
 {
     char _pad[0x1B];
     Dummy84eaf0 m;
-    S84eb50* MovedReferenceInitialData_ctor();
+    S84eb50* MovedReferenceInitialData_MovedReferenceInitialData();
 };
 // Calls the base FUN_0084eac0, then calls ClearNumericIDIndex on member m, and returns this.
 // @fnv 0x0084eb50
-// src: XBOX_DEBUG_PDB 0x0084eb50
+// src: COMMUNITY 0x0084eb50
 // pdb: MovedReferenceInitialData::MovedReferenceInitialData | BGSSaveLoadInitialData.obj | debug, upstream name already matches, high
-S84eb50* S84eb50::MovedReferenceInitialData_ctor()
+S84eb50* S84eb50::MovedReferenceInitialData_MovedReferenceInitialData()
 {
-    ((Base84eac0*)this)->ReferenceLocationInitialData_ctor();
+    ((Base84eac0*)this)->ReferenceLocationInitialData_ReferenceLocationInitialData();
     m.ClearNumericIDIndex();
     return this;
 }
@@ -581,7 +581,7 @@ struct RefLocData
     unsigned char id0, id1, id2;
     Byte12 pos;
     Byte12 rot;
-    RefLocData* ReferenceLocationInitialData_ctor();
+    RefLocData* ReferenceLocationInitialData_ReferenceLocationInitialData();
 };
 
 struct CreatedRefInitialData
@@ -589,7 +589,7 @@ struct CreatedRefInitialData
     RefLocData base;
     unsigned char flags;
     unsigned char bound0, bound1, bound2;
-    CreatedRefInitialData* CreatedReferenceInitialData_ctor();
+    CreatedRefInitialData* CreatedReferenceInitialData_CreatedReferenceInitialData();
 };
 
 struct MovedRefInitialData
@@ -598,7 +598,7 @@ struct MovedRefInitialData
     unsigned char orig0, orig1, orig2;
     short originalCellX;
     short originalCellY;
-    MovedRefInitialData* MovedReferenceInitialData_ctor();
+    MovedRefInitialData* MovedReferenceInitialData_MovedReferenceInitialData();
 };
 
 // Save-specific entry point not declared by the shared TESObjectREFR header.
@@ -669,7 +669,7 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
             }
         }
         RefLocData refData;
-        refData.ReferenceLocationInitialData_ctor();
+        refData.ReferenceLocationInitialData_ReferenceLocationInitialData();
         ((FUN_00853570_shell*)&refData)->BGSNumericIDIndex_SetNumericID(cell->GetFormID());
         *(NiPoint3*)&refData.pos = pos3;
         *(NiPoint3*)&refData.rot = rot_2;
@@ -684,7 +684,7 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
             kLoc = (TESForm*)pRefr->GetParentCell();
         }
         CreatedRefInitialData createdRefData;
-        createdRefData.CreatedReferenceInitialData_ctor();
+        createdRefData.CreatedReferenceInitialData_CreatedReferenceInitialData();
         ((FUN_00853570_shell*)&createdRefData)->BGSNumericIDIndex_SetNumericID(kLoc->GetFormID());
         *(NiPoint3*)&createdRefData.base.pos = *((const TESObjectREFR*)pRefr)->GetPos();
         *(NiPoint3*)&createdRefData.base.rot = *pRefr->FUN_00430830();
@@ -737,7 +737,7 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
             }
         }
         MovedRefInitialData movedRefDataTmp;
-        movedRefDataTmp.MovedReferenceInitialData_ctor();
+        movedRefDataTmp.MovedReferenceInitialData_MovedReferenceInitialData();
         ((FUN_00853570_shell*)&movedRefDataTmp)->BGSNumericIDIndex_SetNumericID(locMain->GetFormID());
         *(NiPoint3*)&movedRefDataTmp.base.pos = pos3;
         *(NiPoint3*)&movedRefDataTmp.base.rot = rot_2;
@@ -814,7 +814,7 @@ struct CreatedRefData
     int unk14;
     int unk18;
     int unk1C;
-    CreatedRefData* CreatedReferenceInitialData_ctor();
+    CreatedRefData* CreatedReferenceInitialData_CreatedReferenceInitialData();
 };
 struct MovedRefData
 {
@@ -827,7 +827,7 @@ struct MovedRefData
     int unk18;
     int unk1C;
     int unk20;
-    MovedRefData* MovedReferenceInitialData_ctor();
+    MovedRefData* MovedReferenceInitialData_MovedReferenceInitialData();
 };
 struct InitDataA
 {
@@ -887,7 +887,7 @@ void BGSSaveLoadInitialData_LoadInitialDataStruct(BGSLoadFormBuffer* apBuffer, I
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_REFERENCE_LOCATION: {
         RefLocData kData;
-        kData.ReferenceLocationInitialData_ctor();
+        kData.ReferenceLocationInitialData_ReferenceLocationInitialData();
         memcpy(&kData, apBuffer, uiSize);
         InitDataD* pInit = (InitDataD*)apInitialDataBuffer;
         pInit->ReferenceInitialData_Initialize_LOCATION(&kData);
@@ -895,7 +895,7 @@ void BGSSaveLoadInitialData_LoadInitialDataStruct(BGSLoadFormBuffer* apBuffer, I
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_CREATED_REFERENCE: {
         CreatedRefData kData;
-        kData.CreatedReferenceInitialData_ctor();
+        kData.CreatedReferenceInitialData_CreatedReferenceInitialData();
         memcpy(&kData, apBuffer, uiSize);
         InitDataE* p = (InitDataE*)apInitialDataBuffer;
         p->ReferenceInitialData_Initialize_CREATED(&kData);
@@ -903,7 +903,7 @@ void BGSSaveLoadInitialData_LoadInitialDataStruct(BGSLoadFormBuffer* apBuffer, I
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_MOVED_REFERENCE: {
         MovedRefData kData;
-        kData.MovedReferenceInitialData_ctor();
+        kData.MovedReferenceInitialData_MovedReferenceInitialData();
         memcpy(&kData, apBuffer, uiSize);
         InitDataF* p = (InitDataF*)apInitialDataBuffer;
         p->ReferenceInitialData_Initialize_MOVED(&kData);

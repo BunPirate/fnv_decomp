@@ -45,7 +45,7 @@ public:
 
         void Init();
         void freeAllMemory();
-        void hkFreeList_ctor(int, int, int, void*);
+        void hkFreeList_hkFreeList(int, int, int, void*);
     };
 
     virtual ~hkFreeListAllocator();
@@ -85,7 +85,7 @@ public:
     void resetPeakMemoryStatistics_00d5f850();
     void blockAlloc_00d5f970(int nbytes);
     unsigned char HasRoomFor(unsigned int uLimit);
-    hkFreeListAllocator* hkFreeListAllocator_ctor(int server);
+    hkFreeListAllocator* hkFreeListAllocator_00d60270(int server);
     void blockAllocBatch_00d5fd70(void** blocksOut, int nblocks, int nbytes);
     void blockFree_00d5f980(void* p, int nbytes);
     void getMemoryStatistics_00d5f750(HkFLA_Stats* stats);

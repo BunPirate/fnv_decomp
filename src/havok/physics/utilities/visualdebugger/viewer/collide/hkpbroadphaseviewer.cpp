@@ -413,7 +413,7 @@ struct SpawnedObject
 
 // Allocates a 0x38-byte object from the holder's allocator, sets its size, calls Init(arg), and returns the result plus 8 or 0.
 // @fnv 0x00d6ad00
-// src: XBOX_RETAIL_PDB 0x00d6ad00
+// src: XBOX_RETAIL_PDB 0x00d6ad00 (was COMMUNITY)
 // pdb: hkpBroadphaseViewer::create | hkpBroadphaseViewer.obj | retail, object-file gap fill, high
 // pdb params: contexts
 int hkpBroadphaseViewer_create(int contexts)

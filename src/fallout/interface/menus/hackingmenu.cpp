@@ -314,14 +314,14 @@ unsigned int __thiscall HackingMenu::CommonPositions(const char* apString1, cons
 struct FUN_007694f0_shell
 {
     void __thiscall FUN_00726c90();
-    int __thiscall HackingMenu_TerminalIO_ctor();
+    int __thiscall HackingMenu_TerminalIO_TerminalIO();
 };
 
 // Calls FUN_00726c90, then zeroes the int fields at offsets 0x30 and 0x2c and returns this.
 // @fnv 0x007694f0
-// src: XBOX_RETAIL_PDB 0x007694f0
+// src: XBOX_PDB 0x007694f0
 // pdb: HackingMenu::TerminalIO::TerminalIO | HackingMenu.obj | retail, upstream name already matches, high
-int __thiscall FUN_007694f0_shell::HackingMenu_TerminalIO_ctor()
+int __thiscall FUN_007694f0_shell::HackingMenu_TerminalIO_TerminalIO()
 {
     FUN_00726c90();
     *(int*)((char*)this + 0x30) = 0;
@@ -403,7 +403,7 @@ struct FUN_0076b240_shell
     void __thiscall HackingMenu_WordList_Add(const char* apWord);
 };
 // @fnv 0x0076b240
-// src: XBOX_DEBUG_PDB 0x0076b240
+// src: XBOX_DEBUG_PDB 0x0076b240 (was COMMUNITY)
 // pdb: HackingMenu::WordList::Add | HackingMenu.obj | debug, call graph, high
 // pdb params: apWord
 // pdb locals: pnew, isize

@@ -239,9 +239,9 @@ struct Dummy_00863390
 };
 
 // @fnv 0x008552b0
-// src: XBOX_RETAIL_PDB 0x008552b0
+// src: EXE 0x008552b0
 // pdb: InteriorCellNewReferencesMap::InteriorCellNewReferencesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
-int* __fastcall InteriorCellNewReferencesMap_ctor(Dummy_00863390* apObject)
+int* __fastcall InteriorCellNewReferencesMap_InteriorCellNewReferencesMap(Dummy_00863390* apObject)
 {
     apObject->NiTPointerMap_unsigned_int_BSSimpleList_unsigned_int_NiTPointerMap(0x25);
     *(int*)apObject = (int)&DAT_01080514;
@@ -257,9 +257,9 @@ struct Dummy_00863390
 
 // Calls FUN_00863390 with 0x25, stores the address of DAT_01080514 into the object, and returns the object pointer.
 // @fnv 0x008553e0
-// src: XBOX_RETAIL_PDB 0x008553e0
+// src: EXE 0x008553e0
 // pdb: ExteriorCellNewReferencesMap::ExteriorCellNewReferencesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
-int* __fastcall ExteriorCellNewReferencesMap_ctor(Dummy_00863390* apObject)
+int* __fastcall ExteriorCellNewReferencesMap_ExteriorCellNewReferencesMap(Dummy_00863390* apObject)
 {
     apObject->NiTPointerMap_unsigned_int_BSSimpleList_unsigned_int_NiTPointerMap(0x25);
     *(int*)apObject = (int)&DAT_01080514;
@@ -276,9 +276,9 @@ struct Dummy_00863390
 
 // Calls FUN_00863390 with 0x25, stores the address of DAT_01080514 into the object, and returns the object pointer.
 // @fnv 0x00855550
-// src: XBOX_RETAIL_PDB 0x00855550
+// src: EXE 0x00855550
 // pdb: NumericIDBufferMap::NumericIDBufferMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
-int* __fastcall NumericIDBufferMap_ctor(Dummy_00863390* apObject)
+int* __fastcall NumericIDBufferMap_NumericIDBufferMap(Dummy_00863390* apObject)
 {
     apObject->NiTPointerMap_unsigned_int_BSSimpleList_unsigned_int_NiTPointerMap(0x25);
     *(int*)apObject = (int)&DAT_01080514;
@@ -2319,14 +2319,14 @@ struct FUN_008572c0_cls
     unsigned int m_00;
     unsigned int m_04;
     SubObj572 m_08;
-    FUN_008572c0_cls* CreatedReferenceData_ctor();
+    FUN_008572c0_cls* CreatedReferenceData_CreatedReferenceData();
 };
 
 // Clears m_00 and m_04 to zero, calls FUN_008572f0 on m_08, and returns this.
 // @fnv 0x008572c0
-// src: XBOX_DEBUG_PDB 0x008572c0
+// src: XBOX_PDB 0x008572c0
 // pdb: CreatedReferenceData::CreatedReferenceData | TESSaveLoadGame.obj | debug, upstream name already matches, high
-FUN_008572c0_cls* FUN_008572c0_cls::CreatedReferenceData_ctor()
+FUN_008572c0_cls* FUN_008572c0_cls::CreatedReferenceData_CreatedReferenceData()
 {
     m_00 = 0;
     m_04 = 0;
@@ -7580,10 +7580,10 @@ struct RegionList
 extern TESDataHandler* DAT_011c3f2c;
 // Returns 2 plus eight times the value returned by the region-list entry-count method.
 // @fnv 0x004f12b0
-// src: XBOX_DEBUG_PDB 0x004f12b0
+// src: COMMUNITY 0x004f12b0
 // pdb: TESRegion::GetSaveSize | TESRegion.obj | debug, call graph, high
 // pdb locals: plist, isize
-unsigned short TESRegion_GetSaveSize()
+unsigned short TESDataHandler_RegionList_GetSaveSize()
 {
     unsigned short v = 0;
     v += 2;
@@ -7612,7 +7612,7 @@ struct Sky58030
 Sky58030* __cdecl FUN_0046dd00();
 unsigned short __cdecl Interface_GetSaveSize();
 void __cdecl SaveMenuTabStates();
-unsigned short __cdecl TESRegion_GetSaveSize();
+unsigned short __cdecl TESDataHandler_RegionList_GetSaveSize();
 void __cdecl TESRegion_SaveGame();
 struct Field58030
 {
@@ -7742,7 +7742,7 @@ void __thiscall Host58030::TESSaveLoadGame_SaveGlobalData(int apFile)
         FUN_00858700(v444);
     }
 
-    w4 = TESRegion_GetSaveSize();
+    w4 = TESDataHandler_RegionList_GetSaveSize();
     TESSaveLoadGame_WriteFile(apFile, &w4, 2);
     if (w4 != 0)
     {

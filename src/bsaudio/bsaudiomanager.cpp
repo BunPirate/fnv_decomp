@@ -1133,11 +1133,11 @@ typedef bool(__cdecl* ADD630ResolveFunc)(const char* pcName, char* pcPath, unsig
 extern BSAudio* DAT_011f6d98;
 
 // @fnv 0x00add630
-// src: XBOX_RETAIL_PDB 0x00add630
+// src: COMMUNITY 0x00add630
 // pdb: BSAudioManager::Precache | BSAudioManager.obj | retail, object-file run extension, high
 // pdb params: apToCache, aiFlags
 // pdb locals: filename, pSettingsContext, isoundTypeFlags, pfncallback
-void BSAudioManager::Precache(unsigned int apToCache, unsigned int aiFlags)
+void BSAudioManager::Precache_00add630(unsigned int apToCache, unsigned int aiFlags)
 {
     unsigned int uiResolvedFlags3 = aiFlags;
     BSAudio* pkAudio5 = DAT_011f6d98;
@@ -1149,7 +1149,7 @@ void BSAudioManager::Precache(unsigned int apToCache, unsigned int aiFlags)
     if (!bEnabled6 || !pfnResolve4 || !pfnResolve4(reinterpret_cast<const char*>(apToCache), acPath4, &uiResolvedFlags3, &_uiExtra))
         return;
     aiFlags |= uiResolvedFlags3;
-    BSAudioManager_Precache(reinterpret_cast<unsigned int>(acPath4), aiFlags, _uiExtra);
+    BSAudioManager_Precache_00add6f0(reinterpret_cast<unsigned int>(acPath4), aiFlags, _uiExtra);
 }
 
 struct Sub
@@ -1490,7 +1490,7 @@ struct AudioThreadData
     int unkA4;
     int unkA8;
     CritSecA kLock;
-    bool __thiscall ProcessMessage(int apMsg);
+    bool __thiscall ProcessMessage_00adf080(int apMsg);
     void __thiscall BSAudioManager_FreeMessage(int apMsgToFree);
     void __thiscall BSAudioManager_ProcessMessages();
 };
@@ -1519,7 +1519,7 @@ void AudioThreadData::BSAudioManager_ProcessMessages()
     while (!(bool)(int)(pListU->iCount == 0) && (aPHead = pListU->pHead) != 0 && (kPTail = pListU->pTail) != 0)
     {
         item9 = pListU->FUN_00ae7f90();
-        if (ProcessMessage(item9))
+        if (ProcessMessage_00adf080(item9))
             return;
         kQueue.FUN_00ae75f0(item9);
     }

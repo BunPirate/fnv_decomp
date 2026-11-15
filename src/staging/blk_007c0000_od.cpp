@@ -1732,7 +1732,7 @@ class Mgr
   public:
     int Modelloader_GetReferencedThis();
     void FUN_004037f0(int apString);
-    void BSStringT_char_MakeUpper();
+    void BSStringT_MakeUpper();
     int FUN_00403df0(int v);
     int FUN_00403df0();
     char* FUN_004c69f0();
@@ -1910,9 +1910,9 @@ void __cdecl StartMenu_CreateMenuElements()
     if (!DAT_011dabcc.Modelloader_GetReferencedThis())
     {
         DAT_011dabcc.FUN_004037f0(DAT_011d4630.FUN_00403df0(0));
-        DAT_011dabcc.BSStringT_char_MakeUpper();
+        DAT_011dabcc.BSStringT_MakeUpper();
         DAT_011daad0.FUN_004037f0(DAT_011d4354.FUN_00403df0(0));
-        DAT_011daad0.BSStringT_char_MakeUpper();
+        DAT_011daad0.BSStringT_MakeUpper();
     }
     StartMenu_DestroyMenuElements();
     DAT_011dab88.FUN_007cb2e0(new FUN_007ce620(DAT_011d3564.FUN_004c69f0(), DAT_007d0440, 3));

@@ -1629,7 +1629,7 @@ struct FontAtlasAccess : Font {
  const char* GetTextureResourceName() { return *(const char**)IconAtlasTextureName; }
 };
 // @fnv 0x00a14da0
-// src: XBOX_RETAIL_PDB 0x00a14da0
+// src: XBOX_RETAIL_PDB 0x00a14da0 (was COMMUNITY)
 // pdb: Font::MakeIconsTriShape | Font.obj | retail, unique string literal, high
 // pdb locals: pvert_order, ptsp, strtextureFile, pvertices, pshape, iverts, ptextures, pd, strtemp
 PageMeshes::Shape* Font::MakeIconsTriShape() {
@@ -2535,7 +2535,7 @@ struct FontC {
     TexNode* m_apNode[8];
     int GetCharType(char);
     TexNode* GetNode(unsigned i) { return m_apNode[i]; }
-    SStr FontManager_CollectTo(const char* apSource, int* aiIndex, unsigned aebfMatches, unsigned aebfInvMatches,
+    SStr Font_CollectTo(const char* apSource, int* aiIndex, unsigned aebfMatches, unsigned aebfInvMatches,
                       int* aeResultMatch, char* acResultChar, bool bKeep);
 };
 
@@ -2549,11 +2549,11 @@ inline void CopyName(char* d, int sz, const char* s, int n) { FUN_00ec8d5f(d, sz
 
 // Scans text from *pos until a stop character or mask match, expanding '&...;' settings into _buf, and returns the accumulated SStr.
 // @fnv 0x00a16ea0
-// src: XBOX_DEBUG_PDB 0x00a16ea0
+// src: EXE 0x00a16ea0
 // pdb: FontManager::CollectTo | Font.obj | debug, unique string literal, high
 // pdb params: apSource, aiIndex, aebfMatches, aebfInvMatches, aeResultMatch, acResultChar, bKeep
 // pdb locals: ibuf_size, ireplacementStart, pbuf, presult, itype, isettingSize, strSettingVal, strSettingKey, ivalSize
-SStr FontC::FontManager_CollectTo(const char* apSource, int* aiIndex, unsigned aebfMatches, unsigned aebfInvMatches,
+SStr FontC::Font_CollectTo(const char* apSource, int* aiIndex, unsigned aebfMatches, unsigned aebfInvMatches,
                          int* aeResultMatch, char* acResultChar, bool bKeep)
 {
     SStr str3;
@@ -3363,7 +3363,7 @@ __forceinline char* AllocateText(unsigned int count) {
 struct FUN_00a17390_shell : FontManager {
     Font* GetFont(unsigned int number) { return pFont[number]; }
     const char* GetFontFile(unsigned int number) { return GetFont(number)->pFontFile; }
-    LayoutString FontManager_CollectTo(const char* apSource, int* aiIndex, unsigned int aebfMatches, unsigned int aebfInvMatches, unsigned int* aeResultMatch, char* acResultChar, bool bKeep);
+    LayoutString Font_CollectTo(const char* apSource, int* aiIndex, unsigned int aebfMatches, unsigned int aebfInvMatches, unsigned int* aeResultMatch, char* acResultChar, bool bKeep);
     LayoutBlock* FontManager_PrepHypertext(LayoutString& axTextString, LayoutResult* axData);
 };
 inline ButtonIcon& GetIcon(Font* font, unsigned int index) { return ((FontButtonIconArray*)font->ButtonIcons)->pBuffer[index]; }
@@ -3391,13 +3391,13 @@ LayoutBlock* FUN_00a17390_shell::FontManager_PrepHypertext(LayoutString& axTextS
     bool lineRule=false;
     LayoutBlock* block=0;
     unsigned int iconNum=0;
-    FontManager_CollectTo(input,&parsePos,0,4,&mask,&character,false);
+    Font_CollectTo(input,&parsePos,0,4,&mask,&character,false);
     if(mask==1) {
         block=new LayoutBlock(axData->GetWidth(),axData->GetHeight(),axData->GetUnk24());
         layout=true;
         parsePos=0;
         while(true) {
-            word=FontManager_CollectTo(input,&parsePos,1,0,&mask,&character,true);
+            word=Font_CollectTo(input,&parsePos,1,0,&mask,&character,true);
             if(word.Get()) {
                 if(img) {
                     img=false;
@@ -3420,28 +3420,28 @@ LayoutBlock* FUN_00a17390_shell::FontManager_PrepHypertext(LayoutString& axTextS
                 }
             }
             if(mask&0x20) break;
-            tagText=FontManager_CollectTo(input,&parsePos,6,0,&mask,&character,true);
+            tagText=Font_CollectTo(input,&parsePos,6,0,&mask,&character,true);
             for(unsigned int i=0;i<tagText.Length();++i) tagText[i]=toupper(tagText[i]);
             if(mask&0x20) break;
             if(mask&4) {
                 while(true) {
-                    FontManager_CollectTo(input,&parsePos,0,4,&mask,&character,false);
+                    Font_CollectTo(input,&parsePos,0,4,&mask,&character,false);
                     if(mask&0x20 || mask&2) break;
-                    paramName=FontManager_CollectTo(input,&parsePos,0x16,0,&mask,&character,true);
+                    paramName=Font_CollectTo(input,&parsePos,0x16,0,&mask,&character,true);
                     for(unsigned int i=0;i<paramName.Length();++i) paramName[i]=toupper(paramName[i]);
                     if(mask&0x20 || mask&2) break;
                     if(mask&4) attributeValue="true";
                     else {
-                        FontManager_CollectTo(input,&parsePos,0,4,&mask,&character,false);
+                        Font_CollectTo(input,&parsePos,0,4,&mask,&character,false);
                         if(mask&0x20 || mask&2) break;
                         if(mask==8) {
                             ++parsePos;
-                            attributeValue=FontManager_CollectTo(input,&parsePos,0xa,0,&mask,&character,true);
+                            attributeValue=Font_CollectTo(input,&parsePos,0xa,0,&mask,&character,true);
                             character=input[parsePos];
                             ++parsePos;
                             mask=GetCharType(character);
                         } else {
-                            attributeValue=FontManager_CollectTo(input,&parsePos,6,0,&mask,&character,true);
+                            attributeValue=Font_CollectTo(input,&parsePos,6,0,&mask,&character,true);
                             for(unsigned int i=0;i<attributeValue.Length();++i) attributeValue[i]=toupper(attributeValue[i]);
                         }
                     }
@@ -3805,7 +3805,7 @@ struct Layout {
 inline unsigned int Font::GetIconCount() { return ((FontButtonIconArray*)ButtonIcons)->iSize; }
 
 // @fnv 0x00a12fb0
-// src: XBOX_RETAIL_PDB 0x00a12fb0
+// src: XBOX_RETAIL_PDB 0x00a12fb0 (was COMMUNITY)
 // pdb: Font::PrepText | Font.obj | retail, string-set bridge, high
 // pdb params: apOrigString, axData
 // pdb locals: iwidth, idest_len, iindex, imax_width, pdest, iiconIndex, iindex_width, bsubstituted, iindex_width_2, bsoftHyphen, psrc, iline_count, idest_max, ichar_count, psub, flinePadding, fheight, isrc_len, imax_lines, a, baddPushText, c, icmd_len, b ...

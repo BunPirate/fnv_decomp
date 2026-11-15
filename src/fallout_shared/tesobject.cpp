@@ -33,7 +33,7 @@ void TESBoundObject::LoadBoundData(TESFile* apFile)
 // pdb: TESBoundObject::TESBoundObject | TESObject.obj | retail, upstream name already matches, high
 TESBoundObject::TESBoundObject()
 {
-    ((TESObjectBound*)&TESBoundObjectBounds)->TESBoundObject_BOUND_DATA_ctor();
+    ((TESObjectBound*)&TESBoundObjectBounds)->TESBoundObject_BOUND_DATA_BOUND_DATA();
     ((TESObjectBound*)&TESBoundObjectBounds)->min.SetComponents(GetActorValueShortVector());
     ((TESObjectBound*)&TESBoundObjectBounds)->max.SetComponents(GetActorValueShortVector());
 }
@@ -430,9 +430,9 @@ void __fastcall _ref_006815c0(void* pThis);
 
 // Calls _ref_006815c0 on pThis and on pThis + 6, then returns pThis.
 // @fnv 0x0050e9c0
-// src: XBOX_DEBUG_PDB 0x0050e9c0
+// src: COMMUNITY 0x0050e9c0
 // pdb: TESBoundObject::BOUND_DATA::BOUND_DATA | TESObject.obj | debug, upstream name already matches, high
-void* __fastcall TESBoundObject_BOUND_DATA_ctor(char* pThis)
+void* __fastcall TESBoundObject_BOUND_DATA_BOUND_DATA(char* pThis)
 {
     _ref_006815c0(pThis);
     _ref_006815c0(pThis + 6);
@@ -559,9 +559,9 @@ void __fastcall FindTriangleForLocationFilter_FindTriangleForLocationFilter(void
 extern int DAT_0106c92c;
 
 // @fnv 0x0050f6f0
-// src: XBOX_RETAIL_PDB 0x0050f6f0
+// src: EXE 0x0050f6f0
 // pdb: TESBoundAnimObject::TESBoundAnimObject | TESObject.obj | retail, upstream name already matches, high
-void* __fastcall TESBoundAnimObject_ctor(void* pThis)
+void* __fastcall TESBoundAnimObject_TESBoundAnimObject(void* pThis)
 {
     FindTriangleForLocationFilter_FindTriangleForLocationFilter(pThis);
     *(int**)pThis = &DAT_0106c92c;
@@ -604,9 +604,9 @@ extern int DAT_01029b1c;
 void __fastcall FUN_00483370(void*);
 
 // @fnv 0x0050f8c0
-// src: XBOX_DEBUG_PDB 0x0050f8c0
+// src: EXE 0x0050f8c0
 // pdb: TESObject::TESObject | TESObject.obj | debug, upstream name already matches, high
-TESObject* __fastcall TESObject_ctor(TESObject* apObject)
+TESObject* __fastcall TESObject_TESObject(TESObject* apObject)
 {
     FUN_00483370(apObject);
     *reinterpret_cast<int**>(apObject) = &DAT_01029b1c;
@@ -1083,7 +1083,7 @@ struct FUN_0050ed30_class
 };
 
 // @fnv 0x0050ed30
-// src: XBOX_DEBUG_PDB 0x0050ed30
+// src: XBOX_DEBUG_PDB 0x0050ed30 (was COMMUNITY)
 // pdb: TESBoundObject::BOUND_DATA::Endian | TESObject.obj | debug, call graph (shared callers), high
 void FUN_0050ed30_class::TESBoundObject_BOUND_DATA_Endian()
 {

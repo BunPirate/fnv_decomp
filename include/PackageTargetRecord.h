@@ -44,7 +44,7 @@ class PackageTargetRecord
     void SetTargObjectType(int type);                       // 0x00680170
     void UpdateState_00680170(void* reference);
     void PackageTarget_Copy(PackageTargetRecord* other);           // 0x006801a0
-    void Save(int aeChunk);                           // 0x006802f0
+    void PackageTarget_Save(int aeChunk);                           // 0x006802f0
     void InitItem(TESForm* apOwner);                          // 0x006803b0
     float GetTargAcquireRadius();                           // 0x0084d030
     float FUN_0084d030();

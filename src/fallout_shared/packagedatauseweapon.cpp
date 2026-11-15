@@ -255,7 +255,7 @@ void TESUseWeaponPackageData::Save_0067d350()
         saveData.PACK_USE_WEAPON_DATA_PKW2_Endian();
 
     if (this->m_pUseTarget)
-        this->m_pUseTarget->Save(0x32445450);
+        this->m_pUseTarget->PackageTarget_Save(0x32445450);
 
     if (this->pTargetLocation)
         reinterpret_cast<PackageLocationSave*>(this->pTargetLocation)->Save(0x32444c50);
@@ -314,7 +314,7 @@ struct PackageLocationObj
     unsigned int location;
     unsigned int radius;
     PackageLocationObj();
-    void PackageLocation_LoadGame(BGSLoadFormBuffer*);
+    void PackageLocation_LoadGame_0067fbe0(BGSLoadFormBuffer*);
 };
 // Reads the use-weapon package data from the buffer: fixed-size fields, a weapon form, and optional target and location objects.
 // @fnv 0x0067d6b0
@@ -348,7 +348,7 @@ void TESUseWeaponPackageData::LoadUseWeaponData(BGSLoadFormBuffer* apLoadGameBuf
     if (hasTarget)
     {
         pTargetLocation = reinterpret_cast<LocationDescriptor*>(new PackageLocationObj);
-        reinterpret_cast<PackageLocationObj*>(pTargetLocation)->PackageLocation_LoadGame(apLoadGameBuffer);
+        reinterpret_cast<PackageLocationObj*>(pTargetLocation)->PackageLocation_LoadGame_0067fbe0(apLoadGameBuffer);
     }
 }
 

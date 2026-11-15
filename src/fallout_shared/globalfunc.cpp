@@ -1008,7 +1008,7 @@ void* __cdecl bhkUtilFunctions_IsbhkPCollisionObject(NiAVObject* apPhantom)
 }
 
 // @fnv 0x004b5fa0
-// src: XBOX_DEBUG_PDB 0x004b5fa0
+// src: XBOX_DEBUG_PDB 0x004b5fa0 (was COMMUNITY)
 // pdb: BSXFlags::QEditorMarker | GlobalFunc.obj | debug, call graph, high
 bool __fastcall BSXFlags_QEditorMarker(const BSXFlags* pThis)
 {
@@ -1123,11 +1123,11 @@ struct tagRECT
 };
 
 // @fnv 0x004b1e80
-// src: XBOX_RETAIL_PDB 0x004b1e80
+// src: COMMUNITY 0x004b1e80
 // pdb: LineVsRect | GlobalFunc.obj | retail, object-file run extension, high
 // pdb params: aTestRect, aStartPt, aEndPt, aOutputIntersectPt
 // pdb locals: bIntersect, intersect1, intersect2, intercept, intersectsFound, slope, YatBorder, XatBorder, intersect1vect, linevect
-bool LineVsRect(const tagRECT* aTestRect, const NiPoint3* aStartPt, const NiPoint3* aEndPt,
+bool TES_LineVsRect(const tagRECT* aTestRect, const NiPoint3* aStartPt, const NiPoint3* aEndPt,
                   NiPoint3* aOutputIntersectPt)
 {
     bool bIntersect = false;
@@ -1601,7 +1601,7 @@ extern float const g_011cc6cc_arg1;
 struct Base537
 {
     char _d[0x10];
-    void hkUnaryActionCinfo_ctor();
+    void hkUnaryActionCinfo_hkUnaryActionCinfo();
 };
 struct Mem4fa0
 {
@@ -1623,7 +1623,7 @@ struct FUN_004b4f40 : Base537
 // pdb: hkMouseSpringActionCinfo::hkMouseSpringActionCinfo | GlobalFunc.obj | debug, call graph (shared callers), high
 FUN_004b4f40::FUN_004b4f40()
 {
-    hkUnaryActionCinfo_ctor();
+    hkUnaryActionCinfo_hkUnaryActionCinfo();
     m10.bhkVector4_bhkVector4();
     m20.bhkVector4_bhkVector4();
     f30 = 0.5f;
@@ -1922,7 +1922,7 @@ struct Sub004B
 struct Sub0056
 {
     char pad[16];
-    void hkConvexShapeCinfo_ctor();
+    void hkConvexShapeCinfo_hkConvexShapeCinfo();
 };
 struct Owner0066d650
 {
@@ -1937,7 +1937,7 @@ struct Owner0066d650
 // pdb params: arInfo
 Owner0066d650* Owner0066d650::Reset()
 {
-    f0.hkConvexShapeCinfo_ctor();
+    f0.hkConvexShapeCinfo_hkConvexShapeCinfo();
     f10.bhkVector4_bhkVector4();
     f20.bhkVector4_bhkVector4();
     f20.bhkVector4_set(1.0f, 0.0f, 0.0f, 0.0f);
@@ -2163,13 +2163,13 @@ struct FUN_004b5020_shell
 {
     int vftable;
     void _ref_006815c0();
-    FUN_004b5020_shell* hkActionCinfo_ctor();
+    FUN_004b5020_shell* hkActionCinfo_hkActionCinfo();
 };
 
 // @fnv 0x004b5020
-// src: XBOX_DEBUG_PDB 0x004b5020
+// src: XBOX_PDB 0x004b5020
 // pdb: hkActionCinfo::hkActionCinfo | GlobalFunc.obj | debug, upstream name already matches, high
-FUN_004b5020_shell* FUN_004b5020_shell::hkActionCinfo_ctor()
+FUN_004b5020_shell* FUN_004b5020_shell::hkActionCinfo_hkActionCinfo()
 {
     _ref_006815c0();
     vftable = 0;

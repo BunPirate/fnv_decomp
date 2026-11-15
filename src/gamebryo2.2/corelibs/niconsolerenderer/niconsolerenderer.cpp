@@ -1243,13 +1243,13 @@ struct BSBatchRenderer__AlphaList {
 };
 
 struct NiConsoleRenderer_shellEx : GraphicsRenderer {
-    void __thiscall NiXenonRenderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader);
+    void __thiscall NiDX9Renderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader);
 };
 // @fnv 0x00e75310
-// src: XBOX_RETAIL_PDB 0x00e75310
+// src: COMMUNITY 0x00e75310
 // pdb: NiXenonRenderer::ReleaseD3DShader | NiXenonRenderer.obj | retail, object-file run extension, high
 // pdb params: pkD3DShader
-void __thiscall NiConsoleRenderer_shellEx::NiXenonRenderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader)
+void __thiscall NiConsoleRenderer_shellEx::NiDX9Renderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader)
 {
     pkD3DShader->SetShaderObject(0);
     ((BSBatchRenderer__AlphaList*)((char*)this + 0x90c))->Remove((BSBatchRenderer__GeometryGroup*&)pkD3DShader);
@@ -12134,7 +12134,7 @@ struct PackingGeometry {
     unsigned int streamCount;
 };
 struct PackingVertexManager {
-    unsigned int NiXenonVertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
+    unsigned int NiDX9VertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
 };
 struct PackingIndexManager {
     void* FUN_00e8f200(void*, unsigned int, unsigned int, void*, void**, unsigned int, unsigned int);
@@ -12208,7 +12208,7 @@ bool PackingRenderer::UpdatePackingPacket(PackingPacket* packet, NiGeometryData*
             unsigned int packed = 0;
             if (geometry) packed = geometry->Pack(model, geometryData, data, dirty, stream, i, 0, 0, 0);
             if (!packed) {
-                if (streamCount != 1 || !((PackingVertexManager*)m_pShaderStreamInfo)->NiXenonVertexBufferManager_PackSkinnedVB(
+                if (streamCount != 1 || !((PackingVertexManager*)m_pShaderStreamInfo)->NiDX9VertexBufferManager_PackSkinnedVB(
                     model, geometryData, data, dirty, stream, 0))
                     return false;
             }
@@ -25969,7 +25969,7 @@ public:
     unsigned int m_auiShaderVer7;
     unsigned int m_auiShaderVer8;
     unsigned int m_auiShaderVer9;
-    bool NiXenonRenderer_InitializeDeviceCaps(void* kPresentParams);
+    bool NiDX9Renderer_InitializeDeviceCaps(void* kPresentParams);
     __forceinline void InitSamplerGlobals()
     {
     bool bAniso = (m_kDeviceCapabilities.TextureFilterCaps & 0x400) != 0;
@@ -26016,11 +26016,11 @@ public:
 
 // Queries device caps, validates multi-texture support, stores capability flags and shader versions, then initializes sampler globals.
 // @fnv 0x00e6c240
-// src: XBOX_RETAIL_PDB 0x00e6c240
+// src: COMMUNITY 0x00e6c240
 // pdb: NiXenonRenderer::InitializeDeviceCaps | NiXenonRenderer.obj | retail, object-file run extension, high
 // pdb params: kPresentParams
 // pdb locals: pkD3DCaps9
-bool DeviceCapabilityState::NiXenonRenderer_InitializeDeviceCaps(void* kPresentParams)
+bool DeviceCapabilityState::NiDX9Renderer_InitializeDeviceCaps(void* kPresentParams)
 {
     if (m_pDirect3DDevice->GetDeviceCaps(&m_kDeviceCapabilities) < 0)
     {
@@ -29158,7 +29158,7 @@ struct InitRenderer {
  unsigned fieldacc;
  bool tall;
  bool NiDX9Renderer_InitializePresentParams(unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,InitPresent*);
- bool NiXenonRenderer_InitializeDeviceCaps(InitPresent*);
+ bool NiDX9Renderer_InitializeDeviceCaps(InitPresent*);
  bool InitializeRendererResources();
  void AssignRefObject(InitObject*);
  bool NiXenonRenderer_Create(unsigned width,unsigned height,unsigned options,unsigned deviceWindow,unsigned focusWindow,unsigned adapterIndex,unsigned deviceChoice,unsigned p8,unsigned p9,unsigned p10,unsigned p11,unsigned p12,unsigned p13,unsigned p14);
@@ -29229,7 +29229,7 @@ bool InitRenderer::NiXenonRenderer_Create(unsigned width,unsigned height,unsigne
  }
  {
  if(!device) { NiDX9Renderer_SetLastErrorString(DAT_010edfac); Object_DoNothing(DAT_010edf60); return false; }
- if(!NiXenonRenderer_InitializeDeviceCaps(&present)) return false;
+ if(!NiDX9Renderer_InitializeDeviceCaps(&present)) return false;
  flag5d4=(field5cc&0x40)==0;
  flag5d5=(field5cc&0x80)!=0;
  color=0; depth=0;

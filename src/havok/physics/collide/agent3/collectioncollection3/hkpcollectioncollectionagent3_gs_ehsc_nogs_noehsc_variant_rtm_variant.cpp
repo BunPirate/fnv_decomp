@@ -435,7 +435,7 @@ mutable hkPadSpu<hkpCollisionQualityInfo*>m_pCollisionQualityInfo;
 mutable hkpAgent1nSector*m_pAgent1nSector;};
 namespace hkpCollectionCollectionAgent3
 {
-hkpAgentData*__cdecl hkpCollectionCollectionAgent3_process(const AgentSubtypeMarker&input,FourByteState*entry,hkpAgentData*agentData,hkVector4*separatingNormal,WorldOperationEntry&result);
+hkpAgentData*__cdecl process_00d35770(const AgentSubtypeMarker&input,FourByteState*entry,hkpAgentData*agentData,hkVector4*separatingNormal,WorldOperationEntry&result);
 void __cdecl RegisterAgentFunctions(hkpCollisionDispatcher*dispatcher);
 void __cdecl InitAgentFunc(hkpCollisionDispatcher::Agent3FunctionTable&f);
 void __cdecl CleanupAgent(FourByteState*entry,hkpAgentData*agentData,const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr,hkpConstraintOwner&constraintOwner);
@@ -706,11 +706,11 @@ aabbInt->GetIteratorKey()=key;
 DONT_SORT:
 ;}
 // @fnv 0x00d35770
-// src: XBOX_RETAIL_PDB 0x00d35770
+// src: XBOX_PDB 0x00d35770
 // pdb: hkpCollectionCollectionAgent3::process | hkpCollectionCollectionAgent3.obj | retail, unique string literal, high
 // pdb params: input, entry, agentData, separatingNormal, output
 // pdb locals: shapeContainerA, bufferB, shapeContainerB, bufferA, assertBuf, ostr, tmpBufferB, tmpBufferA, numHitsFirst, aabbsFirst, firstCdBody, secondBody, secondContainer, firstContainer, bTa, negLinearTimInfo, numPairsSkipped, modInput
-hkpAgentData*__cdecl hkpCollectionCollectionAgent3::hkpCollectionCollectionAgent3_process(const AgentSubtypeMarker&input,FourByteState*entry,hkpAgentData*agentData,hkVector4*separatingNormal,WorldOperationEntry&output)
+hkpAgentData*__cdecl hkpCollectionCollectionAgent3::process_00d35770(const AgentSubtypeMarker&input,FourByteState*entry,hkpAgentData*agentData,hkVector4*separatingNormal,WorldOperationEntry&output)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerBeginListCommand*h=reinterpret_cast<hkMonitorStream::TimerBeginListCommand*>(mStream.getEnd());h->m_commandAndMonitor="L" "t" "CollColl3";h->m_nameOfFirstSplit="S" "t" "Init";h->setTime();mStream.setEnd((char*)(h+1));}};
 AgentSectorPointerArray*agent1nTrack=reinterpret_cast<AgentSectorPointerArray*>(agentData);

@@ -1635,7 +1635,7 @@ struct C85Ret
     int unk10;
 };
 void hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
-int hkpCollectionCollectionAgent3_process(O1T* o1, int a2, int a3, int a4, int a5);
+int process_00d35770(O1T* o1, int a2, int a3, int a4, int a5);
 static __forceinline int maxSize(int minimum, int value) {
     _ReadWriteBarrier();
     return value <= minimum ? minimum : value;

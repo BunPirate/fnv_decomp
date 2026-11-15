@@ -20,7 +20,7 @@ struct FUN_005e01b0_shell
 };
 // Calls FUN_005e0830 with the file name and 1; if it succeeds, calls vfn_20 and vfn_1c and returns the result.
 // @fnv 0x005e01b0
-// src: XBOX_RETAIL_PDB 0x005e01b0
+// src: XBOX_RETAIL_PDB 0x005e01b0 (was COMMUNITY)
 // pdb: SettingCollection<Setting>::WriteSettingsToFile | XBlendSettings.obj | retail, call graph (shared callers), high
 // pdb params: apFileName
 // pdb locals: bres

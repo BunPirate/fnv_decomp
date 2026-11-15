@@ -453,7 +453,7 @@ __forceinline void hkVector4::operator=(const hkVector4& vector)
 {
     memcpy(this, &vector, sizeof(*this));
 }
-__forceinline void hkVector4::setAll(float a)
+__forceinline void hkVector4::SetAllComponents(float a)
 {
     m_vComponents = _mm_set_ps1(a);
 }
@@ -484,7 +484,7 @@ class Sdedf10_Aabb
 __forceinline void Sdedf10_calcAabb(const hkVector4& center, float innerRadius, Sdedf10_Aabb& aabbOut)
 {
     hkVector4 ir;
-    ir.setAll(innerRadius);
+    ir.SetAllComponents(innerRadius);
     aabbOut.m_kMinimumCorner.setSub4(center, ir);
     aabbOut.m_kMaximumCorner.setAdd4(center, ir);
     aabbOut.m_kMinimumCorner(3) = 0;

@@ -2731,7 +2731,7 @@ struct FUN_004497c0_shell
 
 // Calls FUN_0044c270 with the three arguments, sets vtbl to &DAT_0101732c, and returns this.
 // @fnv 0x004497c0
-// src: XBOX_DEBUG_PDB 0x004497c0
+// src: XBOX_DEBUG_PDB 0x004497c0 (was EXE)
 // pdb: LockFreeCaseInsensitiveStringMap<LoadedFile *>::LockFreeCaseInsensitiveStringMap<LoadedFile *> | ModelLoader.obj | debug, call graph, high
 // pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
 FUN_004497c0_shell* FUN_004497c0_shell::LockFreeCaseInsensitiveStringMap_LoadedFile_ctor(int aiMaxThreads, int aiNumBuckets, int aiDeleteBatchSize)
@@ -4607,7 +4607,7 @@ struct QueueObj
 };
 struct QueueModelHolder
 {
-    void ModelLoader_QueueModel(int, QueueObj*, int, int, int, bool, bool, bool, float);
+    void ModelLoader_QueueModel_00443dc0(int, QueueObj*, int, int, int, bool, bool, bool, float);
     void ModelLoader_QueueModel(int apModel, int aePriority, int apParent, int aeLODFadeMult, bool abPrepareAfterLoad, bool abAddRefCount, bool abFaceGenModel);
 };
 
@@ -4621,7 +4621,7 @@ void QueueModelHolder::ModelLoader_QueueModel(int apModel, int aePriority, int a
                                     bool abFaceGenModel)
 {
     QueueObj spqueuedModel(0);
-    ModelLoader_QueueModel(apModel, &spqueuedModel, aePriority, apParent, aeLODFadeMult, abPrepareAfterLoad, abAddRefCount, abFaceGenModel, 0.0f);
+    ModelLoader_QueueModel_00443dc0(apModel, &spqueuedModel, aePriority, apParent, aeLODFadeMult, abPrepareAfterLoad, abAddRefCount, abFaceGenModel, 0.0f);
 }
 
 class MagicItem;
@@ -7955,7 +7955,7 @@ struct QHeadPtrDest
 };
 struct QueueModelHolder
 {
-    void ModelLoader_QueueModel(int, QueueObj*, int, int, int, bool, bool, bool, float);
+    void ModelLoader_QueueModel_00443dc0(int, QueueObj*, int, int, int, bool, bool, bool, float);
 };
 struct FUN_00444dc0_ref
 {
@@ -7985,7 +7985,7 @@ void FUN_00444dc0_t::ModelLoader_QueueBoundObject(TESObject* apBoundObject, QHea
     float fFadeDist = 0.0f;
     if (apQueuedForRef && apQueuedForRef->TESObjectREFR_GetIsImposter())
         fFadeDist = 3.402823466e+38F;
-    ((QueueModelHolder*)g_modelLoader)->ModelLoader_QueueModel(iHandle, &kQueued, aePriority, apParent, iLOD, true, false, false, fFadeDist);
+    ((QueueModelHolder*)g_modelLoader)->ModelLoader_QueueModel_00443dc0(iHandle, &kQueued, aePriority, apParent, iLOD, true, false, false, fFadeDist);
     aspQueuedModel->Assign(kQueued);
 }
 }  // namespace fnv_00444dc0
@@ -9575,14 +9575,14 @@ class FUN_0043d850_cls
     void* m_4c;
 
     void FUN_0043c890(void* apModel, unsigned int aePriority, unsigned int aeLODFadeMult, int abPrepareAfterLoad, int bAddRefCount);
-    FUN_0043d850_cls* QueuedTreeModel_ctor(unsigned int apRef, void* apTree, unsigned int aePriority, unsigned int aeLODFadeMult);
+    FUN_0043d850_cls* QueuedTreeModel_QueuedTreeModel(unsigned int apRef, void* apTree, unsigned int aePriority, unsigned int aeLODFadeMult);
 };
 
 // @fnv 0x0043d850
-// src: XBOX_DEBUG_PDB 0x0043d850
+// src: EXE 0x0043d850
 // pdb: QueuedTreeModel::QueuedTreeModel | ModelLoader.obj | debug, upstream name already matches, high
 // pdb params: apRef, apTree, aePriority, aeLODFadeMult
-FUN_0043d850_cls* FUN_0043d850_cls::QueuedTreeModel_ctor(unsigned int apRef, void* apTree, unsigned int aePriority, unsigned int aeLODFadeMult)
+FUN_0043d850_cls* FUN_0043d850_cls::QueuedTreeModel_QueuedTreeModel(unsigned int apRef, void* apTree, unsigned int aePriority, unsigned int aeLODFadeMult)
 {
     FUN_0043c890((apTree != 0) ? (void*)((char*)apTree + 0x30) : 0, aePriority, aeLODFadeMult, 1, 0);
     m_ppVirtualMethodTable = (void*)&DAT_010169d4;
@@ -13123,7 +13123,7 @@ void FUN_0043f120_cls::QueuedHelmet_QueueMe()
         if (m_28->FUN_004ae8a0(i))
         {
             unsigned int v = m_28->GetEntryAt(i)->m_04;
-            g_QueueHolder->ModelLoader_QueueModel(v, (QueueObj*)&m_2c[i], IOTask_GetIOTaskPriority(), (int)this, 3, true, true, true, 0.0f);
+            g_QueueHolder->ModelLoader_QueueModel_00443dc0(v, (QueueObj*)&m_2c[i], IOTask_GetIOTaskPriority(), (int)this, 3, true, true, true, 0.0f);
             reinterpret_cast<SaveHolder*>(g_QueueHolder)->ModelLoader_QueueEGMFile(v, IOTask_GetIOTaskPriority(), (int)this, -1);
         }
     }
@@ -14211,12 +14211,12 @@ struct Mgr442650
     void* m_24;
     BackgroundCloneThread* m_28;
     char m_2c;
-    Mgr442650* ModelLoader_ctor();
+    Mgr442650* ModelLoader_ModelLoader();
 };
 // @fnv 0x00442650
-// src: XBOX_RETAIL_PDB 0x00442650
+// src: COMMUNITY 0x00442650
 // pdb: ModelLoader::ModelLoader | ModelLoader.obj | retail, upstream name already matches, high
-Mgr442650* Mgr442650::ModelLoader_ctor()
+Mgr442650* Mgr442650::ModelLoader_ModelLoader()
 {
     m_00 = new Cls492c0(10, 1009, 12);
     m_04 = new Cls496a0(10, 1009, 12);
@@ -17560,15 +17560,15 @@ class QueueModelHolder
 {
   public:
     QHolderObj* m_pHolder;
-    void ModelLoader_QueueModel(int apModel, QueueObj* aspQueuedModel, int aePriority, int apParent, int aeLODFadeMult, bool abPrepareAfterLoad, bool abAddRefCount, bool abFaceGenModel, float afOverriddenVisualDistance);
+    void ModelLoader_QueueModel_00443dc0(int apModel, QueueObj* aspQueuedModel, int aePriority, int apParent, int aeLODFadeMult, bool abPrepareAfterLoad, bool abAddRefCount, bool abFaceGenModel, float afOverriddenVisualDistance);
 };
 
 // @fnv 0x00443dc0
-// src: XBOX_RETAIL_PDB 0x00443dc0
+// src: XBOX_PDB 0x00443dc0
 // pdb: ModelLoader::QueueModel | ModelLoader.obj | retail, call graph (shared callers), high
 // pdb params: apModel, aePriority, apParent, aeLODFadeMult, abPrepareAfterLoad, abAddRefCount, abFaceGenModel
 // pdb locals: spqueuedModel
-void QueueModelHolder::ModelLoader_QueueModel(int apModel, QueueObj* aspQueuedModel, int aePriority, int apParent, int aeLODFadeMult, bool abPrepareAfterLoad, bool abAddRefCount,
+void QueueModelHolder::ModelLoader_QueueModel_00443dc0(int apModel, QueueObj* aspQueuedModel, int aePriority, int apParent, int aeLODFadeMult, bool abPrepareAfterLoad, bool abAddRefCount,
                                     bool abFaceGenModel, float afOverriddenVisualDistance)
 {
     QHeadLocal* pHead = 0;

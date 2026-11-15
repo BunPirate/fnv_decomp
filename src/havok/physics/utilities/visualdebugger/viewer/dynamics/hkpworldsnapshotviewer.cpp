@@ -219,7 +219,7 @@ extern int DAT_010d1764;
 
 struct SubObject
 {
-    void hkStreamStatisticsCollector_ctor(int vtblReg, int memSize);
+    void Init(int vtblReg, int memSize);
 };
 
 struct FUN_00d63280_cls
@@ -237,20 +237,20 @@ struct FUN_00d63280_cls
     SubObject m_sub28;
 
     void Setup(int contexts);
-    FUN_00d63280_cls* hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts);
+    FUN_00d63280_cls* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
 
 // @fnv 0x00d63280
-// src: XBOX_RETAIL_PDB 0x00d63280
+// src: HAVOK_LIB 0x00d63280
 // pdb: hkpWorldMemoryViewer::hkpWorldMemoryViewer | hkpWorldMemoryViewer.obj | retail, upstream name already matches, high
 // pdb params: vtlbReg, contexts
-FUN_00d63280_cls* FUN_00d63280_cls::hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts)
+FUN_00d63280_cls* FUN_00d63280_cls::hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts)
 {
     Setup(contexts);
     m_vtbl0 = (void*)&DAT_010d1794;
     m_vtbl8 = (void*)&DAT_010d1774;
     m_vtbl20 = (void*)&DAT_010d1764;
-    m_sub28.hkStreamStatisticsCollector_ctor(vtlbReg, 0x7a120);
+    m_sub28.Init(vtlbReg, 0x7a120);
     return this;
 }
 

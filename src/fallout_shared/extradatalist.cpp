@@ -487,9 +487,9 @@ void* __cdecl memset(void*, int, unsigned int);
 
 // Sets pThis[0] to the address of DAT_01014300, clears pThis[1], zeroes 0x15 bytes at offset 8, and returns pThis.
 // @fnv 0x0040f740
-// src: XBOX_DEBUG_PDB 0x0040f740
+// src: EXE 0x0040f740
 // pdb: BaseExtraList::BaseExtraList | ExtraDataList.obj | debug, upstream name already matches, high
-void* __fastcall BaseExtraList_ctor(int* pThis)
+void* __fastcall BaseExtraList_BaseExtraList(int* pThis)
 {
     pThis[0] = reinterpret_cast<int>(&DAT_01014300);
     pThis[1] = 0;
@@ -3902,7 +3902,7 @@ struct ExData
 };
 // Retrieves the extra data of type 0x71 and returns its string as a BSOcclusionPlane pointer, or null if absent.
 // @fnv 0x00422120
-// src: XBOX_RETAIL_PDB 0x00422120
+// src: XBOX_RETAIL_PDB 0x00422120 (was COMMUNITY)
 // pdb: ExtraDataList::GetOcclusionPlane | ExtraDataList.obj | retail, object-file gap fill, high
 // pdb locals: pextra
 BSOcclusionPlane* FUN_00422120_shell::ExtraDataList_GetOcclusionPlane()
@@ -3933,7 +3933,7 @@ class FUN_004357a0 : public LegacyExtraData
 
 // Stores apPlane in the extra data of type 0x71, creating it if missing, or removes that extra data when apPlane is null.
 // @fnv 0x00422150
-// src: XBOX_RETAIL_PDB 0x00422150
+// src: XBOX_RETAIL_PDB 0x00422150 (was COMMUNITY)
 // pdb: ExtraDataList::SetOcclusionPlane | ExtraDataList.obj | retail, call graph (shared callers), high
 // pdb params: apPlane
 // pdb locals: pextra
@@ -9322,7 +9322,7 @@ struct S_FUN_0041f170
 };
 // Looks up extra data of type 0x66 on the list and returns a pointer 12 bytes into it, or null if absent.
 // @fnv 0x0041f170
-// src: XBOX_RETAIL_PDB 0x0041f170
+// src: XBOX_RETAIL_PDB 0x0041f170 (was COMMUNITY)
 // pdb: ExtraDataList::GetReflectorRefs | ExtraDataList.obj | retail, object-file run extension, high
 // pdb locals: pextra
 void* S_FUN_0041f170::ExtraDataList_GetReflectorRefs()
@@ -11655,7 +11655,7 @@ struct FUN_0041b080_shell : BaseExtraList
 
 // Returns the starting position stored in extra data type 0xf, falling back to the position from GetOrCreateStartingPosition when absent.
 // @fnv 0x0041b080
-// src: XBOX_RETAIL_PDB 0x0041b080
+// src: XBOX_RETAIL_PDB 0x0041b080 (was COMMUNITY)
 // pdb: ExtraDataList::GetStartingAngle | ExtraDataList.obj | retail, object-file run extension, high
 // pdb params: apObject
 // pdb locals: pExtra
@@ -14835,14 +14835,14 @@ struct ModBlock
     unsigned char m_02;
     unsigned char m_03;
     ModBlockSub m_04;
-    ModBlock* DismemberedLimb_ctor();
+    ModBlock* DismemberedLimb_DismemberedLimb();
 };
 
 // Clears the four byte fields and calls Reset on the m_04 sub-block, then returns this.
 // @fnv 0x0042c470
-// src: XBOX_DEBUG_PDB 0x0042c470
+// src: XBOX_PDB 0x0042c470
 // pdb: DismemberedLimb::DismemberedLimb | ExtraDataList.obj | debug, upstream name already matches, high
-ModBlock* ModBlock::DismemberedLimb_ctor()
+ModBlock* ModBlock::DismemberedLimb_DismemberedLimb()
 {
     m_00 = 0;
     m_01 = 0;
@@ -15118,14 +15118,14 @@ struct FUN_00438bb0_cls
     unsigned short m_0e;
     unsigned int m_10;
     void FUN_00402d00();
-    FUN_00438bb0_cls* MapMarkerData_ctor();
+    FUN_00438bb0_cls* MapMarkerData_MapMarkerData();
 };
 
 // Calls FUN_00402d00, then clears m_0c, m_0d, m_0e and m_10, and returns this.
 // @fnv 0x00438bb0
-// src: XBOX_DEBUG_PDB 0x00438bb0
+// src: XBOX_PDB 0x00438bb0
 // pdb: MapMarkerData::MapMarkerData | MapMarkerData.obj | debug, upstream name already matches, high
-FUN_00438bb0_cls* FUN_00438bb0_cls::MapMarkerData_ctor()
+FUN_00438bb0_cls* FUN_00438bb0_cls::MapMarkerData_MapMarkerData()
 {
     FUN_00402d00();
     m_0c = 0;
@@ -15275,7 +15275,7 @@ struct FUN_00546bf0_class
 
 // Calls FUN_00419700 on the object returned by GetExtraDataList(param), then invokes virtual slot 18 with 8.
 // @fnv 0x00546bf0
-// src: XBOX_RETAIL_PDB 0x00546bf0
+// src: XBOX_RETAIL_PDB 0x00546bf0 (was COMMUNITY)
 // pdb: TESObjectCELL::SetCellOwnership | TESObjectCELL.obj | retail, object-file run extension, high
 // pdb params: pform
 void FUN_00546bf0_class::TESObjectCELL_SetCellOwnership(int pform)
@@ -18822,7 +18822,7 @@ struct FUN_0043a160
     unsigned int unk04;
     unsigned int unk08;
     FUN_0043a160();
-    void DoorTeleportData_LoadGame();
+    void LoadFields();
     unsigned int unk0C;
     unsigned int unk10;
     unsigned int unk14;
@@ -19304,7 +19304,7 @@ void Extras::ExtraDataList_LoadGame(unsigned int aiFlags, unsigned int aiCurrent
             if (aiFlags & 0x20000)
             {
                 FUN_0043a160* data = new FUN_0043a160;
-                data->DoorTeleportData_LoadGame();
+                data->LoadFields();
                 ExtraDataList_SetTeleportPtr(data);
             }
             break;

@@ -265,7 +265,7 @@ TESObjectCELL* __cdecl BGSSaveLoadInitialData_CreateReference(unsigned int, Info
 struct Forms2e40
 {
     void BGSReconstructFormsInAllFilesMap_AddReference(TESObjectCELL*, unsigned int, bool);
-    void BGSReconstructFormsInAllFilesMap_AddReference(TESWorldSpace*, int, int, unsigned int, bool);
+    void BGSReconstructFormsInAllFilesMap_AddReference_008438b0(TESWorldSpace*, int, int, unsigned int, bool);
 };
 struct Target2e40
 {
@@ -313,7 +313,7 @@ void Target2e40::BGSSaveLoadReferencesMap_LoadChangedReference(unsigned int aiRe
                 if (interior)
                     apReconstructForms->BGSReconstructFormsInAllFilesMap_AddReference(interior, aiRefID, false);
                 else
-                    apReconstructForms->BGSReconstructFormsInAllFilesMap_AddReference(world, changeInfo.x, changeInfo.y, aiRefID, false);
+                    apReconstructForms->BGSReconstructFormsInAllFilesMap_AddReference_008438b0(world, changeInfo.x, changeInfo.y, aiRefID, false);
             }
             else
             {

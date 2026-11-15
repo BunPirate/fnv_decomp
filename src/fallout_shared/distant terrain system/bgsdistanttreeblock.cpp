@@ -197,7 +197,7 @@ struct FUN_006f91a0_shell : BgsdistanttreeblockOffset08View
 };
 // Iterates the array at this+4, and for each unflagged entry with a nonzero value, looks up a property and passes it with the entry to UpdateInstances.
 // @fnv 0x006f91a0
-// src: XBOX_DEBUG_PDB 0x006f91a0
+// src: XBOX_DEBUG_PDB 0x006f91a0 (was COMMUNITY)
 // pdb: BGSDistantTreeBlock::UpdateShaderProperties | BGSDistantTreeBlock.obj | debug, call graph, high
 // pdb locals: i, pgroup, pprop
 void FUN_006f91a0_shell::BGSDistantTreeBlock_UpdateShaderProperties()

@@ -705,7 +705,7 @@ class XObj20
 class XScriptState
 {
   public:
-    void MenuTopic_LoadGame(LoadBuffer* apLoadGameBuffer);  // 0x83fbe0
+    void LoadGame(LoadBuffer* apLoadGameBuffer);  // 0x83fbe0
 };
 struct XKeyData
 {
@@ -1169,14 +1169,14 @@ class ExtraDataLoader : public ExtraDataList
     void ResetB(bool a);                           // 0x41ab70
     void ExtraDataList_SetGhost(bool a);                           // 0x41a960
     void ResetD();                                 // 0x422670
-    void ExtraDataList_LoadGame(LoadBuffer* apLoadGameBuffer);
+    void ExtraDataList_LoadGame_00428150(LoadBuffer* apLoadGameBuffer);
 };
 // @fnv 0x00428150
-// src: XBOX_RETAIL_PDB 0x00428150
+// src: EXE 0x00428150
 // pdb: ExtraDataList::LoadGame | ExtraDataList.obj | retail, unique string literal, high
 // pdb params: aiFlags, aiCurrentFlags, apRef
 // pdb locals: icount, istartBufferPosition, iblockSize, bloadedScriptExtra, pactor, i, bimmediatelyRestoreSavedMovementData, iblockHeader, pheader, pform, cextratype, inum, fhealth, cuses, cWeaponModFlags, ftimeleft, fcharge, plock, ikeyID, itrapID, fscale, iownerID, pglobal, iglobalID ...
-void ExtraDataLoader::ExtraDataList_LoadGame(LoadBuffer* apLoadGameBuffer)
+void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* apLoadGameBuffer)
 {
     LoadRef* pRef = apLoadGameBuffer->GetRef();
     LoadRef* actor = apLoadGameBuffer->GetActor();
@@ -1611,7 +1611,7 @@ void ExtraDataLoader::ExtraDataList_LoadGame(LoadBuffer* apLoadGameBuffer)
             }
             case 0x4d: {
                 X4D* p4D = (X4D*)(abHas[cType] ? GetByType(cType) : AddData(new X4D));
-                p4D->pState->MenuTopic_LoadGame(apLoadGameBuffer);
+                p4D->pState->LoadGame(apLoadGameBuffer);
                 break;
             }
             case 0x4e: {

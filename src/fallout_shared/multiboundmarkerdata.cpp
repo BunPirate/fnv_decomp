@@ -224,7 +224,7 @@ struct CellRect
     int iBottom;
 };
 
-bool __cdecl LineVsRect(CellRect* pkRect, NiPoint3* pkStart, NiPoint3* pkEnd, NiPoint3* pkIntersect);
+bool __cdecl TES_LineVsRect(CellRect* pkRect, NiPoint3* pkStart, NiPoint3* pkEnd, NiPoint3* pkIntersect);
 
 // @fnv 0x00439940
 // pdb: MultiBoundMarkerData::MultiBoundIntersectsCell | MultiBoundMarkerData.obj | debug, object-file run extension, low
@@ -271,7 +271,7 @@ bool __cdecl BoundIntersectsCell(BoundRef* pRef, int m_iGridPositionX, int m_iGr
             for (int j = 1; j < 4; j++)
             {
                 NiPoint3 kEnd = akCornersY[aacFaces_2[i][j]];
-                if (LineVsRect(&kRectWork, &kStart, &kEnd, &kKIntersect))
+                if (TES_LineVsRect(&kRectWork, &kStart, &kEnd, &kKIntersect))
                     return true;
             }
         }

@@ -413,15 +413,15 @@ struct FUN_00ddf170_cls
     SpawnedHandle m_14;
     SpawnedHandle m_20;
 
-    FUN_00ddf170_cls* hkStreamStatisticsCollector_ctor(int vtblReg, int memSize);
+    FUN_00ddf170_cls* hkStreamStatisticsCollector_hkStreamStatisticsCollector(int vtblReg, int memSize);
 };
 
 // Calls a base method, sets the vtable, initializes two SpawnedHandle members, and optionally allocates a buffer.
 // @fnv 0x00ddf170
-// src: XBOX_RETAIL_PDB 0x00ddf170
+// src: HAVOK_LIB 0x00ddf170
 // pdb: hkStreamStatisticsCollector::hkStreamStatisticsCollector | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
 // pdb params: vtblReg, memSize
-FUN_00ddf170_cls* FUN_00ddf170_cls::hkStreamStatisticsCollector_ctor(int vtblReg, int memSize)
+FUN_00ddf170_cls* FUN_00ddf170_cls::hkStreamStatisticsCollector_hkStreamStatisticsCollector(int vtblReg, int memSize)
 {
     ((SubBase*)this)->FUN_00d06f50(vtblReg);
     int value = memSize;

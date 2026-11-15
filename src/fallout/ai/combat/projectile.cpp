@@ -3011,15 +3011,14 @@ extern float DAT_0108e2b0;
 struct FUN_009a52f0_shell
 {
     void AddOrUpdateItem(ProjectileCalls*, float, float, float, float);
-    void CombatThreatMap_AddThreat(ProjectileCalls*);
+    void UpdateExplosion(ProjectileCalls*);
 };
 // Checks the projectile's explosion source and, when its radius and length pass the settings thresholds, computes elapsed/duration and calls AddOrUpdateItem.
 // @fnv 0x009a52f0
-// src: XBOX_RETAIL_PDB 0x009a52f0
-// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | retail, object-file run extension, high
+// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | retail, object-file run extension, high, not renamed: the debug build links this name to 0x009a54a0
 // pdb params: apProjectile
 // pdb locals: pexplosion, pprojectileBase, fdamage, fradius, fendTime, fstartTime
-void FUN_009a52f0_shell::CombatThreatMap_AddThreat(ProjectileCalls* apProjectile)
+void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* apProjectile)
 {
     if (apProjectile->Projectile_IsFlagSet(1))
         return;
@@ -4017,7 +4016,7 @@ struct P062Queue
 extern P062Queue* DAT_011f1958;
 struct P062Queued
 {
-    void CombatThreatMap_AddThreat();
+    void UpdateExplosion();
 };
 
 // @fnv 0x009bca60
@@ -4153,7 +4152,7 @@ P062Object* __cdecl Projectile_Launch(P062Ammo* apProjectileBase, P062Object* ap
         DAT_011dea10->FUN_00458e20(geometry, *DAT_011f210c.Setting_Float_00403e20());
     }
     if (projectile)
-        ((P062Queued*)DAT_011f1958->FUN_00825c00(projectile))->CombatThreatMap_AddThreat();
+        ((P062Queued*)DAT_011f1958->FUN_00825c00(projectile))->UpdateExplosion();
     return projectile;
 }
 
@@ -5183,7 +5182,7 @@ extern Setting DAT_011ced88;
 struct UIController
 {
     UIController* FUN_00825c00(GameScreen*);
-    void CombatThreatMap_AddThreat();
+    void UpdateExplosion();
 };
 extern UIController* DAT_011f1958;
 int __cdecl GetTopicSubTypeName(int, int);
@@ -5205,7 +5204,7 @@ void GameScreen::Projectile_UpdateInInventory()
                 if (!Projectile_IsFlagSet(0x800))
                 {
                     Projectile_SetFlag(0x800, 1);
-                    DAT_011f1958->FUN_00825c00(this)->CombatThreatMap_AddThreat();
+                    DAT_011f1958->FUN_00825c00(this)->UpdateExplosion();
                     if (Projectile_GetDesiredTarget())
                     {
                         if (Projectile_GetDesiredTarget()->CanShow())
@@ -6822,7 +6821,7 @@ struct ZProjectile : ZObject
     ZBase* FUN_004181e0();
     bool Projectile_IsFlagSet(int);
     bool Projectile_CheckExplosionProximity();
-    void TESObjectREFR_SetLight(ZScene*, bool);
+    void TESObjectREFR_SetLight_005726e0(ZScene*, bool);
     void Projectile_StartCountdownSound();
     void Projectile_StopCountdownSound();
     void Projectile_FindBlastNodes(ZScene*, ZPoint*);
@@ -6862,7 +6861,7 @@ void ZProjectile::Projectile_CheckExplosion(float afDelta)
                     {
                         ZScene* marker = BSUtilities_GetObjectByName(GetScene(), &DAT_01030e48);
                         if (marker)
-                            TESObjectREFR_SetLight(GetScene(), marker->GetAppCulled_00456610());
+                            TESObjectREFR_SetLight_005726e0(GetScene(), marker->GetAppCulled_00456610());
                         if (timere4 > *originalRuntimeFloatSetting686.Float())
                             timere8 = *originalRuntimeFloatSetting687.Float();
                         else

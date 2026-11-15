@@ -515,7 +515,7 @@ struct Main
     void* GetThreadHandle();
     Controls* GetInputControls();
     bool WmMouseMove(int, int);
-    void Main_KillMenuBGTexture();
+    void RefreshAfterSave();
     static NiAVObject* GetSceneGraph(int);
     static SceneGraph* GetWorldSceneGraph();
     static NiNode* WorldRootNode();
@@ -646,7 +646,7 @@ unsigned int __fastcall GetRendererFrameState(NiRenderer* renderer);
 NiRenderer* __cdecl NiXenonRenderer_GetRenderer(void);
 
 // @fnv 0x004e9510
-// src: XBOX_DEBUG_PDB 0x004e9510
+// src: XBOX_DEBUG_PDB 0x004e9510 (was COMMUNITY)
 // pdb: BSRenderedTexture::QOutsideFrame | TESWater.obj | debug, call graph (shared callers), high
 bool __cdecl BSRenderedTexture_QOutsideFrame()
 {
@@ -2171,7 +2171,7 @@ struct S_004e46b0_Obj
 };
 struct S_004e46b0_Cls
 {
-    void TESWaterSystem_AddPlaceableWater(S_004e46b0_Obj*, const NiPoint3*, const NiMatrix3*);
+    void TESWaterSystem_AddPlaceableWater_004e4730(S_004e46b0_Obj*, const NiPoint3*, const NiMatrix3*);
     void TESWaterSystem_AddPlaceableWater(S_004e46b0_Obj* a);
 };
 // @fnv 0x004e46b0
@@ -2184,7 +2184,7 @@ void S_004e46b0_Cls::TESWaterSystem_AddPlaceableWater(S_004e46b0_Obj* pObj)
     NiPoint3 pos = pObj->vfn_1d0()->NiAVObject_GetWorldTranslate();
     NiMatrix3 rot;
     rot = pObj->vfn_1d0()->NiAVObject_GetWorldRotate().m_Rotate;
-    TESWaterSystem_AddPlaceableWater(pObj, &pos, &rot);
+    TESWaterSystem_AddPlaceableWater_004e4730(pObj, &pos, &rot);
 }
 
 struct Ref5140;
@@ -3351,13 +3351,13 @@ struct FUN_004e8e40_owner
     Vec2 first;
     Vec2 second;
     NiPoint3 third;
-    FUN_004e8e40_owner* WadingWaterData_ctor();
+    FUN_004e8e40_owner* WadingWaterData_WadingWaterData();
 };
 // Calls FUN_006815c0 on first, second and third, then assigns DAT_011f4980 to first and second and DAT_011f426c to third, returning this.
 // @fnv 0x004e8e40
-// src: XBOX_DEBUG_PDB 0x004e8e40
+// src: COMMUNITY 0x004e8e40
 // pdb: WadingWaterData::WadingWaterData | TESWater.obj | debug, upstream name already matches, high
-FUN_004e8e40_owner* FUN_004e8e40_owner::WadingWaterData_ctor()
+FUN_004e8e40_owner* FUN_004e8e40_owner::WadingWaterData_WadingWaterData()
 {
     first.FUN_006815c0();
     second.FUN_006815c0();
@@ -5228,14 +5228,14 @@ struct Owner
     void TESWaterSystem_UpdateShader(Record*, Object*);
     void TESWaterSystem_EnableWaterSystem();
     void TESWaterSystem_ResetStencilBitRefs();
-    bool TESWaterSystem_AddPlaceableWater(Object*, const ::NiPoint3*, Matrix*);
+    bool TESWaterSystem_AddPlaceableWater_004e4730(Object*, const ::NiPoint3*, Matrix*);
 };
 // @fnv 0x004e4730
-// src: XBOX_DEBUG_PDB 0x004e4730
+// src: XBOX_PDB 0x004e4730
 // pdb: TESWaterSystem::AddPlaceableWater | TESWater.obj | debug, unique string literal, high
 // pdb params: apWaterRef, arPosition, arRotation
 // pdb locals: n2, reflectplane, insertbefore, pwater, next, n1, refractplane, iter, bfoundGroup, pgroup, pwatertype, UpdateData, newpos, pnewgroup
-bool Owner::TESWaterSystem_AddPlaceableWater(Object* apWaterRef, const ::NiPoint3* arPosition, Matrix* arRotation)
+bool Owner::TESWaterSystem_AddPlaceableWater_004e4730(Object* apWaterRef, const ::NiPoint3* arPosition, Matrix* arRotation)
 {
     if (!DAT_011c7adc.FUN_00408d60())
         return false;

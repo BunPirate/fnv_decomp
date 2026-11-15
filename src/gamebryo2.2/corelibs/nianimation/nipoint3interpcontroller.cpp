@@ -94,16 +94,16 @@ struct S_00a53280_Foo
     int unk14;
 
     void FUN_00a3ca10();
-    void* NiBoolInterpolator_ctor(void* pkBoolData);
+    void* NiBoolInterpolator_NiBoolInterpolator(void* pkBoolData);
 };
 
 extern void(__stdcall* FUN_00fdf1c0)(void*);
 
 // @fnv 0x00a53280
-// src: XBOX_RETAIL_PDB 0x00a53280
+// src: GAMEBRYO_LIB 0x00a53280
 // pdb: NiBoolInterpolator::NiBoolInterpolator | NiBoolInterpolator.obj | retail, call graph (shared callers), high
 // pdb params: pkBoolData
-void* S_00a53280_Foo::NiBoolInterpolator_ctor(void* pkBoolData)
+void* S_00a53280_Foo::NiBoolInterpolator_NiBoolInterpolator(void* pkBoolData)
 {
     FUN_00a3ca10();
 

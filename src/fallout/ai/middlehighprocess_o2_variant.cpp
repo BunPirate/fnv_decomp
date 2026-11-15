@@ -33,11 +33,11 @@ static inline unsigned int C69FC0IsEnabled(int object)
 }
 
 // @fnv 0x00c69fc0
-// src: XBOX_RETAIL_PDB 0x00c69fc0
+// src: COMMUNITY 0x00c69fc0
 // pdb: bhkWorld::AdjustForceAddCount | bhkWorld.obj | retail, object-file gap fill, high
 // pdb params: apObject, abIncrement, abRecurse, abForce
 // pdb locals: bres, recData
-bool __cdecl bhkWorld_AdjustForceAddCount(int apObject, unsigned char abIncrement, unsigned char abRecurse, unsigned char abForce)
+bool __cdecl _bhkWorld_AdjustForceAddCount(int apObject, unsigned char abIncrement, unsigned char abRecurse, unsigned char abForce)
 {
     bool bResult = false;
     if (apObject)

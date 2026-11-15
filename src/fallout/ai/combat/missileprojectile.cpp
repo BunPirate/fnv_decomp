@@ -381,7 +381,7 @@ struct MissileprojectileOffset08View
 
 struct FUN_009a7f00_obj
 {
-    float GetGravity();
+    float GetGravity_00966980();
     bool GetHitScan() const;
 };
 
@@ -404,7 +404,7 @@ void MissileProjectile::UpdateBeamFlags()
               : reinterpret_cast<FUN_009a7f00_obj*>(FUN_004181e0())->GetHitScan();
 
     bool bNewGame =
-        reinterpret_cast<FUN_009a7f00_obj*>(FUN_004181e0())->GetGravity() > 0.0;
+        reinterpret_cast<FUN_009a7f00_obj*>(FUN_004181e0())->GetGravity_00966980() > 0.0;
 
     reinterpret_cast<void(__thiscall*)(void*, int, bool)>(MissileLocal::SetImpactFlag)(this, 0x10, bTarget);
     reinterpret_cast<void(__thiscall*)(void*, int, bool)>(MissileLocal::SetImpactFlag)(this, 1, bPathing);

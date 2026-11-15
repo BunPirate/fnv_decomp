@@ -28,14 +28,14 @@ struct Base_00c517b0
 
 struct Wrapper_00878610 : Base_00c517b0
 {
-    void* SceneGraph_ctor(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera);
+    void* SceneGraph_SceneGraph(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera);
 };
 
 // @fnv 0x00878610
-// src: XBOX_RETAIL_PDB 0x00878610
+// src: EXE 0x00878610
 // pdb: SceneGraph::SceneGraph | SceneGraph.obj | retail, upstream name already matches, high
 // pdb params: apSceneGraphName, abMenuSceneGraph, apCamera
-void* Wrapper_00878610::SceneGraph_ctor(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera)
+void* Wrapper_00878610::SceneGraph_SceneGraph(char* apSceneGraphName, bool abMenuSceneGraph, void* apCamera)
 {
     FUN_00c517b0(apSceneGraphName, abMenuSceneGraph, apCamera);
     *(int**)this = &DAT_01083b5c;

@@ -73,9 +73,9 @@ void BGSTouchSpellForm::InitItem(TESForm* apOwner)
 extern int DAT_0101aef0;
 
 // @fnv 0x0047bd10
-// src: XBOX_DEBUG_PDB 0x0047bd10
+// src: EXE 0x0047bd10
 // pdb: BGSTouchSpellForm::BGSTouchSpellForm | BGSTouchSpellForm.obj | debug, upstream name already matches, high
-BGSTouchSpellForm* __fastcall BGSTouchSpellForm_ctor(BGSTouchSpellForm* pThis)
+BGSTouchSpellForm* __fastcall BGSTouchSpellForm_BGSTouchSpellForm(BGSTouchSpellForm* pThis)
 {
     pThis->BaseFormComponent::BaseFormComponent();
     *(int**)pThis = &DAT_0101aef0;

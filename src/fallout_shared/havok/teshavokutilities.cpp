@@ -30,7 +30,7 @@ extern float DAT_0104e148;
 
 struct FUN_006295a0_shell
 {
-    void __thiscall setAll(float);
+    void __thiscall hkVector4_setAll(float);
     void hkAabb_setEmpty();
 };
 
@@ -40,8 +40,8 @@ struct FUN_006295a0_shell
 // pdb: hkAabb::setEmpty | LoadedAreaBound.obj | debug, upstream name already matches, high
 void FUN_006295a0_shell::hkAabb_setEmpty()
 {
-    setAll(DAT_0104da48);
-    ((FUN_006295a0_shell*)((char*)this + 0x10))->setAll(DAT_0104e148);
+    hkVector4_setAll(DAT_0104da48);
+    ((FUN_006295a0_shell*)((char*)this + 0x10))->hkVector4_setAll(DAT_0104e148);
 }
 
 float TESHavokUtilities_GetSceneGraphMass(NiAVObject* apObject);

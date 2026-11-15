@@ -254,7 +254,7 @@ const char** __fastcall _ref_006815c0(BSSimpleList<const char*>*);
 void __fastcall _ref_0063f7b0(BSSimpleList<const char*>*);
 
 // @fnv 0x006003c0
-// src: XBOX_RETAIL_PDB 0x006003c0
+// src: XBOX_RETAIL_PDB 0x006003c0 (was COMMUNITY)
 // pdb: TESIdleManager::RebuildRootFilenameLists | TESIdleManager.obj | retail, call graph, high
 // pdb locals: iter, pidledir, proot, n, pfilename
 void __fastcall TESIdleManager_RebuildRootFilenameLists(void* thisPtr)

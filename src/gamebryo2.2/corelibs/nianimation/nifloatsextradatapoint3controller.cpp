@@ -313,15 +313,15 @@ struct VertexRenderer {
     __declspec(noalias) void NiDX9VertexBufferManager_GenerateVertexParameters(VertexSource*, VertexData*, unsigned*, unsigned*, unsigned*, unsigned*, unsigned*, unsigned*, unsigned*);
     bool NiDX9VertexBufferManager_AllocateBufferSpace(RenderBuffer*, unsigned);
     void* NiDX9VertexBufferManager_LockVB(unsigned, unsigned, unsigned, IDirect3DVertexBuffer9*);
-    VertexBufferLockInfo* NiXenonVertexBufferManager_PackSkinnedVB(VertexSource*, unsigned, VertexData*, unsigned, VertexBufferLockInfo*, char*);
+    VertexBufferLockInfo* NiDX9VertexBufferManager_PackSkinnedVB(VertexSource*, unsigned, VertexData*, unsigned, VertexBufferLockInfo*, char*);
 };
 
 // @fnv 0x00e8c820
-// src: XBOX_DEBUG_PDB 0x00e8c820
+// src: COMMUNITY 0x00e8c820
 // pdb: NiXenonVertexBufferManager::PackSkinnedVB | NiXenonVBManager.obj | debug, unique string literal, high
 // pdb params: pkData, pkSkin, pkPartition, usDirtyFlags, pakVertexElements, pkOldVBChip, pvLockedBuff
 // pdb locals: uiVertexTypeDesc, uiT, uiVertexStride, bUnlock, uiColorOffset, pkVBChip, pkP, uiWeightOffset, pkN, uiTexOffset, usVerts, pusVertMap, uiPosOffset, uiIndexOffset, ui, pucTmp, uiNormOffset, pkC, usBones, pkBuffData, kVBDesc, uiBoneIndex, pfWeight, pfTmp ...
-VertexBufferLockInfo* VertexRenderer::NiXenonVertexBufferManager_PackSkinnedVB(VertexSource* source, unsigned unused, VertexData* data, unsigned flags, VertexBufferLockInfo* existing, char* option)
+VertexBufferLockInfo* VertexRenderer::NiDX9VertexBufferManager_PackSkinnedVB(VertexSource* source, unsigned unused, VertexData* data, unsigned flags, VertexBufferLockInfo* existing, char* option)
 {
     unsigned vertexCount;
     unsigned dataFlags;

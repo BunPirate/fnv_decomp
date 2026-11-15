@@ -3346,7 +3346,7 @@ struct FUN_00cbe820_cls
     FUN_00cbe820_sub m_97;
     float m_98;
 
-    FUN_00cbe820_cls* hkpHingeConstraintData_Atoms_ctor();
+    FUN_00cbe820_cls* hkpHingeConstraintData_Atoms_Atoms();
 };
 struct FUN_00cbe880_Class
 {
@@ -5152,7 +5152,7 @@ class CBADDynamicArray : public CA0E60Array
   public:
     void Runtime_ProcessEntries_00cb9d50(void** elements, unsigned int count);
     void ReleaseItems(void** elements, unsigned int count);
-    void BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
+    void BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 class GlobalObjectO2_00a7b610;
 extern GlobalObjectO2_00a7b610 bhkRagdollTemplate_ms_RTTI;
@@ -5857,7 +5857,7 @@ struct FUN_00cbaf90 : public ObjectCBAF90
 };
 struct CBB050Array
 {
-    void BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
+    void BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 struct CBB050Object
 {
@@ -9317,18 +9317,18 @@ struct S00cbe7b0_Obj
     unsigned char m_a0;
     unsigned char m_a1;
     unsigned char m_a2;
-    S00cbe7b0_Obj* hkpHingeConstraintData_ctor();
+    S00cbe7b0_Obj* hkpHingeConstraintData_hkpHingeConstraintData();
 };
 
 // @fnv 0x00cbe7b0
-// src: XBOX_RETAIL_PDB 0x00cbe7b0
+// src: XBOX_PDB 0x00cbe7b0
 // pdb: hkpHingeConstraintData::hkpHingeConstraintData | hkpHingeConstraintData.obj | retail, upstream name already matches, high
-S00cbe7b0_Obj* S00cbe7b0_Obj::hkpHingeConstraintData_ctor()
+S00cbe7b0_Obj* S00cbe7b0_Obj::hkpHingeConstraintData_hkpHingeConstraintData()
 {
     m_6 = 1;
     m_8 = 0;
     m_vtbl = &DAT_010c91ec;
-    reinterpret_cast< ::FUN_00cbe820_cls*>(reinterpret_cast<char*>(this) + 0x10)->hkpHingeConstraintData_Atoms_ctor();
+    reinterpret_cast< ::FUN_00cbe820_cls*>(reinterpret_cast<char*>(this) + 0x10)->hkpHingeConstraintData_Atoms_Atoms();
     ::LocalM128 z = (_mm_setzero_ps)();
     (_mm_store_ps)((float*)&q20, z);
     (_mm_store_ps)((float*)&q30, z);

@@ -461,10 +461,10 @@ void FUN_004bc480_shell::NiMaterialProperty_SetChanged(int arg)
 struct bhkWorld;
 bool __fastcall bhkWorld_QDebugDisplay(char const*);
 // @fnv 0x004bad40
-// src: XBOX_DEBUG_PDB 0x004bad40
+// src: COMMUNITY 0x004bad40
 // pdb: GridCellArray::ToggleCollisionGeometry | GridCell.obj | debug, call graph, high
 // pdb locals: pw, btd, x, y, pgridcell
-void GridCellArray::ToggleCollisionGeometry()
+void GridCellArray::ToggleCollisionGeometry_004bad40()
 {
     bhkWorld* pWorld = TESObjectCELL::GetExteriorbhkWorld();
     if (pWorld)
@@ -485,7 +485,7 @@ struct FUN_005549d0_shell
     void TESObjectCELL_TogglePrimitives(bool);
 };
 // @fnv 0x004bae20
-// src: XBOX_RETAIL_PDB 0x004bae20
+// src: XBOX_RETAIL_PDB 0x004bae20 (was COMMUNITY)
 // pdb: GridCellArray::ShowPrimitives | GridCell.obj | retail, object-file run extension, high
 // pdb params: abShow
 // pdb locals: pw, x, y, pgridcell
@@ -512,10 +512,10 @@ struct FUN_00553820_shell
 };
 // Iterates every grid cell and calls FUN_00553820 on each cell's pCell when it is non-null.
 // @fnv 0x004baba0
-// src: XBOX_RETAIL_PDB 0x004baba0
+// src: COMMUNITY 0x004baba0
 // pdb: GridCellArray::RunAnimations | GridCell.obj | retail, object-file gap fill, high
 // pdb locals: x, y, pgridcell
-void GridCellArray::RunAnimations()
+void GridCellArray::RunAnimations_004baba0()
 {
     unsigned int i;
     for (i = 0; i < GetGridDimension(); i++)
@@ -536,10 +536,10 @@ struct CellOwner
 };
 // Iterates every grid cell and calls PlayCellSoundEffects on each cell's pCell when both the cell and its pCell are non-null.
 // @fnv 0x004bac20
-// src: XBOX_RETAIL_PDB 0x004bac20
+// src: COMMUNITY 0x004bac20
 // pdb: GridCellArray::UpdateRefSounds | GridCell.obj | retail, object-file gap fill, high
 // pdb locals: x, y, pGridCell
-void GridCellArray::UpdateRefSounds()
+void GridCellArray::UpdateRefSounds_004bac20()
 {
     for (unsigned int x = 0; x < GetGridDimension(); ++x)
     {

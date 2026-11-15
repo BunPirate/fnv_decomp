@@ -5411,7 +5411,7 @@ struct FUN_00673200_shell
 
 // If apIdles is non-null, passes it to CopyConditions with null; otherwise passes a default-constructed CondS and null.
 // @fnv 0x00673200
-// src: XBOX_RETAIL_PDB 0x00673200
+// src: XBOX_RETAIL_PDB 0x00673200 (was COMMUNITY)
 // pdb: TESPackage::SetPackageConditions | Package.obj | retail, object-file run extension, high
 // pdb params: apPackCond
 // pdb locals: temp
@@ -5448,7 +5448,7 @@ class FUN_004799f0_shell
 class FUN_006802f0_shell
 {
   public:
-    void Save(int);
+    void PackageTarget_Save(int);
 };
 
 class FUN_0067fec0_shell
@@ -5539,7 +5539,7 @@ void FUN_006738b0_shell::TESPackage_Save()
 
     if (reinterpret_cast<TESPackage*>(this)->GetTarget())
         reinterpret_cast<FUN_006802f0_shell*>(reinterpret_cast<TESPackage*>(this)->GetTarget())
-            ->Save(0x54445450);
+            ->PackageTarget_Save(0x54445450);
 
     if (reinterpret_cast<PackedByteIntRecord*>(this)->Endian())
         reinterpret_cast<TESConditionSave_package*>(reinterpret_cast<PackedByteIntRecord*>(this)->Endian())->Save();
@@ -9884,7 +9884,7 @@ void FUN_006797c0_shell::TESPackage_SaveGame(FUN_006797c0_arg* apSaveGameBuffer)
 struct PackageDataA6798c0
 {
     PackageDataA6798c0();
-    void PackageLocation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    void Load(BGSLoadFormBuffer* apLoadGameBuffer);
     int unk00;
     int unk04;
     int unk08;
@@ -9951,7 +9951,7 @@ void Package6798c0::LoadPackage(BGSLoadFormBuffer* apLoadGameBuffer)
         if (loadFlags & 1)
         {
             dataA = new PackageDataA6798c0;
-            dataA->PackageLocation_LoadGame(apLoadGameBuffer);
+            dataA->Load(apLoadGameBuffer);
         }
         if (loadFlags & 2)
         {

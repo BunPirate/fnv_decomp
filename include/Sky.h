@@ -284,7 +284,7 @@ public:
     void UpdateWind();
     void ResetWeather_0063d060();
     void UpdateFields_0063d0e0(TESWeather*, bool);
-    void UpdateWeather();
+    void UpdateWeather_0063d1d0();
     void UpdateSound();
     void UnloadAllTextures_0063e210();
     void SetAcceleration(int);

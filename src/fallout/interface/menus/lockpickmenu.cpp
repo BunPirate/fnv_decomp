@@ -213,7 +213,7 @@ void __cdecl BSShaderUtil_AccumulateScene(void*, int, void*);
 void __cdecl FUN_00b6c0d0(void*, void*, int);
 
 // @fnv 0x0078e7c0
-// src: XBOX_RETAIL_PDB 0x0078e7c0
+// src: XBOX_RETAIL_PDB 0x0078e7c0 (was COMMUNITY)
 // pdb: LockPickMenu::Draw3DElements | LockPickMenu.obj | retail, object-file run extension, high
 // pdb locals: spaccum, apCuller, pcam, pcamera, apSceneGraph
 void __cdecl LockPickMenu_Draw3DElements()
@@ -1286,7 +1286,7 @@ struct xRef : xForm
 };
 struct xCrimeMgr
 {
-    void* ProcessLists_GetActorRefInHigh(xFaction*, int, int);
+    void* ProcessLists_GetActorRefInHigh_00970b30(xFaction*, int, int);
     void* ProcessLists_GetActorRefInHigh(xNPC*, int);
 };
 extern xCrimeMgr xg_crime_11e0e80;
@@ -1794,7 +1794,7 @@ void LockPickMenu::DoIdle_0078eb50()
                             if (OWNER->FUN_00401170() == 8)
                             {
                                 xFaction* FACA = (xFaction*)OWNER;
-                                CRIME = xg_crime_11e0e80.ProcessLists_GetActorRefInHigh(FACA, 1, 1);
+                                CRIME = xg_crime_11e0e80.ProcessLists_GetActorRefInHigh_00970b30(FACA, 1, 1);
                             }
                             else
                             {

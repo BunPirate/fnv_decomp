@@ -1193,7 +1193,7 @@ struct FNVObj {
     const void* vft;
     unsigned int references;
     ReferenceHandle handle;
-    FNVObj* NiMaterialLibrary_ctor(const ReferenceHandle& kName);
+    FNVObj* NiMaterialLibrary_NiMaterialLibrary(const ReferenceHandle& kName);
 };
 extern "C" void* DAT_0109b220;
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long* value);

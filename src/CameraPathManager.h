@@ -18,7 +18,7 @@ class CameraPathManager
     static BGSCameraPath* GetTextureResourcePath();
     void UpdateCameraPaths();
     void DestroyCameraPaths();
-    TESFile* GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef);
+    TESFile* BGSCameraPathManager_GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef);
 
   protected:
     static BGSCameraPath* ms_pDefaultCameraPath;

@@ -381,7 +381,7 @@ struct FUN_006cf000_Class
 };
 struct S5460_FUN_006e3d30_Helper
 {
-    void* __thiscall BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
+    void* __thiscall BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
 };
 struct BSSimpleArray_PathingAvoidNode_1024
 {
@@ -401,7 +401,7 @@ struct FUN_009f6540_Helper
 };
 struct Host9f6340
 {
-    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(int, int);
+    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(int, int);
 };
 struct FUN_009f6200_Class
 {

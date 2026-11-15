@@ -1880,7 +1880,7 @@ struct SSActor
     void SetCurrentSitSleepState(int state);
 };
 bool AILinearTaskThreadManager_ShouldQueue3DTask();
-void bhkWorld_AdjustForceAddCount(NiAVObject* apObject, bool abIncrement, bool abRecurse, bool abForce);
+void _bhkWorld_AdjustForceAddCount(NiAVObject* apObject, bool abIncrement, bool abRecurse, bool abForce);
 extern SSActor* g_thePlayer;
 struct SSProcess : public MiddleHighProcess
 {
@@ -14797,7 +14797,7 @@ namespace FinishLoadCalls {
 NiAVObject* BSFurnitureMarker_Find(::NiNode*);
 }
 void NiMatrix3_TransformVertices(const NiMatrix3&, NiPoint3*, int, const NiPoint3*, const NiPoint3*);
-void bhkWorld_AdjustForceAddCount(NiAVObject*, bool, bool, bool);
+void _bhkWorld_AdjustForceAddCount(NiAVObject*, bool, bool, bool);
 void bhkWorld_SetMotion(NiAVObject*, bool, bool, bool, bool);
 void ActiveEffect_FinishInitLoadGameActiveEffectList(void*, Actor*);
 class ObjectWithVFuncD8

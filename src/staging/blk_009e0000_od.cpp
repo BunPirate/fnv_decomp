@@ -273,7 +273,7 @@ struct Host9f6340
     int iDataLength;
     virtual void v0();
     virtual int Write(unsigned int);
-    void BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(int, int);
+    void BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(int, int);
     void ResetAndWrite(unsigned int requested, unsigned int savedSize);
 };
 
@@ -292,7 +292,7 @@ void Host9f6340::ResetAndWrite(unsigned int requested, unsigned int savedSize)
     }
     if (savedSize > 0)
     {
-        BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(iSize, savedSize);
+        BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(iSize, savedSize);
         iPosition = savedSize;
     }
 }

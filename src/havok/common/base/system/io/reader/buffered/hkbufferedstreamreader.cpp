@@ -447,14 +447,14 @@ struct FUN_00d2bc30_cls
     unsigned short m_06;
     int m_08;
     FUN_00d2bbd0_cls* Init(int);
-    FUN_00d2bc30_cls* hkBufferedStreamReader_ctor(int, int);
+    FUN_00d2bc30_cls* hkBufferedStreamReader_hkBufferedStreamReader(int, int);
 };
 // Sets m_06 to 1, stores a in m_08, sets vtable, calls FUN_00d2bbd0 with b, and calls Refresh on m_08.
 // @fnv 0x00d2bc30
-// src: XBOX_RETAIL_PDB 0x00d2bc30
+// src: HAVOK_LIB 0x00d2bc30
 // pdb: hkBufferedStreamReader::hkBufferedStreamReader | hkBufferedStreamReader.obj | retail, upstream name already matches, high
 // pdb params: s, bufSize
-FUN_00d2bc30_cls* FUN_00d2bc30_cls::hkBufferedStreamReader_ctor(int s, int bufSize)
+FUN_00d2bc30_cls* FUN_00d2bc30_cls::hkBufferedStreamReader_hkBufferedStreamReader(int s, int bufSize)
 {
     m_06 = 1;
     m_08 = s;

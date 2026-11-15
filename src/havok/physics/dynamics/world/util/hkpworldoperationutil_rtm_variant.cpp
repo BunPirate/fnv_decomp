@@ -2388,7 +2388,7 @@ struct ConstraintRuntimeInfo
     int unk2c;
 };
 void __cdecl hkpWorldOperationUtil_internalActivateIsland(hkpWorld*, hkpSimulationIsland*, hkBool);
-void __cdecl hkAgentNnMachine_AppendTrack(void*, void*);
+void __cdecl _hkAgentNnMachine_AppendTrack(void*, void*);
 void __cdecl hkArrayUtil__reserve(void*, void*, int, int);
 void __cdecl ResizeAudioStream(void*, void*, int);
 void __cdecl ClearSlotReference(hkpWorld*, hkpSimulationIsland*);
@@ -3804,7 +3804,7 @@ void hkpWorldOperationUtil_replaceMotionObject(MotionObj* a0, int mode, ModeBool
 void hkpWorldOperationUtil_addEntitySI(Inner* s, int a5, int a7);
 void ApplyConstraintsToEntity(Inner* s, int a8, void* p);
 void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(void* trackToScan, MotionObj* entity, void* agentsRemoved, int newMotionType);
-void hkAgentNnMachine_AppendTrack(void* m, void* w);
+void _hkAgentNnMachine_AppendTrack(void* m, void* w);
 void hkpWorldOperationUtil_mergeIslands(Inner* in, MotionObj* a0, MotionObj* e);
 void hkSweptTransformUtil_freezeMotionState(float f, void* motionState);
 void hkpWorldCallbackUtil_fireInactiveEntityMoved(void* p, MotionObj* a3);
@@ -4753,7 +4753,7 @@ struct S00cb3ee0_Sub
 };
 int PickIslandByValue(int a, int b, int c);
 void hkAgentNnMachine_CopyAndRelinkAgentEntry(int destTrack, int entry);
-void hkAgentNnMachine_InternalDeallocateEntry(int track, int entry);
+void _hkAgentNnMachine_InternalDeallocateEntry(int track, int entry);
 void hkpWorldOperationUtil_removeAttachedAgentsConnectingTheEntityAndAFixedPartnerEntityPlus(void* trackToScan, MotionObj* entity, void* agentsRemoved, int newMotionType);
 template <typename T>
 
@@ -5178,7 +5178,7 @@ struct SplitIsland_Elem2
     int f0c;
 };
 void hkAgentNnMachine_CopyAndRelinkAgentEntry(int* destTrack, void* entry);
-void hkAgentNnMachine_InternalDeallocateEntry(void* track, void* entry);
+void _hkAgentNnMachine_InternalDeallocateEntry(void* track, void* entry);
 void hkArrayUtil__reduce(void* mem, void* vec, int sizeElem, void* inplaceMem, int n);
 struct SplitIsland_Head58
 {
@@ -5934,7 +5934,7 @@ void hkpWorldOperationUtil_splitSimulationIsland(hkpSimulationIsland* currentIsl
                             {
                                 int b = s - elem;
                                 hkAgentNnMachine_CopyAndRelinkAgentEntry(&((hkpSimulationIsland*)buf18)->unk58, s);
-                                hkAgentNnMachine_InternalDeallocateEntry(ox, s);
+                                _hkAgentNnMachine_InternalDeallocateEntry(ox, s);
                                 if (saved38B >= ox->vec.cnt)
                                     break;
                                 elem = (char*)ox->vec.data[saved38B];

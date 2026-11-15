@@ -140,7 +140,7 @@ float AiFormulas_AVDeriveBodyPartCondition()
     return originalRuntimeFloatSetting310.Float()->f;
 }
 
-float __cdecl AiFormulas_AVDeriveSkill(ActorValueOwner*, int, bool);
+float __cdecl GetSkillValue(ActorValueOwner*, int, bool);
 
 // Calls GetSkillValue with arg2, arg3 and false, returning the resulting float.
 // @fnv 0x00643bd0
@@ -150,7 +150,7 @@ float __cdecl AiFormulas_AVDeriveSkill(ActorValueOwner*, int, bool);
 // pdb locals: fresult
 float __cdecl callback4C(void* arg2, int arg3)
 {
-    float result = AiFormulas_AVDeriveSkill(static_cast<ActorValueOwner*>(arg2), arg3, 0);
+    float result = GetSkillValue(static_cast<ActorValueOwner*>(arg2), arg3, 0);
     return result;
 }
 
@@ -539,11 +539,10 @@ bool __cdecl ActorValue_IsSkill(int);
 void __cdecl GetSkillAttributeAndBase(int aiSkill, int* aiPrimaryAttribute, float* afBase);
 float __cdecl CalcSkillBase(float, float, float);
 // @fnv 0x00643c90
-// src: XBOX_RETAIL_PDB 0x00643c90
-// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, high
+// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, high, not renamed: the debug build links this name to 0x00643bd0
 // pdb params: apActor, aiWhich
 // pdb locals: fresult
-float __cdecl AiFormulas_AVDeriveSkill(ActorValueOwner* apActor, int aiWhich, bool abBaseDerivation)
+float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiWhich, bool abBaseDerivation)
 {
     float fResult = 0.0f;
     if (ActorValue_IsSkill(aiWhich))

@@ -303,13 +303,13 @@ struct FUN_0066d3d0_shell
 extern int DAT_01066acc;
 struct FUN_0066d3a0_shell
 {
-    void* __thiscall bhkSPCollisionObject_ctor(void*);
+    void* __thiscall bhkSPCollisionObject_bhkSPCollisionObject(void*);
 };
 // @fnv 0x0066d3a0
-// src: XBOX_DEBUG_PDB 0x0066d3a0
+// src: EXE 0x0066d3a0
 // pdb: bhkSPCollisionObject::bhkSPCollisionObject | BSTreeNode.obj | debug, call graph, high
 // pdb params: apObject
-void* __thiscall FUN_0066d3a0_shell::bhkSPCollisionObject_ctor(void* apObject)
+void* __thiscall FUN_0066d3a0_shell::bhkSPCollisionObject_bhkSPCollisionObject(void* apObject)
 {
     reinterpret_cast<FUN_0066d3d0_shell*>(this)->bhkPCollisionObject_bhkPCollisionObject(apObject);
     *reinterpret_cast<void**>(this) = &DAT_01066acc;
@@ -342,7 +342,7 @@ void* __thiscall FUN_0066d3d0_shell::bhkPCollisionObject_bhkPCollisionObject(uns
 }
 }  // namespace fnv_0066d3d0
 
-extern "C" void __cdecl hkActionCinfo_ctor();
+extern "C" void __cdecl hkActionCinfo_hkActionCinfo();
 extern "C" void __cdecl FUN_0056e270();
 struct FUN_0056e120_shell
 {
@@ -357,7 +357,7 @@ struct FUN_0066d550_shell
 // pdb: hkTransformShapeCinfo::hkTransformShapeCinfo | BSTreeNode.obj | debug, call graph (shared callers), high
 void* FUN_0066d550_shell::hkTransformShapeCinfo_ctor()
 {
-    ((void(__thiscall*)(void*))hkActionCinfo_ctor)(this);
+    ((void(__thiscall*)(void*))hkActionCinfo_hkActionCinfo)(this);
     ((unsigned int*)this)[1] = 0;
     ((void(__thiscall*)(void*))FUN_0056e270)((char*)this + 0x10);
     ((FUN_0056e120_shell*)((char*)this + 0x10))->bhkTransform_setIdentity();
@@ -407,13 +407,13 @@ struct FUN_006299a0_shell
 };
 struct FUN_0066d770_shell
 {
-    void* __thiscall hkMultiSphereShapeCinfo_ctor();
+    void* __thiscall hkMultiSphereShapeCinfo_hkMultiSphereShapeCinfo();
 };
 // Calls StepAndReturnThis on this and FUN_006299a0 on the object at this+4, then returns this.
 // @fnv 0x0066d770
-// src: XBOX_DEBUG_PDB 0x0066d770
+// src: XBOX_PDB 0x0066d770
 // pdb: hkMultiSphereShapeCinfo::hkMultiSphereShapeCinfo | BSTreeNode.obj | debug, upstream name already matches, high
-void* __thiscall FUN_0066d770_shell::hkMultiSphereShapeCinfo_ctor()
+void* __thiscall FUN_0066d770_shell::hkMultiSphereShapeCinfo_hkMultiSphereShapeCinfo()
 {
     ((FUN_0056e900_shell*)this)->hkSphereRepShapeCinfo_ctor();
     ((FUN_006299a0_shell*)((char*)this + 4))->ProcessAndReturnValue_006299a0();

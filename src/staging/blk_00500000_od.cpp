@@ -557,14 +557,14 @@ struct FUN_00501cd0_class
     void* m_0c;
     unsigned int m_10;
     void* m_14;
-    void* __thiscall DoorLock_ctor();
+    void* __thiscall DoorLock_DoorLock();
 };
 // @fnv 0x00501cd0
-// src: XBOX_RETAIL_PDB 0x00501cd0
+// src: XBOX_PDB 0x00501cd0
 // pdb: DoorLock::DoorLock | DoorLock.obj | retail, upstream name already matches, high
 // pdb params: apDoorRef
 // pdb locals: ptel, pDoorLock
-void* __thiscall FUN_00501cd0_class::DoorLock_ctor()
+void* __thiscall FUN_00501cd0_class::DoorLock_DoorLock()
 {
     m_00 = 0;
     m_04 = 0;

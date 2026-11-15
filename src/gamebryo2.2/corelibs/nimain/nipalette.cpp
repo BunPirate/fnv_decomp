@@ -281,9 +281,9 @@ void __cdecl FUN_00ec44d0(void* dst, void* src, unsigned int size);
 
 // Initializes the owner: stores the byte and count, allocates an element array, copies count*4 bytes from a3, and notifies DAT_011f4748.
 // @fnv 0x00a8b110
-// src: XBOX_RETAIL_PDB 0x00a8b110
+// src: EXE 0x00a8b110
 // pdb: NiPalette::NiPalette | NiPalette.obj | retail, call graph, high
-void* __fastcall NiPalette_ctor(NiPalette* self, void*, unsigned char a1, unsigned int a2, void* pSrc)
+void* __fastcall NiPalette_NiPalette_00a8b110(NiPalette* self, void*, unsigned char a1, unsigned int a2, void* pSrc)
 {
     _Call_a5d3a0(self);
     *(unsigned char*)&self->m_bAlpha = a1;

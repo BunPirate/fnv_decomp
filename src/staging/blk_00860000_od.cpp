@@ -526,7 +526,7 @@ struct Caller00822860
 };
 
 // @fnv 0x0087d420
-// src: XBOX_RETAIL_PDB 0x0087d420
+// src: XBOX_RETAIL_PDB 0x0087d420 (was COMMUNITY)
 // pdb: BSScrapArray<NiPointer<NiAVObject>,1024>::~BSScrapArray<NiPointer<NiAVObject>,1024> | TaskQueueInterface.obj | retail, object-file gap fill, high
 void* Caller00822860::BSScrapArray_NiPointer_NiAVObject_1024_dtor()
 {
@@ -911,9 +911,9 @@ void __cdecl BGSMoviePlayer_Destroy()
 void __fastcall Menu_SetRenderedMenu(void*);
 void __fastcall ZeroSixInts(void*);
 // @fnv 0x008677d0
-// src: XBOX_DEBUG_PDB 0x008677d0
+// src: COMMUNITY 0x008677d0
 // pdb: Calendar::Calendar | calendar.obj | debug, upstream name already matches, high
-void* __fastcall Calendar_ctor(void* p)
+void* __fastcall Calendar_Calendar(void* p)
 {
     *(int*)p = 0;
     *(int*)((char*)p + 4) = 0;
@@ -3283,16 +3283,16 @@ struct FUN_00876a20_shell
     int unk8C;
     int unk90;
     FUN_00876a20_list unk94;
-    void Main_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apRenderer);
+    void TESMain_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apRenderer);
 };
 
 // Clears DAT_011a9604, passes FUN_00874690() to apArg, calls FUN_00b65ec0 on unk94's element, then restores the flag.
 // @fnv 0x00876a20
-// src: XBOX_DEBUG_PDB 0x00876a20
+// src: COMMUNITY 0x00876a20
 // pdb: Main::DrawWorld_ScreenSplatter | Main.obj | debug, call graph, high
 // pdb params: apRenderer
 // pdb locals: bsaveposadjust, tempAutoEvent
-void FUN_00876a20_shell::Main_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apRenderer)
+void FUN_00876a20_shell::TESMain_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apRenderer)
 {
     bool bOld = DAT_011a9604;
     DAT_011a9604 = false;
@@ -3547,13 +3547,13 @@ struct FUN_00878030_cls
     unsigned int m_uiFlags2;
     unsigned int m_uiFlags3;
     Member14_b3616 m_Sub14;
-    FUN_00878030_cls* MemoryLevelManager_ctor();
+    FUN_00878030_cls* MemoryLevelManager_MemoryLevelManager();
 };
 
 // @fnv 0x00878030
-// src: XBOX_DEBUG_PDB 0x00878030
+// src: COMMUNITY 0x00878030
 // pdb: MemoryLevelManager::MemoryLevelManager | MemoryLevelManager.obj | debug, upstream name already matches, high
-FUN_00878030_cls* FUN_00878030_cls::MemoryLevelManager_ctor()
+FUN_00878030_cls* FUN_00878030_cls::MemoryLevelManager_MemoryLevelManager()
 {
     m_Sub14.Object_InitializeCriticalSection_Thunk();
     m_pDatA = reinterpret_cast<char*>(0x01400000u);

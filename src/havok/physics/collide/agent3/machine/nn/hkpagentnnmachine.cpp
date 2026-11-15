@@ -270,11 +270,11 @@ struct __declspec(align(16)) FUN_00cfeba0_Node
 void* __cdecl hkAgentMachine_processTransformedShapes(void* cdBody, void* newCdBodies, void* newMotionStates, unsigned int numSlots, void* cdBodyHasTransformFlag);
 
 // @fnv 0x00cfeba0
-// src: XBOX_RETAIL_PDB 0x00cfeba0
+// src: HAVOK_LIB 0x00cfeba0
 // pdb: hkAgentNnMachine_UpdateShapeCollectionFilter | hkpAgentNnMachine.obj | retail, call graph, high
 // pdb params: entry, input, constraintOwner
 // pdb locals: modBodyB, modMotionB, modBodyA, modMotionA, dummyCdBodyHasTransformFlag, assertBuf, ostr
-void __cdecl hkAgentNnMachine_UpdateShapeCollectionFilter(FUN_00cfeba0_Obj* entry, void** input, void* constraintOwner)
+void __cdecl _hkAgentNnMachine_UpdateShapeCollectionFilter(FUN_00cfeba0_Obj* entry, void** input, void* constraintOwner)
 {
     unsigned char flag;
     void* p = 0;
@@ -580,7 +580,7 @@ template <> __forceinline void hkArrayBase<hkpLinkedCollidable::CollisionKeyEntr
         hkArrayUtil__reduce(&alloc, this, sizeof(hkpLinkedCollidable::CollisionKeyEntry), 0, totalSize);
 }
 
-void __cdecl hkAgentNnMachine_InternalDeallocateEntry(void* track, hkpAgentNnEntry* entry);
+void __cdecl _hkAgentNnMachine_InternalDeallocateEntry(void* track, hkpAgentNnEntry* entry);
 
 // @fnv 0x00cfea30
 // src: XBOX_PDB 0x00cfea30
@@ -627,7 +627,7 @@ void __cdecl hkAgentNnMachine_DestroyAgent(void* track, hkpAgentNnEntry* entry, 
         entries._optimizeCapacity(hkMemoryRouter_getInstance().heap(), 4);
     }
 
-    hkAgentNnMachine_InternalDeallocateEntry(track, entry);
+    _hkAgentNnMachine_InternalDeallocateEntry(track, entry);
 }
 
 static __forceinline int hkNextPowerOf2CFF2(unsigned int in)
@@ -668,10 +668,10 @@ void __cdecl hkAgentNnMachine_CopyAndRelinkAgentEntry(hkpAgentNnTrack* destTrack
 
 // Clones records from the end of appendee into track while track's last sector is not full, then inserts appendee's remaining sectors into track's sector array.
 // @fnv 0x00cff290
-// src: XBOX_RETAIL_PDB 0x00cff290
+// src: HAVOK_LIB 0x00cff290
 // pdb: hkAgentNnMachine_AppendTrack | hkpAgentNnMachine.obj | retail, call graph, high
 // pdb params: track, appendee
-void __cdecl hkAgentNnMachine_AppendTrack(hkpAgentNnTrack* track, hkpAgentNnTrack* appendee)
+void __cdecl _hkAgentNnMachine_AppendTrack(hkpAgentNnTrack* track, hkpAgentNnTrack* appendee)
 {
     while (track->m_bytesUsedInLastSector != 0x200)
     {
@@ -789,11 +789,11 @@ void __cdecl hkArrayUtil__reduce(hkMemoryAllocator* mem, void* arr, int sizeElem
 
 // Pops an S_cfe020_Entry from the pool's stack, copies it to dest, updates the owner slot pointers, and releases the block when the pool empties.
 // @fnv 0x00cfe020
-// src: XBOX_RETAIL_PDB 0x00cfe020
+// src: HAVOK_LIB 0x00cfe020
 // pdb: hkAgentNnMachine_InternalDeallocateEntry | hkpAgentNnMachine.obj | retail, call graph, high
 // pdb params: track, entry
 // pdb locals: assertBuf, ostr
-void hkAgentNnMachine_InternalDeallocateEntry(hkpAgentNnTrack* track, S_cfe020_Entry* entry)
+void _hkAgentNnMachine_InternalDeallocateEntry(hkpAgentNnTrack* track, S_cfe020_Entry* entry)
 {
     S_cfe020_Entry* src = (S_cfe020_Entry*)((char*)track->m_sectors.back() + track->m_bytesUsedInLastSector - 0x80);
     if (entry != src)

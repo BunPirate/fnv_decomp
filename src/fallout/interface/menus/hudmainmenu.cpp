@@ -1029,13 +1029,13 @@ void** __fastcall _ref_006815c0(void*);
 
 struct FUN_00775210_cls
 {
-    FUN_00775210_cls* HUDMainMenu_SubtitleData_ctor();
+    FUN_00775210_cls* HUDMainMenu_SubtitleData_SubtitleData();
 };
 
 // @fnv 0x00775210
-// src: XBOX_DEBUG_PDB 0x00775210
+// src: XBOX_PDB 0x00775210
 // pdb: HUDMainMenu::SubtitleData::SubtitleData | HUDMainMenu.obj | debug, upstream name already matches, high
-FUN_00775210_cls* FUN_00775210_cls::HUDMainMenu_SubtitleData_ctor()
+FUN_00775210_cls* FUN_00775210_cls::HUDMainMenu_SubtitleData_SubtitleData()
 {
     _ref_006815c0((void*)((char*)this + 0x10c));
     return this;
@@ -10635,7 +10635,7 @@ struct VisibilityTile
 
 // Recursively visits child tiles, then conditionally sets a trait derived from `_360Controller` and applies flag value 4.
 // @fnv 0x00719580
-// src: XBOX_DEBUG_PDB 0x00719580
+// src: XBOX_DEBUG_PDB 0x00719580 (was COMMUNITY)
 // pdb: RecursivelySetVisibilityDirty | InterfaceManager.obj | debug, unique string literal, high
 // pdb params: apTile
 // pdb locals: xelem, ptile

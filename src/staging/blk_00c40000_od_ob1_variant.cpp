@@ -6022,7 +6022,7 @@ struct List332 : EmptyBase332
         pool.NiTPointerAllocator_unsigned_int_Deallocate(memory);
     }
 // src: XBOX_PDB 0x004a4650
-    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll()
+    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll()
     {
         ListNode332* current = head;
         while (current)
@@ -6043,7 +6043,7 @@ struct FUN_00c5bb10 : List332
 // @fnv 0x00c5bb10
 FUN_00c5bb10::~FUN_00c5bb10()
 {
-    NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
 }
 
 
@@ -13112,7 +13112,7 @@ struct Q5Obj
         return Object_DispatchCommandFour(amount);
     }
     Q5Obj();
-    bool InitializeData(Q5Item* pkBoneRoot);
+    bool InitializeData_00c52d80(Q5Item* pkBoneRoot);
     bool NiBSBoneLODController_SetBoneLOD(unsigned iLOD);
 };
 struct Q5Item
@@ -13136,7 +13136,7 @@ bool __cdecl NiBSBoneLODController_ProcessScene(void* pkSceneRoot)
         Q5Item* it2 = items9.m_data[i6];
         Q5Obj* obj = new Q5Obj;
         obj->v98(it2);
-        bool ok = obj->InitializeData(it2);
+        bool ok = obj->InitializeData_00c52d80(it2);
         if (ok)
             obj->NiBSBoneLODController_SetBoneLOD(0);
         if (!ok)
@@ -13323,10 +13323,10 @@ struct FUN_00b71300_class : ListFields
 };
 struct FUN_004a4650_class : ListFields
 {
-    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
     __forceinline ~FUN_004a4650_class()
     {
-        NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+        NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
     }
 };
 struct FUN_004ed900_class : ListFields
@@ -13412,7 +13412,7 @@ struct FUN_00c5ac00 : NiRefObject
 FUN_00c5ac00::~FUN_00c5ac00()
 {
     sub14.FUN_00b71300();
-    sub20.NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    sub20.NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
     sub08.FUN_004ed900();
     arr3c.RemoveAll();
     ptr2c.FUN_0066b0d0(0);
@@ -16510,11 +16510,11 @@ inline void NiBSBoneLODController::SubObj::FUN_00a90180(unsigned int n)
     _NiFree_00aa10f0(oldData);
 }
 // @fnv 0x00c52d80
-// src: XBOX_DEBUG_PDB 0x00c52d80
+// src: COMMUNITY 0x00c52d80
 // pdb: NiBSBoneLODController::InitializeData | NiBSBoneLODController.obj | debug, call graph, high
 // pdb params: pkBoneRoot
 // pdb locals: kBoneToLOD, uiCurrentLOD, kUsedLODs, ui, uiMaxLOD, kIter, bTemp, uiLOD, pkSet, pkBone
-bool NiBSBoneLODController::InitializeData(Node_cls* pkBoneRoot)
+bool NiBSBoneLODController::InitializeData_00c52d80(Node_cls* pkBoneRoot)
 {
     NiBSBoneLODController_CleanUp();
     fnv_00c52d80::ArrA a9(0x25);

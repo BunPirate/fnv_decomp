@@ -249,11 +249,11 @@ bool __fastcall IsTargetOfType(NiTimeController* self)
 // The shared controller has no default-construction entry point. Keep its
 // original construction sequence here without duplicating its class layout.
 extern void* const g_multiTargetTransformControllerVtable[];
-void* __fastcall NiInterpController_ctor(void*) throw();
+void* __fastcall ConstructInterpController(void*) throw();
 inline NiMultiTargetTransformController* ConstructMultiTargetController(void* memory) throw()
 {
     NiMultiTargetTransformController* self = static_cast<NiMultiTargetTransformController*>(memory);
-    NiInterpController_ctor(self);
+    ConstructInterpController(self);
     *reinterpret_cast<void* const**>(self) = g_multiTargetTransformControllerVtable;
     self->m_pkBlendInterpolators = 0;
     self->m_ppTargetObjects = 0;

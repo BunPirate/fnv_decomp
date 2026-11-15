@@ -157,7 +157,7 @@ void __thiscall FUN_008d5020_class::CharacterProgression_AllocateData()
 {}
 struct FUN_008d4360_class
 {
-    FUN_008d4360_class* __thiscall CharacterProgression_ctor();
+    FUN_008d4360_class* __thiscall CharacterProgression_CharacterProgression();
 };
 extern "C" void __cdecl FreeAndClear();
 struct FUN_008d4380_class
@@ -307,7 +307,7 @@ struct FUN_008d0270_Class
     int m_24;
     int m_28;
     int m_2c;
-    FUN_008d0270_Class* __thiscall BaseProcess_ctor();
+    FUN_008d0270_Class* __thiscall BaseProcess_BaseProcess();
 };
 void __cdecl CallWithParam(int);
 struct FUN_008d1130_Class : FUN_008d1160_Class
@@ -318,7 +318,7 @@ extern "C" void __fastcall FUN_00a6d220(void*);
 extern int DAT_010867fc;
 struct FUN_008d15d0_Class
 {
-    void* __thiscall BSPlayerDistanceCheckController_ctor();
+    void* __thiscall BSPlayerDistanceCheckController_BSPlayerDistanceCheckController();
 };
 struct FUN_0087d4a0
 {
@@ -433,7 +433,7 @@ extern int DAT_01086674;
 extern int DAT_01086684;
 struct FUN_008d10e0_Class : Call741e0
 {
-    void* bhkCharacterListenerArrow_ctor(int arInfo, int apProjectile);
+    void* bhkCharacterListenerArrow_bhkCharacterListenerArrow(int arInfo, int apProjectile);
 };
 struct FUN_00929240_Class
 {
@@ -882,7 +882,7 @@ struct FUN_008c71d0_cls
     unsigned int m_6c[8];
     unsigned int* m_8c;
     unsigned int* m_90;
-    FUN_008c71d0_cls* AILinearTaskThreadManager_ctor();
+    FUN_008c71d0_cls* AILinearTaskThreadManager_AILinearTaskThreadManager();
 };
 // Stand-in for the game's class (the pack's own unit file does not declare it):
 //   +0x00  two element pointers          +0x0c  two ints

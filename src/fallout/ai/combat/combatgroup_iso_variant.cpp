@@ -181,7 +181,7 @@ struct FUN_0098ed30_class
 {
     void* vtable;
     void BSSimpleArray_CombatTarget_1024_InitialSetup(int a, int b);
-    void* BSSimpleArray_CombatTarget_1024_ctor();
+    void* BSSimpleArray_CombatTarget_1024_BSSimpleArray_CombatTarget_1024();
 };
 struct FUN_0098efa0_shell
 {
@@ -4771,7 +4771,7 @@ struct Shape
     {}
     float FUN_004a7bd0();
     void Reset();
-    void Initialize(const Region&, float);
+    void Initialize_006e0320(const Region&, float);
     void PathingLOSGridMap_SetSightRadius(float);
 };
 void* Object_DispatchCommandFour(unsigned int);
@@ -4972,7 +4972,7 @@ void Group::CombatGroup_UpdateSearch()
                                 region.FUN_006f4ed0(location.FUN_006815c0());
                                 if (!shape.Modelloader_GetReferencedThis())
                                     shape.FUN_0066b0d0(new Shape);
-                                shape.Modelloader_GetReferencedThis()->Initialize(region, radius);
+                                shape.Modelloader_GetReferencedThis()->Initialize_006e0320(region, radius);
                                 shape.Modelloader_GetReferencedThis()->PathingLOSGridMap_SetSightRadius(*DAT_011cf42c.Setting_Float_00403e20());
                                 changed = 1;
                             }

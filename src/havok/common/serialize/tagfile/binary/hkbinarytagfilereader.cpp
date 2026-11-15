@@ -446,7 +446,7 @@ struct FUN_00dc5d50_Local
     void* unk34;
     void* unk38;
 
-    void Reader_ctor(unsigned int, unsigned int);
+    void Reader_Reader(unsigned int, unsigned int);
     void ProcessEntries_00dc6e50(unsigned int);
     void Reader_dtor();
 };
@@ -459,7 +459,7 @@ struct FUN_00dc5d50_Local
 unsigned int __stdcall hkBinaryTagfileReader_load(unsigned int a, unsigned int b, unsigned int c)
 {
     FUN_00dc5d50_Local local;
-    local.Reader_ctor(b, c);
+    local.Reader_Reader(b, c);
     local.ProcessEntries_00dc6e50(a);
     local.Reader_dtor();
     return a;
@@ -506,15 +506,15 @@ struct S00dc5f30_Obj
 
     void Init(int, S00dc5f30_Tag);
 
-    S00dc5f30_Obj* Reader_ctor(int sr, int cont);
+    S00dc5f30_Obj* Reader_Reader(int sr, int cont);
 };
 
 // Initializes the object with a0 and a1, sets m_p10 and m_n14, and adds three entries to the m_hl18 and m_hl24 lists.
 // @fnv 0x00dc5f30
-// src: XBOX_RETAIL_PDB 0x00dc5f30
+// src: XBOX_PDB 0x00dc5f30
 // pdb: Reader::Reader | hkBinaryTagfileReader.obj | retail, upstream name already matches, high
 // pdb params: sr, cont
-S00dc5f30_Obj* S00dc5f30_Obj::Reader_ctor(int sr, int cont)
+S00dc5f30_Obj* S00dc5f30_Obj::Reader_Reader(int sr, int cont)
 {
     Init(sr, S00dc5f30_Tag());
     m_p10 = (void*)cont;

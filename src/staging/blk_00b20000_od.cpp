@@ -1704,15 +1704,15 @@ struct FUN_00b29fd0_cls
     int unk74;
     int unk78;
     FUN_00b29fd0_Params m_7c;
-    FUN_00b29fd0_cls* CLightingEngine_ctor();
+    FUN_00b29fd0_cls* CLightingEngine_CLightingEngine();
 };
 
 // Initializes the object's fields and copies three default parameter blocks into m_04, m_3c, and m_7c.
 // @fnv 0x00b29fd0
-// src: XBOX_RETAIL_PDB 0x00b29fd0
+// src: XBOX_PDB 0x00b29fd0
 // pdb: CLightingEngine::CLightingEngine | LightingEngine.obj | retail, upstream name already matches, high
 // pdb locals: afDefaultLeafMaterial, afDefaultFrondMaterial, afDefaultBranchMaterial
-FUN_00b29fd0_cls* FUN_00b29fd0_cls::CLightingEngine_ctor()
+FUN_00b29fd0_cls* FUN_00b29fd0_cls::CLightingEngine_CLightingEngine()
 {
     unk00 = 0;
     unk38 = 0;

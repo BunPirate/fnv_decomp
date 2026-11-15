@@ -86,9 +86,9 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volati
 
 // Sets the vtable and clears fields of the object, increments the global counter, then assigns the second vtable and initializes the remaining fields.
 // @fnv 0x00a8f440
-// src: XBOX_DEBUG_PDB 0x00a8f440
+// src: EXE 0x00a8f440
 // pdb: NiShader::NiShader | NiShader.obj | debug, upstream name already matches, high
-void* __fastcall NiShader_ctor(void* apObject)
+void* __fastcall NiShader_NiShader(void* apObject)
 {
     *(int**)apObject = &vftable_NiRefObject;
     *((int*)apObject + 1) = 0;

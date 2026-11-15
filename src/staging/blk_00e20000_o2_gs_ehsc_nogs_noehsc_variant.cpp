@@ -53,7 +53,7 @@ __forceinline float& hkVector4::operator()(int i)
 {
     return ((float*)&m_vComponents)[i];
 }
-inline void hkVector4::setAll(float f)
+inline void hkVector4::SetAllComponents(float f)
 {
     m_vComponents = _mm_set_ps1(f);
 }
@@ -1258,7 +1258,7 @@ struct FUN_00e33910_item
     int unk10;
     int unk14;
     int unk18;
-    bool* isOk(bool* result);
+    bool* Test(bool* result);
 };
 class FUN_00e33910_cls
 {
@@ -2123,7 +2123,7 @@ void __cdecl Object_ProcessEntries_00e2c100(Tree* tree, QuantizedNode* node, voi
 
             setCollector(query, shape, arg8);
 
-            query->maxFraction.setAll(fractions[index4[i]]);
+            query->maxFraction.SetAllComponents(fractions[index4[i]]);
             oldFraction[i] = fractions[index4[i]];
             if (shape->hasFilter)
             {

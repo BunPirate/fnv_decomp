@@ -1679,7 +1679,7 @@ class C3B270_SubBase
     void** data;
     unsigned short capacity, size, live, grow;
 // src: COMMUNITY 0x0068ac40
-    void NiTPrimitiveArray_NiAVObject_ctor(unsigned int uiMaxSize, unsigned int uiGrowBy)
+    void NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned int uiMaxSize, unsigned int uiGrowBy)
     {
         table = &DAT_01069d7c;
         capacity = (unsigned short)uiMaxSize;
@@ -1698,7 +1698,7 @@ class C3B270_Sub : public C3B270_SubBase
   public:
     __forceinline C3B270_Sub()
     {
-        NiTPrimitiveArray_NiAVObject_ctor(0, 1);
+        NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(0, 1);
         table = &DAT_01069d84;
     }
 };

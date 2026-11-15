@@ -2980,7 +2980,7 @@ extern int DAT_01069d84;
 class C649F0_SubBase
 {
   public:
-    void NiTPrimitiveArray_NiAVObject_ctor(unsigned int uiMaxSize, unsigned int uiGrowBy);
+    void NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned int uiMaxSize, unsigned int uiGrowBy);
 };
 class C649F0_Sub : public C649F0_SubBase
 {
@@ -2993,7 +2993,7 @@ class C649F0_Sub : public C649F0_SubBase
     {
         int unused;
         (void)unused;
-        NiTPrimitiveArray_NiAVObject_ctor(0, 1);
+        NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(0, 1);
         m_00 = &DAT_01069d84;
     }
 };
@@ -3647,7 +3647,7 @@ struct PArrayPoint : NiExtraData
     virtual ~PArrayPoint();
 };
 // @fnv 0x00c61850
-// src: XBOX_DEBUG_PDB 0x00c61850
+// src: XBOX_DEBUG_PDB 0x00c61850 (was COMMUNITY)
 // pdb: PArrayPoint::PArrayPoint | BSPSysArrayEmitter.obj | debug, upstream name already matches, high
 PArrayPoint* __cdecl PArrayPoint_ctor()
 {

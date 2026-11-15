@@ -1266,15 +1266,14 @@ struct FUN_004d5a90_Class
 {
     int m_i0;
     int m_i4;
-    float LipSynchAnim_LoadFromFile();
+    float GetNegativeMagnitude();
 };
 
 // Returns the absolute value of m_i4 scaled by DAT_010209a8 when m_i4 is negative, otherwise 0.0.
 // @fnv 0x004d5a90
-// src: XBOX_RETAIL_PDB 0x004d5a90
-// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | retail, object-file gap fill, high
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | retail, object-file gap fill, high, not renamed: the debug build links this name to 0x004d52d0
 // pdb params: aFilename
-float FUN_004d5a90_Class::LipSynchAnim_LoadFromFile()
+float FUN_004d5a90_Class::GetNegativeMagnitude()
 {
     return (float)(m_i4 < 0 ? (double)(m_i4 * -1) * DAT_010209a8 : 0.0);
 }

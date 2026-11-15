@@ -174,7 +174,7 @@ float __thiscall FUN_004a0db0_class::GetFloatAt120()
     return *(float*)((char*)this + 0x120);
 }
 
-void* __fastcall hkpShapeRayCastOutput_ctor(void* self);
+void* __fastcall hkpShapeRayCastOutput_hkpShapeRayCastOutput(void* self);
 
 // Calls FUN_004a3d20 on self, sets the int at offset 0x50 to 0, and returns self.
 // @fnv 0x004a3d00
@@ -182,7 +182,7 @@ void* __fastcall hkpShapeRayCastOutput_ctor(void* self);
 // pdb: hkpWorldRayCastOutput::hkpWorldRayCastOutput | BGSDecalManager.obj | debug, object-file gap fill, medium
 void* __fastcall hkpWorldRayCastOutput_hkpWorldRayCastOutput(void* self)
 {
-    hkpShapeRayCastOutput_ctor(self);
+    hkpShapeRayCastOutput_hkpShapeRayCastOutput(self);
     *(int*)((char*)self + 0x50) = 0;
     return self;
 }
@@ -737,7 +737,7 @@ struct FUN_004b9950_class
 };
 // Calls FUN_004b99b0 with arg, sets p to point at DAT_010205b4, and returns this.
 // @fnv 0x004b9950
-// src: XBOX_DEBUG_PDB 0x004b9950
+// src: XBOX_DEBUG_PDB 0x004b9950 (was EXE)
 // pdb: NiTMap<unsigned int,VertexDist>::NiTMap<unsigned int,VertexDist> | GlobalFunc.obj | debug, call graph, high
 // pdb params: uiHashSize
 FUN_004b9950_class* FUN_004b9950_class::NiTMap_unsigned_int_VertexDist_ctor(int uiHashSize)
@@ -1244,12 +1244,12 @@ struct FUN_004a3cc0_Class
     Sub6815 b;
     CalleeObj c;
     int d;
-    FUN_004a3cc0_Class* __thiscall hkpWorldRayCastInput_ctor();
+    FUN_004a3cc0_Class* __thiscall hkpWorldRayCastInput_hkpWorldRayCastInput();
 };
 // @fnv 0x004a3cc0
-// src: XBOX_DEBUG_PDB 0x004a3cc0
+// src: XBOX_PDB 0x004a3cc0
 // pdb: hkpWorldRayCastInput::hkpWorldRayCastInput | BGSDecalManager.obj | debug, upstream name already matches, high
-FUN_004a3cc0_Class* __thiscall FUN_004a3cc0_Class::hkpWorldRayCastInput_ctor()
+FUN_004a3cc0_Class* __thiscall FUN_004a3cc0_Class::hkpWorldRayCastInput_hkpWorldRayCastInput()
 {
     a._ref_006815c0();
     b._ref_006815c0();
@@ -1289,10 +1289,10 @@ struct FUN_004a4650_ListBase
 };
 // Iterates the linked list from m_pItemHead, deleting each item via DeleteItem, then clears the head, prev and tail pointers.
 // @fnv 0x004a4650
-// src: XBOX_DEBUG_PDB 0x004a4650
-// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::RemoveAll | BGSDecalManager.obj | debug, call graph, high
+// src: XBOX_PDB 0x004a4650
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::RemoveAll | BGSDecalManager.obj | debug, call graph, high, not renamed: the public Xbox 360 symbol already names it; the code is probably folded with another original
 // pdb locals: pkCurr, pkDel
-void __fastcall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll(FUN_004a4650_ListBase* self)
+void __fastcall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll(FUN_004a4650_ListBase* self)
 {
     NiTListItem<NiPointer<ObstacleData> >* item = self->m_pItemHead;
     while (item)
@@ -1692,14 +1692,14 @@ struct FUN_004b0da0_Class
     void* b;
     int c;
     void __thiscall BSCloneReserver_MakeClones();
-    FUN_004b0da0_Class* __thiscall BSCloneReserver_ctor(void* apLoadedObject, void* aiCloneCount);
+    FUN_004b0da0_Class* __thiscall BSCloneReserver_BSCloneReserver(void* apLoadedObject, void* aiCloneCount);
 };
 // Stores the two given pointers into the object, resets the counter to zero, calls FUN_004b0eb0, and returns this.
 // @fnv 0x004b0da0
-// src: XBOX_RETAIL_PDB 0x004b0da0
+// src: COMMUNITY 0x004b0da0
 // pdb: BSCloneReserver::BSCloneReserver | BSClonePool.obj | retail, upstream name already matches, high
 // pdb params: apLoadedObject, aiCloneCount
-FUN_004b0da0_Class* __thiscall FUN_004b0da0_Class::BSCloneReserver_ctor(void* apLoadedObject, void* aiCloneCount)
+FUN_004b0da0_Class* __thiscall FUN_004b0da0_Class::BSCloneReserver_BSCloneReserver(void* apLoadedObject, void* aiCloneCount)
 {
     this->a = apLoadedObject;
     this->b = aiCloneCount;
@@ -1812,14 +1812,14 @@ struct FUN_004b0fc0_Struct
 {
     unsigned short m0;
     unsigned short m1;
-    FUN_004b0fc0_Struct* __thiscall Date_ctor(unsigned short asDay, unsigned short asMonth, unsigned short asYear);
+    FUN_004b0fc0_Struct* __thiscall Date_Date(unsigned short asDay, unsigned short asMonth, unsigned short asYear);
 };
 // Sets m0 to the result of FUN_004b10f0(a, b) and m1 to c, then returns this.
 // @fnv 0x004b0fc0
-// src: XBOX_RETAIL_PDB 0x004b0fc0
+// src: XBOX_PDB 0x004b0fc0
 // pdb: Date::Date | Date.obj | retail, upstream name already matches, high
 // pdb params: asDay, asMonth, asYear
-FUN_004b0fc0_Struct* __thiscall FUN_004b0fc0_Struct::Date_ctor(unsigned short asDay, unsigned short asMonth,
+FUN_004b0fc0_Struct* __thiscall FUN_004b0fc0_Struct::Date_Date(unsigned short asDay, unsigned short asMonth,
                                                                   unsigned short asYear)
 {
     m0 = Date_CalculateDate(asDay, asMonth);
@@ -2536,7 +2536,7 @@ void __cdecl BGSDecalManager_RemoveAllDecals()
     DAT_011c57ec = 0;
     DAT_011c57f0 = 0;
 
-    NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll((FUN_004a4650_ListBase*)((char*)FUN_0049fef0() + 8));
+    NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll((FUN_004a4650_ListBase*)((char*)FUN_0049fef0() + 8));
     char* kObj = (char*)FUN_0049fef0() + 0x14;
 
     int cur_2 = ((FUN_00559450_cls*)kObj)->Modelloader_GetReferencedThis();
@@ -2559,7 +2559,7 @@ void __cdecl BGSDecalManager_RemoveAllDecals()
 }
 
 struct FUN_004a4650_ListBase;
-void __fastcall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll(FUN_004a4650_ListBase* self);
+void __fastcall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll(FUN_004a4650_ListBase* self);
 struct ObstacleBase
 {
     ~ObstacleBase();
@@ -2572,7 +2572,7 @@ struct FUN_004a44a0 : ObstacleBase
 // @fnv 0x004a44a0
 FUN_004a44a0::~FUN_004a44a0()
 {
-    NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll(reinterpret_cast<FUN_004a4650_ListBase*>(this));
+    NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll(reinterpret_cast<FUN_004a4650_ListBase*>(this));
 }
 
 struct S_004a4730_Elem

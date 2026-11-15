@@ -637,7 +637,7 @@ void FUN_00c7d890_cls::ProcessEntries_00c7d890()
 void* __cdecl FUN_00ec7230(char*, char const*, unsigned int);
 
 // @fnv 0x00c7f900
-// src: XBOX_RETAIL_PDB 0x00c7f900
+// src: XBOX_RETAIL_PDB 0x00c7f900 (was COMMUNITY)
 // pdb: BSSimpleArray<DetailedActorPathHandler::ActorAvoidanceData,1024>::_MoveItems | DetailedActorPathHandler.obj | retail, call graph, high
 // pdb params: apDestAddr, apSrcAddr, aiCount
 // pdb locals: i
@@ -1212,7 +1212,7 @@ struct S
     virtual void v38();
     virtual void SetMode(int iMode);
     void bhkRigidBody_SetLinearVelocity_00561690(int);
-    void bhkRigidBody_SetAngularVelocity(float* arVel);
+    void bhkRigidBody_SetAngularVelocity_005617c0(float* arVel);
 };
 
 struct Cast_c9b
@@ -1277,7 +1277,7 @@ void __cdecl bhkBlendController_DoGetUp(Obj_c9b* apObject, float afTime)
                     {
                         pkS->SetMode(4);
                         pkS->bhkRigidBody_SetLinearVelocity_00561690((int)&DAT_01267e30);
-                        pkS->bhkRigidBody_SetAngularVelocity(&DAT_01267e30);
+                        pkS->bhkRigidBody_SetAngularVelocity_005617c0(&DAT_01267e30);
                     }
                 }
             }

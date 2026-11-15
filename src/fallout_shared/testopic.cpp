@@ -254,7 +254,7 @@ struct FUN_00619010_shell : public TESTopic
 };
 
 // @fnv 0x00619010
-// src: XBOX_DEBUG_PDB 0x00619010
+// src: XBOX_DEBUG_PDB 0x00619010 (was COMMUNITY)
 // pdb: TESTopic::SetDummyPrompt | TESTopic.obj | debug, call graph, high
 // pdb params: apPrompt
 void FUN_00619010_shell::TESTopic_SetDummyPrompt(char* apPrompt)

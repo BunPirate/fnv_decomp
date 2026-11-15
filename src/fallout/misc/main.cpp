@@ -910,7 +910,7 @@ void __fastcall TESMain_PostSwapProcess(void* pThis)
 namespace fnv_00870610 {
 struct FUN_00870610_shell : public Main
 {
-    void Main_OnIdle_PostThreadsProcess();
+    void TESMain_OnIdle_PostThreadsProcess();
 };
 
 class GlobalObject2_0040c150
@@ -939,10 +939,10 @@ void __fastcall TaskQueueInterface_ThreadEndSecondaryInput(TaskQueueInterface*);
 void __fastcall DebugText_HandleQueuedPrints(DebugText*);
 
 // @fnv 0x00870610
-// src: XBOX_DEBUG_PDB 0x00870610
+// src: COMMUNITY 0x00870610
 // pdb: Main::OnIdle_PostThreadsProcess | Main.obj | debug, call graph, high
 // pdb locals: tempAutoEvent
-void FUN_00870610_shell::Main_OnIdle_PostThreadsProcess()
+void FUN_00870610_shell::TESMain_OnIdle_PostThreadsProcess()
 {
     Script_RunDelayedScriptActionsOnReferences();
     if (*g_011c3ea4.Int() > 1)
@@ -1394,7 +1394,7 @@ using ::ImageSpaceManager;
 typedef char _sizecheck_ImageSpaceManager[sizeof(ImageSpaceManager) == 796 ? 1 : -1];
 struct FUN_00874b90_shell : public Main
 {
-    void Main_DrawWorld_CopyMenuBG(ImageSpaceManager*, ::NiRenderer*, bool, BSRenderedTexture*);
+    void TESMain_DrawWorld_CopyMenuBG(ImageSpaceManager*, ::NiRenderer*, bool, BSRenderedTexture*);
 };
 
 struct StrG
@@ -1409,10 +1409,10 @@ struct ISMStub
 void __cdecl BSRenderState_RestoreAlphaBlendEnable(int);
 void __cdecl BSRenderState_RestoreColorWriteEnable(int);
 // @fnv 0x00874b90
-// src: XBOX_RETAIL_PDB 0x00874b90
+// src: COMMUNITY 0x00874b90
 // pdb: Main::DrawWorld_CopyMenuBG | Main.obj | retail, call graph (shared callers), high
 // pdb params: apImagespaceManager, apRenderer, abMultiSampleEnabled, apDestination
-void FUN_00874b90_shell::Main_DrawWorld_CopyMenuBG(ImageSpaceManager* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled, BSRenderedTexture* apDestination)
+void FUN_00874b90_shell::TESMain_DrawWorld_CopyMenuBG(ImageSpaceManager* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled, BSRenderedTexture* apDestination)
 {
     if ((const char*)g_011ded3c)
     {
@@ -1483,7 +1483,7 @@ void __cdecl SetupArchiveSettings_AndLoadBSAs()
 namespace fnv_00877430 {
 struct FUN_00877430_shell : public Main
 {
-    void Main_KillMenuBGTexture();
+    void TESMain_KillMenuBGTexture();
 };
 
 struct StrG
@@ -1496,9 +1496,9 @@ using ::ImageSpaceManager;
 ImageSpaceManager* __cdecl BSShaderManager_GetImageSpaceManager();
 BSTextureManager* __stdcall BSShaderManager_GetTextureManager(const char*);
 // @fnv 0x00877430
-// src: XBOX_RETAIL_PDB 0x00877430
+// src: COMMUNITY 0x00877430
 // pdb: Main::KillMenuBGTexture | Main.obj | retail, call graph, high
-void FUN_00877430_shell::Main_KillMenuBGTexture()
+void FUN_00877430_shell::TESMain_KillMenuBGTexture()
 {
     if ((const char*)g_011ded3c)
     {
@@ -2621,7 +2621,7 @@ struct FUN_00456630_helper
 };
 
 // @fnv 0x00876810
-// src: XBOX_DEBUG_PDB 0x00876810
+// src: XBOX_DEBUG_PDB 0x00876810 (was COMMUNITY)
 // pdb: NiAVObject::QAlwaysDraw | Main.obj | debug, call graph, high
 void FUN_00456630_helper::NiAVObject_QAlwaysDraw()
 {
@@ -3958,7 +3958,7 @@ void __cdecl SPECIALBookMenu_Draw3DElements(void);
 struct MainTarget
 {
     int TESMain_DrawWorld_InitRenderTexture(::NiRenderer* apRenderer, BSRenderedTexture* apDestination, int abWireframe, bool abMultiSampleEnabled);
-    void Main_DrawWorld_CopyMenuBG(ImageSpaceManager* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled,
+    void TESMain_DrawWorld_CopyMenuBG(ImageSpaceManager* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled,
                       BSRenderedTexture* apDestination);
     void TESMain_DrawWorld_ImageSpace(bool abMultiSampleEnabled, int apRenderTexture, ::NiRenderer* apRenderer, BSRenderedTexture* apDestination);
     void TESMain_DrawWorld_StopRenderTarget(bool bmultiSampleEnabled, BSRenderedTexture* apDestination);
@@ -3983,7 +3983,7 @@ void MainTarget::Main_DrawWorldMenu3D(BSRenderedTexture* apDestination)
 
     result = TESMain_DrawWorld_InitRenderTexture(prenderer, apDestination, 0, bmultiSampleEnabled);
 
-    Main_DrawWorld_CopyMenuBG(pimagespacemanager, prenderer, bmultiSampleEnabled, apDestination);
+    TESMain_DrawWorld_CopyMenuBG(pimagespacemanager, prenderer, bmultiSampleEnabled, apDestination);
 
     if (MainInterfaceView::IsMenuActive(MainInterfaceView::MENU_ID_0x41e, 0))
         Interface_DrawSurgeryMenu3D();
@@ -5343,7 +5343,7 @@ struct Receiver86
 
     void FUN_0066b0d0(int);
     void BSTextureManager_ReturnRenderedTexture(int);
-    void ModelLoader_CancelAllFiles();
+    void CancelAllFiles_00448420();
     void AILinearTaskThreadManager_Kill();
     Receiver86* FUN_008d8520();
     void Sky_Destroy();
@@ -5404,7 +5404,7 @@ struct Receiver86
     void NavMeshObstacleManager_CreateListeners();
     void CreateThreads();
     void TESMain_InitRenderer();
-    void Main_InitSceneGraph();
+    void TESMain_InitSceneGraph();
     void TESMain_SetActive(int);
 
     Receiver86* BSSystemUtility_GetMsgDialogUtility();
@@ -5945,7 +5945,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 NiXenonRenderer_GetRenderer()->NiDX9Renderer_AddLostDeviceNotificationFunc(&SUB_005d4a40, 0);
                 NiXenonRenderer_GetRenderer()->NiDX9Renderer_AddResetNotificationFunc(&UNK_00872570, 0);
                 Main_ShaderInit();
-                ((Receiver86*)_DAT_011dea0c)->Main_InitSceneGraph();
+                ((Receiver86*)_DAT_011dea0c)->TESMain_InitSceneGraph();
                 FUN_00702250(1);
                 BSFaceGenManager_InitializeSystem();
                 ((Receiver86*)_DAT_011dea0c)->TESMain_SetActive(1);
@@ -6120,7 +6120,7 @@ int __stdcall WinMain_0086a850(unsigned int param_1, unsigned int param_2, unsig
                 {
                     NiParallelUpdateTaskManager_Shutdown();
                 }
-                g_modelLoader->ModelLoader_CancelAllFiles();
+                g_modelLoader->CancelAllFiles_00448420();
                 if (*g_011c3ea4.Int() > 1)
                 {
                     AILinearTaskThreadManager_GetSingleton()->AILinearTaskThreadManager_Kill();
@@ -6508,7 +6508,7 @@ struct SkyInit
 };
 extern SkyInit* DAT_011dea20;
 extern int DAT_011dea1c;
-void Main_InitSky();
+void TESMain_InitSky();
 int TESMain_GetObjectLODRoot();
 ScenePart* Main_LandLODNode();
 void LogInit(const char*, ...);
@@ -7740,7 +7740,7 @@ void BootInit::Main_InitTES(ScenePart* pScene)
     MemScope memory5(10, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0xe4f);
     memory5.Enter(10, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0xe51);
     DAT_011dea20 = SkyInit::GetInstance();
-    Main_InitSky();
+    TESMain_InitSky();
     int mode = TESMain_GetObjectLODRoot();
     ScenePart* root_2 = Main_LandLODNode();
     if (root_2)
@@ -8143,7 +8143,7 @@ struct MainLoop
     void Main_Swap();
     void TESMain_PostSwapProcess();
     void Main_UpdateNonRenderSafeAITasks();
-    void Main_OnIdle_PostThreadsProcess();
+    void TESMain_OnIdle_PostThreadsProcess();
     void TESObjectREFR_GetIsChildSize(float);
     void Main_OnIdle_UpdateImageSpace(bool);
     void Main_OnIdle();
@@ -8318,7 +8318,7 @@ void MainLoop::Main_OnIdle()
             DAT_011e0fe0.AITaskManager_WaitForTasksDuringRendering();
     }
     Main_UpdateNonRenderSafeAITasks();
-    Main_OnIdle_PostThreadsProcess();
+    TESMain_OnIdle_PostThreadsProcess();
     if (TESMain_GetOpenConsole())
     {
         TESMain_SetOpenConsole(0);
@@ -8423,7 +8423,7 @@ struct RenderMgr
     void FUN_00872ad0();
     void Main_DrawWorld_UpdateOffscreenBuffers();
     int TESMain_DrawWorld_InitRenderTexture(::NiRenderer* apRenderer, int apDestination, bool abWireframe, bool abMultiSampleEnabled);
-    void Main_DrawWorld_CopyMenuBG(ISMgr* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled, int apDestination);
+    void TESMain_DrawWorld_CopyMenuBG(ISMgr* apImagespaceManager, ::NiRenderer* apRenderer, bool abMultiSampleEnabled, int apDestination);
     void Main_DrawWorld_MTSetup1stPerson();
     void TESMain_DrawWorld_MTRender1stPerson(::NiRenderer* apRenderer, RootNode* apRenderedMenuGeom, int apSun, int apRenderTexture);
     void TESMain_DrawWorld_RenderedMenuScene();
@@ -8455,7 +8455,7 @@ void RenderMgr::TESMain_DrawWorldRenderedMenu(int p1, bool p2)
     }
     Main_DrawWorld_UpdateOffscreenBuffers();
     int res4 = TESMain_DrawWorld_InitRenderTexture(renderer, p1, p2, flag_);
-    Main_DrawWorld_CopyMenuBG(ism2, renderer, flag_, p1);
+    TESMain_DrawWorld_CopyMenuBG(ism2, renderer, flag_, p1);
     if (*g_011c3ea4.Int() > 1)
         SetMainRendering(0);
     FUN_004ea970()->MTRenderingSystem_SetThreadStage(0, 0x15);
@@ -8861,7 +8861,7 @@ struct ShadowActor
 struct ShadowHost
 {
     void Main_DrawWorld_UpdateOffscreenBuffers();
-    void Main_UpdateOffscreenInterface();
+    void TESMain_UpdateOffscreenInterface();
 };
 // Toggles shadow rendering based on two flags, builds the shadow map from actors, renders visible shadow maps up to a limit, and resets unused shadow targets.
 // @fnv 0x00871290
@@ -9007,7 +9007,7 @@ void ShadowHost::Main_DrawWorld_UpdateOffscreenBuffers()
             FUN_004ea970(1, i)->MTRenderingSystem_WaitOnThreadStage();
         }
     }
-    Main_UpdateOffscreenInterface();
+    TESMain_UpdateOffscreenInterface();
 }
 
 namespace fnv_00871a50 {
@@ -9057,14 +9057,14 @@ extern void* __cdecl NiXenonRenderer_GetRenderer();
 extern const char DAT_010829c4[];
 struct HudRenderPass
 {
-    void Main_UpdateOffscreenInterface();
+    void TESMain_UpdateOffscreenInterface();
 };
 // When the HUD conditions hold, ensures the render holder has a node, draws it via the UI renderer, and temporarily hides menu 1001's node while drawing.
 // @fnv 0x00871a50
-// src: XBOX_RETAIL_PDB 0x00871a50
+// src: COMMUNITY 0x00871a50
 // pdb: Main::UpdateOffscreenInterface | Main.obj | retail, call graph, high
 // pdb locals: binPipboy, tempMemContext, btopmost, bmessageCulled, pmessage, bhideMessage
-void HudRenderPass::Main_UpdateOffscreenInterface()
+void HudRenderPass::TESMain_UpdateOffscreenInterface()
 {
     if (Interface_IsInMenuMode() && (*DAT_011db2cc.FUN_00408d60() || *DAT_011d8ba0.FUN_00408d60()) && Interface_IsInRenderedMenu())
     {
@@ -9150,7 +9150,7 @@ struct MTRenderer
     void MTRenderingSystem_WaitOnThreadStage(int, int);
 };
 MTRenderer* FUN_004ea970();
-void AutoTileLock_ctor();
+void AutoTileLock_AutoTileLock();
 void Object___imp__LeaveCriticalSection_Thunk();
 struct MenuTarget
 {
@@ -9266,7 +9266,7 @@ void FUN_00871dc0_class::Main_RenderMenuBackground()
     DAT_011ad884 = true;
     unk9c = true;
     NiXenonRenderer_GetRenderer()->NiXenonRenderer_LockRenderer();
-    AutoTileLock_ctor();
+    AutoTileLock_AutoTileLock();
     FUN_004ea970()->MTRenderingSystem_StartThreads();
     if (g_011ded3c.Get())
         BSShaderManager_GetTextureManager()->BSTextureManager_ReturnRenderedTexture(g_011ded3c.Get());
@@ -10272,7 +10272,7 @@ bool __cdecl Interface_IsInRenderedMenu();
 struct RenderEffectManager
 {
     void PrepareEffect(void*, BSShaderAccumulator*, int, unsigned char);
-    void ShutdownEffect();
+    void VATSEffect_ShutdownEffect();
 };
 RenderEffectManager* __cdecl Interface_GetVATSEffect();
 struct AccumulatorPointer
@@ -10383,7 +10383,7 @@ void FrameRenderer::TESMain_DrawWorld_ImageSpace(void* abMultiSampleEnabled, voi
     BSShaderManager_RenderImageSpaceEffects(apRenderer, apRenderTexture, apDestination);
     if (DAT_011deb38.Modelloader_GetReferencedThis())
     {
-        Interface_GetVATSEffect()->ShutdownEffect();
+        Interface_GetVATSEffect()->VATSEffect_ShutdownEffect();
         BSShaderManager_GetTextureManager()->BSTextureManager_ReturnRenderedTexture(DAT_011deb38.Modelloader_GetReferencedThis());
         DAT_011deb38.FUN_0066b0d0(0);
     }
@@ -11923,10 +11923,10 @@ ImageSpaceManager* BSShaderManager_GetImageSpaceManager();
 void FUN_00b57e30(void* apObject, int abFaceGenModel, int abSkipPreCache);
 
 // @fnv 0x00877730
-// src: XBOX_DEBUG_PDB 0x00877730
+// src: COMMUNITY 0x00877730
 // pdb: Main::InitSky | Main.obj | debug, unique string literal, high
 // pdb locals: SkyUpdateData, tempMemContext, WeatherUpdateData, pskyStencil
-void Main_InitSky()
+void TESMain_InitSky()
 {
     AutoMemHelper helper8(0x21, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\Main.cpp", 0x26bd);
     ProgramFlow("Initializing Sky...");
@@ -12255,11 +12255,11 @@ struct Main86 : Main
 {
     void Main_Swap();
     void Main_RenderMenuBackground();
-    void Main_KillMenuBGTexture();
+    void TESMain_KillMenuBGTexture();
     void Main_DrawWorld(int, int, int);
-    void Main_UpdateOffscreenInterface();
+    void TESMain_UpdateOffscreenInterface();
     void Main_DrawWorldMenu3D(int);
-    void Main_DrawWorld_CopyMenuBG(int);
+    void TESMain_DrawWorld_CopyMenuBG(int);
 };
 struct Extra86
 {
@@ -12609,7 +12609,7 @@ void Main86::Main_Swap()
                 DAT_011de45c->FUN_004534f0(0);
                 DAT_011de45c->FUN_00483710();
             }
-            Main_KillMenuBGTexture();
+            TESMain_KillMenuBGTexture();
         }
     }
     else
@@ -12643,14 +12643,14 @@ void Main86::Main_Swap()
             FUN_004ea970(0, i)->MTRenderingSystem_SetThreadStage();
             FUN_004ea970(1, i)->MTRenderingSystem_WaitOnThreadStage();
         }
-        Main_UpdateOffscreenInterface();
+        TESMain_UpdateOffscreenInterface();
         if ((unsigned char)Interface_IsMenuIDVisible(0x41e, 0) || (unsigned char)Interface_IsMenuIDVisible(0x3f6, 0) ||
             (unsigned char)Interface_IsMenuIDVisible(0x424, 0) || (unsigned char)Interface_IsMenuIDVisible(0x432, 0) ||
             (unsigned char)Interface_IsMenuIDVisible(0x438, 0) || (unsigned char)Interface_IsMenuIDVisible(0x439, 0) ||
             (unsigned char)Interface_IsMenuIDVisible(0x43a, 0) || (unsigned char)Interface_IsMenuIDVisible(0x43b, 0))
             Main_DrawWorldMenu3D(0);
         else if (DAT_011ded3c.Modelloader_GetReferencedThis())
-            Main_DrawWorld_CopyMenuBG(BSShaderManager_GetImageSpaceManager(core, TESRenderer_GetMultiSampleEnabled(), 0));
+            TESMain_DrawWorld_CopyMenuBG(BSShaderManager_GetImageSpaceManager(core, TESRenderer_GetMultiSampleEnabled(), 0));
     }
     if (Cmd_Default_Execute() == 1)
         BSShaderManager_RenderDebugTexture();
@@ -12869,7 +12869,7 @@ struct RenderCoordinator
     void Main_DrawWorld_DoDepth(ShaderView*, BSRenderedTexture*);
     void TESMain_DrawWorld_DoVolumetricFog(ShaderView*, BSRenderedTexture*);
     void TESMain_DrawWorld_ImageSpace(bool, BSRenderedTexture*, RenderView*, int);
-    void Main_DrawWorld_ScreenSplatter(RenderView*);
+    void TESMain_DrawWorld_ScreenSplatter(RenderView*);
     void TESMain_DrawWorld_StopRenderTarget(bool, int);
     void TESMain_DrawWorld_End(BSRenderedTexture*, ImageView*, RenderView*, ::Sun*);
     void TESMain_DrawWorldStandard(int, bool);
@@ -12963,7 +12963,7 @@ void RenderCoordinator::TESMain_DrawWorldStandard(int arg, bool skip)
     {
         TESMain_DrawWorld_ImageSpace(q, j, l, arg);
         if ((ScreenCustomSplatter_IsActiveSplatter() || ScreenSplatter_IsActiveSplatter()) && !Interface_IsInPipboyMenu())
-            Main_DrawWorld_ScreenSplatter(l);
+            TESMain_DrawWorld_ScreenSplatter(l);
     }
     else if (arg)
         TESMain_DrawWorld_StopRenderTarget(q, arg);
@@ -13042,7 +13042,7 @@ class OSGlobals_ML
     int unk00;
     int unk04;
     HWND__* window;
-    void Main_KillMenuBGTexture();
+    void TESMain_KillMenuBGTexture();
 };
 void __cdecl BSSleep(unsigned long);
 unsigned char __cdecl TESRenderer_GetFullScreen();
@@ -13102,7 +13102,7 @@ bool __cdecl TESMain_ResetDeviceCallback(bool active)
                     }
                 }
             }
-            MainLoopGlobals::g_osGlobals->Main_KillMenuBGTexture();
+            MainLoopGlobals::g_osGlobals->TESMain_KillMenuBGTexture();
             if (TESRenderer_GetFullScreen())
             {
                 long style;
@@ -13891,7 +13891,7 @@ struct InputObject : ModuleRoot
 };
 struct RenderSystem
 {
-    void Main_InitSceneGraph();
+    void TESMain_InitSceneGraph();
     int unknown_00;
     int unknown_04;
     int unknown_08;
@@ -14448,10 +14448,10 @@ extern Setting DAT_011dedc8;
 extern const char str_0101fe78[];
 // Creates a SceneGraph, associates resources and input objects, configures render state, and initializes additional scene objects.
 // @fnv 0x0086d590
-// src: XBOX_DEBUG_PDB 0x0086d590
+// src: COMMUNITY 0x0086d590
 // pdb: Main::InitSceneGraph | Main.obj | debug, unique string literal, high
 // pdb locals: plodnode, UpdateData, plodtreenode, spccw, tempMemContext, pshadowSceneNode, iShadowCasters, ilightingPasses, ptexprop, pmatprop
-void RenderSystem::Main_InitSceneGraph()
+void RenderSystem::TESMain_InitSceneGraph()
 {
     // Memory context, scene root, and graph construction.
     AutoMemHelper h(25, 1, str_010829c4, 0xf4c);

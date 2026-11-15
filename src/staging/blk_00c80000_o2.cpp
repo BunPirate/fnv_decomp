@@ -13113,7 +13113,7 @@ static inline bool CheckBody(ProbeD* body, ProbeObj*& obj)
 }
 // Gets a body via obj->m_1c->GetD(), or via the first child's m_1c when extra data bit 1 is set; returns whether CheckBody is true for it.
 // @fnv 0x00c80090
-// src: XBOX_RETAIL_PDB 0x00c80090
+// src: XBOX_RETAIL_PDB 0x00c80090 (was COMMUNITY)
 // pdb: HasActiveRB | bhkUtilFunctions.obj | retail, call graph, high
 // pdb params: apScene
 // pdb locals: bres, pcol, pchild, pworldObj, prb

@@ -123,9 +123,9 @@ struct FUN_0066d3d0_shell
 extern int DAT_01066acc;
 struct FUN_0066d3a0_shell
 {
-    void* __thiscall bhkSPCollisionObject_ctor(void*);
+    void* __thiscall bhkSPCollisionObject_bhkSPCollisionObject(void*);
 };
-extern "C" void __cdecl hkActionCinfo_ctor();
+extern "C" void __cdecl hkActionCinfo_hkActionCinfo();
 extern "C" void __cdecl FUN_0056e270();
 struct FUN_0056e120_shell
 {
@@ -156,7 +156,7 @@ struct FUN_006299a0_shell
 };
 struct FUN_0066d770_shell
 {
-    void* __thiscall hkMultiSphereShapeCinfo_ctor();
+    void* __thiscall hkMultiSphereShapeCinfo_hkMultiSphereShapeCinfo();
 };
 struct FUN_0094db80_shell
 {

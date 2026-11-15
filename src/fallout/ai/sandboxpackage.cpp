@@ -839,7 +839,7 @@ struct Host9f6340
 {
     int f00;
     Elem9f6340* f04;
-    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(Elem9f6340* apFirstAddr, int aiCount);
+    void __thiscall BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(Elem9f6340* apFirstAddr, int aiCount);
     unsigned int __thiscall AppendElement(Elem9f6340* p);
 };
 // @fnv 0x009f6340
@@ -849,7 +849,7 @@ struct Host9f6340
 unsigned int __thiscall Host9f6340::AppendElement(Elem9f6340* apElement)
 {
     unsigned int uiIndex = ((Arr16*)this)->BSSimpleArray_TeleportLink_1024_AddUninitialized();
-    BSSimpleArray_SandBoxChoiceListItem_1024__ConstructItems(f04 + uiIndex, 1);
+    BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(f04 + uiIndex, 1);
     f04[uiIndex] = *apElement;
     return uiIndex;
 }

@@ -96,17 +96,17 @@ struct RagdollAnimationOperations : RagdollAnimationData
 struct FootIKOperations : FootIK_DATA
 {
     void FootIK_DATA_Copy(const FootIK_DATA&);
-    bool FootIK_DATA_Compare(const FootIK_DATA&);
+    bool Differs(const FootIK_DATA&);
 };
 struct LookIKOperations : LookIK_DATA
 {
     void LookIK_DATA_Copy(const LookIK_DATA&);
-    bool LookIK_DATA_Compare(const LookIK_DATA&);
+    bool Differs(const LookIK_DATA&);
 };
 struct GrabIKOperations : GrabIK_DATA
 {
     void GrabIK_DATA_Copy(const GrabIK_DATA&);
-    bool GrabIK_DATA_Compare(const GrabIK_DATA&);
+    bool Differs(const GrabIK_DATA&);
 };
 // pdb: structure PoseMatching_DATA, size 0x24, 3 members
 struct PoseMatching_DATA : RagdollFeedbackProfile
@@ -365,7 +365,7 @@ void __fastcall RagdollFeedbackData_RagdollFeedbackSystemData_RagdollFeedbackSys
 void __fastcall BSSimpleArray_short_1024_BSSimpleArray_short_1024(void*);
 
 // @fnv 0x005ed760
-// src: XBOX_DEBUG_PDB 0x005ed760
+// src: XBOX_DEBUG_PDB 0x005ed760 (was COMMUNITY)
 // pdb: RagdollFeedbackData::RagdollFeedbackData | BGSRagdoll.obj | debug, call graph, high
 void* __fastcall RagdollFeedbackData_ctor(char* pThis)
 {
@@ -670,11 +670,11 @@ bool RagdollOperations::Differs(TESForm* apCompare)
         return true;
     if (((RagdollAnimationOperations*)((char*)this + 0x40))->Differs(*(RagdollAnimationOperations*)((char*)pcomp + 0x40)))
         return true;
-    if (((FootIKOperations*)((char*)this + 0x90))->FootIK_DATA_Compare(*(FootIK_DATA*)((char*)pcomp + 0x90)))
+    if (((FootIKOperations*)((char*)this + 0x90))->Differs(*(FootIK_DATA*)((char*)pcomp + 0x90)))
         return true;
-    if (((LookIKOperations*)((char*)this + 0xd0))->LookIK_DATA_Compare(*(LookIK_DATA*)((char*)pcomp + 0xd0)))
+    if (((LookIKOperations*)((char*)this + 0xd0))->Differs(*(LookIK_DATA*)((char*)pcomp + 0xd0)))
         return true;
-    if (((GrabIKOperations*)((char*)this + 0xf4))->GrabIK_DATA_Compare(*(GrabIK_DATA*)((char*)pcomp + 0xf4)))
+    if (((GrabIKOperations*)((char*)this + 0xf4))->Differs(*(GrabIK_DATA*)((char*)pcomp + 0xf4)))
         return true;
     if (((PoseMatching_DATA*)((char*)this + 0x118))->Compare(*(RagdollFeedbackProfile*)((char*)pcomp + 0x118)))
         return true;

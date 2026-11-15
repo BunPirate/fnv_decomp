@@ -25,7 +25,7 @@ public:
     unsigned char pad4[0x17];
     ReferenceBucket memberA8;
 
-    void RemoveReference(TESObjectREFR* apRef);
+    void RemoveReference_005270b0(TESObjectREFR* apRef);
     char* GetFieldByType(unsigned int type);
-    void AddReference(BGSPerkEntry* apRef);
+    void AddReference_00526f20(BGSPerkEntry* apRef);
 };

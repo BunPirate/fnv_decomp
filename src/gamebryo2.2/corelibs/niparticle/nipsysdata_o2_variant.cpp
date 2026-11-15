@@ -279,13 +279,13 @@ struct FUN_00c25850_cls
     volatile float m_fValue10;
 
     void BaseCtor();
-    FUN_00c25850_cls* NiPSysUpdateTask_ctor();
+    FUN_00c25850_cls* NiPSysUpdateTask_NiPSysUpdateTask();
 };
 
 // @fnv 0x00c25850
-// src: XBOX_DEBUG_PDB 0x00c25850
+// src: EXE 0x00c25850
 // pdb: NiPSysUpdateTask::NiPSysUpdateTask | NiPSysUpdateTask.obj | debug, upstream name already matches, high
-FUN_00c25850_cls* FUN_00c25850_cls::NiPSysUpdateTask_ctor()
+FUN_00c25850_cls* FUN_00c25850_cls::NiPSysUpdateTask_NiPSysUpdateTask()
 {
     BaseCtor();
     m_iValue08 = 0;

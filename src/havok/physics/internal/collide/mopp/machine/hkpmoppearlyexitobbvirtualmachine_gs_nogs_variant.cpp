@@ -21,7 +21,7 @@ struct S_00e647e0 {
     hkBool m_bHasHit; char unk41; char unk42; char unk43;
     S_00e647e0_Input* m_pRayCastInput;
     void ComputeValues_00e645b0(const void* a, const void* b, const void* c, S_00e647e0_Local* out);
-    void hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(S_00e647e0_Local* l, S_00e647e0_Shape* shape);
+    void queryOBBOnTree(S_00e647e0_Local* l, S_00e647e0_Shape* shape);
     hkBool SetupAndProcessShape(S_00e647e0_Input* input, const void* b, const void* c, const void* d);
 };
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged
@@ -74,17 +74,17 @@ public:
 
     static inline int read24(const unsigned char* PC) { return (((PC[0] << 8) + PC[1]) << 8) + PC[2]; }
 
-    void hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(const CollisionShapeRecord* query, const unsigned char* PC);
+    void queryOBBOnTree(const CollisionShapeRecord* query, const unsigned char* PC);
 };
 
 }
 
 // @fnv 0x00e63f10
-// src: XBOX_RETAIL_PDB 0x00e63f10
+// src: HAVOK_LIB 0x00e63f10
 // pdb: hkpMoppEarlyExitObbVirtualMachine::queryOBBOnTree | hkpMoppEarlyExitObbVirtualMachine.obj | retail, string-set bridge, high
 // pdb params: query, PC
 // pdb locals: scaledQuery, assertBuf, ostr
-void S00e63f10::hkpMoppEarlyExitObbVirtualMachine::hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(const CollisionShapeRecord* query, const unsigned char* PC)
+void S00e63f10::hkpMoppEarlyExitObbVirtualMachine::queryOBBOnTree(const CollisionShapeRecord* query, const unsigned char* PC)
 {
     CollisionShapeRecord newQuery;
     int command;
@@ -171,7 +171,7 @@ void S00e63f10::hkpMoppEarlyExitObbVirtualMachine::hkpMoppEarlyExitObbVirtualMac
                 PC += offset;
                 if (x >= low + radius)
                     continue;
-                hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(query, PC - offset);
+                queryOBBOnTree(query, PC - offset);
             }
             continue;
 
@@ -188,7 +188,7 @@ void S00e63f10::hkpMoppEarlyExitObbVirtualMachine::hkpMoppEarlyExitObbVirtualMac
                 PC += offset;
                 if (query->m_aiSecondCoordinates[command - 0x10] >= low)
                     continue;
-                hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(query, PC - offset);
+                queryOBBOnTree(query, PC - offset);
             }
             continue;
 
@@ -204,7 +204,7 @@ void S00e63f10::hkpMoppEarlyExitObbVirtualMachine::hkpMoppEarlyExitObbVirtualMac
                 PC += offset;
                 if (query->m_aiSecondCoordinates[command - 0x20] > high)
                     continue;
-                hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(query, PC - offset);
+                queryOBBOnTree(query, PC - offset);
             }
             continue;
 
@@ -225,7 +225,7 @@ void S00e63f10::hkpMoppEarlyExitObbVirtualMachine::hkpMoppEarlyExitObbVirtualMac
                 PC += offsetLeft;
                 if (query->m_aiSecondCoordinates[command - 0x23] >= low)
                     continue;
-                hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(query, PC - offsetLeft + offsetRight);
+                queryOBBOnTree(query, PC - offsetLeft + offsetRight);
             }
             continue;
 

@@ -161,7 +161,7 @@ extern NiFixedString* DAT_011c8058;
 
 // Allocates the "ASH" extra-data name and stores it in DAT_011c8058.
 // @fnv 0x004f92e0
-// src: XBOX_RETAIL_PDB 0x004f92e0
+// src: XBOX_RETAIL_PDB 0x004f92e0 (was COMMUNITY)
 // pdb: BGSAddonNodeSoundHandleExtra::InitSDM | BGSAddonNode.obj | retail, call graph, high
 void __cdecl BGSAddonNodeSoundHandleExtra_InitSDM()
 {

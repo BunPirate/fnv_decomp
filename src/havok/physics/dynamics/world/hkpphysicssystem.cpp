@@ -1057,7 +1057,7 @@ class hkpConstraintInstanceD : public hkReferencedObjectD
         return m_pEntityB;
     }
     hkBoolD isConstrainedToWorld() const throw();
-    hkpConstraintInstanceD* clone(hkpRigidBodyD* newEntityA, hkpRigidBodyD* newEntityB, int mode) const throw();
+    hkpConstraintInstanceD* clone_00cf3fa0(hkpRigidBodyD* newEntityA, hkpRigidBodyD* newEntityB, int mode) const throw();
 
     void* m_pOwnerObject;
     void* m_data;
@@ -1130,7 +1130,7 @@ FUN_00d065e0* FUN_00d065e0::hkpPhysicsSystem_clone() const throw()
             constraint->isConstrainedToWorld()
                 ? 0
                 : newSystem->m_ppRigidBodies[m_ppRigidBodies.indexOf(constraint->getRigidBodyB())];
-        newSystem->m_ppConstraints[i] = constraint->clone(pNewRigidBodyA, pNewRigidBodyB, 0);
+        newSystem->m_ppConstraints[i] = constraint->clone_00cf3fa0(pNewRigidBodyA, pNewRigidBodyB, 0);
     }
 
     for (i = 0; i < m_ppActions.GetLogicalSize(); i++)

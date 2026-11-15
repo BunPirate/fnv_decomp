@@ -26,7 +26,7 @@ public:
     bool __thiscall TESObjectLAND_GetLandHeight(LandscapeColorData&, float&);
     bool __thiscall GetLandHeight(const LandscapeColorData&, float&);
     NiGeometry* __thiscall GetGeometry_0053f120(LandscapeColorData*);
-    NiGeometry* __thiscall GetGeometry(const NiPoint3&);
+    NiGeometry* __thiscall GetGeometry_0053f0e0(const NiPoint3&);
     void TESObjectLAND_GetColorA(int iblock, int m_iGridY, NiColorA* color);
     bool GetLandColor_0(const LandscapeColorData* cdata, NiColorA* color);
     void TESObjectLAND_SetLandRemapped(int);

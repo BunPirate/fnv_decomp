@@ -31,7 +31,7 @@ public:
     void BaseFormRecord(BaseFormComponent* apCopyFC);
     void InitItem(TESForm* apOwner);
     void Save();
-    void TESSpellList_AddSpell(TESLevSpell* apSpellIn);
+    void TESSpellList_AddSpell_0048d210(TESLevSpell* apSpellIn);
     void TESSpellList_AddSpell_0048d290(unsigned int spellID);
     void TESSpellList_Save();
     BSSimpleList<InventoryStackRecord*>* GetOffsetC();

@@ -389,7 +389,7 @@ void __cdecl AdvancePosition(NiBinaryStream* a, void* b, unsigned int c);
 
 // Reads a length-prefixed string and advances the stream position; returns false for a zero size or null buffer.
 // @fnv 0x00ee92d0
-// src: XBOX_RETAIL_PDB 0x00ee92d0
+// src: XBOX_RETAIL_PDB 0x00ee92d0 (was GAMEBRYO_LIB)
 // pdb: NiGPUProgramCache::LoadString | NiGPUProgramCache.obj | retail, object-file gap fill, high
 // pdb params: kStream, pcBuffer, stBufferSize
 // pdb locals: stLength

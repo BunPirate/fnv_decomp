@@ -375,9 +375,9 @@ void __fastcall _ref_006815c0(void* pThis);
 
 // Calls _ref_006815c0 on the two sub-objects at offsets 4 and 0xC of pThis and returns pThis.
 // @fnv 0x00588c50
-// src: XBOX_DEBUG_PDB 0x00588c50
+// src: COMMUNITY 0x00588c50
 // pdb: TESWorldSpace::OFFSET_DATA::OFFSET_DATA | TESWorldSpace.obj | debug, upstream name already matches, high
-char* __fastcall TESWorldSpace_OFFSET_DATA_ctor(char* pThis)
+char* __fastcall TESWorldSpace_OFFSET_DATA_OFFSET_DATA(char* pThis)
 {
     _ref_006815c0(pThis + 4);
     _ref_006815c0(pThis + 0xC);
@@ -845,7 +845,7 @@ struct FUN_004f6800_shell
     void TESRegionList_GetDerivedData(void*, float*, void*);
 };
 // @fnv 0x004f6800
-// src: XBOX_RETAIL_PDB 0x004f6800
+// src: XBOX_RETAIL_PDB 0x004f6800 (was COMMUNITY)
 // pdb: TESRegionList::GetDerivedData | TESRegionList.obj | retail, call graph (shared callers), high
 // pdb params: aeFind, arPoint, apWorldSpace
 // pdb locals: testpt
@@ -1276,7 +1276,7 @@ void __cdecl _Deallocate(void*);
 }  // namespace fnv_00588c80
 
 // @fnv 0x00588c80
-// src: XBOX_DEBUG_PDB 0x00588c80
+// src: XBOX_DEBUG_PDB 0x00588c80 (was COMMUNITY)
 // pdb: TESWorldSpace::FreeOffsetData | TESWorldSpace.obj | debug, call graph, high
 // pdb locals: iter, pfile, pdata
 void TESWorldSpace::FreeOffsetData()

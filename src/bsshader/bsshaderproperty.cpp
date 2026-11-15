@@ -273,7 +273,7 @@ struct FUN_00ba8c30_shell2
     void BSShaderProperty_RenderPass_ClearSceneLights();
 };
 // @fnv 0x00ba8c30
-// src: XBOX_RETAIL_PDB 0x00ba8c30
+// src: XBOX_RETAIL_PDB 0x00ba8c30 (was COMMUNITY)
 // pdb: BSShaderProperty::RenderPass::FreeLightArray | BSShaderProperty.obj | retail, object-file gap fill, high
 void __fastcall BSShaderProperty_RenderPass_FreeLightArray(FUN_00ba8c30_shell2* self, int)
 {

@@ -1209,7 +1209,7 @@ struct CSpeedTreeRT_Load
     static void* operator new(unsigned int);
     ~CSpeedTreeRT_Load();
     bool CSpeedTreeRT_LoadTree(const char*);
-    void CSpeedTreeRT_GetTextures(FUN_00b02e20*);
+    void GetTextures_00b0d040(FUN_00b02e20*);
     void CSpeedTreeRT_SetNumLeafRockingGroups(int);
     void CSpeedTreeRT_SetLeafRockingState(bool);
     void CSpeedTreeRT_GetTreeSize(float*, float*);
@@ -1229,8 +1229,8 @@ struct CSpeedTreeRT_Load
     unsigned int CSpeedTreeRT_GetSeed();
     float CSpeedTreeRT_GetTrunkLength();
     float CSpeedTreeRT_GetTrunkWidth();
-    void CSpeedTreeRT_dtor();
-    void CSpeedTreeRT_DeleteBranchGeometry();
+    void CSpeedTreeRT_DeleteTransientData();
+    void DeleteBranchGeometry();
     void CSpeedTreeRT_DeleteFrondGeometry();
 };
 struct TreeName
@@ -1294,7 +1294,7 @@ bool TreeModelLoader::BSTreeModel_InitFromBase(TreeModelInput* apTreeObj, int ai
         if (pTree->CSpeedTreeRT_LoadTree(szPath))
         {
             FUN_00b02e20 treeInfo;
-            pTree->CSpeedTreeRT_GetTextures(&treeInfo);
+            pTree->GetTextures_00b0d040(&treeInfo);
             if (treeInfo.leafMaps <= 3)
                 pTree->CSpeedTreeRT_SetNumLeafRockingGroups(2);
             else
@@ -1335,8 +1335,8 @@ bool TreeModelLoader::BSTreeModel_InitFromBase(TreeModelInput* apTreeObj, int ai
         unk48 = pTree->CSpeedTreeRT_GetTrunkLength();
         unk4c = pTree->CSpeedTreeRT_GetTrunkWidth();
         Finish(apTreeObj);
-        pTree->CSpeedTreeRT_dtor();
-        pTree->CSpeedTreeRT_DeleteBranchGeometry();
+        pTree->CSpeedTreeRT_DeleteTransientData();
+        pTree->DeleteBranchGeometry();
         pTree->CSpeedTreeRT_DeleteFrondGeometry();
     }
     return true;
@@ -2135,7 +2135,7 @@ struct TreeRuntime
     void SetField98(float);
     void FUN_00b07490(float);
     void SetFieldD0(float);
-    void CSpeedTreeRT_GetTextures(FUN_00b02e20*);
+    void GetTextures_00b0d040(FUN_00b02e20*);
 };
 struct TreeTarget
 {
@@ -2203,7 +2203,7 @@ void TreeTarget::ApplyInput(TreeInput* apTreeObj)
         char branchPath[260];
         char normalPathA[260];
         unsigned int length2 = 0;
-        runtime->CSpeedTreeRT_GetTextures(&mapBank5);
+        runtime->GetTextures_00b0d040(&mapBank5);
         CopyTreeString(branchPath, 260, "Textures\\Trees\\Branches\\");
         AppendTreeString(branchPath, 260, mapBank5.branchMaps[0]);
         length2 = BSstrlen(branchPath);
@@ -2397,9 +2397,9 @@ struct FUN_00b02e20
 struct SpeedTreeRT
 {
     float* CSpeedTreeRT_GetLeafLodSizeAdjustments();
-    void CSpeedTreeRT_GetTextures(FUN_00b02e20* pTextures);
+    void GetTextures_00b0d040(FUN_00b02e20* pTextures);
     void CSpeedTreeRT_GetGeometry(FUN_00b029f0* sGeometry, unsigned int ulBitVector, short sOverrideBranchLodValue, short sOverrideFrondLodValue, short sOverrideLeafLodValue);
-    void CSpeedTreeRT_FreeLeafLODDataArrays();
+    void FreeLeafLODDataArrays();
 };
 struct FUN_00bb3950 : public NiMemObject
 {
@@ -2615,7 +2615,7 @@ void TreeLeafModel::BSTreeModel_CreateLeafGeometry(TreeLeafRef* apTreeObj)
     if (usLevels <= 0)
         return;
 
-    m_pLeafTreeRuntime->CSpeedTreeRT_GetTextures(&kTexData);
+    m_pLeafTreeRuntime->GetTextures_00b0d040(&kTexData);
     usNumNames = kTexData.m_usValue;
     if (usNumNames <= 0)
         return;
@@ -2723,7 +2723,7 @@ void TreeLeafModel::BSTreeModel_CreateLeafGeometry(TreeLeafRef* apTreeObj)
         ((NiAVObject*)m_pspLeafGeometry[usI])->FUN_004410f0(1);
     }
 
-    m_pLeafTreeRuntime->CSpeedTreeRT_FreeLeafLODDataArrays();
+    m_pLeafTreeRuntime->FreeLeafLODDataArrays();
 }
 }  // namespace fnv_00668500
 

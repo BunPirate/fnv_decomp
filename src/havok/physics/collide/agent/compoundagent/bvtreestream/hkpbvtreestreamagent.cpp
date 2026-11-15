@@ -492,10 +492,10 @@ extern "C" void __cdecl hkAgent1nMachine_Create(void* agentTrack);
 // Raw constructor entry: initialize the shared fields without implicit base or hkAabb constructor calls.
 // EDX is unused, preserving the original constructor's ECX and stack calling convention.
 // @fnv 0x00d2def0
-// src: XBOX_RETAIL_PDB 0x00d2def0
+// src: XBOX_PDB 0x00d2def0
 // pdb: hkpBvTreeStreamAgent::hkpBvTreeStreamAgent | hkpBvTreeStreamAgent.obj | retail, upstream name already matches, high
 // pdb params: bodyA, bodyB, input, mgr
-hkpBvTreeStreamAgent* __fastcall hkpBvTreeStreamAgent_ctor(hkpBvTreeStreamAgent* self, void*, void* a1, void* apUnused, int* piSource, int a4)
+hkpBvTreeStreamAgent* __fastcall hkpBvTreeStreamAgent_hkpBvTreeStreamAgent(hkpBvTreeStreamAgent* self, void*, void* a1, void* apUnused, int* piSource, int a4)
 {
     self->m_referenceCount = 1;
     self->m_contactMgr = (hkpContactMgr*)a4;

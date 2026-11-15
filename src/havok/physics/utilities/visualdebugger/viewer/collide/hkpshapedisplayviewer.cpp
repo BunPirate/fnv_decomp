@@ -184,7 +184,7 @@ struct Allocator
 void* __cdecl hkMemoryRouter_getInstance();
 struct FUN_00d657d0_class
 {
-    FUN_00d657d0_class* hkpShapeDisplayViewer_ctor(int);
+    FUN_00d657d0_class* hkpShapeDisplayViewer_hkpShapeDisplayViewer(int);
 };
 // Allocates a 0x74-byte object from the audio allocator, initializes it with context, and returns a pointer 8 bytes into it, or null on failure.
 // @fnv 0x00d65910
@@ -196,7 +196,7 @@ void* __cdecl hkpShapeDisplayViewer_create(void* contexts)
     hkMemoryRouter* audio = (hkMemoryRouter*)hkMemoryRouter_getInstance();
     FUN_00d657d0_class* result = (FUN_00d657d0_class*)audio->m_heap->blockAlloc(0x74);
     *(unsigned short*)((char*)result + 4) = 0x74;
-    result = result->hkpShapeDisplayViewer_ctor((int)contexts);
+    result = result->hkpShapeDisplayViewer_hkpShapeDisplayViewer((int)contexts);
     if (result)
         return (char*)result + 8;
     return 0;
@@ -792,15 +792,15 @@ struct FUN_00d657d0_cls
     int m_70;
 
     void FUN_00ddccb0(ShapeList* contexts);
-    FUN_00d657d0_cls* hkpShapeDisplayViewer_ctor(ShapeList* contexts);
+    FUN_00d657d0_cls* hkpShapeDisplayViewer_hkpShapeDisplayViewer(ShapeList* contexts);
 };
 
 // Initializes vtables, ShapeSub members, and flags, then searches a1 for a ShapeDisplayViewerOptions item to set m_60.
 // @fnv 0x00d657d0
-// src: XBOX_RETAIL_PDB 0x00d657d0
+// src: HAVOK_LIB 0x00d657d0
 // pdb: hkpShapeDisplayViewer::hkpShapeDisplayViewer | hkpShapeDisplayViewer.obj | retail, upstream name already matches, high
 // pdb params: contexts
-FUN_00d657d0_cls* FUN_00d657d0_cls::hkpShapeDisplayViewer_ctor(ShapeList* contexts)
+FUN_00d657d0_cls* FUN_00d657d0_cls::hkpShapeDisplayViewer_hkpShapeDisplayViewer(ShapeList* contexts)
 {
     int i;
     FUN_00ddccb0(contexts);

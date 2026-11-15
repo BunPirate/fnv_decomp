@@ -12231,7 +12231,7 @@ struct C200125Owner
 };
 struct CC4560Obj
 {
-    void* __thiscall hkAngularDashpotActionCinfo_ctor();
+    void* __thiscall hkAngularDashpotActionCinfo_hkAngularDashpotActionCinfo();
 };
 struct CC4560Owner
 {
@@ -13668,14 +13668,14 @@ struct Mesh654
     unsigned int triangleCount;
     unsigned short* triangles;
     MeshMetadata654* metadata;
-    void bhkExtendedMeshSubPart_LoadBinary(BCC9B80Stream&);
+    void bhkExtendedMeshShapeData_Block_LoadBinary(BCC9B80Stream&);
 };
 // @fnv 0x00ccc440
-// src: XBOX_RETAIL_PDB 0x00ccc440
+// src: COMMUNITY 0x00ccc440
 // pdb: bhkExtendedMeshSubPart::LoadBinary | bhkExtendedMeshShape.obj | retail, object-file gap fill, high
 // pdb params: arStream
 // pdb locals: uifilterInfo, uimaterialInfo, tempMemContext
-void Mesh654::bhkExtendedMeshSubPart_LoadBinary(BCC9B80Stream& arStream)
+void Mesh654::bhkExtendedMeshShapeData_Block_LoadBinary(BCC9B80Stream& arStream)
 {
     TlsFlagGuard guard;
     BCC9B80LoadBinary(arStream, vertexCount);

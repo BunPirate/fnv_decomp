@@ -3315,7 +3315,7 @@ struct This160
     float bhkRigidBody_GethkMaxLinearVelocity();
     void bhkRigidBody_SetNiPosition(float* arPos);
     void bhkRigidBody_SetLinearVelocity_00561690(float* arVel);
-    void bhkRigidBody_SetAngularVelocity(float* arVel);
+    void bhkRigidBody_SetAngularVelocity_005617c0(float* arVel);
     void bhkRigidBody_ApplyHardKeyframe(float* arPos, RotationArg160 arRot, unsigned int apSetPosLock);
 };
 struct SmartObj160
@@ -3545,6 +3545,6 @@ void This160::bhkRigidBody_ApplyHardKeyframe(float* arPos, RotationArg160 arRot,
         __m128 axis = W.v70.v;
         W.v70.v = _mm_mul_ps(factor, axis);
     }
-    bhkRigidBody_SetAngularVelocity((float*)&W.v70);
+    bhkRigidBody_SetAngularVelocity_005617c0((float*)&W.v70);
 }
 }  // namespace fnv_00c8e160

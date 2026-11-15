@@ -924,7 +924,7 @@ struct B30Owner
 {
     char pad00[0x58];
     B30Vec<B30Vec<void*> > m_kLists;
-    unsigned short GetNumStrips(unsigned short sLodLevel);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
     void CIndexedGeometry_DeleteLodStrip(unsigned short usLodLevel);
 };
 // @fnv 0x00b30c80
@@ -939,7 +939,7 @@ void B30Owner::CIndexedGeometry_DeleteLodStrip(unsigned short usLodLevel)
     int iA;
     int iB;
     int a1;
-    for (p = 0; p < GetNumStrips(usLodLevel); p++)
+    for (p = 0; p < CIndexedGeometry_GetNumStrips(usLodLevel); p++)
     {
         a = m_kLists[usLodLevel][p];
         FormHeapFreeAndLog_00401030(a);

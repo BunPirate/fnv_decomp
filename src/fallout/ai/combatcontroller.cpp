@@ -462,9 +462,9 @@ bool __fastcall CombatCoverMap_IsCurrentThreadWriting(unsigned int);
 void __fastcall CombatCoverMap_UnlockForWrite(unsigned int);
 
 // @fnv 0x00995830
-// src: XBOX_RETAIL_PDB 0x00995830
+// src: XBOX_PDB 0x00995830
 // pdb: CombatPlanner::CleanUp | CombatPlanner.obj | retail, call graph, high
-void CombatPlanner::CleanUp()
+void CombatPlanner::CleanUp_00995830()
 {
     while (CombatCoverMap_IsCurrentThreadWriting(reinterpret_cast<Calendar*>(BGSSaveLoadGlobalDataWorldspacePtr)->GetDaysPassed()))
     {
@@ -704,10 +704,10 @@ extern PlayerCharacter* pPlayer;
 }  // namespace fnv_0097f9c0
 
 // @fnv 0x0097f9c0
-// src: XBOX_RETAIL_PDB 0x0097f9c0
+// src: XBOX_PDB 0x0097f9c0
 // pdb: CombatController::RemoveTarget | CombatController.obj | retail, call graph, high
 // pdb params: apActor
-void CombatController::RemoveTarget(Actor* apActor)
+void CombatController::RemoveTarget_0097f9c0(Actor* apActor)
 {
     using namespace fnv_0097f9c0;
     if (apActor == pPlayer)
@@ -972,20 +972,20 @@ struct Class80
 }  // namespace fnv_0097f4d0
 
 // @fnv 0x0097f4d0
-// src: XBOX_RETAIL_PDB 0x0097f4d0
+// src: XBOX_PDB 0x0097f4d0
 // pdb: CombatController::StopCombat | CombatController.obj | retail, call graph, high
 // pdb params: apTarget
 // pdb locals: bend
-bool CombatController::StopCombat(void* apTarget)
+bool CombatController::StopCombat_0097f4d0(void* apTarget)
 {
     using namespace fnv_0097f4d0;
     bool result = false;
     if (apTarget)
     {
-        RemoveTarget(apTarget);
+        RemoveTarget_0097f9c0(apTarget);
         if (field_c0 == apTarget)
         {
-            SetTarget(reinterpret_cast<Class80*>(m_pCombatData)->CombatGroup_GetBestTarget(pActor));
+            SetTarget_00980830(reinterpret_cast<Class80*>(m_pCombatData)->CombatGroup_GetBestTarget(pActor));
             if (field_c0 == 0)
             {
                 ((CombatController*)this)->ClearProcedures();
@@ -1046,10 +1046,10 @@ extern void* BGSSaveLoadGlobalDataWorldspacePtr;
 }  // namespace fnv_0097f930
 
 // @fnv 0x0097f930
-// src: XBOX_RETAIL_PDB 0x0097f930
+// src: XBOX_PDB 0x0097f930
 // pdb: CombatController::AddTarget | CombatController.obj | retail, object-file gap fill, high
 // pdb params: apTarget, iPriority, abHighPriority, afDamageDone, afDamageTaken
-void CombatController::AddTarget(Actor* apTarget, int iPriority, bool abHighPriority, float afDamageDone,
+void CombatController::AddTarget_0097f930(Actor* apTarget, int iPriority, bool abHighPriority, float afDamageDone,
                                       float afDamageTaken)
 {
     using namespace fnv_0097f930;
@@ -1266,7 +1266,7 @@ void CombatController::ClearReferencePointers(int apRef)
         m_pkQueuedProcedure->Unk10(apRef);
 
     if (reinterpret_cast<int>(field_c0) == apRef)
-        StopCombat(reinterpret_cast<int>(field_c0));
+        StopCombat_0097f4d0(reinterpret_cast<int>(field_c0));
 }
 
 class TESPackage;
@@ -1793,7 +1793,7 @@ CombatController::~CombatController()
     }
     if (!g_dataHandler->TESDataHandler_GetClearingData())
     {
-        SetTarget(0);
+        SetTarget_00980830(0);
         SetMovementProcedure(0);
         reinterpret_cast<Actor*>(GetFieldBC())->ClearLookAtTarget();
         reinterpret_cast<ActorSetActiveFn>(ActorSetCombatActive)(reinterpret_cast<Actor*>(GetFieldBC()), 0, 0, 0);
@@ -2573,7 +2573,7 @@ void CombatController::Update_0097da50()
     {
         ClearCombatPlan();
         ClearBackgroundProcedures();
-        SetTarget(reinterpret_cast<void*>(reinterpret_cast<UpdateGroup*>(m_pCombatData)->CombatGroup_GetBestTarget(this->actor)));
+        SetTarget_00980830(reinterpret_cast<void*>(reinterpret_cast<UpdateGroup*>(m_pCombatData)->CombatGroup_GetBestTarget(this->actor)));
         if (reinterpret_cast<UpdateAction*>(m_pkQueuedProcedure))
             reinterpret_cast<UpdateAction*>(m_pkQueuedProcedure)->Slot2c();
         if (reinterpret_cast<UpdateAction*>(m_pkCurrentProcedure))
@@ -2583,7 +2583,7 @@ void CombatController::Update_0097da50()
         (*reinterpret_cast<UpdatePlan**>(&m_pCombatPlan)) = (UpdatePlan*)search.CreatePlan_0(this, 0);
         pCurrentGoal = (*reinterpret_cast<UpdatePlan**>(&m_pCombatPlan)) ? (*reinterpret_cast<UpdatePlan**>(&m_pCombatPlan))->GetHavokWorldObjectCountInSceneGraph_0084e3a0() : 0;
         reinterpret_cast<ControllerRemoveTopicFn>(ControllerRemoveTopic)(this);
-        search.CleanUp();
+        search.CleanUp_00995830();
         pCombatPlannerData = 0;
         DAT_011f15cc.FUN_00483710();
         unkB4.FUN_008d7f40(1.0f);
@@ -2800,7 +2800,7 @@ void __fastcall NotifyControllerDamage(CombatController* controller, ControllerS
             if (bHit3)
             {
                 int iAmount = (int)reinterpret_cast<CSProcess*>(apActor.value->FUN_008d8520())->GetAmount(apActor.value, controller->actor);
-                controller->AddTarget(apActor.value, iAmount, 0, 0.0f, 0.0f);
+                controller->AddTarget_0097f930(apActor.value, iAmount, 0, 0.0f, 0.0f);
             }
         }
     }
@@ -2956,11 +2956,11 @@ extern void* DAT_011f1708;
 bool __cdecl Script_SetActionFlag(void*, void*, unsigned int);
 
 // @fnv 0x00980830
-// src: XBOX_RETAIL_PDB 0x00980830
+// src: XBOX_PDB 0x00980830
 // pdb: CombatController::SetTarget | CombatController.obj | retail, call graph, high
 // pdb params: apTarget
 // pdb locals: poldTarget
-void CombatController::SetTarget(void* apTarget)
+void CombatController::SetTarget_00980830(void* apTarget)
 {
     if (apTarget == (*reinterpret_cast<void**>(&pTarget)))
         return;
@@ -3370,7 +3370,7 @@ CombatPlanner::CombatPlanner() : AStarSearch<CombatPlanNode*, CombatPlanLink*>()
 // pdb: CombatPlanner::~CombatPlanner | CombatController.obj | retail, upstream name already matches, high
 CombatPlanner::~CombatPlanner()
 {
-    CleanUp();
+    CleanUp_00995830();
 }
 
 class C982080SaveGame;

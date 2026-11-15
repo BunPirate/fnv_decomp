@@ -770,9 +770,9 @@ extern NiPoint3 _NiPoint3_ZERO;
 
 // Clears the location and angle vectors, world, cell, flag, and reference pointers, then returns pThis.
 // @fnv 0x00456540
-// src: XBOX_DEBUG_PDB 0x00456540
+// src: XBOX_PDB 0x00456540
 // pdb: PLAYER_TARGET_LOC::PLAYER_TARGET_LOC | TES.obj | debug, upstream name already matches, high
-PlayerTargetLocation* __fastcall PLAYER_TARGET_LOC_ctor(PlayerTargetLocation* pThis)
+PlayerTargetLocation* __fastcall PLAYER_TARGET_LOC_PLAYER_TARGET_LOC(PlayerTargetLocation* pThis)
 {
     (_ref_006815c0)(&pThis->Location);
     _ref_006815c0(pThis->Angle);
@@ -2761,13 +2761,13 @@ void __fastcall TESObjectREFR_ForwardCall_0056d730(void* pThis)
 struct _Dummy_0056e090
 {
     void FUN_0056e0b0();
-    _Dummy_0056e090* hkSimpleShapePhantomCinfo_ctor();
+    _Dummy_0056e090* hkSimpleShapePhantomCinfo_hkSimpleShapePhantomCinfo();
 };
 
 // @fnv 0x0056e090
-// src: XBOX_DEBUG_PDB 0x0056e090
+// src: XBOX_PDB 0x0056e090
 // pdb: hkSimpleShapePhantomCinfo::hkSimpleShapePhantomCinfo | TESObjectREFR.obj | debug, upstream name already matches, high
-_Dummy_0056e090* _Dummy_0056e090::hkSimpleShapePhantomCinfo_ctor()
+_Dummy_0056e090* _Dummy_0056e090::hkSimpleShapePhantomCinfo_hkSimpleShapePhantomCinfo()
 {
     FUN_0056e0b0();
     return this;
@@ -2800,7 +2800,7 @@ void FUN_0056e120_shell::bhkTransform_setIdentity()
     bhkVector4_setZero4(Trans);
 }
 
-void __fastcall bhkSphereRepShape_ctor(void* pThis);
+void __fastcall bhkSphereRepShape_bhkSphereRepShape(void* pThis);
 extern int DAT_01030a24;
 extern int DAT_01268250;
 
@@ -2809,7 +2809,7 @@ extern int DAT_01268250;
 // pdb: bhkConvexShape::bhkConvexShape | TESObjectREFR.obj | debug, upstream name already matches, high
 void* __fastcall bhkConvexShape_bhkConvexShape(int* pObject)
 {
-    bhkSphereRepShape_ctor(pObject);
+    bhkSphereRepShape_bhkSphereRepShape(pObject);
     *pObject = (int)&DAT_01030a24;
     DAT_01268250 = DAT_01268250 + 1;
     return pObject;
@@ -2822,7 +2822,7 @@ unsigned int __fastcall bhkBoxShape_GetCinfoSize(const void* pThis)
     return 0x20;
 }
 
-void __fastcall hkSphereShapeCinfo_ctor(void*);
+void __fastcall hkSphereShapeCinfo_hkSphereShapeCinfo(void*);
 
 struct _bhkSphereShape_vtbl_helper
 {
@@ -2888,7 +2888,7 @@ struct _hkSphereShapeCinfo_no_gs
 void __fastcall bhkSphereShape_Init(_bhkSphereShape_vtbl_helper* pThis, float afRadius)
 {
     _hkSphereShapeCinfo_no_gs si;
-    hkSphereShapeCinfo_ctor(&si);
+    hkSphereShapeCinfo_hkSphereShapeCinfo(&si);
     si.m_fSphereRadius = afRadius;
     pThis->vb0(&si);
 }
@@ -3058,16 +3058,16 @@ using ::NiFixedString;
 typedef char _sizecheck_NiFixedString[sizeof(NiFixedString) == 4 ? 1 : -1];
 struct FUN_00571530_shell : public TESObjectREFR
 {
-    NiAVObject* TESObjectREFR_GetActorBone(NiAVObject*, NiFixedString*);
+    NiAVObject* TESObjectREFR_GetActorBone_00571530(NiAVObject*, NiFixedString*);
 };
 
 NiAVObject* __cdecl BSUtilities_GetObjectByName_00c4b470(NiAVObject*, NiFixedString*, bool);
 
 // @fnv 0x00571530
-// src: XBOX_DEBUG_PDB 0x00571530
+// src: XBOX_PDB 0x00571530
 // pdb: TESObjectREFR::GetActorBone | TESObjectREFR.obj | debug, call graph (shared callers), high
 // pdb params: apRoot, apSearch
-NiAVObject* FUN_00571530_shell::TESObjectREFR_GetActorBone(NiAVObject* apRoot, NiFixedString* apSearch)
+NiAVObject* FUN_00571530_shell::TESObjectREFR_GetActorBone_00571530(NiAVObject* apRoot, NiFixedString* apSearch)
 {
     return BSUtilities_GetObjectByName_00c4b470(apRoot, apSearch, true);
 }
@@ -4878,7 +4878,7 @@ struct SF577;
 using ::TESForm;
 struct Tmp577
 {
-    Z577* hkUFloat8_ctor(float);
+    Z577* hkUFloat8_hkUFloat8(float);
 };
 struct Y577
 {
@@ -4915,7 +4915,7 @@ float Obj577::bhkRigidBody_GethkMaxLinearVelocity()
         Z577* c;
         {
             Tmp577 tmp;
-            c = b ? (Z577*)((char*)b->GetSourceFiles() + 0xac) : tmp.hkUFloat8_ctor(a->hkpRigidBody_getMaxLinearVelocity());
+            c = b ? (Z577*)((char*)b->GetSourceFiles() + 0xac) : tmp.hkUFloat8_hkUFloat8(a->hkpRigidBody_getMaxLinearVelocity());
         }
         result = c->TESObjectREFR_GetByteIndexedTableValue();
     }
@@ -4932,10 +4932,10 @@ struct Dummy_00577bd0
 };
 
 // @fnv 0x00577bd0
-// src: XBOX_DEBUG_PDB 0x00577bd0
+// src: COMMUNITY 0x00577bd0
 // pdb: hkUFloat8::hkUFloat8 | TESObjectREFR.obj | debug, upstream name already matches, high
 // pdb params: f
-Dummy_00577bd0* __fastcall hkUFloat8_ctor(Dummy_00577bd0* thisPtr, float afValue)
+Dummy_00577bd0* __fastcall hkUFloat8_hkUFloat8(Dummy_00577bd0* thisPtr, float afValue)
 {
     thisPtr->FindFloatTableIndex(&afValue);
     return thisPtr;
@@ -9238,15 +9238,15 @@ struct FUN_00561800_
 
 struct FUN_005617c0_
 {
-    void __thiscall bhkRigidBody_SetAngularVelocity(int arVel);
+    void __thiscall bhkRigidBody_SetAngularVelocity_005617c0(int arVel);
 };
 
 // @fnv 0x005617c0
-// src: XBOX_DEBUG_PDB 0x005617c0
+// src: COMMUNITY 0x005617c0
 // pdb: bhkRigidBody::SetAngularVelocity | TESObjectREFR.obj | debug, call graph, high
 // pdb params: arVel
 // pdb locals: pb
-void __thiscall FUN_005617c0_::bhkRigidBody_SetAngularVelocity(int arVel)
+void __thiscall FUN_005617c0_::bhkRigidBody_SetAngularVelocity_005617c0(int arVel)
 {
     void* result = ((NullableHavokObjectAccess*)this)->GetHavokObject();
     if (result)
@@ -10177,15 +10177,15 @@ void* FUN_0056d580::Init(void* arg)
 
 struct FUN_0056ea40_class
 {
-    void hkConvexShapeCinfo_ctor();
-    void* hkSphereShapeCinfo_ctor();
+    void hkConvexShapeCinfo_hkConvexShapeCinfo();
+    void* hkSphereShapeCinfo_hkSphereShapeCinfo();
 };
 // @fnv 0x0056ea40
-// src: XBOX_DEBUG_PDB 0x0056ea40
+// src: XBOX_PDB 0x0056ea40
 // pdb: hkSphereShapeCinfo::hkSphereShapeCinfo | TESObjectREFR.obj | debug, upstream name already matches, high
-void* FUN_0056ea40_class::hkSphereShapeCinfo_ctor()
+void* FUN_0056ea40_class::hkSphereShapeCinfo_hkSphereShapeCinfo()
 {
-    hkConvexShapeCinfo_ctor();
+    hkConvexShapeCinfo_hkConvexShapeCinfo();
     return this;
 }
 
@@ -11403,14 +11403,14 @@ struct FUN_0056e900_shell
     int _0;
     float _4;
     void hkSphereRepShapeCinfo_ctor();
-    FUN_0056e900_shell* hkConvexShapeCinfo_ctor();
+    FUN_0056e900_shell* hkConvexShapeCinfo_hkConvexShapeCinfo();
 };
 extern float DAT_010c72bc;
 // Calls StepAndReturnThis, stores DAT_010c72bc into _4, and returns this.
 // @fnv 0x0056e8d0
-// src: XBOX_DEBUG_PDB 0x0056e8d0
+// src: XBOX_PDB 0x0056e8d0
 // pdb: hkConvexShapeCinfo::hkConvexShapeCinfo | TESObjectREFR.obj | debug, upstream name already matches, high
-FUN_0056e900_shell* FUN_0056e900_shell::hkConvexShapeCinfo_ctor()
+FUN_0056e900_shell* FUN_0056e900_shell::hkConvexShapeCinfo_hkConvexShapeCinfo()
 {
     hkSphereRepShapeCinfo_ctor();
     _4 = DAT_010c72bc;
@@ -13473,14 +13473,14 @@ extern const char str_01030e48[];
 extern const char str_01030e54[];
 struct FUN_005726e0_shell
 {
-    void TESObjectREFR_SetLight(NiAVObject* apObj, bool abStateOn);
+    void TESObjectREFR_SetLight_005726e0(NiAVObject* apObj, bool abStateOn);
 };
 // @fnv 0x005726e0
-// src: XBOX_RETAIL_PDB 0x005726e0
+// src: XBOX_PDB 0x005726e0
 // pdb: TESObjectREFR::SetLight | TESObjectREFR.obj | retail, string-set bridge, high
 // pdb params: pLight
 // pdb locals: light
-void FUN_005726e0_shell::TESObjectREFR_SetLight(NiAVObject* apObj, bool abStateOn)
+void FUN_005726e0_shell::TESObjectREFR_SetLight_005726e0(NiAVObject* apObj, bool abStateOn)
 {
     if (!apObj)
         return;
@@ -13869,7 +13869,7 @@ class SeqObj
 class FUN_004efb10_shell : public SeqObj
 {
   public:
-    unsigned short GetSaveSize();
+    unsigned short GetSaveSize_004efb10();
 };
 
 class Idle_008b2010 : public FUN_004efb10_shell
@@ -13908,7 +13908,7 @@ unsigned short TESObjectREFR_GetControllerManagerSaveSize(AnimationInterpolatorN
             {
                 result += 1;
                 result += _BSStringLength(item->GetName().operator char const*());
-                result += item->GetSaveSize();
+                result += item->GetSaveSize_004efb10();
             }
         }
     }
@@ -15045,7 +15045,7 @@ struct FUN_00577c70_stand_in
 };
 
 // @fnv 0x00577c40
-// src: XBOX_DEBUG_PDB 0x00577c40
+// src: XBOX_DEBUG_PDB 0x00577c40 (was COMMUNITY)
 // pdb: bhkRigidBody::SethkMaxLinearVelocity | TESObjectREFR.obj | debug, call graph, high
 // pdb params: afVel
 // pdb locals: pb
@@ -16255,7 +16255,7 @@ int bhkWorld_DoObjectRec(void* apObject, Loc5604* arData, void (*apFunc)());
 void TESObjectREFR_SaveHavokDataForCollisionObjectOld();
 
 // @fnv 0x005604b0
-// src: XBOX_RETAIL_PDB 0x005604b0
+// src: XBOX_RETAIL_PDB 0x005604b0 (was COMMUNITY)
 // pdb: TESObjectREFR::SaveHavokData | TESObjectREFR.obj | retail, object-file run extension, high
 // pdb params: apHavokSaveData
 // pdb locals: recData, pobj3D, sboneCount
@@ -17285,7 +17285,7 @@ struct RefFlags
     void TESObjectREFR_SetIsInvisibleLODMultType(unsigned char);
 };
 // @fnv 0x005650d0
-// src: XBOX_RETAIL_PDB 0x005650d0
+// src: XBOX_RETAIL_PDB 0x005650d0 (was COMMUNITY)
 // pdb: TESObjectREFR::SetIsInvisibleLODMultType | TESObjectREFR.obj | retail, call graph, high
 // pdb params: abIsInvisibleLODMultType
 // pdb locals: pOEIExtra, iflags
@@ -17897,14 +17897,14 @@ struct FUN_0056e3e0_cls
 {
     void* m_pVTable;
     void FUN_0056d440();
-    FUN_0056e3e0_cls* bhkPhantom_ctor();
+    FUN_0056e3e0_cls* bhkPhantom_bhkPhantom();
 };
 
 // Calls FUN_0056d440, sets m_pVTable to &DAT_0103078c, increments DAT_01268238, and returns this.
 // @fnv 0x0056e3e0
-// src: XBOX_RETAIL_PDB 0x0056e3e0
+// src: EXE 0x0056e3e0
 // pdb: bhkPhantom::bhkPhantom | TESObjectREFR.obj | retail, upstream name already matches, high
-FUN_0056e3e0_cls* FUN_0056e3e0_cls::bhkPhantom_ctor()
+FUN_0056e3e0_cls* FUN_0056e3e0_cls::bhkPhantom_bhkPhantom()
 {
     FUN_0056d440();
     m_pVTable = (void*)&DAT_0103078c;
@@ -17945,13 +17945,13 @@ struct FUN_0056e6c0_cls
 {
     void* m_pVTable;
     void FUN_0056e6f0();
-    FUN_0056e6c0_cls* bhkSphereRepShape_ctor();
+    FUN_0056e6c0_cls* bhkSphereRepShape_bhkSphereRepShape();
 };
 
 // @fnv 0x0056e6c0
-// src: XBOX_RETAIL_PDB 0x0056e6c0
+// src: EXE 0x0056e6c0
 // pdb: bhkSphereRepShape::bhkSphereRepShape | TESObjectREFR.obj | retail, upstream name already matches, high
-FUN_0056e6c0_cls* FUN_0056e6c0_cls::bhkSphereRepShape_ctor()
+FUN_0056e6c0_cls* FUN_0056e6c0_cls::bhkSphereRepShape_bhkSphereRepShape()
 {
     FUN_0056e6f0();
     m_pVTable = (void*)&DAT_01030b0c;
@@ -18001,17 +18001,17 @@ struct FUN_0056e860_cls
     int m_08;
     int m_0c;
     FUN_0056e860_sub m_sub;
-    void hkConvexShapeCinfo_ctor();
-    FUN_0056e860_cls* hkBoxShapeCinfo_ctor();
+    void hkConvexShapeCinfo_hkConvexShapeCinfo();
+    FUN_0056e860_cls* hkBoxShapeCinfo_hkBoxShapeCinfo();
 };
 
 // Calls FUN_0056e8d0, then initialises m_sub and sets all its values to 1.0, returning this.
 // @fnv 0x0056e860
-// src: XBOX_DEBUG_PDB 0x0056e860
+// src: XBOX_PDB 0x0056e860
 // pdb: hkBoxShapeCinfo::hkBoxShapeCinfo | TESObjectREFR.obj | debug, upstream name already matches, high
-FUN_0056e860_cls* FUN_0056e860_cls::hkBoxShapeCinfo_ctor()
+FUN_0056e860_cls* FUN_0056e860_cls::hkBoxShapeCinfo_hkBoxShapeCinfo()
 {
-    hkConvexShapeCinfo_ctor();
+    hkConvexShapeCinfo_hkConvexShapeCinfo();
     m_sub.Init();
     m_sub.SetAll(1.0f);
     return this;
@@ -24803,7 +24803,7 @@ void RestoreCollision(void*, RestoreContext*);
 void ActorScene(Scene*, bool, bool);
 // Loads Havok data for the reference: reads saved state, validates bone counts, restores collision and animation, or skips the data on mismatch or missing 3D.
 // @fnv 0x00560530
-// src: XBOX_DEBUG_PDB 0x00560530
+// src: XBOX_DEBUG_PDB 0x00560530 (was COMMUNITY)
 // pdb: TESObjectREFR::LoadHavokData | TESObjectREFR.obj | debug, unique string literal, high
 // pdb params: aiSaveSize
 // pdb locals: recData, chavokDataFlags, pobj3D, currentHavokSaveData, havokSaveData, scurrentBoneCount, pactor, sboneCount, UpdateData, panim
@@ -26348,7 +26348,7 @@ struct Actor79
     bool FUN_00440d80();
     const char* FUN_005715d0();
     void* Actor_GetCurrentWeaponAnimType();
-    void TESObjectREFR_SetLight(Node79*, int);
+    void TESObjectREFR_SetLight_005726e0(Node79*, int);
     void FUN_00484b90(unsigned int);
     Base79* BGSSaveFormBuffer_GetForm();
     bool TESObjectREFR_GetAction_00572d30(int);
@@ -26427,7 +26427,7 @@ void Actor79::TESObjectREFR_InitAnimation()
     {
     case 40:
         if (base->TESObjectWEAP_IsThrownWeapon())
-            TESObjectREFR_SetLight(root1, 0);
+            TESObjectREFR_SetLight_005726e0(root1, 0);
     default:
         if (root1->NiObjectNET_GetControllers())
         {
@@ -27561,7 +27561,7 @@ class FUN_005692d0_cls
 };
 
 // @fnv 0x005692d0
-// src: XBOX_DEBUG_PDB 0x005692d0
+// src: XBOX_DEBUG_PDB 0x005692d0 (was COMMUNITY)
 // pdb: TESObjectREFR::GetSeed | TESObjectREFR.obj | debug, call graph, high
 // pdb locals: iseed, ptree, iseedindex
 int FUN_005692d0_cls::TESObjectREFR_GetSeed()
@@ -29220,7 +29220,7 @@ void BSShaderManager_SetObjectType(Scene*);
 void bhkBlendController_DoKnockDown(Scene*, NiPoint3*, int, float, int);
 bool TESHavokUtilities_Should3DRagDoll(Reference*, Scene*);
 void BSShaderProperty_SetFlagRecurse(Scene*, int, int);
-bool TESRegionDataImposter_IsImposterInActiveRegionList(Reference*);
+bool TESObjectREFR_IsImposterInActiveRegionList(Reference*);
 void TESRegionDataImposter_SetImposterVisible(Reference*, int, int);
 void TESObjectREFR_ClearBackgroundLoadingRef();
 void BSsprintf(char*, int, const char*, ...);
@@ -29437,7 +29437,7 @@ Scene* Reference::TESObjectREFR_Load3D(unsigned char abBackgroundLoading)
     if (TESObjectREFR_GetIsImposter())
     {
         BSShaderProperty_SetFlagRecurse(scene.Modelloader_GetReferencedThis(), 34, 1);
-        if (!TESRegionDataImposter_IsImposterInActiveRegionList(this))
+        if (!TESObjectREFR_IsImposterInActiveRegionList(this))
             TESRegionDataImposter_SetImposterVisible(this, 0, 1);
         else
             TESRegionDataImposter_SetImposterVisible(this, 1, 0);
@@ -37123,7 +37123,7 @@ struct FlagsX
 };
 struct SubX
 {
-    void ExtraDataList_LoadGame(void* apLoadGameBuffer);
+    void ExtraDataList_LoadGame_00428150(void* apLoadGameBuffer);
     void FUN_0041aeb0();
     bool ExtraDataList_GetAction(int i);
     void ExtraDataList_ClearAction(int aeType);
@@ -37205,7 +37205,7 @@ void RefX::ApplyChanges(ChangeX* apLoadGameBuffer)
     }
     unsigned uiMask = bIsPlayer ? 0xa4061840 : 0xa4021c40;
     if (apLoadGameBuffer->FUN_00428110(uiMask).FUN_004280f0())
-        BSFile_GetDevice()->ExtraDataList_LoadGame(apLoadGameBuffer);
+        BSFile_GetDevice()->ExtraDataList_LoadGame_00428150(apLoadGameBuffer);
     if (apLoadGameBuffer->FUN_00428110(0x8000020).FUN_004280f0())
     {
         BSFile_GetDevice()->FUN_0041aeb0();
@@ -40155,7 +40155,7 @@ FUN_0056e180::FUN_0056e180() : m_kList(2)
 
 struct FUN_0056e900_cls
 {
-    void hkActionCinfo_ctor();
+    void Step();
     FUN_0056e900_cls* hkSphereRepShapeCinfo_ctor();
 };
 
@@ -40164,7 +40164,7 @@ struct FUN_0056e900_cls
 // pdb: hkSphereRepShapeCinfo::hkSphereRepShapeCinfo | TESObjectREFR.obj | debug, call graph (shared callers), high
 FUN_0056e900_cls* FUN_0056e900_cls::hkSphereRepShapeCinfo_ctor()
 {
-    hkActionCinfo_ctor();
+    Step();
     return this;
 }
 
@@ -45616,7 +45616,7 @@ struct ModelRef
     ModelEquipment* FUN_009344a0();
     const char* FUN_005715d0();
     float TESObjectREFR_GetScale_00567400();
-    ModelNode* TESObjectREFR_GetActorBone(ModelNode*, void*);
+    ModelNode* TESObjectREFR_GetActorBone_00571530(ModelNode*, void*);
     bool TESObjectREFR_ReplaceModel();
 };
 struct FUN_004ad050
@@ -45712,7 +45712,7 @@ bool ModelRef::TESObjectREFR_ReplaceModel()
                         cloneResult2 = original3823->FUN_00a5d2c0(&process392);
                     ModelNode* cloned222 = cloneResult2;
                     bool skinned2825 = Animation_FindSkinnedNode(cloned222);
-                    ModelNode* parent632 = TESObjectREFR_GetActorBone(root1, get_g_bip01());
+                    ModelNode* parent632 = TESObjectREFR_GetActorBone_00571530(root1, get_g_bip01());
                     if (skinned2825 && parent632)
                     {
                         ModelNode* attachment = parent632->Find(FUN_00438170("SkinAttachment"));

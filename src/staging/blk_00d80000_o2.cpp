@@ -267,7 +267,7 @@ struct FUN_00d853a0_cls {
     int m_ia8;
     int m_iac;
 
-    FUN_00d853a0_cls* hkpHingeConstraintData_ctor();
+    FUN_00d853a0_cls* Init();
 };
 
 // Allocates a 0xb0-byte object via the global allocator, initializes it, copies 0x9c bytes from a1+0x10 into obj+0x10, and returns obj.
@@ -280,7 +280,7 @@ FUN_00d853a0_cls* __cdecl copyConstraintAtoms_class_hkpHingeConstraintData(int c
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d853a0_cls* obj = (FUN_00d853a0_cls*)reinterpret_cast<AllocIface*>(holder->m_heap)->Alloc(0xb0);
     obj->m_w04 = 0xb0;
-    obj = obj->hkpHingeConstraintData_ctor();
+    obj = obj->Init();
     hkString_memCpy((char*)obj + 0x10, (char*)constraintIn + 0x10, 0x9c);
     return obj;
 }
@@ -3151,14 +3151,14 @@ int __cdecl hkClassMember_getSubtypeOf(const char* name) throw()
 }
 
 struct FUN_00d87180_cls : S {
-    FUN_00d87180_cls* hkClassMemberAccessor_ctor(unsigned int obj, B* mem);
+    FUN_00d87180_cls* hkClassMemberAccessor_hkClassMemberAccessor(unsigned int obj, B* mem);
 };
 
 // @fnv 0x00d87180
-// src: XBOX_DEBUG_PDB 0x00d87180
+// src: HAVOK_LIB 0x00d87180
 // pdb: hkClassMemberAccessor::hkClassMemberAccessor | hkClassMemberAccessor.obj | debug, call graph, high
 // pdb params: obj, mem
-FUN_00d87180_cls* FUN_00d87180_cls::hkClassMemberAccessor_ctor(unsigned int obj, B* mem)
+FUN_00d87180_cls* FUN_00d87180_cls::hkClassMemberAccessor_hkClassMemberAccessor(unsigned int obj, B* mem)
 {
     void (S::*call)(unsigned int, B*) = &S::SetValueAndPtr;
     (static_cast<S*>(this)->*call)(obj, mem);

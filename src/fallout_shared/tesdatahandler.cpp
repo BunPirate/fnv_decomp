@@ -2790,7 +2790,7 @@ struct Main
     void* GetThreadHandle();
     Controls* GetInputControls();
     bool WmMouseMove(int, int);
-    void Main_KillMenuBGTexture();
+    void RefreshAfterSave();
     static NiAVObject* GetSceneGraph(int);
     static SceneGraph* GetWorldSceneGraph();
     static NiNode* WorldRootNode();

@@ -225,7 +225,7 @@ struct TESEatPackageData_
     int field0;
     int field4;
 
-    void PackageLocation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    void PackageLocation_LoadGame_0067fbe0(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 
 struct B0067f030 : TESEatPackageData_
@@ -274,6 +274,6 @@ void FUN_0067b7d0_shell::TESDialoguePackageData_LoadGame(BGSLoadFormBuffer* apLo
     if (bhasLocation)
     {
         m_pTargetLocation = (LocationDescriptor*)new B0067f030;
-        ((TESEatPackageData_*)m_pTargetLocation)->PackageLocation_LoadGame(apLoadGameBuffer);
+        ((TESEatPackageData_*)m_pTargetLocation)->PackageLocation_LoadGame_0067fbe0(apLoadGameBuffer);
     }
 }

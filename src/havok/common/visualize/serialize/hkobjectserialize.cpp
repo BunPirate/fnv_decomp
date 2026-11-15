@@ -638,7 +638,7 @@ struct ObjectWriteX
     int unk04;
     int unk08;
     int unk0c;
-    void hkPlatformObjectWriter_ctor(ObjectWriteInfo* layout);
+    void hkPlatformObjectWriter_hkPlatformObjectWriter(ObjectWriteInfo* layout);
     void hkPlatformObjectWriter_writeObject(ObjectWriteZ* writer, int dataIn, int klass, ObjectWriteW* reloc);
     void FUN_00e02c70();
 };
@@ -655,7 +655,7 @@ int __cdecl hkObjectSerialize_writeObject(Sink* p1, ObjectWriteInfo* p2, unsigne
                          unsigned int p6, ObjectWriteArrItem* out)
 {
     ObjectWriteX x;
-    x.hkPlatformObjectWriter_ctor(p2);
+    x.hkPlatformObjectWriter_hkPlatformObjectWriter(p2);
     ObjectWriteArrByte y;
     y.m_data = 0;
     y.m_iElementCount = 0;

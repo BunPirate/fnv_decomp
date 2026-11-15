@@ -2017,7 +2017,7 @@ inline void hkVector4::setZero4()
     m_vComponents = _mm_setzero_ps();
 }
 
-inline void hkVector4::setAll(float f)
+inline void hkVector4::SetAllComponents(float f)
 {
     m_vComponents = _mm_set_ps1(f);
 }
@@ -2048,7 +2048,7 @@ struct __declspec(align(16)) CE5430QsTransform
     {
         m_vTranslation.setZero4();
         m_rotation.setIdentity();
-        m_vScale.setAll(1.0f);
+        m_vScale.SetAllComponents(1.0f);
     }
 };
 

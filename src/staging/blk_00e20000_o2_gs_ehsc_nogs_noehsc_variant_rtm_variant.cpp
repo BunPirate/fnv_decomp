@@ -1159,7 +1159,7 @@ struct FUN_00e33910_item
     int unk10;
     int unk14;
     int unk18;
-    bool* isOk(bool* result);
+    bool* Test(bool* result);
 };
 class FUN_00e33910_cls
 {

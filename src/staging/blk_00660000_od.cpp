@@ -1683,7 +1683,7 @@ struct E640Cls : DetClassCls
 };
 // Resolves m_00 to an Actor via dynamic_cast and calls ResolveActorFormId on each item found while walking the m_04 node list.
 // @fnv 0x0066e640
-// src: XBOX_RETAIL_PDB 0x0066e640
+// src: XBOX_RETAIL_PDB 0x0066e640 (was COMMUNITY)
 // pdb: ActorCause::InitLoadGame | ActorCause.obj | retail, object-file run extension, high
 // pdb params: apLoadGameBuffer
 // pdb locals: plist, pdetectionState

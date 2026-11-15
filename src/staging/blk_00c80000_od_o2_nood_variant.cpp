@@ -322,7 +322,7 @@ void __cdecl bhkUtilFunctions_DampBodiesVelocity(SceneObject* apObject, float af
     }
 }
 
-void __cdecl bhkUtilFunctions_ClosestBody_ctor(void* first, const void* second, void* result, bool option);
+void __cdecl bhkUtilFunctions_ClosestBody_ClosestBody(void* first, const void* second, void* result, bool option);
 union __declspec(align(16)) ResultBuffer
 {
     void* hit;
@@ -338,7 +338,7 @@ union __declspec(align(16)) ResultBuffer
 void* bhkUtilFunctions_GetClosestBody(void* apRoot, const void* arSphere, bool abIgnoreHead)
 {
     ResultBuffer result;
-    bhkUtilFunctions_ClosestBody_ctor(apRoot, arSphere, &result, abIgnoreHead);
+    bhkUtilFunctions_ClosestBody_ClosestBody(apRoot, arSphere, &result, abIgnoreHead);
     return result.hit;
 }
 

@@ -207,15 +207,15 @@ public:
     void Update_0097da50();
     void __thiscall ForcePlanUpdate();
     void UpdateCurrentWeapon();
-    void StopCombat(int apTarget);
-    bool StopCombat(void* apTarget);
+    void StopCombat_0097f4d0(int apTarget);
+    bool StopCombat_0097f4d0(void* apTarget);
     void Disarmed_0097f6d0(int apOpponent);
     void FiredProjectile(int apProjectile);
     void ResetEmbeddedWeaponSwitchTimer(void* arg, bool value);
-    void AddTarget(Actor* apTarget, int iPriority, bool abHighPriority,
+    void AddTarget_0097f930(Actor* apTarget, int iPriority, bool abHighPriority,
                       float afDamageDone, float afDamageTaken);
-    void RemoveTarget(void* actor);
-    void RemoveTarget(Actor* actor);
+    void RemoveTarget_0097f9c0(void* actor);
+    void RemoveTarget_0097f9c0(Actor* actor);
     CombatOptions* GetCurrentCombatStyle();
     void SetActionProcedure(CombatProcedure* apActionProcedure);
     void SetMovementProcedure(CombatProcedure* apMovementProcedure);
@@ -224,7 +224,7 @@ public:
     void ClearBackgroundProcedures();
     bool GetProcedureFailed();
     bool GetProcedureFinished();
-    void SetTarget(void* apTarget);
+    void SetTarget_00980830(void* apTarget);
     void ClearReferencePointers(int apRef);
     bool TESPackage_GetPretendInCombat();
     void FinishedPackageTask();

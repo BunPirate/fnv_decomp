@@ -880,7 +880,7 @@ struct B30Owner
 {
     char pad00[0x58];
     B30Vec<B30Vec<void*> > m_kLists;
-    unsigned short GetNumStrips(unsigned short sLodLevel);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
     void CIndexedGeometry_DeleteLodStrip(unsigned short usLodLevel);
 };
 unsigned int __cdecl FUN_00ec7c56();

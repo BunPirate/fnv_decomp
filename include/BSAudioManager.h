@@ -88,8 +88,8 @@ public:
     void SendSoundMessage(SOUND_MSG, unsigned int, int, void*, NiPointer<NiAVObject>, NiPoint3);
     bool BSAudioManager_Release(unsigned int);
     void BSAudioManager_Precache(char*, unsigned int);
-    void Precache(unsigned int, unsigned int);
-    void BSAudioManager_Precache(unsigned int, unsigned int, unsigned int);
+    void Precache_00add630(unsigned int, unsigned int);
+    void BSAudioManager_Precache_00add6f0(unsigned int, unsigned int, unsigned int);
     void StartAudioThread();
     void SetConditions_00ada300(float, unsigned int);
     void BSAudioManager_SetListenerUnderwater(bool);
@@ -101,10 +101,10 @@ public:
     void BSAudioManager_FadeInPlay(int, int);
     void AudioMessageStack_Pop();
     SoundMessageRecord* GetFreeQueueMessage();
-    bool __thiscall ProcessMessage(SoundMessageRecord*);
+    bool __thiscall ProcessMessage_00adf080(SoundMessageRecord*);
     void __thiscall BSAudioManager_ComposeMessage(int, unsigned int, int, unsigned int, NiPointer<NiAVObject>, NiPoint3);
     BSGameSound* __thiscall BSAudioManager_GetFromCache(void*, void*, unsigned int);
-    void __thiscall BSAudioManager_Precache(BSGameSound*);
+    void __thiscall BSAudioManager_Precache_00add960(BSGameSound*);
     void __thiscall BSAudioManager_SetVoiceState(unsigned int, BSGameSound*);
     bool __thiscall HasMatchingEntry(unsigned int);
     bool __thiscall AddSlot(void*, bool);

@@ -1154,7 +1154,7 @@ struct FUN_006fca70_Class
     void* m_p;
 };
 // @fnv 0x006fca70
-// src: XBOX_DEBUG_PDB 0x006fca70
+// src: XBOX_DEBUG_PDB 0x006fca70 (was COMMUNITY)
 // pdb: BGSTerrainManager::UnloadPersistentData | BGSTerrainManager.obj | debug, call graph, high
 void __thiscall FUN_006fca70_Class::BGSTerrainManager_UnloadPersistentData()
 {
@@ -1688,7 +1688,7 @@ struct Holder_6ec340
     Holder_6ec340* __thiscall BSTCommonStaticMessageQueue_NiPointer_NiAVObject_256_ctor();
 };
 // @fnv 0x006ec340
-// src: XBOX_DEBUG_PDB 0x006ec340
+// src: XBOX_DEBUG_PDB 0x006ec340 (was EXE)
 // pdb: BSTCommonStaticMessageQueue<NiPointer<NiAVObject>,256>::BSTCommonStaticMessageQueue<NiPointer<NiAVObject>,256> | PathManager.obj | debug, call graph, high
 Holder_6ec340* __thiscall Holder_6ec340::BSTCommonStaticMessageQueue_NiPointer_NiAVObject_256_ctor()
 {
@@ -4492,17 +4492,17 @@ struct FUN_006e3d30_cls
     int m_04;
     int m_08;
     int m_0c;
-    void BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(int aiNewSize, int aiCopyCount);
+    void BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount);
     void ProcessEntries_006e3e70(int a, int b, int c);
     void FUN_006a8500();
 };
 
 // @fnv 0x006e3d30
-// src: XBOX_DEBUG_PDB 0x006e3d30
+// src: XBOX_PDB 0x006e3d30
 // pdb: BSSimpleArray<PathingAvoidNode,1024>::_ReallocateBuffer | PathingRequest.obj | debug, call graph, high
 // pdb params: aiNewSize, aiCopyCount
 // pdb locals: pnewBuffer
-void FUN_006e3d30_cls::BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(int aiNewSize, int aiCopyCount)
+void FUN_006e3d30_cls::BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount)
 {
     if (m_04 != 0)
     {

@@ -172,7 +172,7 @@ inline __m128& Vec4::getQuad() { return *reinterpret_cast<__m128*>(this); }
 inline const __m128& Vec4::getQuad() const { return *reinterpret_cast<const __m128*>(this); }
 inline MeshPacketCallLocal_00e16e50::MeshPacketCallLocal_00e16e50() {}
 
-__forceinline void hkVector4::setAll(float a) { q() = _mm_set_ps1(a); }
+__forceinline void hkVector4::SetAllComponents(float a) { q() = _mm_set_ps1(a); }
 __forceinline void hkVector4::setSub4(const hkVector4& a, const hkVector4& b) { q() = _mm_sub_ps(a.q(), b.q()); }
 __forceinline void hkVector4::setAdd4(const hkVector4& a, const hkVector4& b) { q() = _mm_add_ps(a.q(), b.q()); }
 __forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
@@ -499,7 +499,7 @@ bool Hull::BuildHull() {
 }
 
 void __cdecl __debugbreak();
-int __stdcall hkgpAbstractMesh_hkgpMeshBase_Edge_hkgpMeshBase_Vertex_hkgpMeshBase_Triangle_hkContainerHeapAllocator_checkTopology(int);
+int __stdcall hkgpAbstractMesh_struct_hkgpMeshBase_Edge_struct_hkgpMeshBase_Vertex_struct_hkgpMeshBase_Triangle_struct_hkContainerHeapAllocator_checkTopology(int);
 extern char DAT_0103d078[];
 extern char DAT_010eaf08[];
 extern char DAT_010eaeb4[];
@@ -530,7 +530,7 @@ extern ErrorReporter* DAT_01268360;
 // pdb locals: assertBuf, ostr
 bool __stdcall hkgpMesh_hasValidTopology(bool raiseError)
 {
-    int error = hkgpAbstractMesh_hkgpMeshBase_Edge_hkgpMeshBase_Vertex_hkgpMeshBase_Triangle_hkContainerHeapAllocator_checkTopology(1);
+    int error = hkgpAbstractMesh_struct_hkgpMeshBase_Edge_struct_hkgpMeshBase_Vertex_struct_hkgpMeshBase_Triangle_struct_hkContainerHeapAllocator_checkTopology(1);
     if (raiseError && error)
     {
         CharBuffer message;
@@ -5468,15 +5468,15 @@ struct T27Item {
 
 struct T27Cls {
     unsigned int LookupPairResult(T27Edge* edge);
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_clearEdgeData(T27Edge* edge);
-    unsigned __int64 hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_backupBothEdgeData(T27Edge edge, T27Item* values);
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_clearEdgeData(T27Edge* edge);
+    unsigned __int64 hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_backupBothEdgeData(T27Edge edge, T27Item* values);
 };
 
 // @fnv 0x00e27ae0
-// src: XBOX_RETAIL_PDB 0x00e27ae0
+// src: HAVOK_LIB 0x00e27ae0
 // pdb: hkgpTriangulatorType<hkgpTriangulatorBase::VertexBase,hkgpTriangulatorBase::TriangleBase,hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,hkContainerHeapAllocator,-1>::backupBothEdgeData | hkgpMesh.obj | retail, object-file gap fill, high
 // pdb params: edge, values
-unsigned __int64 T27Cls::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_backupBothEdgeData(T27Edge edge, T27Item* values) {
+unsigned __int64 T27Cls::hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_backupBothEdgeData(T27Edge edge, T27Item* values) {
     values[0].m_enabled = 0;
     values[1].m_enabled = 0;
 
@@ -5492,7 +5492,7 @@ unsigned __int64 T27Cls::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hk
         if (value != 0) {
             values->m_data.Assign(value);
             values->m_enabled = 1;
-            hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_clearEdgeData(&edge);
+            hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_clearEdgeData(&edge);
         }
 
         T27Node* node = ((volatile T27Edge*)&edge)->m_node;
@@ -6685,14 +6685,14 @@ struct FUN_00e25ba0_cls {
     int unk0248;
     FUN_00e25ba0_Table* m_pTable;
 
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_createEdgeDataHashTable();
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_createEdgeDataHashTable();
 };
 
 // Allocates a table, initializes its slot array to 0x407 entries, and stores the pointer in m_pTable.
 // @fnv 0x00e25ba0
-// src: XBOX_RETAIL_PDB 0x00e25ba0
+// src: HAVOK_LIB 0x00e25ba0
 // pdb: hkgpTriangulatorType<hkgpTriangulatorBase::VertexBase,hkgpTriangulatorBase::TriangleBase,hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,hkContainerHeapAllocator,-1>::createEdgeDataHashTable | hkgpMesh.obj | retail, object-file gap fill, high
-void FUN_00e25ba0_cls::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_createEdgeDataHashTable() {
+void FUN_00e25ba0_cls::hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_createEdgeDataHashTable() {
     hkMemoryRouter* audio1 = (hkMemoryRouter*)&hkMemoryRouter_getInstance();
     FUN_00e25ba0_Table* t = (FUN_00e25ba0_Table*)audio1->m_heap->blockAlloc(0x10);
     if (t != 0) {
@@ -6811,7 +6811,7 @@ struct EdgeMap {
         if (bucket->indexOf(a,b) >= 0) bucket->remove(a,b);
     }
 };
-struct EdgeSet { void hkGeometryProcessing_PoolAllocator_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_32_hkContainerHeapAllocator_release(int object); };
+struct EdgeSet { void hkGeometryProcessing_PoolAllocator_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_32_struct_hkContainerHeapAllocator_release(int object); };
 
 struct EdgeOwner {
     int unk000;
@@ -6963,22 +6963,22 @@ struct EdgeOwner {
     int unk248;
     EdgeMap* m_map;
     EdgeSet m_set;
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_clearEdgeData(const EdgeRef& edge);
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_destroyEdgeDataHashTable();
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_clearEdgeData(const EdgeRef& edge);
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_destroyEdgeDataHashTable();
 };
 // If m_map exists, looks up e's edge, passes its filter value to m_set.FUN_00e24e40 and removes it, then calls FUN_00e27400 if m_map is empty.
 // @fnv 0x00e27450
-// src: XBOX_RETAIL_PDB 0x00e27450
+// src: HAVOK_LIB 0x00e27450
 // pdb: hkgpTriangulatorType<hkgpTriangulatorBase::VertexBase,hkgpTriangulatorBase::TriangleBase,hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,hkContainerHeapAllocator,-1>::clearEdgeData | hkgpMesh.obj | retail, object-file gap fill, high
 // pdb params: edge
-void EdgeOwner::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_clearEdgeData(const EdgeRef& edge)
+void EdgeOwner::hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_clearEdgeData(const EdgeRef& edge)
 {
     if (m_map) {
         Vertex* a = edge.m_tri->m_v[edge.m_idx];
         Vertex* b = edge.m_tri->m_v[(9 >> (edge.m_idx * 2)) & 3];
         EdgeEntry* entry = m_map->get(a,b);
-        if (entry) { m_set.hkGeometryProcessing_PoolAllocator_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_32_hkContainerHeapAllocator_release(entry->m_uiFilterValue); m_map->remove(a,b); }
-        if (m_map->m_uiItemCount == 0) hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_destroyEdgeDataHashTable();
+        if (entry) { m_set.hkGeometryProcessing_PoolAllocator_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_32_struct_hkContainerHeapAllocator_release(entry->m_uiFilterValue); m_map->remove(a,b); }
+        if (m_map->m_uiItemCount == 0) hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_destroyEdgeDataHashTable();
     }
 }
 }  // namespace fnv_00e27450
@@ -9287,15 +9287,15 @@ struct S00e24650_Edge {
     S00e24650_Vtx* end() const { return m_pkTriangle->m_kVertices[(9>>(m_uiEdgeIndex<<1))&3]; }
 };
 
-struct EdgeWalker { S00e24650_Edge hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingVertex(S00e24650_Edge k, unsigned int a4); S00e24650_Edge hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(S00e24650_Edge root, unsigned int v0, S00e24650_Vtx* v1); };
+struct EdgeWalker { S00e24650_Edge hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingVertex(S00e24650_Edge k, unsigned int a4); S00e24650_Edge hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(S00e24650_Edge root, unsigned int v0, S00e24650_Vtx* v1); };
 
 // Walks edge e (FUN_00e23df0, then link/next to a naked edge for border start vertices, then prev/link) until an edge ending at v is found.
 // @fnv 0x00e24650
-// src: XBOX_RETAIL_PDB 0x00e24650
+// src: HAVOK_LIB 0x00e24650
 // pdb: hkgpTriangulatorType<hkgpTriangulatorBase::VertexBase,hkgpTriangulatorBase::TriangleBase,hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,hkContainerHeapAllocator,-1>::locateExistingEdge | hkgpMesh.obj | retail, call graph, high
 // pdb params: root, v0, v1
 // pdb locals: assertBuf, ostr
-S00e24650_Edge EdgeWalker::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(S00e24650_Edge root, unsigned int v0, S00e24650_Vtx* v1)
+S00e24650_Edge EdgeWalker::hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(S00e24650_Edge root, unsigned int v0, S00e24650_Vtx* v1)
 {
     S00e24650_Edge arg(root); root=hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingVertex(arg,v0);
     if (root.end() == v1)
@@ -9471,7 +9471,7 @@ struct Where {
 struct S00e24aa0_Obj {
     int unk00;
     Where LocatePoint(int x, int y);
-    EdgeT hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(EdgeT root, void* v0, void* v1);
+    EdgeT hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(EdgeT root, void* v0, void* v1);
     EdgeT hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge_00e24aa0(int x0, int y0, int x1, int y1);
 };
 
@@ -9487,7 +9487,7 @@ EdgeT S00e24aa0_Obj::hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase
     Where w1 = LocatePoint(x1, y1);
     if ((w0.m_kind == Where::AT_VERTEX) && (w1.m_kind == Where::AT_VERTEX))
     {
-        return hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(w0.m_usTrailingValue, w0.m_usTrailingValue.from(), w1.m_usTrailingValue.from());
+        return hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(w0.m_usTrailingValue, w0.m_usTrailingValue.from(), w1.m_usTrailingValue.from());
     }
     return EdgeT::none();
 }
@@ -11696,7 +11696,7 @@ struct S00e25cd0_Tri
     int unk0248;
     S00e25cd0_Table* m_24c;
     S00e25cd0_PoolAlloc m_250;
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_createEdgeDataHashTable();
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_createEdgeDataHashTable();
     void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_setEdgeData(const S00e25cd0_Edge& edge, const S00e25cd0_ArrayLocalForm<S00e25cd0_Ulong>& data);
 };
 // Finds or creates a box entry for edge in m_24c, allocates an edge data slot if new, and appends or replaces data in it.
@@ -11706,7 +11706,7 @@ struct S00e25cd0_Tri
 // pdb params: edge, data
 // pdb locals: assertBuf, ostr
 void S00e25cd0_Tri::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_setEdgeData(const S00e25cd0_Edge& edge, const S00e25cd0_ArrayLocalForm<S00e25cd0_Ulong>& data) {
-    if(!m_24c) hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_createEdgeDataHashTable();
+    if(!m_24c) hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_createEdgeDataHashTable();
     S00e25cd0_Box box(edge);
     S00e25cd0_Box* edgeData = m_24c->find(box);
     if(!edgeData) {
@@ -15925,14 +15925,14 @@ struct MeshSol {
     int unk00,unk04,unk08,unk0c,unk10,unk14,unk18,unk1c;
     int unk20,unk24,unk28,unk2c,unk30,unk34,unk38,unk3c;
     StackSol stack;
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_flushConform();
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_flushConform();
 };
 // Pops edges from the stack and flips flippable diagonals, pushing the resulting adjacent edges back until the stack is empty.
 // @fnv 0x00e25570
-// src: XBOX_RETAIL_PDB 0x00e25570
+// src: HAVOK_LIB 0x00e25570
 // pdb: hkgpTriangulatorType<hkgpTriangulatorBase::VertexBase,hkgpTriangulatorBase::TriangleBase,hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,hkContainerHeapAllocator,-1>::flushConform | hkgpMesh.obj | retail, object-file gap fill, high
 // pdb locals: edge
-void MeshSol::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_flushConform() {
+void MeshSol::hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_flushConform() {
     do {
         EdgeSol e=stack.back();
         stack.popBack();
@@ -16116,14 +16116,14 @@ struct FUN_00e27400_layout {
 
 struct FUN_00e27400_ : FUN_00e27400_layout {
     FUN_00e25f00_* unk24c;
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_destroyEdgeDataHashTable();
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_destroyEdgeDataHashTable();
 };
 
 // If unk24c is set, calls FUN_00e25f00 on it, passes it to FUN_00e27400_virtual_2, then nulls the pointer.
 // @fnv 0x00e27400
-// src: XBOX_RETAIL_PDB 0x00e27400
+// src: HAVOK_LIB 0x00e27400
 // pdb: hkgpTriangulatorType<hkgpTriangulatorBase::VertexBase,hkgpTriangulatorBase::TriangleBase,hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,hkContainerHeapAllocator,-1>::destroyEdgeDataHashTable | hkgpMesh.obj | retail, object-file gap fill, high
-void FUN_00e27400_::hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_destroyEdgeDataHashTable()
+void FUN_00e27400_::hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_destroyEdgeDataHashTable()
 {
     if (this->unk24c != 0) {
         FUN_00e27400_interface* object = hkMemoryRouter_getInstance()->unk010;
@@ -17189,11 +17189,11 @@ struct ConstraintMesh {
 
     void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_setEdgeData(ConstraintEdge*,const int*);
 
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_flushConform();
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_flushConform();
 
     void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_createEdgeDataHashTable();
 
-    ConstraintEdge hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(ConstraintEdge,ConstraintVertex*,ConstraintVertex*);
+    ConstraintEdge hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(ConstraintEdge,ConstraintVertex*,ConstraintVertex*);
 
     __forceinline void cache(ConstraintTriangle* t) {
 
@@ -17225,9 +17225,9 @@ struct ConstraintMesh {
 
         }
 
-        hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_flushConform();
+        hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_flushConform();
 
-        ConstraintEdge result=hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(edge,a,b);return result;
+        ConstraintEdge result=hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(edge,a,b);return result;
 
     }
 
@@ -17249,9 +17249,9 @@ struct ConstraintMesh {
 
         }
 
-        hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_flushConform();
+        hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_flushConform();
 
-        edge=hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(edge,a,b);
+        edge=hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(edge,a,b);
 
     }
 
@@ -17316,8 +17316,8 @@ ConstraintResult* ConstraintMesh::hkgpTriangulatorType_struct_hkgpTriangulatorBa
   edges.push(innerEdge.link().next());
   edges.push(innerEdge.link().prev());
  }
- hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_flushConform();
- {const ConstraintEdge recovered=hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_locateExistingEdge(innerEdge,queueStart,queueEnd);
+ hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_flushConform();
+ {const ConstraintEdge recovered=hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_locateExistingEdge(innerEdge,queueStart,queueEnd);
  innerEdge=recovered;}
 }
 

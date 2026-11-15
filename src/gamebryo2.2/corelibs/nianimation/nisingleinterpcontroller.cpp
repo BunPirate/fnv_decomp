@@ -51,9 +51,9 @@ extern int DAT_0109632c;
 void __fastcall FUN_00a6d220(void*);
 
 // @fnv 0x00a2f8c0
-// src: XBOX_RETAIL_PDB 0x00a2f8c0
+// src: GAMEBRYO_LIB 0x00a2f8c0
 // pdb: NiInterpController::NiInterpController | NiInterpController.obj | retail, upstream name already matches, high
-void* __fastcall NiInterpController_ctor(void* pThis)
+void* __fastcall NiInterpController_NiInterpController(void* pThis)
 {
     FUN_00a6d220(pThis);
     *((unsigned short*)pThis + 4) &= 0xffdf;

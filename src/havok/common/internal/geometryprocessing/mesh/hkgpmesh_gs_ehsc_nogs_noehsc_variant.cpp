@@ -298,7 +298,7 @@ struct Hull
     bool BuildHull();
 };
 void __cdecl __debugbreak();
-int __stdcall hkgpAbstractMesh_hkgpMeshBase_Edge_hkgpMeshBase_Vertex_hkgpMeshBase_Triangle_hkContainerHeapAllocator_checkTopology(int);
+int __stdcall hkgpAbstractMesh_struct_hkgpMeshBase_Edge_struct_hkgpMeshBase_Vertex_struct_hkgpMeshBase_Triangle_struct_hkContainerHeapAllocator_checkTopology(int);
 extern char DAT_0103d078[];
 extern char DAT_010eaf08[];
 extern char DAT_010eaeb4[];
@@ -2608,8 +2608,8 @@ struct T27Item
 struct T27Cls
 {
     unsigned int LookupPairResult(T27Edge* edge);
-    void hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_clearEdgeData(T27Edge* edge);
-    unsigned __int64 hkgpTriangulatorType_hkgpTriangulatorBase_VertexBase_hkgpTriangulatorBase_TriangleBase_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_hkContainerHeapAllocator_1_backupBothEdgeData(T27Edge edge, T27Item* values);
+    void hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_clearEdgeData(T27Edge* edge);
+    unsigned __int64 hkgpTriangulatorType_struct_hkgpTriangulatorBase_VertexBase_struct_hkgpTriangulatorBase_TriangleBase_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_struct_hkContainerHeapAllocator_1_backupBothEdgeData(T27Edge edge, T27Item* values);
 };
 
 extern const char str_010d365c[];
@@ -2667,15 +2667,15 @@ struct GpPoolAllocator
 {
     ArrAB<GpPool*> m_pools;
 
-    void hkGeometryProcessing_PoolAllocator_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_32_hkContainerHeapAllocator_release(GpPoolItem* object);
+    void hkGeometryProcessing_PoolAllocator_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_32_struct_hkContainerHeapAllocator_release(GpPoolItem* object);
 };
 
 // @fnv 0x00e24e40
-// src: XBOX_RETAIL_PDB 0x00e24e40
+// src: HAVOK_LIB 0x00e24e40
 // pdb: hkGeometryProcessing::PoolAllocator<hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,32,hkContainerHeapAllocator>::release | hkgpMesh.obj | retail, call graph, high
 // pdb params: object
 // pdb locals: assertBuf, ostr
-void GpPoolAllocator::hkGeometryProcessing_PoolAllocator_hkgpTriangulatorBase_DefaultEdgeData_hkContainerHeapAllocator_32_hkContainerHeapAllocator_release(GpPoolItem* object)
+void GpPoolAllocator::hkGeometryProcessing_PoolAllocator_struct_hkgpTriangulatorBase_DefaultEdgeData_struct_hkContainerHeapAllocator_32_struct_hkContainerHeapAllocator_release(GpPoolItem* object)
 {
     if (object)
     {

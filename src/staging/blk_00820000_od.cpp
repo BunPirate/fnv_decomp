@@ -202,14 +202,14 @@ struct FUN_00827200_class
 {
     void __thiscall _ref_006815c0();
     void __thiscall FUN_00cb26e0(int);
-    FUN_00827200_class* __thiscall hkQuaternion_ctor(int a);
+    FUN_00827200_class* __thiscall hkQuaternion_hkQuaternion(int a);
 };
 // Calls _ref_006815c0, then FUN_00cb26e0 with a, and returns this.
 // @fnv 0x00827200
-// src: XBOX_RETAIL_PDB 0x00827200
+// src: XBOX_PDB 0x00827200
 // pdb: hkQuaternion::hkQuaternion | hkaTwoJointsIkSolver.obj | retail, upstream name already matches, high
 // pdb params: r
-FUN_00827200_class* __thiscall FUN_00827200_class::hkQuaternion_ctor(int a)
+FUN_00827200_class* __thiscall FUN_00827200_class::hkQuaternion_hkQuaternion(int a)
 {
     _ref_006815c0();
     FUN_00cb26e0(a);
@@ -1269,7 +1269,7 @@ struct FUN_0083d740_Class
 };
 
 // @fnv 0x0083d740
-// src: XBOX_DEBUG_PDB 0x0083d740
+// src: XBOX_DEBUG_PDB 0x0083d740 (was COMMUNITY)
 // pdb: DialogueResponse::LoadGame | DialogueResponse.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
 // pdb locals: pstring
@@ -1351,15 +1351,15 @@ extern void* _DAT_01183028;
 
 struct FUN_0083fbe0_Class
 {
-    void __thiscall MenuTopic_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
+    void __thiscall ExtraInfoGeneralTopic_Data_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 
 // @fnv 0x0083fbe0
-// src: XBOX_DEBUG_PDB 0x0083fbe0
+// src: COMMUNITY 0x0083fbe0
 // pdb: MenuTopic::LoadGame | MenuTopic.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
 // pdb locals: pstring
-void __thiscall FUN_0083fbe0_Class::MenuTopic_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
+void __thiscall FUN_0083fbe0_Class::ExtraInfoGeneralTopic_Data_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     char string[500];
 

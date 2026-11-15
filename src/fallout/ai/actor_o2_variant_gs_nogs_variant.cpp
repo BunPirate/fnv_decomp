@@ -664,7 +664,7 @@ struct S
     virtual void v38();
     virtual void SetMode(int iMode);
     void bhkRigidBody_SetLinearVelocity_00561690(int);
-    void bhkRigidBody_SetAngularVelocity(float* arVel);
+    void bhkRigidBody_SetAngularVelocity_005617c0(float* arVel);
 };
 struct Cast_c9b
 {

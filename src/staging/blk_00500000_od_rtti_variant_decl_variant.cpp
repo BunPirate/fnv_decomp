@@ -208,7 +208,7 @@ struct FUN_00501cd0_class
     void* m_0c;
     unsigned int m_10;
     void* m_14;
-    void* __thiscall DoorLock_ctor();
+    void* __thiscall DoorLock_DoorLock();
 };
 struct TESForm;
 TESForm* __cdecl GetFormByID(unsigned int id);

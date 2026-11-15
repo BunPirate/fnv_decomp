@@ -236,7 +236,7 @@ struct FUN_00b08500_shell
 
 // Forwards the two float arguments to the object pointed to by the first member of this object.
 // @fnv 0x00b08500
-// src: XBOX_DEBUG_PDB 0x00b08500
+// src: XBOX_DEBUG_PDB 0x00b08500 (was COMMUNITY)
 // pdb: CSpeedTreeRT::SetLodLimits | SpeedTreeRT.obj | debug, call graph, high
 // pdb params: fNear, fFar
 void __thiscall FUN_00b08500_shell::CSpeedTreeRT_SetLodLimits(float fNear, float fFar)
@@ -297,12 +297,12 @@ struct CSpeedTreeRT
     int m_p0;
     int m_p4;
     SpeedTreeLodData* m_pLodData;
-    void __thiscall CSpeedTreeRT_FreeLeafLODDataArrays();
+    void __thiscall FreeLeafLODDataArrays();
 };
 // @fnv 0x00b088b0
-// src: XBOX_DEBUG_PDB 0x00b088b0
+// src: COMMUNITY 0x00b088b0
 // pdb: CSpeedTreeRT::FreeLeafLODDataArrays | SpeedTreeRT.obj | debug, upstream name already matches, high
-void __thiscall CSpeedTreeRT::CSpeedTreeRT_FreeLeafLODDataArrays()
+void __thiscall CSpeedTreeRT::FreeLeafLODDataArrays()
 {
     if (m_pLodData)
         m_pLodData->CLeafGeometry_FreeLODDataArrays();
@@ -863,14 +863,14 @@ struct FUN_00b2b940_class
 };
 struct FUN_00b053e0_shell
 {
-    void CSpeedTreeRT_dtor();
+    void CSpeedTreeRT_DeleteTransientData();
 };
 
 // @fnv 0x00b053e0
-// src: XBOX_RETAIL_PDB 0x00b053e0
-// pdb: CSpeedTreeRT::~CSpeedTreeRT | SpeedTreeRT.obj | retail, string-set bridge, high
+// src: XBOX_PDB 0x00b053e0
+// pdb: CSpeedTreeRT::~CSpeedTreeRT | SpeedTreeRT.obj | retail, string-set bridge, high, not renamed: the public Xbox 360 symbol already names it; the code is probably folded with another original
 // pdb locals: iFind
-void FUN_00b053e0_shell::CSpeedTreeRT_dtor()
+void FUN_00b053e0_shell::CSpeedTreeRT_DeleteTransientData()
 {
     unsigned char bFlag = ((unsigned char*)*(void**)((char*)this))[0x21];
     if (bFlag)
@@ -1165,7 +1165,7 @@ struct FUN_00b0b920_engine
     int FUN_00b7b0();
     int FUN_00b830();
     int FUN_00b8b0();
-    unsigned short GetNumStrips(unsigned short sLodLevel);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
     int CIndexedGeometry_GetStripLengthsPointer(unsigned short sLodLevel);
     int CIndexedGeometry_GetStripsPointer(unsigned short nLodLevel);
 };
@@ -1224,7 +1224,7 @@ void FUN_00b0b920_self::CSpeedTreeRT_GetFrondGeometry(FUN_00b0b920_arg* sGeometr
         beg->m_34 = m_60->FUN_00b8b0();
         short w = (sOverrideLodValue == -1) ? CSpeedTreeRT_GetDiscreteFrondLodLevel(-1.0f) : sOverrideLodValue;
         beg->m_iWordAt00 = w;
-        beg->m_iWordAt04 = m_60->GetNumStrips((unsigned short)w);
+        beg->m_iWordAt04 = m_60->CIndexedGeometry_GetNumStrips((unsigned short)w);
         beg->m_8 = m_60->CIndexedGeometry_GetStripLengthsPointer((unsigned short)w);
         beg->m_iThirdValue = m_60->CIndexedGeometry_GetStripsPointer((unsigned short)w);
         if (DAT_011f8b78)

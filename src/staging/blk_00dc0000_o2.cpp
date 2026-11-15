@@ -138,14 +138,14 @@ struct FUN_00dd0420_Class
     int m_14;
     int m_18;
     int m_1c;
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int f);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int f);
 };
 // If arg is nonzero, zeroes m_00/m_08/m_0c, sets m_04 to 0x10, calls FUN_00d51760 on m_1c and this, then sets m_00 to m_04; returns this.
 // @fnv 0x00dd0420
-// src: XBOX_RETAIL_PDB 0x00dd0420
+// src: HAVOK_LIB 0x00dd0420
 // pdb: hkpGenericConstraintDataScheme::hkpGenericConstraintDataScheme | hkpGenericConstraintScheme.obj | retail, upstream name already matches, high
 // pdb params: f
-FUN_00dd0420_Class* __thiscall FUN_00dd0420_Class::hkpGenericConstraintDataScheme_ctor(int f)
+FUN_00dd0420_Class* __thiscall FUN_00dd0420_Class::hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int f)
 {
     if (f)
     {
@@ -658,15 +658,15 @@ struct FUN_00dcc6a0_cls
     unsigned short m_w06;
     void* m_p08;
 
-    FUN_00dcc6a0_cls* hkIstream_ctor(int mem, int memSize);
+    FUN_00dcc6a0_cls* hkIstream_hkIstream_00dcc6a0(int mem, int memSize);
 };
 
 // Sets m_w06 to 1 and the vtable, allocates a 0x1c-byte blob via the allocator, stores its Init result in m_p08, and returns this.
 // @fnv 0x00dcc6a0
-// src: XBOX_RETAIL_PDB 0x00dcc6a0
+// src: HAVOK_LIB 0x00dcc6a0
 // pdb: hkIstream::hkIstream | hkIStream.obj | retail, call graph, high
 // pdb params: sb
-FUN_00dcc6a0_cls* FUN_00dcc6a0_cls::hkIstream_ctor(int mem, int memSize)
+FUN_00dcc6a0_cls* FUN_00dcc6a0_cls::hkIstream_hkIstream_00dcc6a0(int mem, int memSize)
 {
     m_w06 = 1;
     m_vptr = DAT_010d7540;

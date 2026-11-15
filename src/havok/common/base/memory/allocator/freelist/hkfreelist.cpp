@@ -59,7 +59,7 @@ class hkFreeList
     void ResetFreeList();
     __declspec(noinline) void _walkMemoryBlockList(Block*, FreeBlockWalkCallback, int, void*);
     int findGarbage();
-    void walkMemory(hkMemoryWalkCallback callback, int pool, void* param);
+    void walkMemory_00dd78f0(hkMemoryWalkCallback callback, int pool, void* param);
     void* AllocateElement();
     int _calcBlockFree(Block*);
     hkBool incrementalFindGarbage(int, int&) throw();
@@ -849,10 +849,10 @@ inline void quickSortPointers(void** arr, int numElem)
 
 // Walks free blocks, then reports slots in active blocks through the callback with their allocation status.
 // @fnv 0x00dd78f0
-// src: XBOX_RETAIL_PDB 0x00dd78f0
+// src: HAVOK_LIB 0x00dd78f0
 // pdb: hkFreeList::walkMemory | hkFreeList.obj | retail, object-file gap fill, high
 // pdb params: callback, pool, param
-void hkFreeList::walkMemory(hkMemoryWalkCallback callback, int pool, void* param)
+void hkFreeList::walkMemory_00dd78f0(hkMemoryWalkCallback callback, int pool, void* param)
 {
     _walkMemoryBlockList(m_freeBlocks, reinterpret_cast<FreeBlockWalkCallback>(callback), pool, param);
 

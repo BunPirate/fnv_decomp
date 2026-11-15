@@ -138,7 +138,7 @@ struct FUN_00966a50_Class
 };
 
 // @fnv 0x00966a50
-// src: XBOX_DEBUG_PDB 0x00966a50
+// src: XBOX_DEBUG_PDB 0x00966a50 (was COMMUNITY)
 // pdb: PlayerCharacter::GetNumberofNotes | PlayerCharacter.obj | debug, call graph, high
 int FUN_00966a50_Class::PlayerCharacter_GetNumberofNotes()
 {
@@ -7507,7 +7507,7 @@ struct MovePoint
 struct MoveTarget
 {
     int u00, u04, u08, u0c, u10, u14, u18, u1c;
-    MoveTarget* CombatLocation_ctor();
+    MoveTarget* CombatLocation_CombatLocation();
     bool CombatLocation_GetFlag(int);
     void CombatLocation_SetRef(void*);
     MovePoint* ref_006815c0();
@@ -7717,7 +7717,7 @@ struct CombatMove
     float elapsed;
 
     void FirstUpdate();
-    void SetTarget(MoveActor*);
+    void SetTarget_00980830(MoveActor*);
     bool GetProcedureFailed();
     bool GetProcedureFinished();
     void ClearProcedures();
@@ -7743,7 +7743,7 @@ void CombatMove::CombatController_UpdateLow()
         timer.FUN_008d7f40(1.0f);
         elapsed = 0.0f;
         if (target && *g_011f1840.Bool() && target->TESObjectREFR_GetLocationEncounterZone() != actor->TESObjectREFR_GetLocationEncounterZone())
-            SetTarget(0);
+            SetTarget_00980830(0);
     }
     if (timer.FUN_008d7f80())
     {
@@ -7754,7 +7754,7 @@ void CombatMove::CombatController_UpdateLow()
                 InitFromArg(action84);
             if (action88 && action88->IsField8One())
                 InitFromArg(action88);
-            SetTarget(0);
+            SetTarget_00980830(0);
         }
         else if (GetProcedureFinished())
         {
@@ -7764,7 +7764,7 @@ void CombatMove::CombatController_UpdateLow()
         }
         if (!target)
         {
-            SetTarget(manager->CombatGroup_GetBestTarget(actor));
+            SetTarget_00980830(manager->CombatGroup_GetBestTarget(actor));
             ClearProcedures();
             state = 0;
         }
@@ -7803,7 +7803,7 @@ void CombatMove::CombatController_UpdateLow()
                 {
                     brain->FUN_0097ce70(1);
                     MoveTarget goal;
-                    goal.CombatLocation_ctor();
+                    goal.CombatLocation_CombatLocation();
                     if (brain->CombatState_FindBestFleeLocation(0, &goal, 12))
                     {
                         void* actionB;
@@ -7822,7 +7822,7 @@ void CombatMove::CombatController_UpdateLow()
                 break;
             case 2: {
                 MoveTarget goal;
-                goal.CombatLocation_ctor();
+                goal.CombatLocation_CombatLocation();
                 goal.CombatLocation_SetRef(target);
                 if (brain->CombatState_CheckMovement_009a02a0(goal.ref_006815c0(), 1, 1))
                     SetMovementProcedure(new TravelAction(&goal, DAT_011a5654, 0));
@@ -7831,7 +7831,7 @@ void CombatMove::CombatController_UpdateLow()
             case 3: {
                 next = 0;
                 MoveTarget goal;
-                goal.CombatLocation_ctor();
+                goal.CombatLocation_CombatLocation();
                 MovePoint position7;
                 position7.BGSWorldLocation_BGSWorldLocation();
                 if (manager->GetDetectedTargetLocation(target, &position7) && brain->CombatState_CheckMovement_009a02a0(&position7, 1, 1))

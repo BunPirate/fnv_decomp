@@ -885,14 +885,14 @@ struct S00e05700_Class
     S00e05700_Arr arr4C;
     S00e05700_Arr arr58;
 
-    S00e05700_Class* __thiscall hkPackfileData_ctor();
+    S00e05700_Class* __thiscall hkPackfileData_hkPackfileData();
 };
 
 // Initializes fields, resets four arrays, and assigns DAT_01268b08->vf10()'s result to unk2C.
 // @fnv 0x00e05700
-// src: XBOX_RETAIL_PDB 0x00e05700
+// src: XBOX_PDB 0x00e05700
 // pdb: hkPackfileData::hkPackfileData | hkPackfileData.obj | retail, upstream name already matches, high
-S00e05700_Class* __thiscall S00e05700_Class::hkPackfileData_ctor()
+S00e05700_Class* __thiscall S00e05700_Class::hkPackfileData_hkPackfileData()
 {
     int zero = 0;
 

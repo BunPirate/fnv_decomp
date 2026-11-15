@@ -242,11 +242,11 @@ hkpWorld* PhysicsDataExt::CreateWorld(char bRegisterWithMemoryManager) throw()
     hkpWorld* world;
     if (this->m_worldCinfo == 0)
     {
-        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_ctor(reinterpret_cast<const hkpWorldCinfo*>(&defaultCinfo));
+        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_hkpWorld(reinterpret_cast<const hkpWorldCinfo*>(&defaultCinfo));
     }
     else
     {
-        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_ctor(this->m_worldCinfo);
+        world = ((hkpWorld*)hkpWorld::operator new(0x350))->hkpWorld_hkpWorld(this->m_worldCinfo);
     }
 
     if (bRegisterWithMemoryManager)

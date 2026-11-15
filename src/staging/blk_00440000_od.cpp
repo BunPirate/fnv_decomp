@@ -318,14 +318,14 @@ extern int DAT_010173dc;
 struct FUN_0044a9a0_Class
 {
     void __thiscall FUN_0044a450(int a);
-    int __thiscall std_length_error_ctor(int a);
+    int __thiscall std_length_error_length_error(int a);
 };
 // Calls FUN_0044a450 with a, stores the address of DAT_010173dc at this, and returns this.
 // @fnv 0x0044a9a0
-// src: XBOX_RETAIL_PDB 0x0044a9a0
+// src: EXE 0x0044a9a0
 // pdb: std::length_error::length_error | xthrow.obj | retail, upstream name already matches, high
 // pdb params: _Message
-int __thiscall FUN_0044a9a0_Class::std_length_error_ctor(int aiValue)
+int __thiscall FUN_0044a9a0_Class::std_length_error_length_error(int aiValue)
 {
     FUN_0044a450(aiValue);
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_010173dc);
@@ -1062,7 +1062,7 @@ void FUN_0045bc40_Class::BSPortalGraph_SetRoomRoot(void* apRoom)
 
 struct FUN_004a4650_class
 {
-    void __thiscall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    void __thiscall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
 };
 
 struct FUN_0045bc60_class
@@ -1075,7 +1075,7 @@ struct FUN_0045bc60_class
 // pdb: BSPortalGraph::ResetRoomAccumList | TES.obj | debug, upstream name already matches, high
 void __thiscall FUN_0045bc60_class::BSPortalGraph_ResetRoomAccumList()
 {
-    ((FUN_004a4650_class*)((char*)this + 0x30))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    ((FUN_004a4650_class*)((char*)this + 0x30))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
 }
 
 struct FUN_0045c4a0_class
@@ -1101,7 +1101,7 @@ struct FUN_0045c4c0_cls
 };
 
 // @fnv 0x0045c4c0
-// src: XBOX_DEBUG_PDB 0x0045c4c0
+// src: XBOX_DEBUG_PDB 0x0045c4c0 (was COMMUNITY)
 // pdb: BSPortal::QSharedGeometryNode | TES.obj | debug, call graph, high
 unsigned int FUN_0045c4c0_cls::BSPortal_QSharedGeometryNode()
 {
@@ -2615,7 +2615,7 @@ struct S554910
 };
 struct Sbad40
 {
-    void ToggleCollisionGeometry();
+    void ToggleCollisionGeometry_004bad40();
 };
 struct S_456a60
 {
@@ -2638,7 +2638,7 @@ void S_456a60::TES_ToggleCollisionGeometry()
     }
     else
     {
-        m8->ToggleCollisionGeometry();
+        m8->ToggleCollisionGeometry_004bad40();
     }
 }
 }  // namespace fnv_00456a60
@@ -2769,7 +2769,7 @@ void __thiscall FUN_00458840_Class::bhkPickData_CalcTo()
 void* __stdcall hkVector4_getZero(float);
 struct FUN_004588d0_Sub
 {
-    int __thiscall equals3(void*);
+    int __thiscall hkVector4_equals3(void*);
 };
 struct FUN_004588d0_Class
 {
@@ -2781,7 +2781,7 @@ struct FUN_004588d0_Class
 // @fnv 0x004588d0
 bool __thiscall FUN_004588d0_Class::IsSubCallZero()
 {
-    return sub.equals3(hkVector4_getZero(0.001f)) == 0;
+    return sub.hkVector4_equals3(hkVector4_getZero(0.001f)) == 0;
 }
 
 struct FUN_0045a160_Cls
@@ -6879,15 +6879,15 @@ struct ModelLoader
     EntryListB* m_10;
     unsigned int m_14;
     EntryListC* m_18;
-    void ModelLoader_CancelAllFiles();
+    void CancelAllFiles_00448420();
 };
 
 // Drains three entry lists through iterators, passing each accepted item's result to the global manager, bracketed by other global manager calls.
 // @fnv 0x00448420
-// src: XBOX_DEBUG_PDB 0x00448420
+// src: COMMUNITY 0x00448420
 // pdb: ModelLoader::CancelAllFiles | ModelLoader.obj | debug, call graph (shared callers), high
 // pdb locals: iterator2, iterator1, iterator3, pref, spqueuedReference, spqueuedAnimIdle, panimIdle, spqueuedHelmet
-void ModelLoader::ModelLoader_CancelAllFiles()
+void ModelLoader::CancelAllFiles_00448420()
 {
     DAT_01202d98->IOManager_Pause();
     IterA first;

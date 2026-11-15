@@ -25,10 +25,10 @@ struct S_00e028e0_Base
 };
 struct S_00e028e0_Obj : S_00e028e0_Base
 {
-    void hkStorageStringMap_int_hkContainerHeapAllocator_clear() throw();
+    void hkStorageStringMap_int_struct_hkContainerHeapAllocator_clear() throw();
     ~S_00e028e0_Obj() throw()
     {
-        hkStorageStringMap_int_hkContainerHeapAllocator_clear();
+        hkStorageStringMap_int_struct_hkContainerHeapAllocator_clear();
     }
     void operator delete(void* p, unsigned int n)
     {
@@ -87,16 +87,16 @@ struct FUN_00e029d0_cls
     void SetBoolFromThreshold(unsigned char* apFlag, unsigned int a1);
     unsigned int ClearEntries();
 
-    unsigned int hkStorageStringMap_int_hkContainerHeapAllocator_clear();
+    unsigned int hkStorageStringMap_int_struct_hkContainerHeapAllocator_clear();
 };
 
 void CallSwappedArgs(unsigned int a1, int a2);
 
 // Iterates handles from FUN_00d87410, passing each item with the holder's allocator to CallSwappedArgs, then returns ClearEntries().
 // @fnv 0x00e029d0
-// src: XBOX_RETAIL_PDB 0x00e029d0
+// src: HAVOK_LIB 0x00e029d0
 // pdb: hkStorageStringMap<int,hkContainerHeapAllocator>::clear | hkRelocationInfo.obj | retail, call graph, high
-unsigned int FUN_00e029d0_cls::hkStorageStringMap_int_hkContainerHeapAllocator_clear()
+unsigned int FUN_00e029d0_cls::hkStorageStringMap_int_struct_hkContainerHeapAllocator_clear()
 {
     unsigned int handle = hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator();
     {

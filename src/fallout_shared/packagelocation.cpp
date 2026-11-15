@@ -864,15 +864,15 @@ class PackageLoadStream
 class FUN_0067fbe0_cls : public LocationDescriptor
 {
   public:
-    void PackageLocation_LoadGame(PackageLoadStream* apLoadGameBuffer);
+    void PackageLocation_LoadGame_0067fbe0(PackageLoadStream* apLoadGameBuffer);
 };
 
 // Reads a type byte and a 4-byte value from the stream, then reads pObject as a pointer for types 0-4 or as 4 raw bytes for type 5.
 // @fnv 0x0067fbe0
-// src: XBOX_RETAIL_PDB 0x0067fbe0
+// src: XBOX_PDB 0x0067fbe0
 // pdb: PackageLocation::LoadGame | PackageLocation.obj | retail, call graph (shared callers), high
 // pdb locals: iformID
-void FUN_0067fbe0_cls::PackageLocation_LoadGame(PackageLoadStream* apLoadGameBuffer)
+void FUN_0067fbe0_cls::PackageLocation_LoadGame_0067fbe0(PackageLoadStream* apLoadGameBuffer)
 {
     apLoadGameBuffer->ReadBytes(&eLocType, 1);
     apLoadGameBuffer->ReadBytes(&iRad, 4);

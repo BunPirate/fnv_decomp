@@ -368,7 +368,7 @@ struct SpawnedObject
 
 // Allocates a 0x38-byte object from the audio allocator, sets its size, initializes it from apSource, and returns a pointer offset by 8 on success.
 // @fnv 0x00d699c0
-// src: XBOX_RETAIL_PDB 0x00d699c0
+// src: XBOX_RETAIL_PDB 0x00d699c0 (was COMMUNITY)
 // pdb: hkpConstraintViewer::create | hkpConstraintViewer.obj | retail, object-file gap fill, high
 // pdb params: contexts
 void* __cdecl hkpConstraintViewer_create(void* contexts)

@@ -66,24 +66,24 @@ class S00458900_Vector
     S00458900_Vector();                                                       // FUN_006815c0
     void hkVector4_setSub4(const S00458900_Vector* a, const S00458900_Vector* b);  // setSub4
     void hkVector4_setAbs4(const S00458900_Vector* v);                             // setAbs4
-    void setAll(float f);
+    void hkVector4_setAll(float f);
     S00458900_Comparison hkVector4_compareLessThanEqual4(const S00458900_Vector* v) const;  // compareLessThan4
-    bool equals3(const S00458900_Vector* v, float epsilon) const;   // equals3
+    bool hkVector4_equals3(const S00458900_Vector* v, float epsilon) const;   // equals3
     __m128 m_vComponents;
 };
 
 // @fnv 0x00458900
-// src: XBOX_DEBUG_PDB 0x00458900
+// src: XBOX_PDB 0x00458900
 // pdb: hkVector4::equals3 | TES.obj | debug, upstream name already matches, high
 // pdb params: v, epsilon
 // pdb locals: t, epsilon_v
-bool S00458900_Vector::equals3(const S00458900_Vector* v, float epsilon) const
+bool S00458900_Vector::hkVector4_equals3(const S00458900_Vector* v, float epsilon) const
 {
     S00458900_Vector kDiff;
     kDiff.hkVector4_setSub4(this, v);
     kDiff.hkVector4_setAbs4(&kDiff);
     S00458900_Vector kEpsilon;
-    kEpsilon.setAll(epsilon);
+    kEpsilon.hkVector4_setAll(epsilon);
     return kDiff.hkVector4_compareLessThanEqual4(&kEpsilon).hkVector4Comparison_allAreSet(7);
 }
 
@@ -104,13 +104,13 @@ int FUN_00458990_Holder::hkVector4Comparison_allAreSet(int mask)
 struct FUN_004589c0_cls
 {
     __m128 m_v;
-    void setAll(float value);
+    void hkVector4_setAll(float value);
 };
 // @fnv 0x004589c0
-// src: XBOX_DEBUG_PDB 0x004589c0
+// src: COMMUNITY 0x004589c0
 // pdb: hkVector4::setAll | bhkWorld.obj | debug, upstream name already matches, high
 // pdb params: a
-void FUN_004589c0_cls::setAll(float value)
+void FUN_004589c0_cls::hkVector4_setAll(float value)
 {
     m_v = _mm_set1_ps(value);
 }

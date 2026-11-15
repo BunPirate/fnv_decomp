@@ -793,7 +793,7 @@ struct FUN_00b29fd0_cls
     int unk74;
     int unk78;
     FUN_00b29fd0_Params m_7c;
-    FUN_00b29fd0_cls* CLightingEngine_ctor();
+    FUN_00b29fd0_cls* CLightingEngine_CLightingEngine();
 };
 struct FUN_00b3f070 : FUN_00b3f0a0_Class
 {

@@ -931,7 +931,7 @@ struct FilterValue
 struct Temp622
 {
     int unk00;
-    FilterValue* __thiscall CFilter_ctor(int aeLayer, void* aiGroup, int aePart);
+    FilterValue* __thiscall Ctor(int aeLayer, void* aiGroup, int aePart);
 };
 void* __cdecl bhkCollisionFilter_GetNewSystemGroup();
 void* __cdecl Modelloader_GetReferencedThis(void* a);
@@ -1128,7 +1128,7 @@ void Explosion::Init3D()
                 info.bhkRigidBodyCinfo_SetMotionType(1);
                 info.PathingRequestCoveredMove_SetAttackerHealth(1.0f);
                 Temp622 filter;
-                info.bhkRigidBodyCinfo_SetCollisionFilter(filter.CFilter_ctor(4, bhkCollisionFilter_GetNewSystemGroup(), 0)->Modelloader_GetReferencedThis());
+                info.bhkRigidBodyCinfo_SetCollisionFilter(filter.Ctor(4, bhkCollisionFilter_GetNewSystemGroup(), 0)->Modelloader_GetReferencedThis());
                 info.bhkRigidBodyCinfo_SetShape(shape);
                 Body* body = new Body(&info);
                 collision->bhkNiCollisionObject_SetWorldObject(body);

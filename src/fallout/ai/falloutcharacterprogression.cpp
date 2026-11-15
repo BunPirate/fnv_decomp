@@ -209,13 +209,13 @@ void Flt::CharacterProgression_LoadGameTES(int, int)
 struct FUN_008d5590_shell
 {
     void __thiscall CharacterProgressionData_InitializeData();
-    void* __thiscall CharacterProgressionData_ctor();
+    void* __thiscall CharacterProgressionData_CharacterProgressionData();
 };
 
 // @fnv 0x008d5590
-// src: XBOX_DEBUG_PDB 0x008d5590
+// src: COMMUNITY 0x008d5590
 // pdb: CharacterProgressionData::CharacterProgressionData | FalloutCharacterProgression.obj | debug, upstream name already matches, high
-void* __thiscall FUN_008d5590_shell::CharacterProgressionData_ctor()
+void* __thiscall FUN_008d5590_shell::CharacterProgressionData_CharacterProgressionData()
 {
     CharacterProgressionData_InitializeData();
     return this;
@@ -248,7 +248,7 @@ extern G7d1 g_011e0a30;
 }  // namespace fnv_008d5270
 
 // @fnv 0x008d5270
-// src: XBOX_RETAIL_PDB 0x008d5270
+// src: XBOX_RETAIL_PDB 0x008d5270 (was XBOX_PDB)
 // pdb: CharacterProgression::FinishLevelUp | FalloutCharacterProgression.obj | retail, upstream name already matches, high
 void CharacterProgression::FinishLevelUp()
 {

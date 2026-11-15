@@ -334,7 +334,7 @@ TreadEntry* FUN_00a35900_cls::BSMultiTargetTreadTransfController_GetBlendInterpo
 extern char DAT_01096694;
 void* __cdecl Object_DispatchCommandFour(unsigned int size) throw();
 
-void* __fastcall NiInterpController_ctor(void* controller) throw();
+void* __fastcall NiInterpController_NiInterpController(void* controller) throw();
 
 struct TreadInterpolator : NiInterpController
 {
@@ -363,7 +363,7 @@ TreadInterpolator* TreadController::CreateInterpolator(unsigned int kCloning)
     if (storage)
     {
         // The shared base has no declaration for the original constructor yet.
-        NiInterpController_ctor(storage);
+        NiInterpController_NiInterpController(storage);
         *reinterpret_cast<void**>(storage) = &DAT_01096694;
         storage->unk34 = 0;
         storage->unk38 = 0;

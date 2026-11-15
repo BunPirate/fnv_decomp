@@ -4315,11 +4315,11 @@ extern LH g_011e0424;
 extern bool DAT_011e040c;
 
 // @fnv 0x00922960
-// src: XBOX_RETAIL_PDB 0x00922960
+// src: COMMUNITY 0x00922960
 // pdb: MiddleHighProcess::EvaluateReferenceforSitSleep | MiddleHighProcess.obj | retail, upstream name already matches, high
 // pdb params: apRef, aiFilterData
 // pdb locals: pActor, pFurniture
-bool MiddleHighProcess_EvaluateReferenceforSitSleep(TESObjectREFR* apRef, long aiFilterData)
+bool EvaluateReferenceforSitSleep(TESObjectREFR* apRef, long aiFilterData)
 {
     Actor* pActor = (Actor*)aiFilterData;
     shared_types::TESFurniture* pFurniture;
@@ -8691,7 +8691,7 @@ struct SSActor
     void SetCurrentSitSleepState(int state);
 };
 bool AILinearTaskThreadManager_ShouldQueue3DTask();
-void bhkWorld_AdjustForceAddCount(::NiAVObject* apObject, bool abIncrement, bool abRecurse, bool abForce);
+void _bhkWorld_AdjustForceAddCount(::NiAVObject* apObject, bool abIncrement, bool abRecurse, bool abForce);
 extern SSActor* g_thePlayer;
 
 struct SSProcess : public MiddleHighProcess
@@ -8712,14 +8712,14 @@ void SSProcess::UpdateSitSleepState(SSActor* actor, int state, TESObjectREFR* fu
             if (AILinearTaskThreadManager_ShouldQueue3DTask())
                 SSTaskQueue::GetSingleton()->TaskQueueInterface_QueueHavokAdjustForceAddCount(node7, false, true, false);
             else
-                bhkWorld_AdjustForceAddCount(node7, false, true, false);
+                _bhkWorld_AdjustForceAddCount(node7, false, true, false);
         }
         else if (isSleeping && !wasSleeping2)
         {
             if (AILinearTaskThreadManager_ShouldQueue3DTask())
                 SSTaskQueue::GetSingleton()->TaskQueueInterface_QueueHavokAdjustForceAddCount(node7, true, true, false);
             else
-                bhkWorld_AdjustForceAddCount(node7, true, true, false);
+                _bhkWorld_AdjustForceAddCount(node7, true, true, false);
             if (furniture)
                 ((SSFurnRef*)furniture)->TESObjectREFR_SetMarkerUsed(index, true);
         }
@@ -22091,7 +22091,7 @@ struct ActorStand
     const char* TESObjectREFR_GetFullName();
     bool Actor_IsCloseToGround(float);
     bool IsSwimming_005a2030();
-    Node* TESObjectREFR_GetActorBone(Node*, const char*);
+    Node* TESObjectREFR_GetActorBone_00571530(Node*, const char*);
     Active* BSFile_GetDevice();
 };
 struct Manager
@@ -23062,7 +23062,7 @@ void Target::UpdateKnockedDownState(ActorStand* apActor)
             if (root)
             {
                 root = root->NiNode_GetAtChecked(0);
-                Node* point = apActor->TESObjectREFR_GetActorBone(root, FixedStrings_QBip01Head());
+                Node* point = apActor->TESObjectREFR_GetActorBone_00571530(root, FixedStrings_QBip01Head());
                 if (point == 0)
                     point = BSUtilities_GetObjectByName_004ade00(root, FixedStrings_QBip01Neck());
                 if (!point)
@@ -23072,7 +23072,7 @@ void Target::UpdateKnockedDownState(ActorStand* apActor)
                     NiPoint3 knocked = point->NiAVObject_GetWorldTranslate().SubtractIntoVector(root->NiAVObject_GetWorldTranslate());
                     if (!v28c()->unk410.bhkCharacterListener_QQuadruped())
                     {
-                        Node* getupAnim = apActor->TESObjectREFR_GetActorBone(skeletonNode, FixedStrings_QBip01Spine());
+                        Node* getupAnim = apActor->TESObjectREFR_GetActorBone_00571530(skeletonNode, FixedStrings_QBip01Spine());
                         if (getupAnim && bhkNiCollisionObject_GetFaceUp(getupAnim, 0))
                             knocked.ScaleComponents(-1.0f);
                     }
@@ -37429,7 +37429,7 @@ namespace FinishLoadCalls {
 ::NiAVObject* BSFurnitureMarker_Find(::NiNode*);
 }
 void NiMatrix3_TransformVertices(const NiMatrix3&, NiPoint3*, int, const NiPoint3*, const NiPoint3*);
-void bhkWorld_AdjustForceAddCount(::NiAVObject*, bool, bool, bool);
+void _bhkWorld_AdjustForceAddCount(::NiAVObject*, bool, bool, bool);
 void bhkWorld_SetMotion(::NiAVObject*, bool, bool, bool, bool);
 void ActiveEffect_FinishInitLoadGameActiveEffectList(void*, Actor*);
 
@@ -37787,7 +37787,7 @@ void FinishInitLoadProcessView::MiddleHighProcess_FinishInitLoadGame(unsigned in
         {
             if (this->cSitSleepState == 9 || this->cSitSleepState == 4)
             {
-                bhkWorld_AdjustForceAddCount(node, true, true, false);
+                _bhkWorld_AdjustForceAddCount(node, true, true, false);
             }
         }
     }

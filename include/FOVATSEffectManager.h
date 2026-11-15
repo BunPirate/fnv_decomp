@@ -78,7 +78,7 @@ public:
     void FOVATSEffectManager_DrawTarget(unsigned char, int);
     void FOVATSEffectManager_DrawSingleTarget(unsigned char, int);
     void FOVATSEffectManager_DrawMultipleTargets();
-    void ShutdownEffect();
+    void VATSEffect_ShutdownEffect();
     void PrepareScanEffect(int, int, int, unsigned char);
     void FOVATSEffectManager_PrepareHighlightEffect(int, int, int, unsigned char);
     void FOVATSEffectManager_PrepareHighlightEffect(int, RenderedTextureSource*, int, unsigned char);

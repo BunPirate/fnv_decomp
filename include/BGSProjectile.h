@@ -53,7 +53,7 @@ public:
     bool GetSupersonic();
     bool GetCanPickup();
     bool GetHitScan() const;
-    float GetGravity();
+    float GetGravity_00966980();
     float FUN_009a7c40();
     BGSProjectile* _FNV_GetObjectReference();
     int _FNV_GetFormType();

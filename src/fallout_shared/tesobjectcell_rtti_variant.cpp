@@ -192,7 +192,7 @@ void TESObjectCELL::AddReference(RefX* apRef, bool abOnTop)
     apRef->SetParentCell(reinterpret_cast<TESObjectCELL*>(this));
     CellRefLockLeave();
     if (static_cast<CellReferenceAccess*>(this)->TESObjectCELL_GetAttached())
-        DAT_011c95c8->AddReference((BGSPerkEntry*)apRef);
+        DAT_011c95c8->AddReference_00526f20((BGSPerkEntry*)apRef);
     if ((*reinterpret_cast<void**>(formData + 0xA0)))
     {
         if ((!apRef->IsActor() || apRef->FUN_00440da0()) && apRef->TESObjectREFR_HasScript())

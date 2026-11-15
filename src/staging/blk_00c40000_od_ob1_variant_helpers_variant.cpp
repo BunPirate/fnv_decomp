@@ -4712,7 +4712,7 @@ struct List332 : EmptyBase332 {
         pool.NiTPointerAllocator_unsigned_int_Deallocate(memory);
     }
 // src: XBOX_PDB 0x004a4650
-    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll() {
+    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll() {
         ListNode332* current = head;
         while (current) {
             ListNode332* retired = current;
@@ -7353,7 +7353,7 @@ struct Q5Obj { virtual void v00(),v04(),v08(),v0c(),v10(),v14(),v18(),v1c(),v20(
  char pad[0x48];
   static __forceinline void* operator new(unsigned int amount) { int dq[2]; return Object_DispatchCommandFour(amount); }
   Q5Obj();
-  bool InitializeData(Q5Item* pkBoneRoot); bool NiBSBoneLODController_SetBoneLOD(unsigned iLOD); };
+  bool InitializeData_00c52d80(Q5Item* pkBoneRoot); bool NiBSBoneLODController_SetBoneLOD(unsigned iLOD); };
 struct Q5Item { void NiObjectNET_RemoveController(Q5Obj* pkControl); };
 void __cdecl NiBSBoneLODController_FindBoneRootNodes(void* p, Q5Hold* kBoneRootNodes);
 bool __cdecl NiBSBoneLODController_ProcessScene(void* pkSceneRoot);

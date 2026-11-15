@@ -252,7 +252,7 @@ NiObject* NiParticleSystem::MakeClone(CloningProcess& cloning)
         node = ((NiParticleSystem*)memory)->NiParticleSystem_00c1b5c0();
     else
         node = 0;
-    CopyMembers(node, cloning);
+    CopyMembers_00c1b6f0(node, cloning);
     return node;
 }
 
@@ -1588,11 +1588,11 @@ struct ParticleCloneBase
 
 // Clone particle-system state, modifiers, and model data after the base clone routine.
 // @fnv 0x00c1b6f0
-// src: XBOX_RETAIL_PDB 0x00c1b6f0
+// src: XBOX_PDB 0x00c1b6f0
 // pdb: NiParticleSystem::CopyMembers | NiParticleSystem.obj | retail, call graph, high
 // pdb params: pkDest, kCloning
 // pdb locals: kIter, pkModifier
-void NiParticleSystem::CopyMembers(NiParticleSystem* pkDest, CloningProcess& kCloning)
+void NiParticleSystem::CopyMembers_00c1b6f0(NiParticleSystem* pkDest, CloningProcess& kCloning)
 {
     ((ParticleCloneBase*)this)->NiParticleMeshes_CopyMembers(pkDest, kCloning);
 

@@ -2599,7 +2599,7 @@ struct FUN_00974af0_shell
 };
 
 // @fnv 0x00974af0
-// src: XBOX_RETAIL_PDB 0x00974af0
+// src: XBOX_RETAIL_PDB 0x00974af0 (was COMMUNITY)
 // pdb: ProcessLists::FinishMagicShaderHitEffectAll | ProcessLists.obj | retail, object-file gap fill, high
 // pdb params: apShader
 // pdb locals: pelist, peffect, pshaderEffect
@@ -3855,7 +3855,7 @@ struct FUN_00978420_shell
 
 // Iterates the high-priority process array and calls M154(f) on each entry that is an actor.
 // @fnv 0x00978420
-// src: XBOX_DEBUG_PDB 0x00978420
+// src: XBOX_DEBUG_PDB 0x00978420 (was COMMUNITY)
 // pdb: ProcessLists::UpdateHighListAnimation | ProcessLists.obj | debug, call graph, high
 // pdb params: afDelta, abSleeping
 // pdb locals: pact, pmob, i
@@ -6079,7 +6079,7 @@ struct Obj
     void FUN_00994ef0(int a);
     void Actor_RemoveFleeTarget(Obj* a);
     bool Actor_IsInCombat();
-    void RemoveTarget(Obj* a);
+    void RemoveTarget_0097f9c0(Obj* a);
     Obj* ExtraDataList_RemoveFollower(Obj* a);
     void Actor_SetCurrentTarget(int apRef);
     void Projectile_CheckRefDeleted(Obj* apDeletedRef);
@@ -6298,7 +6298,7 @@ void Host::ProcessLists_ReferDestructorNullOut(Obj* apActor)
                     {
                         unk428 = objB4->v428();
                         if (unk428 != 0)
-                            unk428->RemoveTarget(apActor);
+                            unk428->RemoveTarget_0097f9c0(apActor);
                     }
                     objB4->BSFile_GetDevice()->ExtraDataList_RemoveFollower(apActor);
                     if (baseB->v128() == apActor)
@@ -6445,7 +6445,7 @@ void Host::ProcessLists_ReferDestructorNullOut(Obj* apActor)
                 {
                     unk428b = item5->v428();
                     if (unk428b != 0)
-                        unk428b->RemoveTarget(apActor);
+                        unk428b->RemoveTarget_0097f9c0(apActor);
                 }
                 item5->BSFile_GetDevice()->ExtraDataList_RemoveFollower(apActor);
                 if (base16->v128() == apActor)
@@ -9084,7 +9084,7 @@ struct Host00881620
 
 struct FUN_0097f9c0_shell
 {
-    void RemoveTarget(Actor*);
+    void RemoveTarget_0097f9c0(Actor*);
 };
 struct PkgDataVirt
 {
@@ -9510,7 +9510,7 @@ void FUN_0096f600_shell::ProcessLists_NullOutTargetRef(Actor* apRef, bool abDele
                             i = ((Actor*)bed1)->GetCombatController();
                             if (i != 0)
                             {
-                                ((FUN_0097f9c0_shell*)i)->RemoveTarget(apRef);
+                                ((FUN_0097f9c0_shell*)i)->RemoveTarget_0097f9c0(apRef);
                             }
                             if (mainProc->GetTarget() == (TESObjectREFR*)apRef)
                             {
@@ -9709,7 +9709,7 @@ void FUN_0096f600_shell::ProcessLists_NullOutTargetRef(Actor* apRef, bool abDele
                         void* B2 = ((Actor*)ti6)->GetCombatController();
                         if (!!B2)
                         {
-                            ((FUN_0097f9c0_shell*)B2)->RemoveTarget(apRef);
+                            ((FUN_0097f9c0_shell*)B2)->RemoveTarget_0097f9c0(apRef);
                         }
                         if (s->GetTarget() == (TESObjectREFR*)apRef)
                         {

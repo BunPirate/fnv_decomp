@@ -202,15 +202,15 @@ class SpawnedObject
     unsigned int unkFC;
     unsigned int m_100;
     void* m_104;
-    SpawnedObject* ShaderBufferData_ctor(void* arg1, void* apData, unsigned int aiSize);
+    SpawnedObject* ShaderBufferData_ShaderBufferData(void* arg1, void* apData, unsigned int aiSize);
 };
 
 // Stores arg3 in m_100, looks up arg3 in DAT_011f6238 and registers arg2 when both are non-zero, clears the first 0x100 bytes, and sets arg1 as owner if non-null.
 // @fnv 0x00b7fa40
-// src: XBOX_RETAIL_PDB 0x00b7fa40
+// src: COMMUNITY 0x00b7fa40
 // pdb: ShaderBufferData::ShaderBufferData | ShaderBuffer.obj | retail, upstream name already matches, high
 // pdb params: apName, apData, aiSize
-SpawnedObject* SpawnedObject::ShaderBufferData_ctor(void* apOwner, void* apData, unsigned int aiSize)
+SpawnedObject* SpawnedObject::ShaderBufferData_ShaderBufferData(void* apOwner, void* apData, unsigned int aiSize)
 {
     m_100 = aiSize;
     if (aiSize != 0)

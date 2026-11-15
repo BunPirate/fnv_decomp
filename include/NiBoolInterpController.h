@@ -24,5 +24,5 @@ public:
 
     void CopyMemberData(NiBoolInterpController* clone, CloningProcess& process);
     void SetBoolInterpolatorValue(NiInterpolator* interpolator, unsigned short index);
-    NiBoolInterpolator* NiBoolInterpolator_ctor(NiStream* pkBoolData);
+    NiBoolInterpolator* LinkObject(NiStream* pkBoolData);
 };

@@ -356,7 +356,7 @@ struct hkpPointToPathAtoms
 class hkpPointToPathConstraintData : public hkpConstraintData
 {
   public:
-    void hkpPointToPathConstraintData_setInBodySpace(const hkVector4& pivotA, const hkVector4& pivotB, hkpParametricCurve* path);
+    void setInBodySpace_00deea00(const hkVector4& pivotA, const hkVector4& pivotB, hkpParametricCurve* path);
 
     unsigned int unk0C, unk10, unk14;
     hkpParametricCurve* m_path;
@@ -366,11 +366,11 @@ class hkpPointToPathConstraintData : public hkpConstraintData
 
 // Replaces the parametric curve path, updating reference counts, and sets the bridge atom local frame translations from the given pivots.
 // @fnv 0x00deea00
-// src: XBOX_RETAIL_PDB 0x00deea00
+// src: XBOX_PDB 0x00deea00
 // pdb: hkpPointToPathConstraintData::setInBodySpace | hkpPointToPathConstraintData.obj | retail, object-file gap fill, high
 // pdb params: pivotA, pivotB, path
 // pdb locals: assertBuf, ostr
-void hkpPointToPathConstraintData::hkpPointToPathConstraintData_setInBodySpace(const hkVector4& pivotA, const hkVector4& pivotB,
+void hkpPointToPathConstraintData::setInBodySpace_00deea00(const hkVector4& pivotA, const hkVector4& pivotB,
                                                 hkpParametricCurve* path)
 {
     if (path)

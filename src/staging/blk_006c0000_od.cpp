@@ -1519,13 +1519,13 @@ extern int DAT_0106cc3c;
 struct S_006db4a0
 {
     int* vtable;
-    S_006db4a0* __thiscall BSSimpleArray_NavmeshTriFan_1024_ctor();
+    S_006db4a0* __thiscall BSSimpleArray_NavmeshTriFan_1024_BSSimpleArray_NavmeshTriFan_1024();
 };
 // Sets the vtable to DAT_0106cc3c, calls ResetAndWrite with 0, 0, and returns this.
 // @fnv 0x006db4a0
-// src: XBOX_DEBUG_PDB 0x006db4a0
+// src: COMMUNITY 0x006db4a0
 // pdb: BSSimpleArray<NavmeshTriFan,1024>::BSSimpleArray<NavmeshTriFan,1024> | Pathfind.obj | debug, call graph, high
-S_006db4a0* __thiscall S_006db4a0::BSSimpleArray_NavmeshTriFan_1024_ctor()
+S_006db4a0* __thiscall S_006db4a0::BSSimpleArray_NavmeshTriFan_1024_BSSimpleArray_NavmeshTriFan_1024()
 {
     vtable = &DAT_0106cc3c;
     reinterpret_cast<Dummy_0069af30*>(this)->ResetAndWrite(0, 0);

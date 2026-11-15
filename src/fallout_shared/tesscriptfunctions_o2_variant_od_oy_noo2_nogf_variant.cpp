@@ -397,7 +397,7 @@ class ActorC4
     virtual void a105();
     virtual void a106();
     virtual void SetAlpha(float fAlpha);
-    void FadeIn();
+    void Reset3D();
 };
 
 class RefC4
@@ -693,7 +693,7 @@ RefC4* __cdecl PlaceAtMe(RefC4* pkRef, TESForm* pkForm, int iCount, int iDistanc
                         {
                             ActorC4* pkActor = (ActorC4*)pkNew;
                             pkActor->SetAlpha(0.0f);
-                            pkActor->FadeIn();
+                            pkActor->Reset3D();
                         }
                         pkEntry->m_iArrayLength--;
                     }
@@ -750,7 +750,7 @@ RefC4* __cdecl PlaceAtMe(RefC4* pkRef, TESForm* pkForm, int iCount, int iDistanc
                 {
                     ActorC4* pkActor = (ActorC4*)pkNew;
                     pkActor->SetAlpha(0.0f);
-                    pkActor->FadeIn();
+                    pkActor->Reset3D();
                 }
                 if (pkCountObj)
                 {

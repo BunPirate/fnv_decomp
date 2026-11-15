@@ -223,7 +223,7 @@ extern NiFixedString* DAT_011d5744;
 
 // Allocates the "FAD" fixed string and stores it in DAT_011d5744.
 // @fnv 0x00649e40
-// src: XBOX_RETAIL_PDB 0x00649e40
+// src: XBOX_RETAIL_PDB 0x00649e40 (was COMMUNITY)
 // pdb: BSFaceGenAnimationData::InitSDM | BSFaceGenAnimationData.obj | retail, call graph, high
 void BSFaceGenAnimationData_InitSDM()
 {

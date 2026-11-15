@@ -109,7 +109,7 @@ struct FUN_00838750_shell
 };
 // Calls FUN_00621270 on the DummyFlags sub-object at offset 0x410 with DAT_01000000 and returns whether the result is non-zero.
 // @fnv 0x00838750
-// src: XBOX_DEBUG_PDB 0x00838750
+// src: XBOX_DEBUG_PDB 0x00838750 (was COMMUNITY)
 // pdb: bhkCharacterController::QOnStairs | ImpactMixer.obj | debug, call graph (shared callers), high
 bool FUN_00838750_shell::bhkCharacterController_QOnStairs()
 {
@@ -340,7 +340,7 @@ struct NavQueryResult
 struct CellNavInfo
 {
     void TESObjectLAND_GetCoordData(NavQueryResult* cdata, NiPoint3* coord, int forcetovertex);
-    MaterialRecord* TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex);
+    MaterialRecord* TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex);
 };
 
 struct FootstepCell
@@ -409,7 +409,7 @@ void __cdecl ImpactMixer_PlayJumpLand(FootstepActor* apRef, int aiMaterial)
     {
         NavQueryResult kResult_2;
         pCell_->TESObjectCELL_GetLand()->TESObjectLAND_GetCoordData(&kResult_2, reinterpret_cast<NiPoint3*>(&kPosOut), 1);
-        MaterialRecord* pMaterialTmp = pCell_->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture(kResult_2.unk18, kResult_2.unk3c);
+        MaterialRecord* pMaterialTmp = pCell_->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture_0053a630(kResult_2.unk18, kResult_2.unk3c);
         if (pMaterialTmp)
         {
             float m_fGlyphExtent = 0.0f;
@@ -1569,7 +1569,7 @@ void ImpactMixer_PlayFootstep(FootstepActor* apRef, int aiFootType)
                 MaterialRecord* result;
                 FootstepQuery height;
                 reinterpret_cast<NavOps*>(cell->TESObjectCELL_GetLand())->TESObjectLAND_GetCoordData(&height, reinterpret_cast<NiPoint3*>(&firstPerson), 1);
-                result = cell->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture(height.materialKind, height.triangle);
+                result = cell->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture_0053a630(height.materialKind, height.triangle);
                 float record = 0.0f;
                 materialIndex = 0;
                 if (soundType)
@@ -1790,7 +1790,7 @@ void __cdecl ImpactMixer_PlayJump(TESObjectREFR* apRefr)
             {
                 FootstepQuery query4;
                 cell8->TESObjectCELL_GetLand()->TESObjectLAND_GetCoordData((NavQueryResult*)&query4, (NiPoint3*)&pos20, 1);
-                MaterialRecord* localA = cell8->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture(query4.materialKind, query4.triangle);
+                MaterialRecord* localA = cell8->TESObjectCELL_GetLand()->TESObjectLAND_GetMainTexture_0053a630(query4.materialKind, query4.triangle);
                 float heightStepB = 0.0f;
                 material6 = 0;
                 if (flagWater6)

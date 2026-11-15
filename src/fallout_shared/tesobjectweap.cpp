@@ -1570,7 +1570,7 @@ float __cdecl BSMAX_00404010(float, float);
 struct FUN_00524b80_This : TESObjectWEAP { float TESObjectWEAP_GetMinSpreadDegrees(bool); };
 // Returns the weapon's spread at offset 0x104, reduced by the weapon-mod decrease-spread effect when bModValue is set.
 // @fnv 0x00524b80
-// src: XBOX_DEBUG_PDB 0x00524b80
+// src: XBOX_DEBUG_PDB 0x00524b80 (was COMMUNITY)
 // pdb: TESObjectWEAP::GetMinSpreadDegrees | TESObjectWEAP.obj | debug, call graph (shared callers), high
 // pdb params: bModValue
 float FUN_00524b80_This::TESObjectWEAP_GetMinSpreadDegrees(bool bModValue)
@@ -4112,7 +4112,7 @@ struct ThisObj {
 
 // Creates an XObj using node data, settings, and a call on param when the conditions pass.
 // @fnv 0x00524db0
-// src: XBOX_RETAIL_PDB 0x00524db0
+// src: XBOX_RETAIL_PDB 0x00524db0 (was COMMUNITY)
 // pdb: TESObjectWEAP::ExpelShellCasing | TESObjectWEAP.obj | retail, string-set bridge, high
 // pdb params: apSource
 // pdb locals: pfireNode, pactor, p3d, bshootCasing, distance, shellAngularVelocity, pfilename, shellLocation, shellRotation, shellLinearVelocity, flower, fupper, actorVelocity, force, angle

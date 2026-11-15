@@ -56,7 +56,7 @@ __forceinline void* hkDisplayGeometry::operator new(std::size_t nbytes)
 // Havok's default transform constructor leaves its components uninitialized.
 __forceinline hkTransform::hkTransform() {}
 
-__forceinline void hkVector4::setAll(float r)
+__forceinline void hkVector4::SetAllComponents(float r)
 {
     m_vComponents = _mm_set_ps1(r);
 }
@@ -288,7 +288,7 @@ void hkDisplaySerializeIStream::UpdateFields_00ddada0(hkDisplayGeometry*& geomet
         ReadVector4(perpToNormal);
         hkReal e = readFloat32();
         hkVector4 extent;
-        extent.setAll(e);
+        extent.SetAllComponents(e);
         geometry = new hkDisplayPlane(normal, perpToNormal, center, extent);
         break;
     }

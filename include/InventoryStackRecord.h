@@ -45,8 +45,8 @@ public:
     int FUN_00726070();
     void ClearExtraDataList();
     int CountAndPruneEntries();
-    int GetExtraTotalCount(bool abWornIgnore);
-    int GetExtraTotalDefaultCount();
+    int ItemChange_GetExtraTotalCount(bool abWornIgnore);
+    int ItemChange_GetExtraTotalDefaultCount();
     void InitLoadGame(BGSLoadFormBuffer* buffer);
     bool HasPerkEntry();
     bool HasStolenData();

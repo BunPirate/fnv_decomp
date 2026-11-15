@@ -47,7 +47,7 @@ float RandomFloat(float afMin, float afMax);
 
 // Validates arguments, then adds a random float between the source's two values to the first value in apapValues.
 // @fnv 0x005e5d80
-// src: XBOX_RETAIL_PDB 0x005e5d80
+// src: XBOX_RETAIL_PDB 0x005e5d80 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::AddRangeToValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pvalue, pfunctionData
@@ -123,7 +123,7 @@ bool BGSEntryPointFunction_CheckFunctionArguments(int iUnused, int iType, E5DF0A
 
 // Validates the modifier, then adds the counter value times ReadValueA to the result.
 // @fnv 0x005e5df0
-// src: XBOX_RETAIL_PDB 0x005e5df0
+// src: XBOX_RETAIL_PDB 0x005e5df0 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::AddActorValueMultFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pperkOwner, pvalue, eactorValue, fmult, pfunctionData
@@ -163,7 +163,7 @@ void BGSEntryPointFunctionDataActivateChoice::SetLabel(const char* apLabel)
 bool __cdecl BGSEntryPointFunction_CheckFunctionArguments(int, int, void*, void*, unsigned char, void*, void*);
 // Calls FUN_005e5b80 to validate arguments, then writes the result of a5->FUN_006b9130() into the float pointed to by *a4.
 // @fnv 0x005e5c70
-// src: XBOX_RETAIL_PDB 0x005e5c70
+// src: XBOX_RETAIL_PDB 0x005e5c70 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::SetValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pvalue, pfunctionData
@@ -187,7 +187,7 @@ float __cdecl abs(float);
 
 // Validates entry function arguments, then sets the first value in apapValues to its absolute value.
 // @fnv 0x005e5ea0
-// src: XBOX_RETAIL_PDB 0x005e5ea0
+// src: XBOX_RETAIL_PDB 0x005e5ea0 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::AbsoluteValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pvalue
@@ -202,7 +202,7 @@ void __cdecl BGSEntryPointFunction_AbsoluteValueFunction(int apPerkOwner, int ae
 }
 
 // @fnv 0x005e5ef0
-// src: XBOX_RETAIL_PDB 0x005e5ef0
+// src: XBOX_RETAIL_PDB 0x005e5ef0 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::NegativeAbsoluteValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pvalue
@@ -391,7 +391,7 @@ void BGSEntryPointFunctionDataActivateChoice::Save_005e6e50()
 
 // Validates the arguments, then adds the return value of FUN_006b9130 to the first pointed-to float.
 // @fnv 0x005e5cc0
-// src: XBOX_RETAIL_PDB 0x005e5cc0
+// src: XBOX_RETAIL_PDB 0x005e5cc0 (was COMMUNITY)
 // pdb: BGSEntryPointFunction::AddValueFunction | BGSEntryPointFunction.obj | retail, object-file run extension, high
 // pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
 // pdb locals: pvalue, pfunctionData

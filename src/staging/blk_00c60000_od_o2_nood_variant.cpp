@@ -2646,7 +2646,7 @@ struct HitResultList
     int field00, field04, field08, field0c;
     Result* result;
     int count;
-    void hkpAllRayHitCollector_sortHits();
+    void hknpAllHitsCollector_sortHits();
 };
 struct World
 {
@@ -2683,7 +2683,7 @@ struct World
     int field78;
     int field7c;
     void hkpWorld_castRay(Query*, void*);
-    void hkpWorld_castRay(Query*, Result*);
+    void hkpWorld_castRay_00c92040(Query*, Result*);
 };
 struct __declspec(align(16)) CastVector
 {
@@ -2808,7 +2808,7 @@ bool RayCaster::bhkWorld_PickObject(Query* arPickData)
                 world->hkpWorld_castRay(arPickData, hits);
             if (hits->count)
             {
-                hits->hkpAllRayHitCollector_sortHits();
+                hits->hknpAllHitsCollector_sortHits();
                 Result* hit = hits->result;
                 scratch.result->ProcessEntries_009c1aa0(hit);
                 scratch.result->field50 = hit->field50;
@@ -2838,7 +2838,7 @@ bool RayCaster::bhkWorld_PickObject(Query* arPickData)
             }
             else
             {
-                world->hkpWorld_castRay(arPickData, scratch.result);
+                world->hkpWorld_castRay_00c92040(arPickData, scratch.result);
                 found = arPickData->result.field50 != 0;
             }
         }
@@ -7288,11 +7288,11 @@ struct Vec4Sink
 };
 
 // @fnv 0x00c6d620
-// src: XBOX_DEBUG_PDB 0x00c6d620
+// src: COMMUNITY 0x00c6d620
 // pdb: `anonymous namespace'::ExtractStiltCapsuleInfo | bhkCharacterController.obj | debug, upstream name already matches, high
 // pdb params: arCapShape, arTransf, arCapsuleTopOut
 // pdb locals: temppt
-void __cdecl anonymous_namespace_ExtractStiltCapsuleInfo(VectorData* arCapShape, int arTransf, Vec4Sink* arCapsuleTopOut)
+void __cdecl ExtractStiltCapsuleInfo(VectorData* arCapShape, int arTransf, Vec4Sink* arCapsuleTopOut)
 {
     P064Quad value = arCapShape->m_20;
     ((float*)&value)[2] += arCapShape->m_10;
@@ -7615,9 +7615,9 @@ struct S00c7fcc0_M
 };
 
 // @fnv 0x00c7fcc0
-// src: XBOX_DEBUG_PDB 0x00c7fcc0
+// src: XBOX_PDB 0x00c7fcc0
 // pdb: bhkUtilFunctions::ClosestBody::ClosestBody | bhkUtilFunctions.obj | debug, upstream name already matches, high
-bool bhkUtilFunctions_ClosestBody_ctor(S00c7fcc0_Obj* self, int a2, S00c7fcc0_Out* out, bool flag)
+bool bhkUtilFunctions_ClosestBody_ClosestBody(S00c7fcc0_Obj* self, int a2, S00c7fcc0_Out* out, bool flag)
 {
     S00c7fcc0_Ctx ctx;
     volatile S00c7fcc0_Spill sp;
@@ -7706,7 +7706,7 @@ bool bhkUtilFunctions_ClosestBody_ctor(S00c7fcc0_Obj* self, int a2, S00c7fcc0_Ou
             for (unsigned int i = 0; i < ch->count; i++)
             {
                 S00c7fcc0_Obj* kid = ch->kids[i];
-                result |= bhkUtilFunctions_ClosestBody_ctor(kid, sp.key, out, flag);
+                result |= bhkUtilFunctions_ClosestBody_ClosestBody(kid, sp.key, out, flag);
             }
         }
     }

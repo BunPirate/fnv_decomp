@@ -808,15 +808,15 @@ public:
     FreeListD9C7 m_kFreeList;
 
     void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_removeLeafInternal(NodeD9C7* pkNode, NodeD9C7** ppkOut);
-    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx);
 };
 
 // @fnv 0x00d9c7d0
-// src: XBOX_RETAIL_PDB 0x00d9c7d0
+// src: HAVOK_LIB 0x00d9c7d0
 // pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::remove | hkAabbTree.obj | retail, call graph (shared callers), high
 // pdb params: leafIdx
 // pdb locals: toDeleteIdx
-void FUN_00d9c7d0_C::hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx)
+void FUN_00d9c7d0_C::hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx)
 {
     if (!(m_pkTreeNode->m_usFlags & 0x8000)) {
         NodeD9C7* pkOther;

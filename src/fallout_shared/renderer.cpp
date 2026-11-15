@@ -1626,7 +1626,7 @@ int __cdecl FUN_00b4f380(int);
 
 // Initializes the renderer device, queries GPU capabilities, writes RendererInfo.txt, and caches float/bool settings into globals.
 // @fnv 0x004da670
-// src: XBOX_RETAIL_PDB 0x004da670
+// src: XBOX_RETAIL_PDB 0x004da670 (was EXE)
 // pdb: Renderer::Init | Renderer.obj | retail, unique string literal, high
 // pdb params: ahWnd, ahInstance
 // pdb locals: pdrivername, eoldMode, eproc, bnonpow2tex, tempMemContext, pdevicename, pcaps, ipixelinstructions, affin, bcanDoRefraction, videoMode

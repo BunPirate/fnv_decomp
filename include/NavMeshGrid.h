@@ -27,7 +27,7 @@ public:
     unsigned int Modelloader_GetReferencedThis();
     void SetTriangleData(unsigned short aiTriangle, unsigned int aiColumn, unsigned int aiRow);
     NiPoint3 NavMeshGrid_GetGridPosition(unsigned int auiCol, unsigned int auiRow);
-    void NavMeshGrid_Clear();
+    void Clear_0069d2d0();
     void CopyTo_0069dd50(NavMeshGrid* apGrid);
     void CopyTo_0069dd50(NavMeshGrid* apGrid) const;
 };

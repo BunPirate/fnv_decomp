@@ -435,7 +435,7 @@ struct ContactData
     unsigned int unk30;
     unsigned int flags34;
 
-    void hkpConstraintInstance_ctor(int enabled);
+    void hkpConstraintInstance_hkpConstraintInstance(int enabled);
     void SetActive(unsigned short index);
 };
 
@@ -452,7 +452,7 @@ hkpSimpleConstraintContactMgr* __fastcall InitSimpleContactManager(hkpSimpleCons
     mgr->unk08 = 0;
     *reinterpret_cast<void**>(mgr) = &DAT_010cc984;
     reinterpret_cast<ContactCache*>(&mgr->m_kSimpleContactConstraintData)->FUN_00d92f20(reinterpret_cast<ContactData*>(&mgr->m_pHavokConstraint), second, third);
-    reinterpret_cast<ContactData*>(&mgr->m_pHavokConstraint)->hkpConstraintInstance_ctor(1);
+    reinterpret_cast<ContactData*>(&mgr->m_pHavokConstraint)->hkpConstraintInstance_hkpConstraintInstance(1);
 
     mgr->m_pHavokConstraint.m_entities[0] = reinterpret_cast<hkpEntity*>(const_cast<unsigned char*>(second));
     mgr->m_pHavokConstraint.m_data = &mgr->m_kSimpleContactConstraintData;

@@ -39,7 +39,7 @@ __forceinline float& hkVector4::component(int k)
 {
     return lanes[k];
 }
-__forceinline void hkVector4::setAll(float v)
+__forceinline void hkVector4::SetAllComponents(float v)
 {
     LocalM128 t = _mm_load_ss(&v);
     quad = _mm_shuffle_ps(t, t, 0);
@@ -209,7 +209,7 @@ void hkpIterativeLinearCastAgent::ProcessEntries_00daf540(const hkpCdBody* bodyA
         projectedDistance.m_hasHit = false;
         hkVector4 delta;
         float broadcast = hitPoint.m_kPoint.getDistance();
-        delta.setAll(broadcast);
+        delta.SetAllComponents(broadcast);
         motion.m_transform.m_vTranslation = _mm_add_ps(_mm_mul_ps(delta.quad, step.quad),
                                                 ((const hkTransform*)bodyA->m_motion)->m_vTranslation);
         CastImpl(&movedBody, bodyB, &linearInput, &projectedDistance);

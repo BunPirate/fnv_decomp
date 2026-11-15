@@ -669,7 +669,7 @@ struct S
     virtual void v38();
     virtual void SetMode(int iMode);
     void bhkRigidBody_SetLinearVelocity_00561690(int);
-    void bhkRigidBody_SetAngularVelocity(float* arVel);
+    void bhkRigidBody_SetAngularVelocity_005617c0(float* arVel);
 };
 struct Cast_c9b
 {
@@ -1736,7 +1736,7 @@ struct ImpactNode
     void* GetScene();
     bool IsGhost();
     bool IsActive();
-    int TESObjectREFR_GetActorBone(void*, int);
+    int SelectPart(void*, int);
 };
 struct HostShell : Actor
 {
@@ -1837,7 +1837,7 @@ void HostShell::Actor_HitMeAlt(ParamObj* apAttacker, float afDamage, float afBlo
                 ImpactPoint impulse = direction * primary;
                 ImpactVector worldImpulse;
                 ConvertImpact(&worldImpulse, &impulse);
-                part = ((ImpactNode*)this)->TESObjectREFR_GetActorBone(scene, ImpactSelection());
+                part = ((ImpactNode*)this)->SelectPart(scene, ImpactSelection());
                 ApplyImpact(manager, &worldImpulse, part);
             }
         }

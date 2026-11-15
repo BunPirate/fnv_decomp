@@ -145,7 +145,7 @@ struct FUN_00b00820_tail
 };
 struct FUN_00b00820_shell
 {
-    FUN_00b00820_shell* BSSystemDir_ctor(unsigned int apcPath);
+    FUN_00b00820_shell* BSSystemDir_BSSystemDir(unsigned int apcPath);
     void FUN_00b006b0(unsigned int value);
 };
 struct FUN_00b00880_cls

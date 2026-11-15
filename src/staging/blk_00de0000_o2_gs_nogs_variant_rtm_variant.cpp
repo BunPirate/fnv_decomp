@@ -340,7 +340,7 @@ struct FUN_00dfcc30_vt
 void __cdecl Runtime_ForwardCall_00dfcc30(FUN_00dfcc30_vt* p);
 struct FUN_00dd0420_Class
 {
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_ctor(int);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int);
 };
 void __cdecl Object_ProcessState_00dfcd80(FUN_00dd0420_Class* self, int a);
 struct FUN_00dfce00_vt

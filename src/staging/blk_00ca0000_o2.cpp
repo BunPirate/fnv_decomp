@@ -7250,14 +7250,14 @@ struct FUN_00cbe820_cls
     FUN_00cbe820_sub m_97;
     float m_98;
 
-    FUN_00cbe820_cls* hkpHingeConstraintData_Atoms_ctor();
+    FUN_00cbe820_cls* hkpHingeConstraintData_Atoms_Atoms();
 };
 
 // Initialises the object: sets m_00 to 2, m_90 to 0xc, m_94 to 5, m_96 to 0, calls m_97.Init with 1.0f, sets m_98 to DAT_0104da48, and returns this.
 // @fnv 0x00cbe820
-// src: XBOX_RETAIL_PDB 0x00cbe820
+// src: HAVOK_LIB 0x00cbe820
 // pdb: hkpHingeConstraintData::Atoms::Atoms | hkpHingeConstraintData.obj | retail, upstream name already matches, high
-FUN_00cbe820_cls* FUN_00cbe820_cls::hkpHingeConstraintData_Atoms_ctor()
+FUN_00cbe820_cls* FUN_00cbe820_cls::hkpHingeConstraintData_Atoms_Atoms()
 {
     float one = 1.0f;
     *(volatile short*)&m_00 = 2;
@@ -10618,14 +10618,14 @@ class CBADDynamicArray : public CA0E60Array
   public:
     void Runtime_ProcessEntries_00cb9d50(void** elements, unsigned int count);
     void ReleaseItems(void** elements, unsigned int count);
-    void BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
+    void BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 
 // @fnv 0x00cbadf0
-// src: XBOX_RETAIL_PDB 0x00cbadf0
+// src: XBOX_PDB 0x00cbadf0
 // pdb: BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::SetSize | NavMesh_LoadSave.obj | retail, call graph, high
 // pdb params: aiNewSize, abFreeMemory
-void CBADDynamicArray::BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory)
+void CBADDynamicArray::BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
     if (aiNewSize == 0)
     {
@@ -11940,7 +11940,7 @@ FUN_00cbaf90::~FUN_00cbaf90()
 
 struct CBB050Array
 {
-    void BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
+    void BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 struct CBB050Object
 {
@@ -11962,7 +11962,7 @@ void CBB050Object::bhkRagdollTemplate_LoadBinary(ReadStream* arStream)
     FUN_00a7b4a0(arStream);
     unsigned int count = 0;
     Load(*arStream->binary, &count, 1);
-    array.BSSimpleArray_NiPointer_ObstacleUndoData_1024_SetSize(count, true);
+    array.BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSize(count, true);
     for (unsigned int i = 0; i < count; ++i)
         arStream->ReadLinkID();
 }

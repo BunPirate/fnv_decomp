@@ -172,7 +172,7 @@ class hkpWorld : public hkReferencedObject
     void hkpWorld_addWorldPostSimulationListener(void* worldListener);
     void hkpWorld_addWorldDeletionListener(void* worldListener);
     void hkpWorld_updateCollisionFilterOnEntity(void* entity, void* collection, int updateShape);
-    hkpWorld* hkpWorld_ctor(const hkpWorldCinfo* info, unsigned int sdkversion = 0x111d4) throw();
+    hkpWorld* hkpWorld_hkpWorld(const hkpWorldCinfo* info, unsigned int sdkversion = 0x111d4) throw();
     void hkpWorld_updateCollisionFilterOnWorld(int updateMode, int updateShapeCollectionFilter) throw();
     void hkpWorld_addPhysicsSystem(hkpPhysicsSystem* sys) throw();
 };

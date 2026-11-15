@@ -103,7 +103,7 @@ class OSGlobals;
 class Main
 {
   public:
-    void Main_KillMenuBGTexture();
+    void RefreshAfterSave();
     void RunScripts();
     void OnGameLoaded();
 };
@@ -138,7 +138,7 @@ class ModelLoader
 {
   public:
     void ModelLoader_ClearUnusedModels(bool);
-    void ModelLoader_CancelAllFiles();
+    void CancelAllFiles_00448420();
 };
 // pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
@@ -414,7 +414,7 @@ bool BGSSaveLoadManager::LoadGame(const char* apFileName, int aiDeviceID, bool a
             if (result)
                 SetSaveFileName(savedName, aiDeviceID);
         }
-        reinterpret_cast<Main*>(g_osGlobals)->Main_KillMenuBGTexture();
+        reinterpret_cast<Main*>(g_osGlobals)->RefreshAfterSave();
     }
     return result;
 }
@@ -497,7 +497,7 @@ void BGSSaveLoadManager::EndLoadGame()
 void BGSSaveLoadManager::StartLoadGame()
 {
     DAT_011c9618->ExteriorCellLoader_ClearData();
-    g_modelLoader->ModelLoader_CancelAllFiles();
+    g_modelLoader->CancelAllFiles_00448420();
     Script_ClearButtonPressed();
     Script_ClearOptimizations();
     ScriptLocals_ClearOptimizations();

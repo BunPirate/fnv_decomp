@@ -22,7 +22,7 @@ public:
     NiQuatTransform& operator=(const NiQuatTransform& rhs);
 
     const NiPoint3& GetTranslate();
-    void SetTranslate(void* kTranslate);
+    void GetTransformScale(void* kTranslate);
     void* GetRotate();
     void SetLocalRotation(void* value);
     float GetScale();

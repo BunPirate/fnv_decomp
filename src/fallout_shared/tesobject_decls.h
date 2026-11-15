@@ -56,7 +56,7 @@ class TESObjectBound
 {
   public:
     TESBoundPoint min, max;
-    void TESBoundObject_BOUND_DATA_ctor();
+    void TESBoundObject_BOUND_DATA_BOUND_DATA();
     void TESBoundObject_BOUND_DATA_Endian();
 };
 // The skeleton/biped data the reference keeps through vftable slots 0x7A/0x7C (0x2b4 bytes).

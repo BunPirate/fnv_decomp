@@ -127,15 +127,15 @@ struct FUN_00e02bb0_cls
     void* m_p0c;
 
     char* hkPlatformObjectWriter_getLayout();
-    FUN_00e02bb0_cls* hkPlatformObjectWriter_ctor(int layout);
+    FUN_00e02bb0_cls* hkPlatformObjectWriter_hkPlatformObjectWriter(int layout);
 };
 
 // Sets the vtable and flag, allocates and initialises a blob from a key and a1, and conditionally allocates a small object whose Make result is stored in m_p0c.
 // @fnv 0x00e02bb0
-// src: XBOX_RETAIL_PDB 0x00e02bb0
+// src: XBOX_PDB 0x00e02bb0
 // pdb: hkPlatformObjectWriter::hkPlatformObjectWriter | hkPlatformObjectWriter.obj | retail, upstream name already matches, high
 // pdb params: layout
-FUN_00e02bb0_cls* FUN_00e02bb0_cls::hkPlatformObjectWriter_ctor(int layout)
+FUN_00e02bb0_cls* FUN_00e02bb0_cls::hkPlatformObjectWriter_hkPlatformObjectWriter(int layout)
 {
     m_w06 = 1;
     m_vptr = DAT_010ea370;

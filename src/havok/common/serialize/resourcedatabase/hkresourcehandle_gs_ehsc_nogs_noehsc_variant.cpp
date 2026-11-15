@@ -432,7 +432,7 @@ struct S00e2e0b0_Access
 {
     void* unk00;
     void* unk04;
-    S00e2e0b0_Access* hkClassMemberAccessor_ctor(void*, S00e2e0b0_Member*);
+    S00e2e0b0_Access* hkClassMemberAccessor_hkClassMemberAccessor(void*, S00e2e0b0_Member*);
 };
 struct S00e2e0b0_Output
 {
@@ -547,7 +547,7 @@ void S00e2e0b0_Viewer::hkMemoryResourceHandle_getExternalLinks(S00e2e0b0_Array* 
         {
             out->unk00 = name;
             S00e2e0b0_Access access;
-            out->unk08 = *access.hkClassMemberAccessor_ctor(object, member);
+            out->unk08 = *access.hkClassMemberAccessor_hkClassMemberAccessor(object, member);
             out->unk04 = (const char*)(unk10[i].unk04 & ~1u);
         }
         else

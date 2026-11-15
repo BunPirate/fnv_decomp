@@ -484,7 +484,7 @@ void hkpRayCastQueryD084::CastRay(const hkpWorldRayCastInput& input, const hkpCo
 
 class hkBroadPhaseD085 {
 public:
-    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(unsigned short leafIdx);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(unsigned short leafIdx);
 };
 
 class hkHandlerD085 {
@@ -512,7 +512,7 @@ void hkHandlerD085::hkpAabbTreeWorldManager_removeObjectFromTree(hkpEntity* obje
         int i = m_kCollidables.indexOf(c);
         if (i == -1) {
             if (id != 0xffff)
-                m_pJobSemaphore->hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(id);
+                m_pJobSemaphore->hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(id);
         } else {
             m_kCollidables.removeAt(i);
         }

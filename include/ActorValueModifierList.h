@@ -30,7 +30,7 @@ public:
     float GetActorValueModifierAmount(char acKey, bool& abExists);
     float GetActorValueModifierAmount(char acKey);
     void ModifyModifier(char acKey, float afValue, ClampStyle aeClampStyle);
-    void SetModifier(char acKey, float afValue);
+    void ModifierList_SetModifier(char acKey, float afValue);
     static float ModifyAndClamp(float value, float delta, ClampStyle clamp);
     void EraseModifier(Modifier* modifier);
     void SetAllModifiers(ActorValueModifierList* other);

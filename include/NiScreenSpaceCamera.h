@@ -43,7 +43,7 @@ class NiScreenSpaceCamera : public NiCamera
 
     void __thiscall FUN_00a915d0();
     void* __thiscall FUN_00a91e60(unsigned int flags);
-    NiScreenSpaceCamera* __thiscall NiScreenSpaceCamera_ctor();
+    NiScreenSpaceCamera* __thiscall NiScreenSpaceCamera_00a91d80();
 
     PrimitiveArray<void*> m_kObjectPointers;
     PrimitiveArray<float> m_kFloatValues;

@@ -352,7 +352,7 @@ struct S5460
     virtual void v4();
     bool BSSimpleArray_NavMeshInfo_1024_ShouldGrow();
     unsigned int BSSimpleArray_NavMeshInfo_1024_GetNewSizeForGrow();
-    void* BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
+    void* BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
     void* m_iWordAt04;
     unsigned int m_8;
     unsigned int m_iThirdValue;
@@ -374,7 +374,7 @@ unsigned int S5460::GetNextIndex()
         else
         {
             unsigned int idx = BSSimpleArray_NavMeshInfo_1024_GetNewSizeForGrow();
-            BSSimpleArray_PathingAvoidNode_1024__ReallocateBuffer(idx, m_8);
+            BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(idx, m_8);
             m_iThirdValue = idx;
         }
     }

@@ -406,7 +406,7 @@ struct Body
     hkVector4* bhkRigidBody_GetLinearVelocity_00560d80();
     hkVector4* bhkRigidBody_GetAngularVelocity();
     void bhkRigidBody_SetLinearVelocity_00561690(const hkVector4*);
-    void bhkRigidBody_SetAngularVelocity(const hkVector4*);
+    void bhkRigidBody_SetAngularVelocity_005617c0(const hkVector4*);
 };
 char __cdecl bhkRigidBody_IsMotionTypeDynamic(int*);
 struct CollisionSync
@@ -548,7 +548,7 @@ void CollisionSync::bhkCollisionObject_NitohkTransform()
             __m128 angular = b->bhkRigidBody_GetAngularVelocity()->quad;
             cmp = _mm_cmple_ps(_mm_and_ps(_mm_sub_ps(angular, DAT_01267e30.quad), DAT_01017d10.quad), tolerance);
             if ((_mm_movemask_ps(cmp) & 15) != 15)
-                b->bhkRigidBody_SetAngularVelocity(&DAT_01267e30);
+                b->bhkRigidBody_SetAngularVelocity_005617c0(&DAT_01267e30);
         }
     }
     else

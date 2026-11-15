@@ -113,7 +113,7 @@ void __thiscall FUN_00464f40_class::ForwardCall_00464f40()
 // pdb params: pObject
 NavMesh* NavMesh::NavMeshPtr_NavMeshPtr_00464ff0(int a)
 {
-    NiPointer_NavMesh_ctor(a);
+    NiPointer_NavMesh_NiPointer_NavMesh_0042fd70(a);
     return this;
 }
 
@@ -1355,7 +1355,7 @@ struct FUN_0047b470_This
 };
 // Returns true when bit 0x20 is set in the word at offset 0xc and the result of FUN_0047b4b0 is zero.
 // @fnv 0x0047b470
-// src: XBOX_DEBUG_PDB 0x0047b470
+// src: XBOX_DEBUG_PDB 0x0047b470 (was COMMUNITY)
 // pdb: bhkCollisionObject::QUseVel | BGSOpenCloseForm.obj | debug, call graph (shared callers), high
 bool __thiscall FUN_0047b470_This::bhkCollisionObject_QUseVel()
 {

@@ -2222,7 +2222,7 @@ struct FUN_005cbb70_shell : public RegionObjectEntry {
 };
 
 // @fnv 0x005cbb70
-// src: XBOX_DEBUG_PDB 0x005cbb70
+// src: XBOX_DEBUG_PDB 0x005cbb70 (was COMMUNITY)
 // pdb: TESQuestTarget::QTrackingRef | TESScriptFunctions.obj | debug, call graph (shared callers), high
 TESObjectREFR* FUN_005cbb70_shell::TESQuestTarget_QTrackingRef()
 {
@@ -2368,7 +2368,7 @@ void* FUN_005d3d10_This::hkpRigidBody_getStoredDynamicMotion()
 
 
 // @fnv 0x005d3d50
-// src: XBOX_RETAIL_PDB 0x005d3d50
+// src: XBOX_RETAIL_PDB 0x005d3d50 (was EXE)
 // pdb: Script::SetIgnoreFriendlyHitsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iindex
@@ -2397,7 +2397,7 @@ BSSimpleList<ScriptVariableInfo*>* Script::GetVariableList()
 bool __cdecl Script_GetHasNoteConditionFunction(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005d5330
-// src: XBOX_RETAIL_PDB 0x005d5330
+// src: XBOX_RETAIL_PDB 0x005d5330 (was EXE)
 // pdb: Script::GetHasNoteFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pNote
@@ -2417,7 +2417,7 @@ public:
 };
 
 // @fnv 0x005d5390
-// src: XBOX_RETAIL_PDB 0x005d5390
+// src: XBOX_RETAIL_PDB 0x005d5390 (was EXE)
 // pdb: Script::AddFactionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfac, irank, pactor
@@ -2440,7 +2440,7 @@ bool __cdecl Script_AddFactionFunction(const ScriptParameter* apParameters, cons
 
 
 // @fnv 0x005d5420
-// src: XBOX_RETAIL_PDB 0x005d5420
+// src: XBOX_RETAIL_PDB 0x005d5420 (was EXE)
 // pdb: Script::RemoveFactionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfac, pactor
@@ -2945,7 +2945,7 @@ struct TESQuestObjectiveView { BGSQuestObjective* GetObjective(unsigned int); };
 struct ThreadFlags { char pad[0x268]; unsigned char bLogScripts; };
 __declspec(thread) ThreadFlags g_threadFlags;
 // @fnv 0x005d7e30
-// src: XBOX_RETAIL_PDB 0x005d7e30
+// src: XBOX_RETAIL_PDB 0x005d7e30 (was EXE)
 // pdb: Script::GetObjectiveCompletedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival, iindex, pquest, pobjective
@@ -3002,7 +3002,7 @@ struct TLS_Data {
 extern __declspec(thread) TLS_Data g_tls;
 
 // @fnv 0x005d7ef0
-// src: XBOX_RETAIL_PDB 0x005d7ef0
+// src: XBOX_RETAIL_PDB 0x005d7ef0 (was EXE)
 // pdb: Script::GetObjectiveDisplayedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival, iindex, pquest, pobjective
@@ -3093,7 +3093,7 @@ bool Cmd_ShowRenderPasses_Execute()
 void __cdecl DebugLog(const char* format, ...);
 
 // @fnv 0x005b5db0
-// src: XBOX_RETAIL_PDB 0x005b5db0
+// src: XBOX_RETAIL_PDB 0x005b5db0 (was EXE)
 // pdb: Script::FreezeRendererAccumulation | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_FreezeRendererAccumulation()
@@ -3105,7 +3105,7 @@ bool __cdecl Script_FreezeRendererAccumulation()
 void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005b5e20
-// src: XBOX_RETAIL_PDB 0x005b5e20
+// src: XBOX_RETAIL_PDB 0x005b5e20 (was EXE)
 // pdb: Script::OutputMemContexts | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_OutputMemContexts(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&)
@@ -3195,7 +3195,7 @@ bool __cdecl Interface_GetFullHelp();
 void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005b9170
-// src: XBOX_RETAIL_PDB 0x005b9170
+// src: XBOX_RETAIL_PDB 0x005b9170 (was EXE)
 // pdb: Script::ToggleFullHelp | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleFullHelp()
@@ -3217,7 +3217,7 @@ bool __cdecl Script_ToggleFullHelp()
 extern "C" void __cdecl Interface_ToggleSafeZone(int);
 
 // @fnv 0x005b9520
-// src: XBOX_RETAIL_PDB 0x005b9520
+// src: XBOX_RETAIL_PDB 0x005b9520 (was EXE)
 // pdb: Script::ToggleSafeZoneFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 char __cdecl Script_ToggleSafeZoneFunction()
@@ -4077,11 +4077,11 @@ char __cdecl Cmd_ResetPerformanceTimers_Execute()
 extern unsigned char TESImageSpaceModifier_bEnable;
 
 // @fnv 0x005d7930
-// src: XBOX_RETAIL_PDB 0x005d7930
+// src: COMMUNITY 0x005d7930
 // pdb: Script::SetImageSpaceModifiersEnable | TESScriptFunctions.obj | retail, upstream name already matches, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival
-void Script_SetImageSpaceModifiersEnable(unsigned char value)
+void SetImageSpaceModifiersEnable(unsigned char value)
 {
     TESImageSpaceModifier_bEnable = value;
 }
@@ -4344,7 +4344,7 @@ struct FUN_005dd810_Class
 };
 
 // @fnv 0x005dd810
-// src: XBOX_DEBUG_PDB 0x005dd810
+// src: XBOX_DEBUG_PDB 0x005dd810 (was COMMUNITY)
 // pdb: NiTObjectArray<NiPointer<NiTexture> >::~NiTObjectArray<NiPointer<NiTexture> > | TESScriptFunctions.obj | debug, call graph (shared callers), high
 void FUN_005dd810_Class::NiTObjectArray_NiPointer_NiTexture_dtor()
 {
@@ -4541,7 +4541,7 @@ void __cdecl SetDemiGodMode(bool);
 unsigned char __cdecl GetDemigodeMode(void);
 
 // @fnv 0x005b7000
-// src: XBOX_RETAIL_PDB 0x005b7000
+// src: XBOX_RETAIL_PDB 0x005b7000 (was EXE)
 // pdb: Script::ToggleDemigodModeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bIsDemigod
@@ -4583,7 +4583,7 @@ struct CP_008c48d0 {
 __declspec(thread) unsigned char g_tls_flag;
 
 // @fnv 0x005b9370
-// src: XBOX_RETAIL_PDB 0x005b9370
+// src: XBOX_RETAIL_PDB 0x005b9370 (was EXE)
 // pdb: Script::ToggleBordersFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleBordersFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&)
@@ -4607,7 +4607,7 @@ struct FUN_00456aa0_Class
 };
 
 // @fnv 0x005b9500
-// src: XBOX_RETAIL_PDB 0x005b9500
+// src: XBOX_RETAIL_PDB 0x005b9500 (was EXE)
 // pdb: Script::TogglePrimitivesFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_TogglePrimitivesFunction()
@@ -4673,7 +4673,7 @@ bool __cdecl Cmd_StreamMusic_Execute(const ScriptParameter* params, const char* 
 extern void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005c3c90
-// src: XBOX_RETAIL_PDB 0x005c3c90
+// src: XBOX_RETAIL_PDB 0x005c3c90 (was EXE)
 // pdb: Script::ShowFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: fValue
@@ -4877,7 +4877,7 @@ namespace fnv_005d2800 {
 
 
 // @fnv 0x005d2800
-// src: XBOX_RETAIL_PDB 0x005d2800
+// src: XBOX_RETAIL_PDB 0x005d2800 (was EXE)
 // pdb: Script::TriggerHitShaderFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: fstrength
@@ -5183,7 +5183,7 @@ extern int DAT_011e0e80;
 extern void __cdecl DebugLog(const char*);
 
 // @fnv 0x005b5cf0
-// src: XBOX_RETAIL_PDB 0x005b5cf0
+// src: XBOX_RETAIL_PDB 0x005b5cf0 (was EXE)
 // pdb: Script::PrintAILists | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_PrintAILists()
@@ -6069,7 +6069,7 @@ struct FUN_005dd7f0_class : public FUN_005e0460_class {
     void NiTPrimitiveArray_char_const_dtor();
 };
 // @fnv 0x005dd7f0
-// src: XBOX_DEBUG_PDB 0x005dd7f0
+// src: XBOX_DEBUG_PDB 0x005dd7f0 (was COMMUNITY)
 // pdb: NiTPrimitiveArray<char const *>::~NiTPrimitiveArray<char const *> | TESScriptFunctions.obj | debug, call graph (shared callers), high
 void FUN_005dd7f0_class::NiTPrimitiveArray_char_const_dtor()
 {
@@ -6361,7 +6361,7 @@ namespace fnv_005cad20 {
 struct CameraPathManager { void SetCameraPathEnabled(bool, unsigned int); };
 extern CameraPathManager* g_thePlayer;
 // @fnv 0x005cad20
-// src: XBOX_RETAIL_PDB 0x005cad20
+// src: XBOX_RETAIL_PDB 0x005cad20 (was EXE)
 // pdb: Script::EnablePlayerControlsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: isneaking, ipov, ipipboy, ibit, imovement, ilooking, irollover, ifighting
@@ -6441,7 +6441,7 @@ struct SoundH { unsigned int Deallocate(); };
 
 
 // @fnv 0x005cb8e0
-// src: XBOX_RETAIL_PDB 0x005cb8e0
+// src: XBOX_RETAIL_PDB 0x005cb8e0 (was EXE)
 // pdb: Script::ShowQuestTargetsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pTargetList, iTargetCount, cDoorName, ptargref, porigtargref, pItem, cRefName, ptrackingRef
@@ -6620,7 +6620,7 @@ extern TESObjectREFR* _g_thePlayer;
 struct FUN_00974a50_shell { void ProcessLists_FinishMagicShaderHitEffect(void*, void*); };
 void _DebugLog(const char*, ...);
 // @fnv 0x005d2130
-// src: XBOX_RETAIL_PDB 0x005d2130
+// src: XBOX_RETAIL_PDB 0x005d2130 (was EXE)
 // pdb: Script::StopMagicShader | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ftime, pshader
@@ -6671,7 +6671,7 @@ struct V18Caller
     virtual void v18(unsigned int);
 };
 // @fnv 0x005d6d10
-// src: XBOX_RETAIL_PDB 0x005d6d10
+// src: XBOX_RETAIL_PDB 0x005d6d10 (was EXE)
 // pdb: Script::ClearOwnershipFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ClearOwnershipFunction(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& afReturnValue, unsigned int& h)
@@ -6691,7 +6691,7 @@ public:
 };
 
 // @fnv 0x005d7b50
-// src: XBOX_RETAIL_PDB 0x005d7b50
+// src: XBOX_RETAIL_PDB 0x005d7b50 (was EXE)
 // pdb: Script::EvaluateSpellConditionsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ptarget
@@ -6745,7 +6745,7 @@ bool __cdecl Cmd_Sqrt_Execute(const ScriptParameter* parameters, const char* scr
 
 namespace std { float __cdecl abs(float); }
 // @fnv 0x005dc480
-// src: XBOX_RETAIL_PDB 0x005dc480
+// src: XBOX_RETAIL_PDB 0x005dc480 (was EXE)
 // pdb: Script::AbsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: farg
@@ -7033,7 +7033,7 @@ struct DisableLocalsFlagsView { void* m_pOwnerScript; char m_cActionFlags; };
 void __cdecl Script_AddPendingDisabledReference(TESObjectREFR*, bool);
 void __cdecl _FNV_Warning(const char*, ...);
 // @fnv 0x005c45e0
-// src: XBOX_RETAIL_PDB 0x005c45e0
+// src: XBOX_RETAIL_PDB 0x005c45e0 (was EXE)
 // pdb: Script::DisableFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iFade, pfade, pav
@@ -7316,7 +7316,7 @@ struct ScriptMoveHelper { static void __cdecl MoveReferenceToPosition(TESObjectR
 extern __declspec(thread) bool g_bTlsDebugMove;
 
 // @fnv 0x005ccf50
-// src: XBOX_RETAIL_PDB 0x005ccf50
+// src: XBOX_RETAIL_PDB 0x005ccf50 (was EXE)
 // pdb: Script::MoveToFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: fZ, fY, fX, pTargRef
@@ -7985,7 +7985,7 @@ extern unsigned int DAT_011ad82c;
 extern __declspec(thread) bool g_bConsoleEcho;
 
 // @fnv 0x005d4870
-// src: XBOX_RETAIL_PDB 0x005d4870
+// src: XBOX_RETAIL_PDB 0x005d4870 (was EXE)
 // pdb: Script::ToggleCastShadows | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iWhichType, ptypetext, ptypetotext
@@ -8050,7 +8050,7 @@ struct Holder { void MenuConsole_SetFileOutputName(const char*); };
 extern "C" void _DebugLog(const char*, ...);
 __declspec(thread) bool _gOutputDisabled;
 // @fnv 0x005d9170
-// src: XBOX_RETAIL_PDB 0x005d9170
+// src: XBOX_RETAIL_PDB 0x005d9170 (was EXE)
 // pdb: Script::SetConsoleOutputFileFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfilename, boff
@@ -8183,7 +8183,7 @@ extern DH* g_dataHandler;
 void CopyIdentifierBitsToValue(const unsigned int&, double&);
 
 // @fnv 0x005d9810
-// src: XBOX_RETAIL_PDB 0x005d9810
+// src: XBOX_RETAIL_PDB 0x005d9810 (was EXE)
 // pdb: Script::PlaceLeveledActorAtMeFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ilevmod, pItem, pforcezone, pplacedref, pbase, iid, pint, pworld
@@ -8357,7 +8357,7 @@ extern "C" {
     void _DebugLog(const char*);
 }
 // @fnv 0x005df930
-// src: XBOX_RETAIL_PDB 0x005df930
+// src: XBOX_RETAIL_PDB 0x005df930 (was EXE)
 // pdb: Script::GetDLCCountFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: list, tmp
@@ -8570,7 +8570,7 @@ unsigned char __cdecl CombatController_GetShowVerboseMessages(void);
 void __cdecl _DebugLog(const char*, const char*);
 
 // @fnv 0x005b6f10
-// src: XBOX_RETAIL_PDB 0x005b6f10
+// src: XBOX_RETAIL_PDB 0x005b6f10 (was EXE)
 // pdb: Script::ToggleVerboseFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleVerboseFunction()
@@ -8588,7 +8588,7 @@ bool PlayerCharacter_IsGodMode();
 void SetDemiGodMode(bool);
 unsigned char GetDemigodeMode();
 // @fnv 0x005b6f80
-// src: XBOX_RETAIL_PDB 0x005b6f80
+// src: XBOX_RETAIL_PDB 0x005b6f80 (was EXE)
 // pdb: Script::ToggleGodModeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleGodModeFunction()
@@ -8609,7 +8609,7 @@ void __cdecl Script_SetProcessScripts(bool);
 void _DebugLog(const char*, const char*);
 
 // @fnv 0x005b7070
-// src: XBOX_RETAIL_PDB 0x005b7070
+// src: XBOX_RETAIL_PDB 0x005b7070 (was EXE)
 // pdb: Script::ToggleScriptsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleScriptsFunction()
@@ -8673,7 +8673,7 @@ struct DebugLogStub { static void _DebugLog(const char*, const char*); };
 unsigned char __cdecl BSFaceGenManager_GetUseEmotions(void);
 void __cdecl SetNPCEmotionsEnabled(unsigned char);
 // @fnv 0x005b7420
-// src: XBOX_RETAIL_PDB 0x005b7420
+// src: XBOX_RETAIL_PDB 0x005b7420 (was EXE)
 // pdb: Script::ToggleEmotionsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleEmotionsFunction()
@@ -8745,7 +8745,7 @@ unsigned char __cdecl GetIsConversationsStatsEnabled(void);
 void __cdecl _DebugLog(const char*, const char*);
 
 // @fnv 0x005b9100
-// src: XBOX_RETAIL_PDB 0x005b9100
+// src: XBOX_RETAIL_PDB 0x005b9100 (was EXE)
 // pdb: Script::ToggleConversationStatsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleConversationStatsFunction()
@@ -8759,7 +8759,7 @@ void __cdecl SetIsMagicStatsEnabled(unsigned char);
 bool __cdecl GetLimbConditionEffectInitialized();
 void __cdecl _DebugLog(const char*, ...);
 // @fnv 0x005b91b0
-// src: XBOX_RETAIL_PDB 0x005b91b0
+// src: XBOX_RETAIL_PDB 0x005b91b0 (was EXE)
 // pdb: Script::ToggleMagicStatsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleMagicStatsFunction()
@@ -8800,7 +8800,7 @@ extern unsigned char DAT_011cae46;
 __declspec(thread) unsigned char g_bDebugLogEnabled;
 
 // @fnv 0x005b97f0
-// src: XBOX_RETAIL_PDB 0x005b97f0
+// src: XBOX_RETAIL_PDB 0x005b97f0 (was EXE)
 // pdb: Script::ToggleWireframeFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pRoot, pScene
@@ -8913,7 +8913,7 @@ struct TLSStandIn
 __declspec(thread) TLSStandIn g_tlsStandIn;
 
 // @fnv 0x005bbda0
-// src: XBOX_RETAIL_PDB 0x005bbda0
+// src: XBOX_RETAIL_PDB 0x005bbda0 (was EXE)
 // pdb: Script::ToggleAiDetection | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleAiDetection()
@@ -9068,7 +9068,7 @@ bool Cmd_SameSex_Execute(const ScriptParameter* parameters, const char* scriptDa
 }
 
 // @fnv 0x005c71c0
-// src: XBOX_RETAIL_PDB 0x005c71c0
+// src: XBOX_RETAIL_PDB 0x005c71c0 (was EXE)
 // pdb: Script::StartQuestFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pQuest
@@ -9085,7 +9085,7 @@ bool Script_StartQuestFunction(const ScriptParameter* a, const char* b, TESObjec
 struct QuestHelper { void MarkCompleted(bool); };
 
 // @fnv 0x005c7280
-// src: XBOX_RETAIL_PDB 0x005c7280
+// src: XBOX_RETAIL_PDB 0x005c7280 (was EXE)
 // pdb: Script::CompleteQuestFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pQuest
@@ -9121,7 +9121,7 @@ bool Cmd_GetIsCurrentWeather_Execute(const ScriptParameter* apParameters, const 
 bool __cdecl Script_GetShouldAttackConditionFunction(TESObjectREFR*, void*, void*, double*);
 
 // @fnv 0x005c74d0
-// src: XBOX_RETAIL_PDB 0x005c74d0
+// src: XBOX_RETAIL_PDB 0x005c74d0 (was EXE)
 // pdb: Script::GetShouldAttack | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pactor
@@ -9175,7 +9175,7 @@ namespace fnv_005c7a30 {
 extern PlayerCharacter* _g_thePlayer;
 bool __cdecl Script_GetIsClassConditionFunction(PlayerCharacter*, void*, void*, double&);
 // @fnv 0x005c7a30
-// src: XBOX_RETAIL_PDB 0x005c7a30
+// src: XBOX_RETAIL_PDB 0x005c7a30 (was EXE)
 // pdb: Script::GetPCIsClass | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pclass
@@ -9197,7 +9197,7 @@ namespace fnv_005c7a90 {
 extern PlayerCharacter* _g_thePlayer;
 bool __cdecl Script_GetIsRaceConditionFunction(PlayerCharacter*, void*, void*, double&);
 // @fnv 0x005c7a90
-// src: XBOX_RETAIL_PDB 0x005c7a90
+// src: XBOX_RETAIL_PDB 0x005c7a90 (was EXE)
 // pdb: Script::GetPCIsRace | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: prace
@@ -9218,7 +9218,7 @@ struct SexHelper
 };
 
 // @fnv 0x005c7af0
-// src: XBOX_RETAIL_PDB 0x005c7af0
+// src: XBOX_RETAIL_PDB 0x005c7af0 (was EXE)
 // pdb: Script::GetPCIsSex | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: esex
@@ -9237,7 +9237,7 @@ bool Script_GetPCIsSex(const ScriptParameter* apParameters, const char* apCompil
 extern TESObjectREFR* _g_thePlayer;
 
 // @fnv 0x005c7b50
-// src: XBOX_RETAIL_PDB 0x005c7b50
+// src: XBOX_RETAIL_PDB 0x005c7b50 (was EXE)
 // pdb: Script::GetPCInFaction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfaction
@@ -9274,7 +9274,7 @@ bool Cmd_GetIsUsedItemType_Execute(const ScriptParameter* apParameters, const ch
 struct Unk_005fd3d0 { void TESFaction_SetFactionReaction(TESForm*, int); };
 
 // @fnv 0x005c80a0
-// src: XBOX_RETAIL_PDB 0x005c80a0
+// src: XBOX_RETAIL_PDB 0x005c80a0 (was EXE)
 // pdb: Script::SetFactionReaction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pFaction, pFactionTarget, iReaction
@@ -9317,7 +9317,7 @@ bool __cdecl Cmd_AddTopic_Execute(const ScriptParameter* parameters, const char*
 }  // namespace fnv_005c9610
 
 // @fnv 0x005ca8d0
-// src: XBOX_RETAIL_PDB 0x005ca8d0
+// src: XBOX_RETAIL_PDB 0x005ca8d0 (was COMMUNITY)
 // pdb: Script::OnMurderFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pActor
@@ -9332,7 +9332,7 @@ bool Script_OnMurderFunction(const ScriptParameter* apParameters, const char* ap
 
 bool __cdecl Script_GetHeadingAngleConditionFunction(TESObjectREFR*, void*, void*, double*);
 // @fnv 0x005cb050
-// src: XBOX_RETAIL_PDB 0x005cb050
+// src: XBOX_RETAIL_PDB 0x005cb050 (was EXE)
 // pdb: Script::GetHeadingAngleFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pTarget
@@ -9506,7 +9506,7 @@ bool Cmd_ShowRaceMenu_Execute()
 
 struct CellDetachTime { void SetDetachTime(unsigned int, bool); };
 // @fnv 0x005d24a0
-// src: XBOX_RETAIL_PDB 0x005d24a0
+// src: XBOX_RETAIL_PDB 0x005d24a0 (was EXE)
 // pdb: Script::ResetCellFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pcell
@@ -9546,7 +9546,7 @@ bool __cdecl Cmd_WhichServiceMenu_Eval(TESObjectREFR* apRefObject, void* apConta
 void __cdecl _DebugLog(const char* apFormat, ...);
 extern __declspec(thread) bool g_DebugLogEnabled;
 // @fnv 0x005d27a0
-// src: XBOX_RETAIL_PDB 0x005d27a0
+// src: XBOX_RETAIL_PDB 0x005d27a0 (was EXE)
 // pdb: Script::GetWhichServiceFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bretval
@@ -9670,7 +9670,7 @@ struct DebugStub { bool bDebug; };
 extern __declspec(thread) DebugStub _g_theDebugStub;
 extern bool __cdecl _DebugLog(const char*, ...);
 // @fnv 0x005d52a0
-// src: XBOX_RETAIL_PDB 0x005d52a0
+// src: XBOX_RETAIL_PDB 0x005d52a0 (was EXE)
 // pdb: Script::RemoveNoteFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pNote
@@ -9727,7 +9727,7 @@ bool __cdecl Cmd_ShowLockpickMenuDebug_Execute(const ScriptParameter* parameters
     return true;
 }
 
-extern void Script_SetImageSpaceModifiersEnable(unsigned char);
+extern void SetImageSpaceModifiersEnable(unsigned char);
 
 // @fnv 0x005d78c0
 // src: EXE 0x005d78c0
@@ -9740,9 +9740,9 @@ bool Cmd_SetImageSpaceModifiersEnable_Execute(const ScriptParameter* parameters,
                      script, locals, &argument))
         return false;
     if (argument == 0)
-        Script_SetImageSpaceModifiersEnable(0);
+        SetImageSpaceModifiersEnable(0);
     if (argument == 1)
-        Script_SetImageSpaceModifiersEnable(1);
+        SetImageSpaceModifiersEnable(1);
     return true;
 }
 
@@ -9755,7 +9755,7 @@ void __cdecl _DebugLog(const char*, ...);
 extern __declspec(thread) bool g_bDebugEnabled;
 
 // @fnv 0x005d7990
-// src: XBOX_RETAIL_PDB 0x005d7990
+// src: XBOX_RETAIL_PDB 0x005d7990 (was EXE)
 // pdb: Script::GetIsTurningFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_GetIsTurningFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
@@ -9794,7 +9794,7 @@ bool Script_GetAnimActionFunction(const ScriptParameter* apParameters, const cha
 bool __cdecl Cmd_Exists_Eval(void*, void*, void*, double*);
 
 // @fnv 0x005d7b80
-// src: XBOX_RETAIL_PDB 0x005d7b80
+// src: XBOX_RETAIL_PDB 0x005d7b80 (was EXE)
 // pdb: Script::ExistsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pTargRef
@@ -9975,7 +9975,7 @@ struct Tile_ { Menu* GetMenu(); };
 Menu* __cdecl FindMenuById(int);
 
 // @fnv 0x005dc4e0
-// src: XBOX_RETAIL_PDB 0x005dc4e0
+// src: XBOX_RETAIL_PDB 0x005dc4e0 (was EXE)
 // pdb: Script::ForceTerminalBackFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pmenutile, pmenu
@@ -9997,7 +9997,7 @@ extern const char* const g_011d4dec_arg1;
 extern bool DAT_011ad80f;
 
 // @fnv 0x005dc530
-// src: XBOX_RETAIL_PDB 0x005dc530
+// src: XBOX_RETAIL_PDB 0x005dc530 (was EXE)
 // pdb: Script::ToggleDepthBiasFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleDepthBiasFunction()
@@ -10119,7 +10119,7 @@ void __cdecl BSTaskThread_SetPauseSleepValue(int);
 void _DebugLog(const char*, ...);
 
 // @fnv 0x005de3a0
-// src: XBOX_RETAIL_PDB 0x005de3a0
+// src: XBOX_RETAIL_PDB 0x005de3a0 (was EXE)
 // pdb: Script::SetTaskThreadSleepFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival
@@ -10138,7 +10138,7 @@ extern "C" void _DebugLog(const char*, ...);
 void BSTaskThread_SetUpdateSleepValue(int);
 
 // @fnv 0x005de420
-// src: XBOX_RETAIL_PDB 0x005de420
+// src: XBOX_RETAIL_PDB 0x005de420 (was EXE)
 // pdb: Script::SetTaskThreadUpdateSleepFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival
@@ -10247,7 +10247,7 @@ extern TES* g_TES;
 void _DebugLog(const char*, const char*);
 extern __declspec(thread) unsigned char g_tls[0x269];
 // @fnv 0x005b9540
-// src: XBOX_RETAIL_PDB 0x005b9540
+// src: XBOX_RETAIL_PDB 0x005b9540 (was EXE)
 // pdb: Script::ToggleSkyFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_ToggleSkyFunction()
@@ -10330,7 +10330,7 @@ bool Cmd_EnableNavMesh_Execute(const ScriptParameter* parameters, const char* sc
 }  // namespace fnv_005bd300
 
 // @fnv 0x005c81f0
-// src: XBOX_RETAIL_PDB 0x005c81f0
+// src: XBOX_RETAIL_PDB 0x005c81f0 (was EXE)
 // pdb: Script::SetEnemyFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pFaction, pFactionTarget, iTargReaction, iReaction
@@ -10698,7 +10698,7 @@ public:
 using ::SettingT;
 
 // @fnv 0x005b6c50
-// src: XBOX_RETAIL_PDB 0x005b6c50
+// src: XBOX_RETAIL_PDB 0x005b6c50 (was EXE)
 // pdb: Script::SaveIniFiles | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool Script_SaveIniFiles()
@@ -11495,7 +11495,7 @@ bool __cdecl Script_GetIsFormTypeFunction(
     }
 
 // @fnv 0x005c4940
-// src: XBOX_RETAIL_PDB 0x005c4940
+// src: XBOX_RETAIL_PDB 0x005c4940 (was EXE)
 // pdb: Script::GetIsFormTypeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: input
@@ -11570,7 +11570,7 @@ void __cdecl BSTreeManager_SetTreesEnabled(bool);
 void __cdecl _DebugLog(const char*, const char*);
 
 // @fnv 0x005c57f0
-// src: XBOX_RETAIL_PDB 0x005c57f0
+// src: XBOX_RETAIL_PDB 0x005c57f0 (was EXE)
 // pdb: Script::ToggleTrees | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleTrees(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)
@@ -11707,7 +11707,7 @@ struct XActor
 };
 
 // @fnv 0x005c8340
-// src: XBOX_RETAIL_PDB 0x005c8340
+// src: XBOX_RETAIL_PDB 0x005c8340 (was EXE)
 // pdb: Script::RemoveFromAllFactionsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pextra, pactor
@@ -11814,7 +11814,7 @@ void __cdecl RouletteMenu_Create(TESCasino*, int, int, int, int);
 TESObjectREFR* _g_thePlayer;
 
 // @fnv 0x005cf1a0
-// src: XBOX_RETAIL_PDB 0x005cf1a0
+// src: XBOX_RETAIL_PDB 0x005cf1a0 (was EXE)
 // pdb: Script::ShowRouletteMenu | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pCasino, iMaxBet, iMinBet, iMinWinnings
@@ -12139,7 +12139,7 @@ bool Script_FlushPersistantActors(const ScriptParameter* apParameters,
     DAT_011e0e80.ProcessLists_FlushNonPersistentActors(iCount);
 
 // @fnv 0x005d4400
-// src: XBOX_RETAIL_PDB 0x005d4400
+// src: XBOX_RETAIL_PDB 0x005d4400 (was EXE)
 // pdb: Script::FlushPersistantActors | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iCount
@@ -12544,7 +12544,7 @@ struct VFinal : VDerived
 };
 
 // @fnv 0x005d7a30
-// src: XBOX_RETAIL_PDB 0x005d7a30
+// src: XBOX_RETAIL_PDB 0x005d7a30 (was EXE)
 // pdb: Script::UseWeaponFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ptargetLocRef, bholdFire, pweapon, prefTarget, bcrouch, bdoNoDamage, plocRef, inumattack, balwaysHit, pactor
@@ -13483,7 +13483,7 @@ bool Interface_IsConsoleVisible();
 void Interface_PrintLine(const char*,...);
 extern const char DAT_01034044[];
 // @fnv 0x00594e40
-// src: XBOX_RETAIL_PDB 0x00594e40
+// src: XBOX_RETAIL_PDB 0x00594e40 (was EXE)
 // pdb: FOScriptFunctions::GetVATSValueConditionFunction | FOScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apRefObject, apParam1, apParam2, afReturnValue
 // pdb locals: bresult, pvatsCommand, equery, plist, pweapon, pcheck, etype
@@ -14026,7 +14026,7 @@ void Interface_PrintLine(const char* fmt, const char* s);
 void TESTerrainLODManager_UpdateGrass(Vec3f a, Vec3f b, float c);
 
 // @fnv 0x005b70c0
-// src: XBOX_RETAIL_PDB 0x005b70c0
+// src: XBOX_RETAIL_PDB 0x005b70c0 (was EXE)
 // pdb: Script::ToggleGrassFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pgnode, bgrassoff, pcam
@@ -14812,7 +14812,7 @@ struct TLSData_5bbc50 {
 extern __declspec(thread) TLSData_5bbc50 tlsData_5bbc50;
 
 // @fnv 0x005bbc50
-// src: XBOX_RETAIL_PDB 0x005bbc50
+// src: XBOX_RETAIL_PDB 0x005bbc50 (was EXE)
 // pdb: Script::SetGlobalRadialBlur | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bret, frampup, fstrength, fdownstart, frampdown, fstart
@@ -14859,7 +14859,7 @@ extern __declspec(thread) bool g_bConsoleEcho;
 extern void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005bbe10
-// src: XBOX_RETAIL_PDB 0x005bbe10
+// src: XBOX_RETAIL_PDB 0x005bbe10 (was EXE)
 // pdb: Script::ToggleActorAI | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pActor
@@ -15001,7 +15001,7 @@ struct PathingHandle {
 PathingHandle* __stdcall DebugTextManager_GetSingleton(const char* name, int flags);
 
 // @fnv 0x005bd3c0
-// src: XBOX_RETAIL_PDB 0x005bd3c0
+// src: XBOX_RETAIL_PDB 0x005bd3c0 (was EXE)
 // pdb: Script::TogglePathingInfoFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_TogglePathingInfoFunction()
@@ -15893,7 +15893,7 @@ bool Script_ParseParameters(int a0, int a1, int a7, int a2, int a3, int a4, int 
 void Interface_PrintLine_00703c80(BSStringT<char> text);
 
 // @fnv 0x005bfbf0
-// src: XBOX_RETAIL_PDB 0x005bfbf0
+// src: XBOX_RETAIL_PDB 0x005bfbf0 (was EXE)
 // pdb: Script::SetTreeMipmapBias | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: foldlodtrees, floadedtrees, foldloadedtrees, temp, flodtrees
@@ -16068,7 +16068,7 @@ struct S_005c1710_Result
 
 
 // @fnv 0x005c1710
-// src: XBOX_RETAIL_PDB 0x005c1710
+// src: XBOX_RETAIL_PDB 0x005c1710 (was EXE)
 // pdb: Script::SkipAnimFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_SkipAnimFunction(
@@ -16359,7 +16359,7 @@ struct TESStub {
 extern TESStub* g_pTESStub;
 
 // @fnv 0x005c5680
-// src: XBOX_RETAIL_PDB 0x005c5680
+// src: XBOX_RETAIL_PDB 0x005c5680 (was EXE)
 // pdb: Script::ToggleCellNode | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iindex, pnodename, bval
@@ -16492,7 +16492,7 @@ extern void __cdecl Warning_005b5e40(const char*);
 extern void __cdecl BSsprintf(char*, unsigned int, const char*, const char*);
 extern Service* __cdecl FUN_00652110();
 // @fnv 0x005c6430
-// src: XBOX_RETAIL_PDB 0x005c6430
+// src: XBOX_RETAIL_PDB 0x005c6430 (was EXE)
 // pdb: Script::DumpModelMap | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfileName, input, outfile
@@ -16556,7 +16556,7 @@ bool __cdecl B5C6ED0ExtractArgs(B5C6ED0ParamInfo* pkParamInfo, B5C6ED0ScriptData
 bool __cdecl Script_IsCurrentFurnitureObjConditionFunction(B5C6ED0Ref* pkThisObj, B5C6ED0Form* pkForm, int iUnk, double* pdResult);
 
 // @fnv 0x005c6ed0
-// src: XBOX_RETAIL_PDB 0x005c6ed0
+// src: XBOX_RETAIL_PDB 0x005c6ed0 (was EXE)
 // pdb: Script::IsCurrentFurnitureObj | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfurniture
@@ -16577,7 +16577,7 @@ bool __cdecl Script_ParseParameters(void* pvParamInfo, void* pvScriptData, void*
 bool __cdecl Cmd_Shared_Eval_59e0f0(C6F50Form* pkForm, C6F50Form* pkTarget, void* pvUnused, double& rdResult);
 
 // @fnv 0x005c6f50
-// src: XBOX_RETAIL_PDB 0x005c6f50
+// src: XBOX_RETAIL_PDB 0x005c6f50 (was EXE)
 // pdb: Script::GetTalkedToPCParam | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pTarget
@@ -16609,7 +16609,7 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 extern bool __cdecl Cmd_Shared_Eval_59ef60(TESObjectREFR*, void*, void*, double&);
 
 // @fnv 0x005c7590
-// src: XBOX_RETAIL_PDB 0x005c7590
+// src: XBOX_RETAIL_PDB 0x005c7590 (was EXE)
 // pdb: Script::GetInCellParam | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pcell, pref
@@ -16682,7 +16682,7 @@ extern "C" unsigned char __cdecl Script_ParseParameters(int,int,int,int,int,int,
 extern "C" int __cdecl Script_IsInListConditionFunction(int,int,int,int);
 
 // @fnv 0x005c7c10
-// src: XBOX_RETAIL_PDB 0x005c7c10
+// src: XBOX_RETAIL_PDB 0x005c7c10 (was EXE)
 // pdb: Script::IsInListFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pformlist
@@ -16819,7 +16819,7 @@ struct Unk_005fd400
 };
 
 // @fnv 0x005c82c0
-// src: XBOX_RETAIL_PDB 0x005c82c0
+// src: XBOX_RETAIL_PDB 0x005c82c0 (was EXE)
 // pdb: Script::ModFactionReaction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pFaction, pFactionTarget, iReaction
@@ -16845,7 +16845,7 @@ bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int 
 bool __cdecl Script_GetDispositionConditionFunction(int a1, unsigned int apParam1, int apParam2, int afReturnValue);
 
 // @fnv 0x005c8450
-// src: XBOX_RETAIL_PDB 0x005c8450
+// src: XBOX_RETAIL_PDB 0x005c8450 (was EXE)
 // pdb: Script::GetDisposition | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pactor
@@ -16985,7 +16985,7 @@ bool ParseControlArgs5cae30(void* a1, void* a2, void* a7, void* a3, void* a4, vo
                             int* p1, int* p2, int* p3, int* p4, int* p5, int* p6, int* p7);
 
 // @fnv 0x005cae30
-// src: XBOX_RETAIL_PDB 0x005cae30
+// src: XBOX_RETAIL_PDB 0x005cae30 (was EXE)
 // pdb: Script::DisablePlayerControlsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: isneaking, ipov, ipipboy, ibit, imovement, ilooking, irollover, ifighting
@@ -17025,7 +17025,7 @@ bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigne
 bool __cdecl Script_GetCrimeConditionFunction(TESObjectREFR*, unsigned int, unsigned int, double&);
 
 // @fnv 0x005cc2f0
-// src: XBOX_RETAIL_PDB 0x005cc2f0
+// src: XBOX_RETAIL_PDB 0x005cc2f0 (was EXE)
 // pdb: Script::GetCrimeFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pCriminal, iCrime
@@ -18866,7 +18866,7 @@ extern ScriptSingleton* DAT_011c3b3c;
 bool __cdecl Script_ParseParameters(int aA, int aB, int aC, int aD, int aE, int aF, int aG, ScriptOwner** aOut);
 
 // @fnv 0x005d22d0
-// src: XBOX_RETAIL_PDB 0x005d22d0
+// src: XBOX_RETAIL_PDB 0x005d22d0 (was EXE)
 // pdb: Script::PreloadMagicEffect | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: peffectSetting, spmodel
@@ -19268,7 +19268,7 @@ float __cdecl BSMAX_00404010(float a, float b);
 float __cdecl BSMIN(float a, float b);
 
 // @fnv 0x005d23d0
-// src: XBOX_RETAIL_PDB 0x005d23d0
+// src: XBOX_RETAIL_PDB 0x005d23d0 (was EXE)
 // pdb: Script::SetActorAlpha | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: fpercent
@@ -19392,7 +19392,7 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 extern NiColorA g_DefaultColor;
 
 // @fnv 0x005d3780
-// src: XBOX_RETAIL_PDB 0x005d3780
+// src: XBOX_RETAIL_PDB 0x005d3780 (was EXE)
 // pdb: Script::ModifyWaterShaderDeepColor | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: r, g, b, pkWaterProp, pnode, pobj, pprop
@@ -19434,7 +19434,7 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 extern NiColorA g_kDefaultImageSpaceColor;
 
 // @fnv 0x005d3930
-// src: XBOX_RETAIL_PDB 0x005d3930
+// src: XBOX_RETAIL_PDB 0x005d3930 (was EXE)
 // pdb: Script::ModifyWaterShaderReflectionColor | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: r, g, b, pkWaterProp, pnode, pobj, pprop
@@ -20049,7 +20049,7 @@ extern "C" DebugPageOwner* __stdcall FUN_005ba8d1(unsigned char*, int);
 extern int DAT_011dea3c;
 
 // @fnv 0x005d5020
-// src: XBOX_RETAIL_PDB 0x005d5020
+// src: XBOX_RETAIL_PDB 0x005d5020 (was EXE)
 // pdb: Script::SendSherlockDebugPage | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bret, ptextPage, ppageName
@@ -20447,7 +20447,7 @@ public:
 };
 struct ProbeResult { void FUN_0097fb80(); };
 // @fnv 0x005d5720
-// src: XBOX_RETAIL_PDB 0x005d5720
+// src: XBOX_RETAIL_PDB 0x005d5720 (was EXE)
 // pdb: Script::DebugCombatPlanFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pactor, pcombatController
@@ -20539,7 +20539,7 @@ extern const char DAT_010399bc;
 extern const char DAT_01039f58;
 extern __declspec(thread) unsigned char isScriptDebugging;
 // @fnv 0x005d6a60
-// src: XBOX_RETAIL_PDB 0x005d6a60
+// src: XBOX_RETAIL_PDB 0x005d6a60 (was EXE)
 // pdb: Script::SetActorsAIFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pActor, iComplex
@@ -21000,7 +21000,7 @@ bool Script_ParseParameters(int a1, int a2, int a3, NiCallbackHost* a4, int a5, 
 void FalloutRadio_EnableNPCRadio(NiCallbackHost* apNPCRadio, unsigned int apTargetStation);
 void FalloutRadio_DisableNPCRadio(NiCallbackHost* a1);
 // @fnv 0x005d8100
-// src: XBOX_RETAIL_PDB 0x005d8100
+// src: XBOX_RETAIL_PDB 0x005d8100 (was EXE)
 // pdb: Script::SetNPCRadio | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pstation, istate, ptarget
@@ -23586,7 +23586,7 @@ struct Collector {
     Collector();
     ~Collector();
     void* BGSTextureUseMap_BGSTextureUseMap();
-    void CollectTexUseDataRecursive(int value, char flag);
+    void BGSTextureUseMap_CollectTexUseDataRecursive(int value, char flag);
     void BGSTextureUseMap_CollectTextureUseDataForLoadedArea(int abCheckActors);
     bool BGSTextureUseMap_WriteToFile(char* apFilename);
     unsigned int BGSTextureUseMap_GetTotalTextureSize();
@@ -23607,7 +23607,7 @@ bool __cdecl Script_OutputTextureUseMap(const ScriptParameter* apParameters, con
         strcpy_s(buf, 0x200, "TextureUseMap.txt");
     Collector coll;
     if (apRefObject && apRefObject->GetUse())
-        coll.CollectTexUseDataRecursive(apRefObject->GetUse(), 1);
+        coll.BGSTextureUseMap_CollectTexUseDataRecursive(apRefObject->GetUse(), 1);
     else
         coll.BGSTextureUseMap_CollectTextureUseDataForLoadedArea(1);
     if (coll.BGSTextureUseMap_WriteToFile(buf))
@@ -23891,7 +23891,7 @@ struct ConsoleTLS {
 extern __declspec(thread) ConsoleTLS g_consoleTLS;
 
 // @fnv 0x005b6d40
-// src: XBOX_RETAIL_PDB 0x005b6d40
+// src: XBOX_RETAIL_PDB 0x005b6d40 (was EXE)
 // pdb: Script::ToggleMapMarkersFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pworldlist, ienabletravel, iturnon, ishowall, pmarkerlist, pworld, pdata, pref
@@ -24268,7 +24268,7 @@ void __cdecl Interface_SetMenuSystemVisible(bool bShow);
 
 // Script command: ToggleMenus.
 // @fnv 0x005b9490
-// src: XBOX_RETAIL_PDB 0x005b9490
+// src: XBOX_RETAIL_PDB 0x005b9490 (was EXE)
 // pdb: Script::ToggleMenusFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleMenusFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject,
@@ -24290,7 +24290,7 @@ extern const char str_010399b8[];
 extern const char str_010399bc[];
 
 // @fnv 0x005b9720
-// src: XBOX_RETAIL_PDB 0x005b9720
+// src: XBOX_RETAIL_PDB 0x005b9720 (was EXE)
 // pdb: Script::ToggleLeavesFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_ToggleLeavesFunction(void)
@@ -24316,7 +24316,7 @@ void __cdecl BSShaderPPLightingProperty_SetRefractionRecurse(void*,bool,float,bo
 
 
 // @fnv 0x005b9950
-// src: XBOX_RETAIL_PDB 0x005b9950
+// src: XBOX_RETAIL_PDB 0x005b9950 (was EXE)
 // pdb: Script::SetTargetRefraction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: famount, pactor, benabled, pobj3D
@@ -25273,7 +25273,7 @@ struct DiagnosticRef {
 extern char collisionRTTI;
 DiagnosticObject* CastCollision(const void*, DiagnosticObject*);
 // @fnv 0x005bade0
-// src: XBOX_RETAIL_PDB 0x005bade0
+// src: XBOX_RETAIL_PDB 0x005bade0 (was EXE)
 // pdb: Script::ShowViewerStringsFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: strings, pobj, pnode, i, phkcol, pcol
@@ -25337,7 +25337,7 @@ int BSstrcmp(const char*, const char*);
 bool Script_ParseParameters(int, int, int, int, int, int, int, char*);
 
 // @fnv 0x005bb030
-// src: XBOX_RETAIL_PDB 0x005bb030
+// src: XBOX_RETAIL_PDB 0x005bb030 (was EXE)
 // pdb: Script::ToggleLODLandFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bwater, bland, btrees, pm, bobjects, input
@@ -26164,7 +26164,7 @@ struct SettingCollection {
 SettingCollection* __cdecl FUN_00404a70();
 SettingCollection* __cdecl FUN_0044f560();
 // @fnv 0x005bc950
-// src: XBOX_RETAIL_PDB 0x005bc950
+// src: XBOX_RETAIL_PDB 0x005bc950 (was EXE)
 // pdb: Script::HelpFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: unused, n, helpSearchString, iniArray, gsArray, i, pdesc
@@ -27888,7 +27888,7 @@ void __cdecl _FNV_Warning(const char*, ...);
 int __cdecl _stricmp(const char*, const char*);
 
 // @fnv 0x005c0df0
-// src: XBOX_RETAIL_PDB 0x005c0df0
+// src: XBOX_RETAIL_PDB 0x005c0df0 (was EXE)
 // pdb: Script::PlayGroupFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: eAnimGroup, iFlags, pactor, obj3D, pobj, pmanager, po, pseq, n, pdisableSeq
@@ -27986,7 +27986,7 @@ int _stricmp(const char*, const char*);
 
 
 // @fnv 0x005c12a0
-// src: XBOX_RETAIL_PDB 0x005c12a0
+// src: XBOX_RETAIL_PDB 0x005c12a0 (was EXE)
 // pdb: Script::PlayExplosionFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: obj3D, pobj, pmanager, po, pseq, n, pdisableSeq
@@ -28059,7 +28059,7 @@ struct AnimGroupEntry5C14 {
 extern AnimGroupEntry5C14 DAT_011977d8[];
 
 // @fnv 0x005c14a0
-// src: XBOX_RETAIL_PDB 0x005c14a0
+// src: XBOX_RETAIL_PDB 0x005c14a0 (was EXE)
 // pdb: Script::IsAnimPlayingFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: eAnimGroup, iFlags, panim, n, pav, pnode, pmanager, po, pseq
@@ -28536,7 +28536,7 @@ extern const char g_011cba00_arg1[];
 bool __cdecl QueueUIMessage(const char* pcMessage, int iType, const char* pcIcon, const char* pcSound, float fDuration, bool bInstant);
 
 // @fnv 0x005c1d40
-// src: XBOX_RETAIL_PDB 0x005c1d40
+// src: XBOX_RETAIL_PDB 0x005c1d40 (was EXE)
 // pdb: Script::AddSpellFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pSpellItem, pActor, xstring, xicon
@@ -28911,7 +28911,7 @@ TESContainer* __fastcall TESObjectREFR_HasContainer(TESObjectREFR*);
 
 
 // @fnv 0x005c3450
-// src: XBOX_RETAIL_PDB 0x005c3450
+// src: XBOX_RETAIL_PDB 0x005c3450 (was EXE)
 // pdb: Script::ShowVarsFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bglobal, pCont, ownerScript, ownerLocals, pList, pVar, iid, fval, iCount, pinventory, i, pitem, pGlobal
@@ -29103,7 +29103,7 @@ bool __cdecl ExtractQuest(int,int,int,int,int,int,int,QuestView**);
 void __cdecl Script_GetNumericIDFromDouble(unsigned int*, const double*);
 void __cdecl DebugLog(const char*,...);
 // @fnv 0x005c3960
-// src: XBOX_RETAIL_PDB 0x005c3960
+// src: XBOX_RETAIL_PDB 0x005c3960 (was EXE)
 // pdb: Script::ShowQuestVarsFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pQuest, ownerScript, ownerLocals, pList, pVar, iid, fval
@@ -29865,7 +29865,7 @@ extern unsigned int __cdecl FUN_00e7bd20(unsigned int);
 extern unsigned int __cdecl NiXenonRenderer_GetD3DFormatString(unsigned int);
 extern unsigned int __cdecl FUN_00ec6130(const char*);
 // @fnv 0x005c5a70
-// src: XBOX_RETAIL_PDB 0x005c5a70
+// src: XBOX_RETAIL_PDB 0x005c5a70 (was EXE)
 // pdb: Script::DumpTexturePalette | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: imaxtex, pTex, input, outfile, ultotalMemory, pLargestTex, uitexCount, pcell, pworld, itexsize, idx, i, icompsize, bsystemtex, pcattext, ptextext, buf, pfmt, prtti, eFormat, psrctex, ptexname
@@ -30061,7 +30061,7 @@ bool __cdecl B5C72E0ExtractArgs(B5C72E0ParamInfo* pkParamInfo, B5C72E0ScriptData
 bool __cdecl Script_GetFactionRankDifferenceConditionFunction(B5C72E0Ref* pkThisObj, B5C72E0Form* pkCurrentObject, B5C72E0Form* pkSecond, double* pdResult);
 
 // @fnv 0x005c72e0
-// src: XBOX_RETAIL_PDB 0x005c72e0
+// src: XBOX_RETAIL_PDB 0x005c72e0 (was EXE)
 // pdb: Script::GetFactionRankDifference | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfaction, pactor
@@ -30083,7 +30083,7 @@ struct FUN_00544340_Obj {
 bool __cdecl Script_ParseParameters(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int* a8, int* a9);
 
 // @fnv 0x005c7660
-// src: XBOX_RETAIL_PDB 0x005c7660
+// src: XBOX_RETAIL_PDB 0x005c7660 (was EXE)
 // pdb: Script::SetCellPublicFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iFlag, pCell
@@ -30138,7 +30138,7 @@ bool Cmd_SetFactionRank_Execute(const ScriptParameter* paramInfo, const char* sc
 
 extern bool __cdecl Script_GetDispositionConditionFunction(TESObjectREFR*, void*, int, double&);
 // @fnv 0x005c8510
-// src: XBOX_RETAIL_PDB 0x005c8510
+// src: XBOX_RETAIL_PDB 0x005c8510 (was EXE)
 // pdb: Script::ModDisposition | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ptarget, pactor, iValue
@@ -32810,7 +32810,7 @@ public:
 };
 
 // @fnv 0x005cc240
-// src: XBOX_RETAIL_PDB 0x005cc240
+// src: XBOX_RETAIL_PDB 0x005cc240 (was EXE)
 // pdb: Script::GetCrimeKnownFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pCriminal, pVictim, iCrime
@@ -33802,7 +33802,7 @@ virtual void v228();
 virtual bool v22c(int);
 Process* FUN_008d8520(); void Actor_GetOutofFurnitureQuick(); Cell* FUN_008d6f30(); World* TESObjectREFR_GetWorldSpace(); const NiPoint3& FUN_00430830();
 void PlayerCharacter_RequestPositionPlayer(MoveRequest*); void TESObjectREFR_SetLocationOnReference(NiPoint3*); void TESObjectREFR_SetAngleOnReferenceZ(float); void TESObjectREFR_SetAngleOnReferenceX(float); Matrix TESObjectREFR_GetOrientation();
-Motion* FUN_009306d0(); void StopMoving_008b3ab0(); void FadeIn(); void FUN_008c4640(); void PlayerCharacter_CheckForQuestTargetUpdate(Reference*);
+Motion* FUN_009306d0(); void StopMoving_008b3ab0(); void FadeIn_008bcd20(); void FUN_008c4640(); void PlayerCharacter_CheckForQuestTargetUpdate(Reference*);
 };
 extern Reference* DAT_011dea3c;
 struct ActorManager { void ProcessLists_StopCombatandAlarmonActor(Reference*,int); };
@@ -33871,7 +33871,7 @@ void __cdecl Script_MoveToFunctionBase(Reference* moved,Reference* apTargetRef,f
          actorSource->FUN_008d8520()->v028();
          actorSource->StopMoving_008b3ab0();
          actorSource->FUN_008d8520()->v024(actorSource,1);
-         actorSource->FadeIn();
+         actorSource->FadeIn_008bcd20();
          actorSource->FUN_008c4640();
        } else Warning_005b5e40("AI: Actor being moved is Disabled he has no process");
      }
@@ -33927,7 +33927,7 @@ extern void TaskQueueInterface_QueueScriptFunctionCall(void*, int, RefCD*, ...);
 extern void Script_MoveToFunctionBase(RefCD*, int, float, float, float);
 struct CmdCD { static bool Script_MoveToFadeFunction(void*, void*, RefCD*, RefCD*, RefCD*, void*, void*, void*); };
 // @fnv 0x005cd0e0
-// src: XBOX_RETAIL_PDB 0x005cd0e0
+// src: XBOX_RETAIL_PDB 0x005cd0e0 (was EXE)
 // pdb: Script::MoveToFadeFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: fZ, fY, fX, pTargRef, pactor, phighProcess
@@ -33984,7 +33984,7 @@ public:
 void __cdecl MovePlayerToRef(QuestPlayer*, TESObjectREFR*, float, float, float);
 
 // @fnv 0x005cd330
-// src: XBOX_RETAIL_PDB 0x005cd330
+// src: XBOX_RETAIL_PDB 0x005cd330 (was EXE)
 // pdb: Script::MoveToQuestTargetFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pTargRef, iTargetNumber, pTargetList, iTargetCount, pItem
@@ -34038,7 +34038,7 @@ void __cdecl DebugLog(const char*, ...);
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, ...);
 
 // @fnv 0x005cd750
-// src: XBOX_RETAIL_PDB 0x005cd750
+// src: XBOX_RETAIL_PDB 0x005cd750 (was EXE)
 // pdb: Script::SelectPlayerSpellFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pparamForm, pspell, pbook
@@ -34702,7 +34702,7 @@ struct ShaderEffectQueue { void ProcessLists_AddTempEffect(ShaderEffect*); };
 bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, TESForm**, float*);
 
 // @fnv 0x005d1b80
-// src: XBOX_RETAIL_PDB 0x005d1b80
+// src: XBOX_RETAIL_PDB 0x005d1b80 (was EXE)
 // pdb: Script::PlayMagicShader | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pcell, ftime, tempMemContext, pshader, peffect
@@ -34964,7 +34964,7 @@ float NiCos(float);
 float NiSin_005c53d0(float);
 EffectInstance* BSTempEffectParticle_Spawn(TESObjectCELL*,float,void*,EffectVector,EffectVector,float,int,int);
 // @fnv 0x005d1dc0
-// src: XBOX_RETAIL_PDB 0x005d1dc0
+// src: XBOX_RETAIL_PDB 0x005d1dc0 (was EXE)
 // pdb: Script::PlayMagicEffect | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pcell, ftime, peffect, peffectSetting, rotation, location, direction
@@ -35012,7 +35012,7 @@ bool Script_PlayMagicEffect(const ScriptParameter* apParameters, const char* apC
 void __cdecl FUN_004d5e10(TESForm* apTarget, TESForm* apSource);
 
 // @fnv 0x005d2520
-// src: XBOX_RETAIL_PDB 0x005d2520
+// src: XBOX_RETAIL_PDB 0x005d2520 (was EXE)
 // pdb: Script::ModPCMiscStat | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: eid, iamount
@@ -35031,7 +35031,7 @@ bool __cdecl Script_IsActorRidingHorseConditionFunction(TESObjectREFR* apRef, in
 
 // Script command: Is actor riding horse.
 // @fnv 0x005d28b0
-// src: XBOX_RETAIL_PDB 0x005d28b0
+// src: XBOX_RETAIL_PDB 0x005d28b0 (was EXE)
 // pdb: Script::IsActorRidingHorseFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bretval
@@ -35203,7 +35203,7 @@ extern "C" __declspec(dllimport) int __stdcall QueryPerformanceCounter(long long
 extern "C" __declspec(dllimport) int __stdcall QueryPerformanceFrequency(long long*);
 
 // @fnv 0x005d2a80
-// src: XBOX_RETAIL_PDB 0x005d2a80
+// src: XBOX_RETAIL_PDB 0x005d2a80 (was EXE)
 // pdb: Script::ModifyWaterShader | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: input, value, pkWaterProp, pobj, pprop, Ticks, End, TicksPerSecond, pcmsg, Start, fTicksPerMicrosecond
@@ -35442,7 +35442,7 @@ namespace fnv_005d35d0 {
 extern NiColorA DAT_011ff3b8;
 
 // @fnv 0x005d35d0
-// src: XBOX_RETAIL_PDB 0x005d35d0
+// src: XBOX_RETAIL_PDB 0x005d35d0 (was EXE)
 // pdb: Script::ModifyWaterShaderShallowColor | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: r, g, b, pkWaterProp, pnode, pobj, pprop
@@ -35478,7 +35478,7 @@ struct FUN_005d4190_helper {
 };
 
 // @fnv 0x005d4190
-// src: XBOX_RETAIL_PDB 0x005d4190
+// src: XBOX_RETAIL_PDB 0x005d4190 (was EXE)
 // pdb: Script::RunCellTest | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ioptions
@@ -36144,7 +36144,7 @@ void __cdecl Interface_PrintLine(const char* format, ...);
 void __cdecl Interface_PrintLine(const char* format, double val);
 
 // @fnv 0x005d5850
-// src: XBOX_RETAIL_PDB 0x005d5850
+// src: XBOX_RETAIL_PDB 0x005d5850 (was EXE)
 // pdb: Script::ToggleCombatDebugFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pdebug, boff
@@ -36544,7 +36544,7 @@ void __cdecl ourStrcpy(char*, const char*);
 CombatStrategy* __cdecl CombatGroupStrategy_GetCombatGroupStrategyByName(const char*);
 
 // @fnv 0x005d67f0
-// src: XBOX_RETAIL_PDB 0x005d67f0
+// src: XBOX_RETAIL_PDB 0x005d67f0 (was EXE)
 // pdb: Script::ForceCombatGroupStrategyFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pgroup, pcombatController, pactor, pstrategyName, pstrategy
@@ -36824,7 +36824,7 @@ extern bool DAT_011f9442;
 extern void Interface_PrintLine(const char*, ...);
 
 // @fnv 0x005d7610
-// src: XBOX_RETAIL_PDB 0x005d7610
+// src: XBOX_RETAIL_PDB 0x005d7610 (was EXE)
 // pdb: Script::ToggleDecalDebug | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iindex
@@ -36980,7 +36980,7 @@ struct QuestView {
  virtual const char* vfn78();
  ObjectiveView* FUN_0060c8e0(unsigned int); bool FUN_0059e400(); unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0(); };
 // @fnv 0x005d7c20
-// src: XBOX_RETAIL_PDB 0x005d7c20
+// src: XBOX_RETAIL_PDB 0x005d7c20 (was EXE)
 // pdb: Script::SetObjectiveCompletedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival, iindex, pquest, pobjective
@@ -37011,7 +37011,7 @@ class Objective { public: bool FUN_005a5e70(); void FUN_005ec5d0(bool); };
 class QuestX { public: virtual void V0();virtual void V1();virtual void V2();virtual void V3();virtual void V4();virtual void V5();virtual void V6();virtual void V7();virtual void V8();virtual void V9();virtual void V10();virtual void V11();virtual void V12();virtual void V13();virtual void V14();virtual void V15();virtual void V16();virtual void V17();virtual void V18();virtual void V19();virtual void V20();virtual void V21();virtual void V22();virtual void V23();virtual void V24();virtual void V25();virtual void V26();virtual void V27();virtual void V28();virtual void V29();virtual void V30();virtual void V31();virtual void V32();virtual void V33();virtual void V34();virtual void V35();virtual void V36();virtual void V37();virtual void V38();virtual void V39();virtual void V40();virtual void V41();virtual void V42();virtual void V43();virtual void V44();virtual void V45();virtual void V46();virtual void V47();virtual void V48();virtual void V49();virtual void V50();virtual void V51();virtual void V52();virtual void V53();virtual void V54();virtual void V55();virtual void V56();virtual void V57();virtual void V58();virtual void V59();virtual void V60();virtual void V61();virtual void V62();virtual void V63();virtual void V64();virtual void V65();virtual void V66();virtual void V67();virtual void V68();virtual void V69();virtual void V70();virtual void V71();virtual void V72();virtual void V73();virtual void V74();virtual void V75();virtual void V76();virtual void V77(); virtual const char* GetName();
   Objective* FUN_0060c8e0(int); bool FUN_0059e400(); unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0(); };
 // @fnv 0x005d7d30
-// src: XBOX_RETAIL_PDB 0x005d7d30
+// src: XBOX_RETAIL_PDB 0x005d7d30 (was EXE)
 // pdb: Script::SetObjectiveDisplayedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival, iindex, pquest, pobjective
@@ -37650,7 +37650,7 @@ extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESO
 bool __cdecl D97B0Evaluate(TESObjectREFR* pkRef, D97B0Form* pkForm, void* pvUnused, double& rdResult);
 
 // @fnv 0x005d97b0
-// src: XBOX_RETAIL_PDB 0x005d97b0
+// src: XBOX_RETAIL_PDB 0x005d97b0 (was EXE)
 // pdb: Script::IsPlayerGrabbedRefFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pref
@@ -38063,7 +38063,7 @@ struct DialogueActor : FUN_005d9550_cls {
     TESForm* TESObjectREFR_GetOwner();
 };
 struct DialogueActorLookup {
-    DialogueActor* ProcessLists_GetActorRefInHigh(TESForm*, int, int);
+    DialogueActor* ProcessLists_GetActorRefInHigh_00970b30(TESForm*, int, int);
     DialogueActor* ProcessLists_GetActorRefInHigh(TESForm*, int);
 };
 bool __cdecl Script_ParseParameters(const ScriptParameter*, const char*, unsigned int*, DialogueActor*, TESObjectREFR*, Script*, ScriptLocals*, DialogueActor**, TESForm**);
@@ -38091,7 +38091,7 @@ bool __cdecl Cmd_SendAssaultAlarm_Execute(const ScriptParameter* parameters, con
             inputActor->Actor_AttackAlarm(_g_thePlayer, 0, 1);
             inputActor->FUN_008d8520()->SetDialogueActor(inputActor, _g_thePlayer, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
         } else if (actor) {
-            inputActor = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh(actor, 1, 1);
+            inputActor = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh_00970b30(actor, 1, 1);
             if (inputActor) {
                 if (inputActor->IsOwnedReference()) {
                     if (inputActor->TESObjectREFR_GetOwner()) {
@@ -38099,7 +38099,7 @@ bool __cdecl Cmd_SendAssaultAlarm_Execute(const ScriptParameter* parameters, con
                         TESForm* resolvedActor = inputActor->TESObjectREFR_GetOwner();
                         if (resolvedActor->GetFormType() == 8) {
                             TESForm* ownerActor = resolvedActor;
-                            owner = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh(ownerActor, 0, 1);
+                            owner = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh_00970b30(ownerActor, 0, 1);
                         } else {
                             TESForm* ownerFaction = resolvedActor;
                             owner = ((DialogueActorLookup*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh(ownerFaction, 0);
@@ -41305,7 +41305,7 @@ char* __cdecl FUN_004812f0(char const*, char const*);
 void __cdecl _DebugLog(char const*, ...);
 
 // @fnv 0x005b6b50
-// src: XBOX_RETAIL_PDB 0x005b6b50
+// src: XBOX_RETAIL_PDB 0x005b6b50 (was EXE)
 // pdb: Script::OutputArchiveProfile | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: input
@@ -41501,7 +41501,7 @@ extern "C" __declspec(dllimport) int __stdcall WritePrivateProfileStringA(
     char const*, char const*, char const*, char const*);
 
 // @fnv 0x005ba7c0
-// src: XBOX_RETAIL_PDB 0x005ba7c0
+// src: XBOX_RETAIL_PDB 0x005ba7c0 (was EXE)
 // pdb: Script::SetDebugTextFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ptextPage, isubPage
@@ -41713,7 +41713,7 @@ void __fastcall FUN_00471130(void*);
 void __cdecl _DebugLog(char const*, ...);
 
 // @fnv 0x005bfd50
-// src: XBOX_RETAIL_PDB 0x005bfd50
+// src: XBOX_RETAIL_PDB 0x005bfd50 (was EXE)
 // pdb: Script::ForceCloseFile | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfilename, pfile
@@ -42081,7 +42081,7 @@ void __cdecl Cmd_IsPleasant_Execute(
 bool __cdecl Script_GetPlayerControlsDisabledConditionFunction(TESObjectREFR*, unsigned int, void*, double&);
 
 // @fnv 0x005caf40
-// src: XBOX_RETAIL_PDB 0x005caf40
+// src: XBOX_RETAIL_PDB 0x005caf40 (was EXE)
 // pdb: Script::GetPlayerControlsDisabledFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: isneaking, ipov, ipipboy, ibit, imovement, ilooking, irollover, ifighting
@@ -42194,7 +42194,7 @@ void __cdecl _FNV_Warning(const char*);
 void __cdecl SlotMachineMenu_Create(TESCasino*, int, int, int, int);
 
 // @fnv 0x005cf040
-// src: XBOX_RETAIL_PDB 0x005cf040
+// src: XBOX_RETAIL_PDB 0x005cf040 (was EXE)
 // pdb: Script::ShowSlotMachineMenu | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pCasino, iMaxBet, iMinBet, iMinWinnings
@@ -42248,7 +42248,7 @@ void __cdecl _FNV_Warning(const char*);
 void __cdecl BlackJackMenu_Create(unsigned int, int, int, int, int);
 
 // @fnv 0x005cf0f0
-// src: XBOX_RETAIL_PDB 0x005cf0f0
+// src: XBOX_RETAIL_PDB 0x005cf0f0 (was EXE)
 // pdb: Script::ShowBlackJackMenu | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pCasino, iMaxBet, iMinBet, iMinWinnings
@@ -42406,7 +42406,7 @@ extern void FNV_Warning(const char*, ...);
 ExtraDataList* __fastcall BSFile_GetDevice(TESObjectREFR*);
 
 // @fnv 0x005d0060
-// src: XBOX_RETAIL_PDB 0x005d0060
+// src: XBOX_RETAIL_PDB 0x005d0060 (was EXE)
 // pdb: Script::EquipItemFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iFlag, pItem, iHideMessageFlag, pactor, abforce, pinventory, bequip, pchange, plist, pextra, pstring
@@ -42616,7 +42616,7 @@ extern __declspec(thread) unsigned char DAT_tls[0x269];
 void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005d21e0
-// src: XBOX_RETAIL_PDB 0x005d21e0
+// src: XBOX_RETAIL_PDB 0x005d21e0 (was EXE)
 // pdb: Script::StopMagicEffect | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ftime, peffectSetting
@@ -42672,7 +42672,7 @@ extern __declspec(thread) bool __tls_index;
 extern int DAT_011a9608;
 
 // @fnv 0x005d4660
-// src: XBOX_RETAIL_PDB 0x005d4660
+// src: XBOX_RETAIL_PDB 0x005d4660 (was EXE)
 // pdb: Script::SetDepthOfField | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: imaxaniso, fmaxaniso
@@ -42846,7 +42846,7 @@ struct DispositionReferenceSlots<221> : DispositionReferenceSlots<220>
 };
 
 // @fnv 0x005d54a0
-// src: XBOX_RETAIL_PDB 0x005d54a0
+// src: XBOX_RETAIL_PDB 0x005d54a0 (was EXE)
 // pdb: Script::SetDispositionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ptarg, ivalue, pactor, imod, idispos
@@ -42890,7 +42890,7 @@ bool __cdecl CombatAction_SetCombatActionCost(const char*, float);
 void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005d5780
-// src: XBOX_RETAIL_PDB 0x005d5780
+// src: XBOX_RETAIL_PDB 0x005d5780 (was EXE)
 // pdb: Script::SetCombatActionCostFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pactionName, fcost, bsuccess
@@ -42985,7 +42985,7 @@ extern unsigned int _data_011c16bc;
 extern char const g_011c3248_arg1[];
 
 // @fnv 0x005d7fb0
-// src: XBOX_RETAIL_PDB 0x005d7fb0
+// src: XBOX_RETAIL_PDB 0x005d7fb0 (was EXE)
 // pdb: Script::PipboyRadio | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: bfastOff, input, bfastOn, pTarg
@@ -43496,7 +43496,7 @@ bool __cdecl ExtractArgs(
 );
 
 // @fnv 0x005cf860
-// src: XBOX_RETAIL_PDB 0x005cf860
+// src: XBOX_RETAIL_PDB 0x005cf860 (was EXE)
 // pdb: Script::SwapTextureOnRef | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pRef, GeometryName, strtmp, BSNewTextureName, NewTextureName, BSGeometryName, pfilepath, pMesh, pGeom, pLightShader, TexPtr, pNoLightShader
@@ -44521,7 +44521,7 @@ struct GameState {
 };
 typedef int (__thiscall *GetRefValueFn)(TESObjectREFR*);
 // @fnv 0x005bf130
-// src: XBOX_RETAIL_PDB 0x005bf130
+// src: XBOX_RETAIL_PDB 0x005bf130 (was EXE)
 // pdb: Script::SetLightingPassesFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: input, pcurrent, passes, toggle, imode, imaxtex, pssn, pssl
@@ -44992,7 +44992,7 @@ extern char DAT_011841cc;
 extern "C" void* __cdecl FUN_00ec43fb(void*, int, const void*, const void*, int);
 
 // @fnv 0x005d26b0
-// src: XBOX_RETAIL_PDB 0x005d26b0
+// src: XBOX_RETAIL_PDB 0x005d26b0 (was EXE)
 // pdb: Script::SetNoRumorsFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pactor, ibool, bnorumors
@@ -45409,7 +45409,7 @@ float FUN_004b3ab0(float, float, float, float, float);
 void DebugLog(const char*, ...);
 
 // @fnv 0x005d3f10
-// src: XBOX_RETAIL_PDB 0x005d3f10
+// src: XBOX_RETAIL_PDB 0x005d3f10 (was EXE)
 // pdb: Script::SetActorRefractionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: famount, pactor, finvisibility, fchameleon, fpower
@@ -46132,7 +46132,7 @@ void DebugLog(const char*, ...);
 extern __declspec(thread) bool bDebugLogEnabled;
 
 // @fnv 0x005cc120
-// src: XBOX_RETAIL_PDB 0x005cc120
+// src: XBOX_RETAIL_PDB 0x005cc120 (was EXE)
 // pdb: Script::UnlockFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pLock, iUnlockAsOwner, ptel, pterm
@@ -46350,7 +46350,7 @@ __declspec(thread) GhostCommandTLS ghostCommandTLS;
 void __cdecl _DebugLog(const char* format, ...);
 
 // @fnv 0x005cffb0
-// src: XBOX_RETAIL_PDB 0x005cffb0
+// src: XBOX_RETAIL_PDB 0x005cffb0 (was EXE)
 // pdb: Script::SetGhostFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ivalue, pactor
@@ -47011,7 +47011,7 @@ extern __declspec(thread) PackageDurationTLS g_packageDurationTLS;
 void __cdecl DebugLog(const char*, ...);
 
 // @fnv 0x005d1ab0
-// src: XBOX_RETAIL_PDB 0x005d1ab0
+// src: XBOX_RETAIL_PDB 0x005d1ab0 (was EXE)
 // pdb: Script::SetPackageDurationFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pActor, fvalue
@@ -47049,7 +47049,7 @@ bool Cmd_RewardKarma_Execute(const ::ScriptParameter* a, const char* b, ::TESObj
 }
 
 // @fnv 0x005b6c90
-// src: XBOX_RETAIL_PDB 0x005b6c90
+// src: XBOX_RETAIL_PDB 0x005b6c90 (was EXE)
 // pdb: Script::QuitGame | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 bool __cdecl Script_QuitGame()

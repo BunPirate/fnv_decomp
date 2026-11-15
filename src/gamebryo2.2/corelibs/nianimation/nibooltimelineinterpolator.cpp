@@ -28,7 +28,7 @@ NiBoolInterpolator* __cdecl CreateBoolInterpolator()
     NiBoolInterpolator* p = static_cast<NiBoolInterpolator*>(BSFadeNode::operator new(0x20));
     if (p)
     {
-        p->NiBoolInterpolator_ctor(0);
+        p->LinkObject(0);
         *reinterpret_cast<void**>(p) = reinterpret_cast<void*>(&DAT_01099fb4);
         *reinterpret_cast<int*>(reinterpret_cast<char*>(p) + 0x18) = 0;
         *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(p) + 0x1c) = 0;

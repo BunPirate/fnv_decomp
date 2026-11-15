@@ -406,11 +406,11 @@ struct QuantityData { void SetQuantity(unsigned int); };
 #include "../../include/TESConditionItem.h"
 struct TESQuest;
 
-struct FUN_00537e30_cls { char _pad[24]; int _m18; int _m1c; FUN_00537e30_cls* NiVBChip_ctor(); };
+struct FUN_00537e30_cls { char _pad[24]; int _m18; int _m1c; FUN_00537e30_cls* NiVBChip_NiVBChip(); };
 // @fnv 0x00537e30
-// src: XBOX_DEBUG_PDB 0x00537e30
+// src: COMMUNITY 0x00537e30
 // pdb: NiVBChip::NiVBChip | TESLand.obj | debug, upstream name already matches, high
-FUN_00537e30_cls* FUN_00537e30_cls::NiVBChip_ctor()
+FUN_00537e30_cls* FUN_00537e30_cls::NiVBChip_NiVBChip()
 {
     ((QuantityData*)this)->SetQuantity(0);
     ((TESRaceForm*)this)->Initialize(0);
@@ -851,11 +851,11 @@ unsigned char FUN_0053e260_Class::TESObjectLAND_IsNormalSet(int index, int offse
 
 #include "../../include/LandscapeColorData.h"
 // @fnv 0x0053f0e0
-// src: XBOX_RETAIL_PDB 0x0053f0e0
+// src: XBOX_PDB 0x0053f0e0
 // pdb: TESObjectLAND::GetGeometry | TESLand.obj | retail, call graph, high
 // pdb params: coord
 // pdb locals: cdata
-NiGeometry* TESObjectLAND::GetGeometry(const NiPoint3& coord)
+NiGeometry* TESObjectLAND::GetGeometry_0053f0e0(const NiPoint3& coord)
 {
  LandscapeColorData cdata;
  cdata.FUN_0053a510();
@@ -1040,14 +1040,14 @@ int FUN_0053a700_Holder::TESObjectLAND_GetTexture(unsigned char a1, unsigned sho
 
 extern float DAT_01015f5c;
 struct FUN_0053a630_Class : public FUN_0053ae30_class {
-    int TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex);
+    int TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex);
 };
 // @fnv 0x0053a630
-// src: XBOX_DEBUG_PDB 0x0053a630
+// src: XBOX_PDB 0x0053a630
 // pdb: TESObjectLAND::GetMainTexture | TESLand.obj | debug, call graph, high
 // pdb params: acBlock, asVertIndex
 // pdb locals: prettex, fmax, imaxtex, itex, fperc
-int FUN_0053a630_Class::TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex)
+int FUN_0053a630_Class::TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex)
 {
     int result = 0;
     if (acBlock < 4 && asVertIndex < 0x121) {
@@ -1881,7 +1881,7 @@ struct LocalObj53a5e0 {
 
 struct FUN_0053a5e0_cls {
     bool TESObjectLAND_GetCoordData(LocalObj53a5e0* cdata, int coord, int forcetovertex);
-    int TESObjectLAND_GetMainTexture(unsigned char acBlock, unsigned short asVertIndex);
+    int TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex);
     int TESObjectLAND_GetMainTexture(int aCoord);
 };
 
@@ -1895,7 +1895,7 @@ int FUN_0053a5e0_cls::TESObjectLAND_GetMainTexture(int aCoord) {
     local.m54 = 0;
     local.FUN_0053a510();
     if (TESObjectLAND_GetCoordData(&local, aCoord, 1)) {
-        local.m54 = TESObjectLAND_GetMainTexture(local.m18, local.m3c);
+        local.m54 = TESObjectLAND_GetMainTexture_0053a630(local.m18, local.m3c);
     }
     return local.m54;
 }
@@ -4229,7 +4229,7 @@ struct TerrainOwner {
  bool TESObjectLAND_CalculateGrasParams();
 };
 // @fnv 0x0053bc10
-// src: XBOX_RETAIL_PDB 0x0053bc10
+// src: XBOX_RETAIL_PDB 0x0053bc10 (was COMMUNITY)
 // pdb: TESObjectLAND::CalculateGrasParams | TESLand.obj | retail, call graph, high
 // pdb locals: pgrassList, pparam, aiPerTexureLimit, igrassCount, ftexThreshold, maxGrassCount, fpctCounter, fgrassDensity, pgrass, vertIndex, igrassesThisTexture, iblock, ixvert, iyvert, g, iTex
 bool TerrainOwner::TESObjectLAND_CalculateGrasParams() {

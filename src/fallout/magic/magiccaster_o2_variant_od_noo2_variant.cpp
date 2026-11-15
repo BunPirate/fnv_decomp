@@ -120,7 +120,7 @@ struct FormRef;
 struct MediaSelector
 {
     int field00;
-    FormRef* CFilter_ctor(int aeLayer, void* aiGroup);
+    FormRef* CFilter_CFilter(int aeLayer, void* aiGroup);
 };
 struct FormRef
 {
@@ -154,7 +154,7 @@ void Master::MagicCaster_DoExplosion(NiPoint3 aSourceLoc, ListHandle* apCell, vo
             NI2HK((NiPoint3*)&space.low, &aSourceLoc.FUN_00439e90(NiPoint3(-size, -size, -size)));
             NI2HK((NiPoint3*)&space.high, &aSourceLoc.FUN_00439e90(NiPoint3(size, size, size)));
             MediaSelector obj;
-            space.field00 = obj.CFilter_ctor(0x29, bhkCollisionFilter_GetNewSystemGroup(0))->Modelloader_GetReferencedThis();
+            space.field00 = obj.CFilter_CFilter(0x29, bhkCollisionFilter_GetNewSystemGroup(0))->Modelloader_GetReferencedThis();
             PhantomShape results(&space);
             void* world = apCell->TESObjectCELL_GetbhkWorld();
             results.bhkWorldObject_Add(world);

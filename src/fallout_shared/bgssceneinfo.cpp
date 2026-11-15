@@ -118,13 +118,13 @@ int __cdecl MinInt(int iA, int iB)
 struct FUN_004a8f50_shell
 {
     void NiTMap_NiTexture_TEX_USER_DATA_NiTMap(int a);
-    void* BGSTextureUseMap_ctor();
+    void* BGSTextureUseMap_BGSTextureUseMap();
 };
 
 // @fnv 0x004a8f50
-// src: XBOX_RETAIL_PDB 0x004a8f50
+// src: XBOX_PDB 0x004a8f50
 // pdb: BGSTextureUseMap::BGSTextureUseMap | BGSSceneInfo.obj | retail, upstream name already matches, high
-void* __thiscall FUN_004a8f50_shell::BGSTextureUseMap_ctor()
+void* __thiscall FUN_004a8f50_shell::BGSTextureUseMap_BGSTextureUseMap()
 {
     ((FUN_004a8f50_shell*)((char*)this + 4))->NiTMap_NiTexture_TEX_USER_DATA_NiTMap(0x25);
     return this;

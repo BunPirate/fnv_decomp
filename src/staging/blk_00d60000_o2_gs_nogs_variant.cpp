@@ -505,7 +505,7 @@ struct Base2_d632c0
 };
 struct Obj_d632c0 : Base1_d632c0, Base2_d632c0
 {
-    Obj_d632c0* hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts);
+    Obj_d632c0* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
 Base2_d632c0* hkpWorldMemoryViewer_create(int contexts);
 struct hkContainerD633

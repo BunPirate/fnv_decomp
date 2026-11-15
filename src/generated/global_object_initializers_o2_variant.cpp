@@ -49,13 +49,13 @@ void __cdecl NiParticleSDM_Shutdown();
 
 struct FUN_00c1ad50_class
 {
-    void* NiParticleSDM_ctor();
+    void* NiParticleSDM_NiParticleSDM();
 };
 
 // @fnv 0x00c1ad50
-// src: XBOX_RETAIL_PDB 0x00c1ad50
+// src: COMMUNITY 0x00c1ad50
 // pdb: NiParticleSDM::NiParticleSDM | NiParticleSDM.obj | retail, upstream name already matches, high
-void* FUN_00c1ad50_class::NiParticleSDM_ctor()
+void* FUN_00c1ad50_class::NiParticleSDM_NiParticleSDM()
 {
     int count = DAT_012024d4;
     ++DAT_012024d4;

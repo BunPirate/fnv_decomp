@@ -76,14 +76,14 @@ struct FUN_00843190_class
 {
     void* vtbl;
     void FUN_00844f00(int, int, int);
-    void* BGSOffsetDataArray_ctor();
+    void* BGSOffsetDataArray_BGSOffsetDataArray();
 };
 
 // Calls FUN_00844f00 with (0x20, 0, 0), sets vtbl to &DAT_0107ea60, and returns this.
 // @fnv 0x00843190
-// src: XBOX_RETAIL_PDB 0x00843190
+// src: EXE 0x00843190
 // pdb: BGSOffsetDataArray::BGSOffsetDataArray | BGSReconstructFormsInAllFilesMap.obj | retail, upstream name already matches, high
-void* FUN_00843190_class::BGSOffsetDataArray_ctor()
+void* FUN_00843190_class::BGSOffsetDataArray_BGSOffsetDataArray()
 {
     FUN_00844f00(0x20, 0, 0);
     vtbl = &DAT_0107ea60;
@@ -500,7 +500,7 @@ struct FUN_00851f50_class
 };
 
 // @fnv 0x00851f50
-// src: XBOX_DEBUG_PDB 0x00851f50
+// src: XBOX_DEBUG_PDB 0x00851f50 (was COMMUNITY)
 // pdb: BSSystemUtility::QSaveDataUtility | BGSSaveLoadManager.obj | debug, call graph, high
 void* __thiscall FUN_00851f50_class::BSSystemUtility_QSaveDataUtility()
 {
@@ -771,14 +771,14 @@ struct FUN_00854ea0_class
 {
     void* m;
     void __thiscall FUN_00863360(int);
-    void* ChangesMap_ctor();
+    void* ChangesMap_ChangesMap();
 };
 
 // Calls FUN_00863360 with 0x13af, sets m to point at DAT_010804a8, and returns this.
 // @fnv 0x00854ea0
-// src: XBOX_RETAIL_PDB 0x00854ea0
+// src: EXE 0x00854ea0
 // pdb: ChangesMap::ChangesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
-void* FUN_00854ea0_class::ChangesMap_ctor()
+void* FUN_00854ea0_class::ChangesMap_ChangesMap()
 {
     FUN_00863360(0x13af);
     m = &DAT_010804a8;
@@ -3093,7 +3093,7 @@ struct BinaryRecord36
     void* value04;
     void* value08;
     unsigned int value0c, value10, value14, value18, value1c, value20;
-    void CreatedReferenceData_ctor();
+    void CreatedReferenceData_CreatedReferenceData();
 };
 struct BinaryRecord44
 {
@@ -3145,7 +3145,7 @@ void SaveGameReferenceReconstruction::TESSaveLoadGame_CreateChangedReference(uns
             {
                 TESForm* pCreated;
                 BinaryRecord36 record;
-                record.CreatedReferenceData_ctor();
+                record.CreatedReferenceData_CreatedReferenceData();
                 bytes += 4;
                 memcpy(&record, bytes, sizeof(record));
                 record.value04 = FUN_00861c00(record.value04);
@@ -4317,7 +4317,7 @@ struct FUN_00856300_cls
 
 // Computes a key from value, calls target->Probe with it, and returns true when Probe returns zero.
 // @fnv 0x00856300
-// src: XBOX_DEBUG_PDB 0x00856300
+// src: XBOX_DEBUG_PDB 0x00856300 (was COMMUNITY)
 // pdb: SaveStats::WriteFile | TESSaveLoadGame.obj | debug, call graph, high
 // pdb params: aFile, apBuffer
 // pdb locals: bytesWritten, bres, uisize

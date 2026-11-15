@@ -762,16 +762,16 @@ struct S00496440
     int m0;
     int m1;
     int m2;
-    void __thiscall SetTranslate(const S00496440&);
+    void __thiscall NiQuatTransform_SetTranslate(const S00496440&);
     void __thiscall FUN_00496440(bool);
 };
 // Copies p into this object and then calls FUN_00496440 with true.
 // @fnv 0x004963b0
-// src: XBOX_DEBUG_PDB 0x004963b0
+// src: COMMUNITY 0x004963b0
 // pdb: NiQuatTransform::SetTranslate | Animation.obj | debug, upstream name already matches, high
 // pdb params: kTranslate
 // pdb locals: bisgood
-void __thiscall S00496440::SetTranslate(const S00496440& kTranslate)
+void __thiscall S00496440::NiQuatTransform_SetTranslate(const S00496440& kTranslate)
 {
     *this = kTranslate;
     FUN_00496440(true);
@@ -3391,7 +3391,7 @@ struct FNV_Member08
     int unk00;
     int unk04;
     int unk08;
-    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
     ~FNV_Member08();
 };
 
@@ -3423,7 +3423,7 @@ FUN_0049fe20_Object::~FUN_0049fe20_Object()
 {
     DecalCaster_ClearInstance();
     g_011c58e0 = 0;
-    m_08.NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    m_08.NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
     m_14.FUN_004ed900();
     m_20 = 0;
     m_24 = 0;

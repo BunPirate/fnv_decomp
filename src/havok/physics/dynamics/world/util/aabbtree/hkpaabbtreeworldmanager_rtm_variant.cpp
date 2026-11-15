@@ -184,7 +184,7 @@ public:
 };
 class hkBroadPhaseD085 {
 public:
-    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(unsigned short leafIdx);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(unsigned short leafIdx);
 };
 class hkHandlerD085 {
 public:

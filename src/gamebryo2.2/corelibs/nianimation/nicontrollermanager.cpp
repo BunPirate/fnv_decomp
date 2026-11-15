@@ -145,10 +145,10 @@ __forceinline void init_map(int* map, int size)
 }
 
 // @fnv 0x00a2ed80
-// src: XBOX_RETAIL_PDB 0x00a2ed80
+// src: EXE 0x00a2ed80
 // pdb: NiDefaultAVObjectPalette::NiDefaultAVObjectPalette | NiControllerManager.obj | retail, upstream name already matches, high
 // pdb params: pkScene, uiHashSize
-int* __fastcall NiDefaultAVObjectPalette_ctor(int* this_ptr, int, int arg1, int arg2)
+int* __fastcall NiDefaultAVObjectPalette_NiDefaultAVObjectPalette(int* this_ptr, int, int arg1, int arg2)
 {
     _Call_a5d3a0(this_ptr);
     this_ptr[0] = reinterpret_cast<int>(&DAT_01096284);
@@ -667,7 +667,7 @@ struct CtrlRefObj
     virtual void v0();
     virtual void DeleteThis();
     long m_uiRefCount;
-    CtrlRefObj* NiDefaultAVObjectPalette_ctor(NiObjectNET*, int);
+    CtrlRefObj* NiDefaultAVObjectPalette_NiDefaultAVObjectPalette(NiObjectNET*, int);
     void IncRefCount()
     {
         InterlockedIncrement(&m_uiRefCount);
@@ -734,9 +734,9 @@ struct NiListStandin
 };
 
 // @fnv 0x00a2efa0
-// src: XBOX_RETAIL_PDB 0x00a2efa0
+// src: EXE 0x00a2efa0
 // pdb: NiControllerManager::NiControllerManager | NiControllerManager.obj | retail, object-file gap fill, high
-NiControllerManager* __fastcall NiControllerManager_ctor(NiControllerManager* self, int, NiObjectNET* pkTarget, bool bCumulative)
+NiControllerManager* __fastcall NiControllerManager_NiControllerManager(NiControllerManager* self, int, NiObjectNET* pkTarget, bool bCumulative)
 {
     FUN_00a6d220(self);
     *(void***)self = (void**)&DAT_0109619c;
@@ -750,7 +750,7 @@ NiControllerManager* __fastcall NiControllerManager_ctor(NiControllerManager* se
     self->m_spControllerManager.m_pObject = 0;
     self->NiTimeController::SetTarget(pkTarget);
     void* pControllerMem = BSFadeNode::operator new(0x1c);
-    *(CtrlPtr*)&self->m_spControllerManager = pControllerMem ? ((CtrlRefObj*)pControllerMem)->NiDefaultAVObjectPalette_ctor(pkTarget, 0x4f) : 0;
+    *(CtrlPtr*)&self->m_spControllerManager = pControllerMem ? ((CtrlRefObj*)pControllerMem)->NiDefaultAVObjectPalette_NiDefaultAVObjectPalette(pkTarget, 0x4f) : 0;
     void* pLookupMem = g_memoryManager.Allocate(0x10);
     self->pListener = (BSAnimNoteListener*)(pLookupMem ? ConstructListenerArray((NiTPrimitiveArray<BSAnimNoteListener*>*)pLookupMem) : 0);
     return self;
@@ -999,7 +999,7 @@ struct FnvStandInA
 
 struct FnvStandInB
 {
-    int* NiDefaultAVObjectPalette_ctor(int arg1, int arg2);
+    int* NiDefaultAVObjectPalette_NiDefaultAVObjectPalette(int arg1, int arg2);
 };
 
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
@@ -1036,7 +1036,7 @@ bool __fastcall NiControllerManager_RegisterStreamables(NiControllerManager* sel
     if (mem != 0)
     {
         int owner = (int)self->m_pkTarget;
-        pNewPalette = (NiRefObject*)((FnvStandInB*)mem)->NiDefaultAVObjectPalette_ctor(owner, 0x25);
+        pNewPalette = (NiRefObject*)((FnvStandInB*)mem)->NiDefaultAVObjectPalette_NiDefaultAVObjectPalette(owner, 0x25);
     }
     else
     {

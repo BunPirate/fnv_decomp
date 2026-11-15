@@ -27,12 +27,12 @@ extern "C" void __cdecl _Call_a5d3a0();
 extern int DAT_0109e47c;
 struct FUN_00a81f90_class
 {
-    void* __thiscall NiSkinPartition_ctor();
+    void* __thiscall NiSkinPartition_NiSkinPartition();
 };
 // @fnv 0x00a81f90
-// src: XBOX_RETAIL_PDB 0x00a81f90
+// src: EXE 0x00a81f90
 // pdb: NiSkinPartition::NiSkinPartition | NiSkinPartition.obj | retail, upstream name already matches, high
-void* __thiscall FUN_00a81f90_class::NiSkinPartition_ctor()
+void* __thiscall FUN_00a81f90_class::NiSkinPartition_NiSkinPartition()
 {
     _Call_a5d3a0();
     *(int*)this = (int)&DAT_0109e47c;

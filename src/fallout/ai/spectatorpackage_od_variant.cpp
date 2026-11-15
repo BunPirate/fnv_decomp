@@ -71,12 +71,12 @@ struct SpectatorThreatInfo
     char _pad[2];
     Helper62d0 spDebugGeometry;
     void __thiscall SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
-    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    void LoadGame_009f7170(BGSLoadFormBuffer* apLoadGameBuffer);
     unsigned int __thiscall _ref_00726070();
     SpectatorThreatInfo& UpdateState_009f7630(const SpectatorThreatInfo& that);
 };
 // @fnv 0x009f70b0
-// src: XBOX_DEBUG_PDB 0x009f70b0
+// src: XBOX_DEBUG_PDB 0x009f70b0 (was COMMUNITY)
 // pdb: SpectatorThreatInfo::SaveGame | SpectatorPackage.obj | debug, call graph, high
 // pdb params: apSaveGameBuffer
 // pdb locals: imodifiedPerceivedTime
@@ -96,11 +96,11 @@ void __thiscall SpectatorThreatInfo::SaveGame(BGSSaveFormBuffer* apSaveGameBuffe
 }
 
 // @fnv 0x009f7170
-// src: XBOX_DEBUG_PDB 0x009f7170
+// src: COMMUNITY 0x009f7170
 // pdb: SpectatorThreatInfo::LoadGame | SpectatorPackage.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
 // pdb locals: imodifiedPerceivedTime
-void SpectatorThreatInfo::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
+void SpectatorThreatInfo::LoadGame_009f7170(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     apLoadGameBuffer->ReadTypedData(static_cast<void*>(reinterpret_cast<char*>(this) + 8), 4u);
     unsigned int imodifiedPerceivedTime = 0;
@@ -192,7 +192,7 @@ struct FUN_009f8aa0_class
     int __thiscall BSSimpleArray_SpectatorThreatInfo_1024_GetFirst();
 };
 // @fnv 0x009f8aa0
-// src: XBOX_DEBUG_PDB 0x009f8aa0
+// src: XBOX_DEBUG_PDB 0x009f8aa0 (was COMMUNITY)
 // pdb: BSSimpleArray<SpectatorThreatInfo,1024>::GetFirst | SpectatorPackage.obj | debug, call graph (shared callers), high
 int __thiscall FUN_009f8aa0_class::BSSimpleArray_SpectatorThreatInfo_1024_GetFirst()
 {
@@ -220,7 +220,7 @@ struct FUN_009f8ae0Class
     void* BSSimpleArray_SpectatorThreatInfo_1024_ctor(int aiReserveSize, int aiInitialSize);
 };
 // @fnv 0x009f8ae0
-// src: XBOX_DEBUG_PDB 0x009f8ae0
+// src: XBOX_DEBUG_PDB 0x009f8ae0 (was EXE)
 // pdb: BSSimpleArray<SpectatorThreatInfo,1024>::BSSimpleArray<SpectatorThreatInfo,1024> | SpectatorPackage.obj | debug, call graph, high
 // pdb params: aiReserveSize, aiInitialSize
 void* FUN_009f8ae0Class::BSSimpleArray_SpectatorThreatInfo_1024_ctor(int aiReserveSize, int aiInitialSize)
@@ -664,7 +664,7 @@ void FUN_009f8900_class::SpectatorPackage_LoadGame_009f8900(BGSLoadFormBuffer* a
                     reinterpret_cast<FUN_009f8a80_wrapper*>(reinterpret_cast<unsigned char*>(this) + 0xA0)
                         ->BSSimpleArray_SpectatorThreatInfo_1024_GetAt(i));
 
-                threatInfo->LoadGame(apLoadGameBuffer);
+                threatInfo->LoadGame_009f7170(apLoadGameBuffer);
             }
         }
     }

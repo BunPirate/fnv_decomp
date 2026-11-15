@@ -7,7 +7,7 @@ extern "C" void __cdecl hkpCollectionCollectionAgent3_updateFilter(void*, void*,
 extern "C" void __cdecl hkpCollectionCollectionAgent3_calcStatistics(void*, void*, void*);
 extern "C" void __cdecl ForwardCall(void*, void*, void*);
 extern "C" void __cdecl Object__hkAgent1nMachine_WarpTime_Thunk_00d34d80(void*, void*, void*);
-extern "C" void __cdecl hkpCollectionCollectionAgent3_process(void*, void*, void*);
+extern "C" void __cdecl process_00d35770(void*, void*, void*);
 extern "C" void __cdecl Object_HkAgent1nMachine_Destroy_Thunk(void*, void*, void*);
 
 struct FUN_00d36270_s {
@@ -32,7 +32,7 @@ struct FUN_00d36270_s {
 void hkpCollectionCollectionAgent3_updateFilter_UpdateState_00d36270(FUN_00d36270_s* self)
 {
     self->m_vt = &InitAndReturnTail;
-    self->m_k = &hkpCollectionCollectionAgent3_process;
+    self->m_k = &process_00d35770;
     self->m_iUnknownValue = 0;
     self->m_kPointB = 0;
     self->m_iThirdValue = 0;

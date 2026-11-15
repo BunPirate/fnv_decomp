@@ -120,13 +120,13 @@ struct FUN_007b52a0_class
 {
     char* m_ptr;
     unsigned short m_uiItemCount;
-    void __thiscall BSStringT_char_MakeUpper();
+    void __thiscall BSStringT_MakeUpper();
 };
 
 // @fnv 0x007b52a0
-// src: XBOX_DEBUG_PDB 0x007b52a0
+// src: COMMUNITY 0x007b52a0
 // pdb: BSStringT<char>::MakeUpper | RaceSexMenu.obj | debug, call graph, high
-void __thiscall FUN_007b52a0_class::BSStringT_char_MakeUpper()
+void __thiscall FUN_007b52a0_class::BSStringT_MakeUpper()
 {
     if (m_ptr)
         BSstrupr(m_ptr, m_uiItemCount + 1);

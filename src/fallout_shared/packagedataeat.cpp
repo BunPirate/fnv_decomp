@@ -12,7 +12,7 @@ struct LocationDescriptor
     char pad[12];
     void __thiscall PackageLocation_Save(int);
     void PackageLocation_InitLoadGame(BGSLoadFormBuffer*);
-    void PackageLocation_LoadGame(BGSLoadFormBuffer*);
+    void PackageLocation_LoadGame_0067fbe0(BGSLoadFormBuffer*);
     void* FUN_00670b30(int aFlags);
     unsigned char __thiscall PackageLocation_Compare(int apCompare);
 };
@@ -50,7 +50,7 @@ void __thiscall TESEatPackageData::Load(BGSLoadFormBuffer* apLoadGameBuffer)
     if (bhasLocation)
     {
         pSearchLocation = new LocationDescriptor;
-        pSearchLocation->PackageLocation_LoadGame(apLoadGameBuffer);
+        pSearchLocation->PackageLocation_LoadGame_0067fbe0(apLoadGameBuffer);
     }
 }
 

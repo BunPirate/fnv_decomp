@@ -224,10 +224,10 @@ extern char g_vtbl60270[];
 
 // Initializes the object: sets the vtable, initializes sub-objects and item array, resets state, and allocates the size-class table slots.
 // @fnv 0x00d60270
-// src: XBOX_RETAIL_PDB 0x00d60270
+// src: HAVOK_LIB 0x00d60270
 // pdb: hkFreeListAllocator::hkFreeListAllocator | hkFreeListAllocator.obj | retail, object-file gap fill, high
 // pdb params: server
-hkFreeListAllocator* hkFreeListAllocator::hkFreeListAllocator_ctor(int server)
+hkFreeListAllocator* hkFreeListAllocator::hkFreeListAllocator_00d60270(int server)
 {
     *reinterpret_cast<void**>(this) = g_vtbl60270;
     reinterpret_cast<Sub4*>(&m_cs)->hkCriticalSection_ctor(0xfa0);
@@ -521,7 +521,7 @@ struct hkFreeListW
         return _getNumBlocks(m_pFreeBlocks) + _getNumBlocks(m_activeBlocks);
     }
     void CollectFreeNodes(hkFreeListBlock** blocks, int numBlocks);
-    void walkMemory(hkMemoryWalkCallback callback, int pool, void* param);
+    void walkMemory_00dd78f0(hkMemoryWalkCallback callback, int pool, void* param);
 };
 
 struct hkMemoryAllocatorW
@@ -638,7 +638,7 @@ int hkFreeListAllocator::walkMemory(hkMemoryWalkCallback callback, void* param)
 
     for (int i = 0; i < m_iFreeListCount; i++)
     {
-        m_pFreeLists[i]->walkMemory(callback, i + 1, param);
+        m_pFreeLists[i]->walkMemory_00dd78f0(callback, i + 1, param);
     }
     return 0;
 }
@@ -1075,7 +1075,7 @@ hkFreeListAllocator::FreeList* hkFreeListAllocator::_newFreeList(int elementSize
     cur238 = s + 1;
     if (s != 0)
     {
-        s->hkFreeList_ctor(elementSize, alignment, blockSize, &m_server);
+        s->hkFreeList_hkFreeList(elementSize, alignment, blockSize, &m_server);
     }
     for (int i = 0; i < count234; i++)
     {

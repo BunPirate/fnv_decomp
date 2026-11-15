@@ -1067,7 +1067,7 @@ int FUN_00454400_shell::GetRaceListSize()
 void __cdecl ClearAnimationCloneCount(void);
 struct FUN_004baba0_shell
 {
-    void RunAnimations();
+    void RunAnimations_004baba0();
 };
 struct FUN_00553820_shell
 {
@@ -1097,7 +1097,7 @@ void FUN_00455640_shell::TES_RunAnimations()
     }
     else
     {
-        ((FUN_004baba0_shell*)m8)->RunAnimations();
+        ((FUN_004baba0_shell*)m8)->RunAnimations_004baba0();
     }
 }
 
@@ -1141,7 +1141,7 @@ struct S_005538e0
 };
 struct CellGridSoundUpdate : GridCellArray
 {
-    void UpdateRefSounds();
+    void UpdateRefSounds_004bac20();
 };
 // @fnv 0x00455690
 // src: COMMUNITY 0x00455690
@@ -1151,7 +1151,7 @@ void CellSoundUpdate::TES_UpdateRefSounds()
     if (((CP_008c48d0*)this)->GetPrevPath())
         ((S_005538e0*)((CP_008c48d0*)this)->GetPrevPath())->TESObjectCELL_UpdateRefSounds();
     else
-        ((CellGridSoundUpdate*)*(void**)((char*)this + 8))->UpdateRefSounds();
+        ((CellGridSoundUpdate*)*(void**)((char*)this + 8))->UpdateRefSounds_004bac20();
 }
 }  // namespace fnv_00455690
 
@@ -2677,7 +2677,7 @@ struct LookupHandler
     bool TES_RemoveTextureImage(void* apfilename, unsigned int aiOtherRefs);
 };
 // @fnv 0x00456800
-// src: XBOX_RETAIL_PDB 0x00456800
+// src: XBOX_RETAIL_PDB 0x00456800 (was COMMUNITY)
 // pdb: TES::RemoveTextureImage | TES.obj | retail, object-file run extension, high
 // pdb params: apfilename, aiOtherRefs
 // pdb locals: sptexture
@@ -2766,7 +2766,7 @@ extern CellAvailabilityQuery* DAT_011dea10;
 
 struct FUN_00457620_nodeowner
 {
-    int GetGeometry();
+    int GetGeometry_0053f0e0();
 };
 
 struct FUN_00457620_cellhost
@@ -2803,7 +2803,7 @@ int TerrainMaterialQuery::TES_GetLandGeometry(const float* acoord)
     {
         if (DAT_011dea10->FUN_004511e0(cell5, false))
         {
-            return ((FUN_00457620_cellhost*)cell5)->TESObjectCELL_GetLand(acoord)->GetGeometry();
+            return ((FUN_00457620_cellhost*)cell5)->TESObjectCELL_GetLand(acoord)->GetGeometry_0053f0e0();
         }
     }
     return 0;

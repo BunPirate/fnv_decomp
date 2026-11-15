@@ -194,7 +194,7 @@ extern GlobalObject_00633c90 g_011da9d0;
 extern const float g_011db5ec_arg1;
 
 // @fnv 0x007c19c0
-// src: XBOX_RETAIL_PDB 0x007c19c0
+// src: XBOX_RETAIL_PDB 0x007c19c0 (was COMMUNITY)
 // pdb: SlotMachineMenu::Draw3DElements | SlotMachineMenu.obj | retail, object-file run extension, high
 // pdb locals: spaccum, apCuller, pcam, pcamera, apSceneGraph
 void SlotMachineMenu_Draw3DElements()

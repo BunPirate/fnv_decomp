@@ -19,7 +19,7 @@ struct FUN_00835f80_shell
 };
 
 // @fnv 0x00835f80
-// src: XBOX_DEBUG_PDB 0x00835f80
+// src: XBOX_DEBUG_PDB 0x00835f80 (was COMMUNITY)
 // pdb: FalloutRadio::FORadioReceiver::LoadGame | FalloutRadio.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
 void __thiscall FUN_00835f80_shell::FalloutRadio_FORadioReceiver_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)

@@ -102,7 +102,7 @@ void GrenadeProjectile::DispatchReferenceSourceFiles(ObjHelper* pObjHelper, void
 // pdb: GrenadeProjectile::Process3D | GrenadeProjectile.obj | retail, vtable slot, high
 void GrenadeProjectile::SetLightEnabled()
 {
-    TESObjectREFR_SetLight(GetNiNode(), !Projectile_IsFlagSet(0x200));
+    TESObjectREFR_SetLight_005726e0(GetNiNode(), !Projectile_IsFlagSet(0x200));
 }
 
 // Constructs the base object, clears bFlag150, and sets the form type to 0x3e.

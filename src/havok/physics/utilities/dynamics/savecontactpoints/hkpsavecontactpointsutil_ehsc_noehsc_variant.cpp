@@ -19,7 +19,7 @@ void __cdecl hkPredGskCylinderAgent3_process(void);
 void __cdecl hkConvexListAgent3_process(void);
 void __cdecl hkListAgent3_process(void);
 void __fastcall hkBvTreeAgent3_process(void*, int, void*, int);
-void __cdecl hkpCollectionCollectionAgent3_process(void);
+void __cdecl process_00d35770(void);
 void __cdecl hkpCollectionAgent3_process(void);
 int __cdecl hkpSaveContactPointsUtil_getSerializedAgentType(void* p);
 struct D10710Object

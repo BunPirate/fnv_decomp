@@ -152,7 +152,7 @@ void* NiPSysSphericalCollider::FUN_00c28200(unsigned int flags)
 
 struct Collider : BSFadeNode
 {
-    Collider* __thiscall NiPSysSphericalCollider_ctor(float, int, int, int, int, float);
+    Collider* __thiscall NiPSysSphericalCollider_NiPSysSphericalCollider(float, int, int, int, int, float);
 };
 // @fnv 0x00c282a0
 // pdb: NiPSysSphericalCollider::CreateObject | NiPSysSphericalCollider.obj | retail, object-file run extension, low
@@ -161,7 +161,7 @@ Collider* CreateCollider()
 {
     Collider* p = (Collider*)BSFadeNode::operator new(0xb0);
     if (p)
-        return p->NiPSysSphericalCollider_ctor(1.0f, 0, 0, 0, 0, 1.0f);
+        return p->NiPSysSphericalCollider_NiPSysSphericalCollider(1.0f, 0, 0, 0, 0, 1.0f);
     return 0;
 }
 
@@ -223,7 +223,7 @@ Collider* SphericalColliderClone::CloneCollider(CloningProcess& kCloning)
 {
     Collider* pkObject = (Collider*)BSFadeNode::operator new(0xb0);
     if (pkObject)
-        pkObject = pkObject->NiPSysSphericalCollider_ctor(1.0f, 0, 0, 0, 0, 1.0f);
+        pkObject = pkObject->NiPSysSphericalCollider_NiPSysSphericalCollider(1.0f, 0, 0, 0, 0, 1.0f);
     else
         pkObject = 0;
     ((NiPSysPlanarCollider*)this)->CopyMemberData((NiPSysPlanarCollider*)pkObject, kCloning);
@@ -625,10 +625,10 @@ extern "C" void InitializeColliderBase();
 
 // Initializes collider fields, passes settings to the base initializer, sets a nonnegative radius, and initializes cached transforms.
 // @fnv 0x00c28110
-// src: XBOX_RETAIL_PDB 0x00c28110
+// src: EXE 0x00c28110
 // pdb: NiPSysSphericalCollider::NiPSysSphericalCollider | NiPSysSphericalCollider.obj | retail, upstream name already matches, high
 // pdb params: fBounce, bSpawnOnCollide, bDieOnCollide, pkSpawnModifier, pkColliderObj, fRadius
-Collider* Collider::NiPSysSphericalCollider_ctor(float fBounce, int bSpawnOnCollide, int bDieOnCollide, int pkSpawnModifier,
+Collider* Collider::NiPSysSphericalCollider_NiPSysSphericalCollider(float fBounce, int bSpawnOnCollide, int bDieOnCollide, int pkSpawnModifier,
                                  int pkColliderObj, float fRadius)
 {
     UpdateCollider* p = (UpdateCollider*)this;

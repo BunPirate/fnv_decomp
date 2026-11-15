@@ -1665,7 +1665,7 @@ class FaceGenNode
     void BSFaceGenNiNode_ApplyFacialCustomMorphs(FUN_00663430*);
     void BSFaceGenNiNode_UpdateAllChildrenMorphData(bool);
 };
-void* BSFaceGenManager_GetFaceGenMorphDataHead(void*);
+void* BSFaceGenUtils_GetFaceGenMorphDataHead(void*);
 NiExtraData* GetExtraDataIfPresent(NiAVObject*);
 void BSFaceGenUtils_RefreshMeshFromBaseMorphExtraData(NiTriBasedGeom*, BSFaceGenMorphData::Buffers*);
 const NiPoint3& BSFaceGenManager_GetCameraPosition();
@@ -1700,7 +1700,7 @@ void FaceGenNode::BSFaceGenNiNode_UpdateAllChildrenMorphData(bool abChanged)
             continue;
         if (!((MorphGeometryData*)context_2.geometry->GetModelData()))
             continue;
-        data8 = BSFaceGenManager_GetFaceGenMorphDataHead(context_2.geometry);
+        data8 = BSFaceGenUtils_GetFaceGenMorphDataHead(context_2.geometry);
         if (!data8)
             continue;
         extra2 = GetExtraDataIfPresent((NiAVObject*)context_2.geometry);

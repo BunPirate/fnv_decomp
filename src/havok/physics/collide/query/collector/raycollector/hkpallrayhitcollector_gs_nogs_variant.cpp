@@ -15,7 +15,7 @@ class FUN_00c855f0_cls
     void* m_10;
     int m_14;
 
-    void hkpAllRayHitCollector_sortHits();
+    void hknpAllHitsCollector_sortHits();
 };
 
 #include <xmmintrin.h>

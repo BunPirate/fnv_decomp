@@ -89,7 +89,7 @@ void TESObjectCELL::RemoveNonPersistentRefs()
                     {
                         pNode->FUN_0063f7b0();
                     }
-                    DAT_011c95c8->RemoveReference(pRef);
+                    DAT_011c95c8->RemoveReference_005270b0(pRef);
                     if (pRef->IsActor())
                     {
                         MobileObject* pActor = (MobileObject*)pRef;

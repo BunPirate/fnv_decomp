@@ -25,7 +25,7 @@ public:
     virtual ~PathingLOSGridMap();
 
     void __thiscall ClearMap();
-    void __thiscall Initialize(void* arCenter, float afRadius);
+    void __thiscall Initialize_006e0320(void* arCenter, float afRadius);
     void __thiscall Reset();
     void __thiscall FUN_006e02a0();
     void __thiscall Animation_ResetVtableAndFinishScriptRunLock();

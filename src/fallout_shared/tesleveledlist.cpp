@@ -832,9 +832,9 @@ extern int DAT_010c34ac;
 
 // Initialize the capsule without introducing calls to its empty point constructors.
 // @fnv 0x00c60d50
-// src: XBOX_DEBUG_PDB 0x00c60d50
+// src: EXE 0x00c60d50
 // pdb: BSMultiBoundCapsule::BSMultiBoundCapsule | BSMultiBoundCapsule.obj | debug, upstream name already matches, high
-BSMultiBoundCapsule* __fastcall BSMultiBoundCapsule_ctor(BSMultiBoundCapsule* capsule)
+BSMultiBoundCapsule* __fastcall BSMultiBoundCapsule_BSMultiBoundCapsule(BSMultiBoundCapsule* capsule)
 {
     FUN_00c4f980(capsule);
     *reinterpret_cast<int**>(capsule) = &DAT_010c34ac;

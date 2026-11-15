@@ -37,7 +37,7 @@ void __cdecl hkPredGskCylinderAgent3_process(void);
 void __cdecl hkConvexListAgent3_process(void);
 void __cdecl hkListAgent3_process(void);
 void __fastcall hkBvTreeAgent3_process(void*, int, void*, int);
-void __cdecl hkpCollectionCollectionAgent3_process(void);
+void __cdecl process_00d35770(void);
 void __cdecl hkpCollectionAgent3_process(void);
 
 // @fnv 0x00dcd4d0
@@ -59,7 +59,7 @@ int __cdecl hkpSaveContactPointsUtil_getSerializedAgentType(void* p)
         return 6;
     if (p == (void*)&hkBvTreeAgent3_process)
         return 7;
-    if (p == (void*)&hkpCollectionCollectionAgent3_process)
+    if (p == (void*)&process_00d35770)
         return 8;
     return (p != (void*)&hkpCollectionAgent3_process) ? 0 : 9;
 }
@@ -1940,7 +1940,7 @@ int hkpSaveContactPointsUtil_getSerializedAgentType(void* p)
         return 6;
     if (p == reinterpret_cast<void*>(&hkBvTreeAgent3_process))
         return 7;
-    if (p == reinterpret_cast<void*>(&hkpCollectionCollectionAgent3_process))
+    if (p == reinterpret_cast<void*>(&process_00d35770))
         return 8;
     if (p == reinterpret_cast<void*>(&hkpCollectionAgent3_process))
         return 9;
@@ -3243,7 +3243,7 @@ __declspec(noinline) int __cdecl hkpSaveContactPointsUtil_getSerializedAgentType
         return 6;
     if (key.value == (void*)hkBvTreeAgent3_process)
         return 7;
-    if (key.value == (void*)hkpCollectionCollectionAgent3_process)
+    if (key.value == (void*)process_00d35770)
         return 8;
     return key.value == (void*)hkpCollectionAgent3_process ? 9 : 0;
 }

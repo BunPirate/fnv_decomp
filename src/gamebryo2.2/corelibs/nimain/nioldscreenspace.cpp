@@ -365,7 +365,7 @@ BSFadeNode* NiScreenSpaceCamera_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x134);
     if (p)
-        return (BSFadeNode*)((NiScreenSpaceCamera*)p)->NiScreenSpaceCamera_ctor();
+        return (BSFadeNode*)((NiScreenSpaceCamera*)p)->NiScreenSpaceCamera_00a91d80();
     return 0;
 }
 
@@ -975,10 +975,10 @@ NiCamera* __fastcall ConstructScreenCameraBase(NiCamera*);
 extern void* ScreenSpaceCameraVtable;
 // Initializes the screen-space camera and its orthographic frustum, then updates world data and world bound.
 // @fnv 0x00a91d80
-// src: XBOX_RETAIL_PDB 0x00a91d80
+// src: EXE 0x00a91d80
 // pdb: NiScreenSpaceCamera::NiScreenSpaceCamera | NiOldScreenSpace.obj | retail, call graph, high
 // pdb locals: UpdateData
-NiScreenSpaceCamera* NiScreenSpaceCamera::NiScreenSpaceCamera_ctor()
+NiScreenSpaceCamera* NiScreenSpaceCamera::NiScreenSpaceCamera_00a91d80()
 {
     ConstructScreenCameraBase(this);
     *reinterpret_cast<void**>(this) = &ScreenSpaceCameraVtable;
@@ -1004,7 +1004,7 @@ struct ScreenCameraCopyOperation
 NiScreenSpaceCamera* __fastcall CreateScreenSpaceCamera(NiScreenSpaceCamera* self, void*, unsigned int a1)
 {
     NiScreenSpaceCamera* p = (NiScreenSpaceCamera*)NiScreenSpaceCamera::operator new(sizeof(NiScreenSpaceCamera));
-    NiScreenSpaceCamera* r = p ? p->NiScreenSpaceCamera_ctor() : 0;
+    NiScreenSpaceCamera* r = p ? p->NiScreenSpaceCamera_00a91d80() : 0;
     reinterpret_cast<ScreenCameraCopyOperation*>(self)->Copy(r, a1);
     return r;
 }

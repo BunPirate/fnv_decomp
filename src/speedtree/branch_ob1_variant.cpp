@@ -917,7 +917,7 @@ inline void CRotTransform::RotateYZ(float fYangle, float fZangle)
     *this = rotation.Multiply(*this);
 }
 // @fnv 0x00b11050
-// src: XBOX_RETAIL_PDB 0x00b11050
+// src: XBOX_RETAIL_PDB 0x00b11050 (was COMMUNITY)
 // pdb: CIdvBranch::Compute | Branch.obj | retail, upstream name already matches, high
 // pdb params: nSeed, fSize, nLevel, cBasePos, fPercentOfParent, fCombinedPercentOfParent, cBaseTransform, cZAxis, pBranchGeometry, vLeaves, fWindWeight, nWindGroup, fParentRadius
 // pdb locals: cTile, bFrond, fFlexibility, sInfo, fLength, fSegmentLength, fGravity, fTileOffset, fAzimuth, fStartAngle, fRadius, fFirstRadius, pFirstVertex, cAdjustmentAxis, bChildrenAreBuds, fFacingFactor, cTransformAdjustment, fGravityAngle, fCrossSectionWeight, fRunningLength, nNumChildBranches, fGravityProfile, fAzimuthDisturbance, pLastVertex ...
@@ -2907,7 +2907,7 @@ struct StripDataX
 };
 
 // @fnv 0x00b14ed0
-// src: XBOX_RETAIL_PDB 0x00b14ed0
+// src: XBOX_RETAIL_PDB 0x00b14ed0 (was COMMUNITY)
 // pdb: CIdvBranch::ComputeBranchNormals | Branch.obj | retail, upstream name already matches, high
 // pdb params: pBranchGeometry, usSegments
 // pdb locals: i, nBase, j, cHoriz, nHorizPrev, nVertNext, cVert, pHorizNext, nHorizNext, pHorizPrev, pVertPrev, nVertPrev, cNormal, pVertNext

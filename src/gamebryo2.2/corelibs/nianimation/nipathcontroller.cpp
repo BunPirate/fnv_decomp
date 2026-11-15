@@ -276,11 +276,11 @@ inline float PathRemainder(float x, float y)
 
 // Adjusts time to the unit interval, then finds the path segment and refines its local parameter for that distance.
 // @fnv 0x00a4a980
-// src: XBOX_RETAIL_PDB 0x00a4a980
+// src: XBOX_PDB 0x00a4a980
 // pdb: NiPathController::GetPercentLoc | NiPathController.obj | retail, object-file gap fill, high
 // pdb params: fPercent, uiI1, uiI2, fNormTime
 // pdb locals: uiNumPathKeys, pkPathKeys, iMaxIterations, fDist, fTime, ui0, ePathType, ucSize, fLength, ui1, i, fDiff, fTolerance
-void NiPathController::GetPercentLoc(float fPercent, unsigned int* uiI1, unsigned int* uiI2, float* fNormTime)
+void NiPathController::GetPercentLoc_00a4a980(float fPercent, unsigned int* uiI1, unsigned int* uiI2, float* fNormTime)
 {
     unsigned int count = m_spPathData ? reinterpret_cast<NiPosData*>(m_spPathData.m_pObject)->m_uiNumKeys : 0;
     if (fPercent == 0.0f)
@@ -940,7 +940,7 @@ void NiPathController::GetLoc(float fTime, unsigned int& uiI1, unsigned int& uiI
 {
     if (GetBit(4))
     {
-        GetPercentLoc(fTime, uiI1, uiI2, fNormTime);
+        GetPercentLoc_00a4a980(fTime, uiI1, uiI2, fNormTime);
         lastIdx = uiI1;
         return;
     }

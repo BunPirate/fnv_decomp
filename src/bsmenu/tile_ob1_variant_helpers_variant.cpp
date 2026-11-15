@@ -72,7 +72,7 @@ struct S00a0d390
 struct FUN_00a03c90_shell : public Tile {
     Menu* Tile_GetMenu();
 };
-void __cdecl AutoTileLock_ctor();
+void __cdecl AutoTileLock_AutoTileLock();
 void __cdecl _FUN_00a04500();
 struct FUN_00a03d40_shell {
     Tile* Tile_GetMenuTile();
@@ -260,10 +260,10 @@ __forceinline BSMapEntry<unsigned long, ScrapHeapBuffer*>* FindFirstHeapEntry(
     return 0;
 }
 ScrapHeapBuffer* __cdecl Tile_TraitToText(unsigned int aiTrait);
-void __cdecl AutoTileLock_ctor();
+void __cdecl AutoTileLock_AutoTileLock();
 void __cdecl _FUN_00a04500();
 struct TileLockGuard {
-    TileLockGuard() { AutoTileLock_ctor(); }
+    TileLockGuard() { AutoTileLock_AutoTileLock(); }
     ~TileLockGuard() { _FUN_00a04500(); }
 };
 struct FlaggedTile {
@@ -473,10 +473,10 @@ struct Item_00a0ba50 {
     static void operator delete(void* apMemory) { DAT_011f6238.MemoryManager_Deallocate(apMemory); }
 };
 void __cdecl Tile_DeleteGlobalItems();
-void __cdecl AutoTileLock_ctor();
+void __cdecl AutoTileLock_AutoTileLock();
 extern "C" void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 struct TileSearchLock {
-    TileSearchLock() { AutoTileLock_ctor(); }
+    TileSearchLock() { AutoTileLock_AutoTileLock(); }
     ~TileSearchLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 struct TileFloatList {
@@ -517,7 +517,7 @@ struct FUN_00a0ac80 {
     bool bOwns;
     FUN_00a0ac80();
 };
-void AutoTileLock_ctor();
+void AutoTileLock_AutoTileLock();
 void Object___imp__LeaveCriticalSection_Thunk();
 class TileV;
 class TileValueV
@@ -531,7 +531,7 @@ public:
 class FnvTileLock
 {
 public:
-    FnvTileLock() { AutoTileLock_ctor(); }
+    FnvTileLock() { AutoTileLock_AutoTileLock(); }
     ~FnvTileLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 inline bool HasValue(TileValueV* pList, int m_iValueId)
@@ -794,11 +794,11 @@ public:
 
 extern const char* DAT_011f34cc;
 
-void AutoTileLock_ctor();
+void AutoTileLock_AutoTileLock();
 void Object___imp__LeaveCriticalSection_Thunk();
 
 struct TileListLock {
-    TileListLock() { AutoTileLock_ctor(); }
+    TileListLock() { AutoTileLock_AutoTileLock(); }
     ~TileListLock() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 
@@ -839,11 +839,11 @@ int Tile_GetTileFromNode(ExtraNode* apNode)
 }
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* lpAddend);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* lpAddend);
-void __cdecl AutoTileLock_ctor();
+void __cdecl AutoTileLock_AutoTileLock();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 class MenuLockA01 {
 public:
-    MenuLockA01() { AutoTileLock_ctor(); }
+    MenuLockA01() { AutoTileLock_AutoTileLock(); }
     ~MenuLockA01() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 class RefObjectA01 {
@@ -1073,12 +1073,12 @@ struct MenuArray {
 };
 extern MenuArray DAT_011f3508;
 int __cdecl Tile_GetMenuByClass(int id);
-void __cdecl AutoTileLock_ctor();
+void __cdecl AutoTileLock_AutoTileLock();
 void __cdecl Object___imp__LeaveCriticalSection_Thunk();
 extern const double _gModifierZero;
 class MenuLockB35 {
 public:
-    MenuLockB35() { AutoTileLock_ctor(); }
+    MenuLockB35() { AutoTileLock_AutoTileLock(); }
     ~MenuLockB35() { Object___imp__LeaveCriticalSection_Thunk(); }
 };
 unsigned int __cdecl BSstrlen(const char* text);

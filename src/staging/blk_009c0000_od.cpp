@@ -323,13 +323,13 @@ struct Call741e0
 };
 struct FUN_009c6440_Class
 {
-    int ProjectileListener_ctor(int arInfo, int apProjectile);
+    int ProjectileListener_ProjectileListener(int arInfo, int apProjectile);
 };
 // @fnv 0x009c6440
-// src: XBOX_RETAIL_PDB 0x009c6440
+// src: EXE 0x009c6440
 // pdb: ProjectileListener::ProjectileListener | ProjectileListener.obj | retail, upstream name already matches, high
 // pdb params: arInfo, apProjectile
-int FUN_009c6440_Class::ProjectileListener_ctor(int arInfo, int apProjectile)
+int FUN_009c6440_Class::ProjectileListener_ProjectileListener(int arInfo, int apProjectile)
 {
     ((Call741e0*)this)->FUN_00c741e0(arInfo);
     *(int*)this = (int)&DAT_01090594;
@@ -650,7 +650,7 @@ FUN_009c5ee0_cls* FUN_009c5ee0_cls::ProjectileTarget_ProjectileTarget()
 
 struct OrientationSource
 {
-    float __thiscall GetGravity();
+    float __thiscall GetGravity_00966980();
 };
 struct OrientationObject
 {
@@ -681,7 +681,7 @@ void OrientationObject::SetOrientationFromDirection(NiPoint3 aDirection)
     b.Unitize_004a0c10();
     float e = ((GetAngleFn*)vtable)[175](this, 0);
     float d = FUN_00931d70();
-    float a = FUN_004181e0()->GetGravity();
+    float a = FUN_004181e0()->GetGravity_00966980();
     if (a == DAT_01012060)
     {
         d = -atanf(b.z / (1.0f - b.z * b.z));
@@ -1626,7 +1626,7 @@ struct CamDataX
 };
 struct CamMgrX
 {
-    CamDataX* GetCameraPathToPlay(RefX* apActionRef, RefX* apTargetRef);
+    CamDataX* GetCamData(RefX* apActionRef, RefX* apTargetRef);
 };
 struct ImodX
 {
@@ -1797,7 +1797,7 @@ void DialogueCameraX::VATS_Update()
                 }
                 else
                 {
-                    xpCurCam = xpCamMgr->GetCameraPathToPlay(xpSpeaker, qJDuOZ->pActor);
+                    xpCurCam = xpCamMgr->GetCamData(xpSpeaker, qJDuOZ->pActor);
                 }
                 if (xpCurCam)
                 {

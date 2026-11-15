@@ -72,7 +72,7 @@ BSStripParticleSystem* BSStripParticleSystem::CreateParticleSystem(CloningProces
     {
         object = 0;
     }
-    this->CopyMembers(object, process);
+    this->CopyMembers_00c1b6f0(object, process);
     return object;
 }
 

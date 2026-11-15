@@ -201,7 +201,7 @@ bool MagicShaderHitEffect::Init()
             if (!((Actor*)pTarget)->GetProcess()->IsAdditionalActorFlagSet() && g_thePlayer->GetField6A4() != this)
                 bParticles = false;
         }
-        if (bParticles && !m_pEffectShader->IsFlagSet(8))
+        if (bParticles && !m_pEffectShader->IsFlagSet_00507040(8))
         {
             if (reinterpret_cast<const ShaderPointerComparison<NiNode>&>(m_pParticleShaderNode) == (NiNode*)0)
             {
@@ -271,7 +271,7 @@ bool MagicShaderHitEffect::Init()
                 m_pParticleShaderNode->AssignParent(0);
             m_pParticleShaderNode = (NiNode*)0;
         }
-        if (!m_pEffectShader->IsFlagSet(1))
+        if (!m_pEffectShader->IsFlagSet_00507040(1))
         {
             if (reinterpret_cast<const ShaderPointerComparison<BSShaderPPLightingProperty::TextureEffectData>&>(spTexEffectData) ==
                 (BSShaderPPLightingProperty::TextureEffectData*)0)

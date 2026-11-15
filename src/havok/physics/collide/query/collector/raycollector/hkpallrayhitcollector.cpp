@@ -17,14 +17,14 @@ class FUN_00c855f0_cls
     void* m_10;
     int m_14;
 
-    void hkpAllRayHitCollector_sortHits();
+    void hknpAllHitsCollector_sortHits();
 };
 
 // If m_14 exceeds 1, calls FUN_00c852c0 on m_10 with 0 and m_14 - 1.
 // @fnv 0x00c855f0
-// src: XBOX_RETAIL_PDB 0x00c855f0
+// src: COMMUNITY 0x00c855f0
 // pdb: hkpAllRayHitCollector::sortHits | hkpAllRayHitCollector.obj | retail, object-file run extension, high
-void FUN_00c855f0_cls::hkpAllRayHitCollector_sortHits()
+void FUN_00c855f0_cls::hknpAllHitsCollector_sortHits()
 {
     union
     {

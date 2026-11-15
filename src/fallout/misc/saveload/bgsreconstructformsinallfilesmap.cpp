@@ -743,7 +743,7 @@ struct S_844070
 };
 // Calls FUN_00844590 with a, stores the address of DAT_0107ebc8 into this, and returns this.
 // @fnv 0x00844070
-// src: XBOX_DEBUG_PDB 0x00844070
+// src: XBOX_DEBUG_PDB 0x00844070 (was EXE)
 // pdb: NiTMap<unsigned int,BGSReconstructFormsMap *>::NiTMap<unsigned int,BGSReconstructFormsMap *> | BGSReconstructFormsInAllFilesMap.obj | debug, call graph (shared callers), high
 // pdb params: uiHashSize
 S_844070* S_844070::NiTMap_unsigned_int_BGSReconstructFormsMap_ctor(int uiHashSize)
@@ -1308,15 +1308,15 @@ unsigned int __fastcall _ref_0084e3a0(unsigned int);
 
 struct FUN_008420a0_class : public DummyPointerMap
 {
-    void BGSReconstructWorldSpacesMap_AddCellForm(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int);
+    void BGSReconstructWorldSpacesMap_AddCellForm_008420a0(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int);
 };
 
 // @fnv 0x008420a0
-// src: XBOX_RETAIL_PDB 0x008420a0
+// src: XBOX_PDB 0x008420a0
 // pdb: BGSReconstructWorldSpacesMap::AddCellForm | BGSReconstructFormsInAllFilesMap.obj | retail, object-file gap fill, high
 // pdb params: apCell, apForm, aiFormID, aiFlags
 // pdb locals: pcellBlocksMap, iworldSpaceID, pworldSpace
-void FUN_008420a0_class::BGSReconstructWorldSpacesMap_AddCellForm(unsigned int apWorldSpace, unsigned int aiCellX, unsigned int aiCellY, unsigned int apForm,
+void FUN_008420a0_class::BGSReconstructWorldSpacesMap_AddCellForm_008420a0(unsigned int apWorldSpace, unsigned int aiCellX, unsigned int aiCellY, unsigned int apForm,
                                       unsigned int aiFormID, unsigned int aiFlags)
 {
     unsigned int map = _ref_0084e3a0(apWorldSpace);
@@ -1388,7 +1388,7 @@ void* __cdecl operator new(unsigned int);
 
 struct WorldSpaceMapOperations : BGSReconstructWorldSpacesMap
 {
-    void __thiscall BGSReconstructWorldSpacesMap_AddCellForm(int, int, int, int, int, int);
+    void __thiscall BGSReconstructWorldSpacesMap_AddCellForm_008420a0(int, int, int, int, int, int);
 };
 
 struct FileWorldReconstructionOperations : BGSReconstructFormsInFileMap
@@ -1408,7 +1408,7 @@ void FileWorldReconstructionOperations::EnsureObjectAndCall(int apWorldSpace, in
         pWorldSpaces = new BGSReconstructWorldSpacesMap;
     }
 
-    static_cast<WorldSpaceMapOperations*>(pWorldSpaces)->BGSReconstructWorldSpacesMap_AddCellForm(apWorldSpace, aiCellX, aiCellY, apForm, aiFormID, aiFlags);
+    static_cast<WorldSpaceMapOperations*>(pWorldSpaces)->BGSReconstructWorldSpacesMap_AddCellForm_008420a0(apWorldSpace, aiCellX, aiCellY, apForm, aiFormID, aiFlags);
 
     iCount += 1;
 }
@@ -2317,16 +2317,16 @@ struct ExtendedFileMap : BGSReconstructFormsInFileMap
 struct ReconstructMapHelper : BGSReconstructFormsInAllFilesMap
 {
     TESFile* BGSReconstructFormsInAllFilesMap_GetFileForFormID(BSSimpleList<TESFile*>* apFileList, unsigned int arg4);
-    void BGSReconstructFormsInAllFilesMap_AddReference(ExtendedForm* apWorldSpace, unsigned int aiCellX, unsigned int aiCellY, unsigned int aiRefID, unsigned int aiFlags);
+    void BGSReconstructFormsInAllFilesMap_AddReference_008438b0(ExtendedForm* apWorldSpace, unsigned int aiCellX, unsigned int aiCellY, unsigned int aiRefID, unsigned int aiFlags);
 };
 
 // Resolves the form's source file, creates or fetches its ExtendedFileMap, adds the reference to it, and increments iCount; logs an error if no file is found.
 // @fnv 0x008438b0
-// src: XBOX_RETAIL_PDB 0x008438b0
+// src: EXE 0x008438b0
 // pdb: BGSReconstructFormsInAllFilesMap::AddReference | BGSReconstructFormsInAllFilesMap.obj | retail, string-set bridge, high
 // pdb params: apParentCell, aiRefID, aiFlags
 // pdb locals: pformsInFileMap, pfile
-void ReconstructMapHelper::BGSReconstructFormsInAllFilesMap_AddReference(ExtendedForm* apWorldSpace, unsigned int aiCellX, unsigned int aiCellY, unsigned int aiRefID,
+void ReconstructMapHelper::BGSReconstructFormsInAllFilesMap_AddReference_008438b0(ExtendedForm* apWorldSpace, unsigned int aiCellX, unsigned int aiCellY, unsigned int aiRefID,
                                         unsigned int aiFlags)
 {
     if (!apWorldSpace)

@@ -328,13 +328,13 @@ struct MyCollector
     void* __vftable;
     InnerMember m_04;
     void hkpCdBodyPairCollector_reset();
-    void* hkpCdBodyPairCollector_ctor();
+    void* hkpCdBodyPairCollector_hkpCdBodyPairCollector();
 };
 // Sets the vtable pointer, calls m_04._ref_006815c0(), then FUN_0062d330(), and returns this.
 // @fnv 0x0062d3c0
-// src: XBOX_DEBUG_PDB 0x0062d3c0
+// src: XBOX_PDB 0x0062d3c0
 // pdb: hkpCdBodyPairCollector::hkpCdBodyPairCollector | TESTrapListener.obj | debug, upstream name already matches, high
-void* MyCollector::hkpCdBodyPairCollector_ctor()
+void* MyCollector::hkpCdBodyPairCollector_hkpCdBodyPairCollector()
 {
     __vftable = (void*)&DAT_0104e328;
     m_04._ref_006815c0();
@@ -1112,14 +1112,14 @@ struct FUN_0062dc50_shell
     void* m_iWordAt04;
     void* m_8;
     void* m_iThirdValue;
-    void* TriggerEntry_ctor(unsigned int apRef, unsigned int apCol);
+    void* TriggerEntry_TriggerEntry(unsigned int apRef, unsigned int apCol);
 };
 // Calls FUN_00620720 with a and b, then FUN_0062c640 on the object at offset 0x10, and returns this.
 // @fnv 0x0062dc50
-// src: XBOX_RETAIL_PDB 0x0062dc50
+// src: COMMUNITY 0x0062dc50
 // pdb: TriggerEntry::TriggerEntry | TESTrapListener.obj | retail, upstream name already matches, high
 // pdb params: apRef, apCol
-void* FUN_0062dc50_shell::TriggerEntry_ctor(unsigned int apRef, unsigned int apCol)
+void* FUN_0062dc50_shell::TriggerEntry_TriggerEntry(unsigned int apRef, unsigned int apCol)
 {
     ((FUN_00620720_shell*)this)->bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(apRef, apCol);
     ((FUN_0062c640_shell*)((char*)this + 0x10))->FUN_0062c640();

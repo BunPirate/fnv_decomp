@@ -255,7 +255,7 @@ struct Shader
     hkVector4 direction;
 };
 // @fnv 0x00baa850
-// src: XBOX_RETAIL_PDB 0x00baa850
+// src: XBOX_RETAIL_PDB 0x00baa850 (was COMMUNITY)
 // pdb: TallGrassShader::UpdateShadowLights | TallGrassShader.obj | retail, object-file run extension, high
 // pdb params: apSkin, aWorld
 // pdb locals: kdiffuse, kobjtoworld, rposAdj, kposition, kshadowproj, plight, kobjtoshadow, kspecular

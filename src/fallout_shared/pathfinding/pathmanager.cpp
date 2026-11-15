@@ -193,7 +193,7 @@ struct S006e9bd0
 };
 // Sets a to -1, constructs g with 0, and returns this.
 // @fnv 0x006e9bd0
-// src: XBOX_DEBUG_PDB 0x006e9bd0
+// src: XBOX_DEBUG_PDB 0x006e9bd0 (was COMMUNITY)
 // pdb: ActorPathingMessage::ActorPathingMessage | PathManager.obj | debug, call graph (shared callers), high
 S006e9bd0* S006e9bd0::ActorPathingMessage_ctor()
 {
@@ -845,14 +845,14 @@ struct FUN_006ea9d0_shell
 {
     int f0;
     int f4;
-    FUN_006ea9d0_shell* PathingMessage_ctor();
+    FUN_006ea9d0_shell* PathingMessage_PathingMessage();
 };
 // Sets f0 to -1 and f4 to 0, then returns this.
 // @fnv 0x006ea9d0
-// src: XBOX_DEBUG_PDB 0x006ea9d0
+// src: COMMUNITY 0x006ea9d0
 // pdb: PathingMessage::PathingMessage | PathManager.obj | debug, upstream name already matches, high
 // pdb params: aType, apTaskData
-FUN_006ea9d0_shell* FUN_006ea9d0_shell::PathingMessage_ctor()
+FUN_006ea9d0_shell* FUN_006ea9d0_shell::PathingMessage_PathingMessage()
 {
     f0 = -1;
     f4 = 0;
@@ -1037,14 +1037,14 @@ struct G00559a40
 struct S006ebf60
 {
     int f;
-    S006ebf60* NiPointer_ActorPathingMessageQueue_ctor(int);
+    S006ebf60* NiPointer_ActorPathingMessageQueue_NiPointer_ActorPathingMessageQueue(int);
 };
 // Stores a into f and, when a is non-zero, calls FUN_0040f6e0 on the object at a+0x14; returns this.
 // @fnv 0x006ebf60
-// src: XBOX_DEBUG_PDB 0x006ebf60
+// src: XBOX_PDB 0x006ebf60
 // pdb: NiPointer<ActorPathingMessageQueue>::NiPointer<ActorPathingMessageQueue> | PathManager.obj | debug, call graph (shared callers), high
 // pdb params: pObject
-S006ebf60* S006ebf60::NiPointer_ActorPathingMessageQueue_ctor(int pObject)
+S006ebf60* S006ebf60::NiPointer_ActorPathingMessageQueue_NiPointer_ActorPathingMessageQueue(int pObject)
 {
     f = pObject;
     if (f != 0)

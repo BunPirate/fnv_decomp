@@ -2831,7 +2831,7 @@ struct RefrV
 // and 0x008be280. Retain this local actor view until those are shared.
 struct Actor13 : public RefrV
 {
-    bool Actor_IsFollowing(void* apLeader);
+    bool Actor_IsFollowing_008bc7f0(void* apLeader);
     void Actor_InitiateMovementBlockedPackage();
     int FUN_00931850();
     ProjBase* FUN_004181e0();
@@ -2968,7 +2968,7 @@ void ActorMover::UpdateTargeting()
     iAB = false;
     if ((PathingRequest*)spCurrentRequest == 0)
         return;
-    if (((Actor13*)pActor)->Actor_IsFollowing(g_thePlayer))
+    if (((Actor13*)pActor)->Actor_IsFollowing_008bc7f0(g_thePlayer))
     {
         if (m_pPathHandler != 0)
         {
@@ -3060,7 +3060,7 @@ void ActorMover::UpdateTargeting()
                 }
             }
             FUN_00483710();
-            if (((Actor13*)pActor)->Actor_IsFollowing(g_thePlayer) &&
+            if (((Actor13*)pActor)->Actor_IsFollowing_008bc7f0(g_thePlayer) &&
                 TESObjectREFR_GetWorldSpace((TESObjectREFR*)((Actor13*)pActor)) != TESObjectREFR_GetWorldSpace((TESObjectREFR*)g_thePlayer))
             {
                 TESObjectREFR_MoveRefToNewSpace(((Actor13*)pActor), g_thePlayer->FUN_008d6f30(), TESObjectREFR_GetWorldSpace((TESObjectREFR*)g_thePlayer));

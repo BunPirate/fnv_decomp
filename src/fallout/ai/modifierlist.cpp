@@ -195,11 +195,11 @@ int** __fastcall FastModifierCollection_FastModifierCollection(int** apArrayOut)
 }
 
 // @fnv 0x009375e0
-// src: XBOX_RETAIL_PDB 0x009375e0
+// src: COMMUNITY 0x009375e0
 // pdb: ModifierList::SetModifier | ModifierList.obj | retail, upstream name already matches, high
 // pdb params: acKey, afValue
 // pdb locals: pModifier
-void ActorValueModifierList::SetModifier(char acKey, float afValue)
+void ActorValueModifierList::ModifierList_SetModifier(char acKey, float afValue)
 {
     Modifier* modifier = GetModifierItem(acKey);
     if (!modifier)

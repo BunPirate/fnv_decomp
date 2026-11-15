@@ -3214,7 +3214,7 @@ void MoppMachine::ProcessEntries_00e5d7d0(const MoppState* state, const unsigned
 // MOPP ray-cast query (0x00e5d650): Havok's code, built without /GS like the rest of this unit (the /GS unit's cookie
 // heuristics count the real __m128's char lanes as a buffer; the original has no cookie). On the shared hkVector4.
 #include <xmmintrin.h>
-__forceinline void hkVector4::setAll(float x) { m_vComponents = _mm_set_ps1(x); }
+__forceinline void hkVector4::SetAllComponents(float x) { m_vComponents = _mm_set_ps1(x); }
 __forceinline void hkVector4::setXYZ(const hkVector4& v) { m_vComponents = _mm_shuffle_ps(v.m_vComponents, _mm_unpackhi_ps(v.m_vComponents, m_vComponents), 0xc4); }
 
 namespace fnv_00e5d650 {
@@ -3275,7 +3275,7 @@ void hkVector4_QueryMoppRay(const RaySegment* seg, const hkVector4* to, unsigned
     info.m_00 = 0;
     info.m_iElementIndex = 16;
     info.m_04 = 0;
-    q.m_vScale.setAll((float)(q.m_vm.m_invLength * DAT_01091c00));
+    q.m_vScale.SetAllComponents((float)(q.m_vm.m_invLength * DAT_01091c00));
     hkVector4 dir;
     dir.setSub4(*to, seg->m_vTo);
     dir.add4(dir);

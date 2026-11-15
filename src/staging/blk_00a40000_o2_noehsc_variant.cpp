@@ -118,7 +118,7 @@ void __cdecl NiStandardizeFilePath(NiFixedString* kString);
 extern int DAT_0109b00c;
 struct FUN_004a4650_ListBase
 {
-    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSTempEffectSimpleDecal_RemoveAll();
+    void NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll();
 };
 struct FUN_00a5a390_shell
 {
@@ -1006,7 +1006,7 @@ struct ControllerFields
 struct ConvertedController : ControllerFields
 {
     NiPointer<ConvertedController> next;
-    ConvertedController* NiTransformController_ctor();
+    ConvertedController* NiTransformController_NiTransformController();
 };
 struct ControllerInterpolator : ControllerFields
 {

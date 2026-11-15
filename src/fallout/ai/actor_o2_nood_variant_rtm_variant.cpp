@@ -1567,7 +1567,7 @@ struct __declspec(align(16)) Scratch {
     EntryHardware::LocalM128 axisA, axisB, axisC, axisD;
     float strength, f54, f58, f5c, f60, f64, f68, threshold, radius;
     bool flag;
-    void __thiscall hkaFootPlacementIkSolver_Setup_ctor();
+    void __thiscall hkaFootPlacementIkSolver_Setup_Setup();
 };
 struct GameForm {
     GameForm* getLinked();

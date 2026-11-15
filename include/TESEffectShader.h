@@ -35,7 +35,7 @@ public:
     BGSDebris* GetAddonModels();
     void SetAddonModels(BGSDebris* models);
 
-    bool IsFlagSet(unsigned int);
+    bool IsFlagSet_00507040(unsigned int);
     float NiAVObject_GetWorldScale();
     float Explosion_GetRadius();
     float TESEffectShader_GetAddOnScaleStart();

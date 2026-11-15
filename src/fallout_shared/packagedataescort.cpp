@@ -110,7 +110,7 @@ struct LocationDescriptor
 {
     LocationDescriptor();
     ~LocationDescriptor();
-    void PackageLocation_LoadGame(BGSLoadFormBuffer*);
+    void PackageLocation_LoadGame_0067fbe0(BGSLoadFormBuffer*);
     int pad[3];
 };
 }  // namespace fnv_0067c330
@@ -128,7 +128,7 @@ void TESEscortPackageData::TESFollowPackageData_LoadGame(BGSLoadFormBuffer* apLo
     if (hasLocation)
     {
         pSearchLocation = reinterpret_cast<LocationDescriptor*>(new fnv_0067c330::LocationDescriptor);
-        reinterpret_cast<fnv_0067c330::LocationDescriptor*>(pSearchLocation)->PackageLocation_LoadGame(apLoadGameBuffer);
+        reinterpret_cast<fnv_0067c330::LocationDescriptor*>(pSearchLocation)->PackageLocation_LoadGame_0067fbe0(apLoadGameBuffer);
     }
 }
 

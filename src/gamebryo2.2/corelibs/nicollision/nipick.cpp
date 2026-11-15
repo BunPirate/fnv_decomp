@@ -105,14 +105,14 @@ void __cdecl NiStaticDataManager_AddLibrary(void*, void*);
 
 struct FUN_00e99300_shell
 {
-    void* __thiscall NiCollisionSDM_ctor();
+    void* __thiscall NiCollisionSDM_NiCollisionSDM();
 };
 
 // Increments DAT_0126fa60 and, when the previous value was zero, registers InitNiStreamCallbacks and FUN_00e99260 via FUN_00aa2080; returns this.
 // @fnv 0x00e99300
-// src: XBOX_RETAIL_PDB 0x00e99300
+// src: COMMUNITY 0x00e99300
 // pdb: NiCollisionSDM::NiCollisionSDM | NiCollisionSDM.obj | retail, upstream name already matches, high
-void* __thiscall FUN_00e99300_shell::NiCollisionSDM_ctor()
+void* __thiscall FUN_00e99300_shell::NiCollisionSDM_NiCollisionSDM()
 {
     void* result = this;
     int iPreviousCount = DAT_0126fa60;

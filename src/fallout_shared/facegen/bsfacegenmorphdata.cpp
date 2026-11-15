@@ -400,7 +400,7 @@ extern char const* const g_011d37c8_arg1;
 extern NiFixedString* DAT_011d5b8c;
 
 // @fnv 0x00662760
-// src: XBOX_RETAIL_PDB 0x00662760
+// src: XBOX_RETAIL_PDB 0x00662760 (was COMMUNITY)
 // pdb: BSFaceGenBaseMorphExtraData::InitSDM | BSFaceGenMorphData.obj | retail, call graph, high
 void __cdecl BSFaceGenBaseMorphExtraData_InitSDM()
 {

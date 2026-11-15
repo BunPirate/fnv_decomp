@@ -579,7 +579,7 @@ struct FUN_00b2b940_class
 };
 struct FUN_00b053e0_shell
 {
-    void CSpeedTreeRT_dtor();
+    void CSpeedTreeRT_DeleteTransientData();
 };
 struct FUN_00b073f0_class
 {
@@ -711,7 +711,7 @@ struct FUN_00b0b920_engine
     int FUN_00b7b0();
     int FUN_00b830();
     int FUN_00b8b0();
-    unsigned short GetNumStrips(unsigned short sLodLevel);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
     int CIndexedGeometry_GetStripLengthsPointer(unsigned short sLodLevel);
     int CIndexedGeometry_GetStripsPointer(unsigned short nLodLevel);
 };
@@ -2511,7 +2511,7 @@ struct Sub0
     {
         return f108;
     }
-    bool Parse(FUN_00b06090* cFile);
+    bool Parse_00b2b550(FUN_00b06090* cFile);
     void ParseTextureControls(FUN_00b06090* cFile);
     void ParseFlareInfo(FUN_00b06090* cFile);
     void CTreeEngine_ParseFlareSeed(FUN_00b06090* cFile);
@@ -2748,7 +2748,7 @@ bool Tree59::CSpeedTreeRT_LoadTree_00b059e0(int p1, int p2)
     try
     {
         FUN_00b06090 reader8(p1, p2);
-        if (m_p00->Parse(&reader8))
+        if (m_p00->Parse_00b2b550(&reader8))
         {
             if (!reader8.atEnd())
             {
@@ -4364,7 +4364,7 @@ struct SpeedTreeRTB071F0
 };
 
 // @fnv 0x00b071f0
-// src: XBOX_RETAIL_PDB 0x00b071f0
+// src: XBOX_RETAIL_PDB 0x00b071f0 (was EXE)
 // pdb: CSpeedTreeRT::SetNumLeafRockingGroups | SpeedTreeRT.obj | retail, unique string literal, high
 // pdb params: nRockingGroups
 // pdb locals: cException
@@ -6203,7 +6203,7 @@ void __cdecl CSpeedTreeRT_SetError(const char* pError);
 class CSpeedTreeRT
 {
   public:
-    void CSpeedTreeRT_DeleteBranchGeometry();
+    void DeleteBranchGeometry();
     TreeInfoB08* m_pkTreeInfo;
     BranchGeometryB08* m_pkBranchGeometry;
     char m_acPad[0x30 - 8];
@@ -6214,10 +6214,10 @@ class CSpeedTreeRT
 };
 
 // @fnv 0x00b088d0
-// src: XBOX_RETAIL_PDB 0x00b088d0
+// src: EXE 0x00b088d0
 // pdb: CSpeedTreeRT::DeleteBranchGeometry | SpeedTreeRT.obj | retail, upstream name already matches, high
 // pdb locals: cException
-void CSpeedTreeRT::CSpeedTreeRT_DeleteBranchGeometry()
+void CSpeedTreeRT::DeleteBranchGeometry()
 {
     try
     {
@@ -8301,7 +8301,7 @@ template <class _Ty> class vectorS : public _Vector_valS<_Ty>
 class FUN_00b0a9a0_Tree
 {
   public:
-    short GetNumStrips(short sLodLevel);
+    short CIndexedGeometry_GetNumStrips(short sLodLevel);
     int unk00;
     int unk04;
     int unk08;
@@ -8328,10 +8328,10 @@ class FUN_00b0a9a0_Tree
 };
 
 // @fnv 0x00b0a9a0
-// src: XBOX_DEBUG_PDB 0x00b0a9a0
+// src: XBOX_PDB 0x00b0a9a0
 // pdb: CIndexedGeometry::GetNumStrips | SpeedTreeRT.obj | debug, upstream name already matches, high
 // pdb params: sLodLevel
-short FUN_00b0a9a0_Tree::GetNumStrips(short sLodLevel)
+short FUN_00b0a9a0_Tree::CIndexedGeometry_GetNumStrips(short sLodLevel)
 {
     return (sLodLevel > -1) ? (short)m_kLists[sLodLevel].size() : (short)0;
 }
@@ -8701,7 +8701,7 @@ struct E0b
     int CIndexedGeometry_GetVertexTexCoords1();
     int CIndexedGeometry_GetVertexWindWeights();
     int CIndexedGeometry_GetVertexWindMatrixIndices();
-    unsigned short GetNumStrips(unsigned short sLodLevel);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
     int CIndexedGeometry_GetStripLengthsPointer(unsigned short sLodLevel);
     int CIndexedGeometry_GetStripsPointer(unsigned short nLodLevel);
 };
@@ -8754,7 +8754,7 @@ void S0b::CSpeedTreeRT_GetBranchGeometry(I0b* sGeometry, short sOverrideLodValue
         pInfo->i34 = pEngine->CIndexedGeometry_GetVertexWindMatrixIndices();
         short sLevel7 = sOverrideLodValue == -1 ? CSpeedTreeRT_GetDiscreteBranchLodLevel(-1.0f) : sOverrideLodValue;
         pInfo->iLod = sLevel7;
-        pInfo->usA = pEngine->GetNumStrips(sLevel7);
+        pInfo->usA = pEngine->CIndexedGeometry_GetNumStrips(sLevel7);
         pInfo->i8 = pEngine->CIndexedGeometry_GetStripLengthsPointer(sLevel7);
         pInfo->ic = pEngine->CIndexedGeometry_GetStripsPointer(sLevel7);
         if (DAT_011f8b78)
@@ -13741,7 +13741,7 @@ struct SpeedTreeRelease
     BranchResource* extraBranches;
     void* m64;
     void* m68;
-    void CSpeedTreeRT_dtor();
+    void CSpeedTreeRT_DeleteTransientData();
     void ReleaseStorage_00b03b30();
 };
 // @fnv 0x00b03b30
@@ -13769,7 +13769,7 @@ void SpeedTreeRelease::ReleaseStorage_00b03b30()
     }
     if (*references == 0)
     {
-        CSpeedTreeRT_dtor();
+        CSpeedTreeRT_DeleteTransientData();
         delete branches;
         delete (TreeResource*)m0c;
         delete (TreeResource*)m10;
@@ -15038,7 +15038,7 @@ struct STexturesD04
 class CSpeedTreeRT
 {
   public:
-    void CSpeedTreeRT_GetTextures(STexturesD04& sTextures);
+    void GetTextures_00b0d040(STexturesD04& sTextures);
     TreeD04* m_pLeafTreeRuntime;
     char m_acPad[0x4c - 4];
     SelfShadowD04* m_pSelfShadow;
@@ -15048,11 +15048,11 @@ class CSpeedTreeRT
 };
 
 // @fnv 0x00b0d040
-// src: XBOX_DEBUG_PDB 0x00b0d040
+// src: EXE 0x00b0d040
 // pdb: CSpeedTreeRT::GetTextures | SpeedTreeRT.obj | debug, call graph, high
 // pdb params: sTextures
 // pdb locals: vLeaves, i, cException
-void CSpeedTreeRT::CSpeedTreeRT_GetTextures(STexturesD04& sTextures)
+void CSpeedTreeRT::GetTextures_00b0d040(STexturesD04& sTextures)
 {
     try
     {

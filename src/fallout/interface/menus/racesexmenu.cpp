@@ -413,13 +413,13 @@ struct FUN_007b4900_shell
     int m0;
     int m1;
     int m2;
-    FUN_007b4900_shell* RaceSexMenu_MenuOption_ctor();
+    FUN_007b4900_shell* RaceSexMenu_MenuOption_MenuOption();
 };
 // Sets m0 and m2 to zero and returns this.
 // @fnv 0x007b4900
-// src: XBOX_DEBUG_PDB 0x007b4900
+// src: XBOX_PDB 0x007b4900
 // pdb: RaceSexMenu::MenuOption::MenuOption | RaceSexMenu.obj | debug, upstream name already matches, high
-FUN_007b4900_shell* FUN_007b4900_shell::RaceSexMenu_MenuOption_ctor()
+FUN_007b4900_shell* FUN_007b4900_shell::RaceSexMenu_MenuOption_MenuOption()
 {
     m0 = 0;
     m2 = 0;
@@ -795,7 +795,7 @@ struct GlobalObject_0040c150
 extern GlobalObject_0040c150 g_011d35c4, g_011d34b0, g_011d1fec;
 struct StrH
 {
-    void BSStringT_char_MakeUpper();
+    void BSStringT_MakeUpper();
 };
 struct GlobalObject_004037b0
 {
@@ -948,9 +948,9 @@ Tile* __cdecl RaceSexMenu_Create(int aeContext)
             *(Str6a70*)&g_011da6f4 = ((SettingT_GameSettingCollection_*)&g_011d1fec)->String();
             if (FUN_004b7220() != 3)
             {
-                ((StrH*)&g_011da70c)->BSStringT_char_MakeUpper();
-                ((StrH*)&g_011da700)->BSStringT_char_MakeUpper();
-                ((StrH*)&g_011da6f4)->BSStringT_char_MakeUpper();
+                ((StrH*)&g_011da70c)->BSStringT_MakeUpper();
+                ((StrH*)&g_011da700)->BSStringT_MakeUpper();
+                ((StrH*)&g_011da6f4)->BSStringT_MakeUpper();
             }
         }
         DAT_011da688 = pPlayer->Actor_GetWantWeaponDrawn();
@@ -1715,7 +1715,7 @@ struct FUN_007afa40_cls
 };
 
 // @fnv 0x007afa40
-// src: XBOX_RETAIL_PDB 0x007afa40
+// src: XBOX_RETAIL_PDB 0x007afa40 (was COMMUNITY)
 // pdb: RaceSexMenu::SetHairColorSliders | RaceSexMenu.obj | retail, call graph (shared callers), high
 // pdb params: aiColor
 // pdb locals: piter, popt

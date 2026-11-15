@@ -573,15 +573,15 @@ struct Standin
     int unk1c;
     hkTransform m_kMotionTransform;
 
-    Standin* hkpConvexTransformShape_ctor(const hkpConvexShape* childShape, const hkTransform& transform, int ref);
+    Standin* hkpConvexTransformShape_hkpConvexTransformShape(const hkpConvexShape* childShape, const hkTransform& transform, int ref);
 };
 
 // Calls FUN_00c9e340 with childShape and its m_fSphereRadius, sets the vtable, copies the four rows of transform into m_kMotionTransform, and returns this.
 // @fnv 0x00d5d7a0
-// src: XBOX_RETAIL_PDB 0x00d5d7a0
+// src: EXE 0x00d5d7a0
 // pdb: hkpConvexTransformShape::hkpConvexTransformShape | hkpConvexTransformShape.obj | retail, upstream name already matches, high
 // pdb params: childShape, transform, ref
-Standin* Standin::hkpConvexTransformShape_ctor(const hkpConvexShape* childShape, const hkTransform& transform, int ref)
+Standin* Standin::hkpConvexTransformShape_hkpConvexTransformShape(const hkpConvexShape* childShape, const hkTransform& transform, int ref)
 {
     ((BaseHelper*)this)->FUN_00c9e340(0xc, childShape->m_radius, childShape, ref);
     this->vtable = &DAT_010d102c;

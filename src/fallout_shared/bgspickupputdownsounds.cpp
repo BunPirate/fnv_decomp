@@ -100,9 +100,9 @@ void __fastcall BGSPickupPutdownSounds_InitializeDataComponent(void* pThis);
 
 // Initialises the BaseFormComponent base, installs the vtable from DAT_0101abd8, calls FUN_0047b540, and returns pThis.
 // @fnv 0x0047b4f0
-// src: XBOX_DEBUG_PDB 0x0047b4f0
+// src: EXE 0x0047b4f0
 // pdb: BGSPickupPutdownSounds::BGSPickupPutdownSounds | BGSPickupPutdownSounds.obj | debug, upstream name already matches, high
-void* __fastcall BGSPickupPutdownSounds_ctor(BaseFormComponent* apComponent)
+void* __fastcall BGSPickupPutdownSounds_BGSPickupPutdownSounds(BaseFormComponent* apComponent)
 {
     apComponent->BaseFormComponent::BaseFormComponent();
     *(int**)apComponent = &DAT_0101abd8;

@@ -24,14 +24,14 @@ inline hkLargeBlockAllocator::Chunk* hkLargeBlockAllocator::Page::getFooter() { 
 struct FUN_00dd74b0_cls
 {
     void _init(int elementSize, int align, int blockSize, int memoryServer);
-    void* hkFreeList_ctor(int elementSize, int align, int blockSize, int memoryServer);
+    void* hkFreeList_hkFreeList(int elementSize, int align, int blockSize, int memoryServer);
 };
 // Calls FUN_00dd74b0 with the four arguments and returns this.
 // @fnv 0x00dd7650
-// src: XBOX_DEBUG_PDB 0x00dd7650
+// src: HAVOK_LIB 0x00dd7650
 // pdb: hkFreeList::hkFreeList | hkFreeList.obj | debug, upstream name already matches, high
 // pdb params: elementSize, align, blockSize, memoryServer
-void* __thiscall FUN_00dd74b0_cls::hkFreeList_ctor(int elementSize, int align, int blockSize, int memoryServer)
+void* __thiscall FUN_00dd74b0_cls::hkFreeList_hkFreeList(int elementSize, int align, int blockSize, int memoryServer)
 {
     _init(elementSize, align, blockSize, memoryServer);
     return this;

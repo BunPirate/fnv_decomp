@@ -425,13 +425,13 @@ void __thiscall FUN_008d5020_class::CharacterProgression_AllocateData()
 
 struct FUN_008d4360_class
 {
-    FUN_008d4360_class* __thiscall CharacterProgression_ctor();
+    FUN_008d4360_class* __thiscall CharacterProgression_CharacterProgression();
 };
 
 // @fnv 0x008d4360
-// src: XBOX_RETAIL_PDB 0x008d4360
+// src: COMMUNITY 0x008d4360
 // pdb: CharacterProgression::CharacterProgression | CharacterProgression.obj | retail, upstream name already matches, high
-FUN_008d4360_class* __thiscall FUN_008d4360_class::CharacterProgression_ctor()
+FUN_008d4360_class* __thiscall FUN_008d4360_class::CharacterProgression_CharacterProgression()
 {
     ((FUN_008d5020_class*)this)->CharacterProgression_AllocateData();
     return this;
@@ -804,13 +804,13 @@ struct FUN_008d0270_Class
     int m_24;
     int m_28;
     int m_2c;
-    FUN_008d0270_Class* __thiscall BaseProcess_ctor();
+    FUN_008d0270_Class* __thiscall BaseProcess_BaseProcess();
 };
 // Sets the vtable pointer, calls FUN_008c5e20 on the object at offset 4, zeroes m_2c, and returns this.
 // @fnv 0x008d0270
-// src: XBOX_RETAIL_PDB 0x008d0270
+// src: EXE 0x008d0270
 // pdb: BaseProcess::BaseProcess | BaseProcess.obj | retail, upstream name already matches, high
-FUN_008d0270_Class* __thiscall FUN_008d0270_Class::BaseProcess_ctor()
+FUN_008d0270_Class* __thiscall FUN_008d0270_Class::BaseProcess_BaseProcess()
 {
     vtbl = &DAT_01085e2c;
     ((void(__thiscall*)(void*))InitializeFields_008c5e20)((char*)this + 4);
@@ -841,13 +841,13 @@ extern "C" void __fastcall FUN_00a6d220(void*);
 extern int DAT_010867fc;
 struct FUN_008d15d0_Class
 {
-    void* __thiscall BSPlayerDistanceCheckController_ctor();
+    void* __thiscall BSPlayerDistanceCheckController_BSPlayerDistanceCheckController();
 };
 // Calls FUN_00a6d220 on this, sets the vtable to DAT_010867fc, zeroes the float at +0x34 and the int at +0x38, and returns this.
 // @fnv 0x008d15d0
-// src: XBOX_RETAIL_PDB 0x008d15d0
+// src: EXE 0x008d15d0
 // pdb: BSPlayerDistanceCheckController::BSPlayerDistanceCheckController | BSPlayerDistanceCheckController.obj | retail, upstream name already matches, high
-void* __thiscall FUN_008d15d0_Class::BSPlayerDistanceCheckController_ctor()
+void* __thiscall FUN_008d15d0_Class::BSPlayerDistanceCheckController_BSPlayerDistanceCheckController()
 {
     FUN_00a6d220(this);
     *(int*)this = (int)&DAT_010867fc;
@@ -1023,7 +1023,7 @@ extern Loader_S g_modelLoader;
 extern int DAT_011e00e0[12];
 extern int DAT_011e0110[12];
 // @fnv 0x008d68d0
-// src: XBOX_RETAIL_PDB 0x008d68d0
+// src: XBOX_RETAIL_PDB 0x008d68d0 (was COMMUNITY)
 // pdb: FreeGunWobble | GunWobble.obj | retail, object-file gap fill, high
 // pdb locals: n
 void __cdecl FreeGunWobble()
@@ -1057,7 +1057,7 @@ extern GlobalObject_00a7b610 g_012031b8;
 struct FUN_00571550_shell
 {
     int GetReferenceType();
-    Model* TESObjectREFR_GetActorBone(int, int);
+    Model* TESObjectREFR_GetActorBone_00571530(int, int);
 };
 int __cdecl get_g_bip01();
 struct FUN_008da1a0_Class
@@ -1076,7 +1076,7 @@ void FUN_008da1a0_Class::HighProcess_InitBoneLOD(FUN_00571550_shell* apActor)
     int id = apActor->GetReferenceType();
     if (!id)
         return;
-    Model* model = apActor->TESObjectREFR_GetActorBone(id, get_g_bip01());
+    Model* model = apActor->TESObjectREFR_GetActorBone_00571530(id, get_g_bip01());
     if (!model)
         return;
     NiTimeController* controller = model->GetObject3D();
@@ -1115,13 +1115,13 @@ extern int DAT_01086674;
 extern int DAT_01086684;
 struct FUN_008d10e0_Class : Call741e0
 {
-    void* bhkCharacterListenerArrow_ctor(int arInfo, int apProjectile);
+    void* bhkCharacterListenerArrow_bhkCharacterListenerArrow(int arInfo, int apProjectile);
 };
 // @fnv 0x008d10e0
-// src: XBOX_DEBUG_PDB 0x008d10e0
+// src: EXE 0x008d10e0
 // pdb: bhkCharacterListenerArrow::bhkCharacterListenerArrow | bhkCharacterListenerArrow.obj | debug, upstream name already matches, high
 // pdb params: arInfo, apProjectile
-void* FUN_008d10e0_Class::bhkCharacterListenerArrow_ctor(int arInfo, int apProjectile)
+void* FUN_008d10e0_Class::bhkCharacterListenerArrow_bhkCharacterListenerArrow(int arInfo, int apProjectile)
 {
     FUN_00c741e0(arInfo);
     *reinterpret_cast<int**>(this) = &DAT_01086684;
@@ -1818,15 +1818,15 @@ struct FUN_008c71d0_cls
     unsigned int m_6c[8];
     unsigned int* m_8c;
     unsigned int* m_90;
-    FUN_008c71d0_cls* AILinearTaskThreadManager_ctor();
+    FUN_008c71d0_cls* AILinearTaskThreadManager_AILinearTaskThreadManager();
 };
 
 // Constructs the three m_18 elements, zeroes m_00 and m_0c, points m_8c at m_3c and m_90 at m_6c, and returns this.
 // @fnv 0x008c71d0
-// src: XBOX_RETAIL_PDB 0x008c71d0
+// src: COMMUNITY 0x008c71d0
 // pdb: AILinearTaskThreadManager::AILinearTaskThreadManager | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
 // pdb locals: i
-FUN_008c71d0_cls* FUN_008c71d0_cls::AILinearTaskThreadManager_ctor()
+FUN_008c71d0_cls* FUN_008c71d0_cls::AILinearTaskThreadManager_AILinearTaskThreadManager()
 {
     SpawnedArrayCtor(m_18, 12, 3, SpawnedElemB_Ctor, SpawnedElemB_Dtor);
     for (int i = 0; i < 3; i++)

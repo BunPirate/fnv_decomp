@@ -33,7 +33,7 @@ public:
     void NiBSBoneLODController_CollectMarkedBones(Node_cls* pkBone, ArrA* kBoneToLOD, ArrB* kUsedLODs);
     void NiBSBoneLODController_SetBoneLOD(void* iLOD);
     void NiBSBoneLODController_SetBoneLOD(int iLOD);
-    bool InitializeData(Node_cls* pkBoneRoot);
+    bool InitializeData_00c52d80(Node_cls* pkBoneRoot);
     void PostLinkObject_00c53ab0(NiStream& kStream);
     void __thiscall NiBSBoneLODController_GetViewerStrings(NiTPrimitiveArray_unsigned_int* array);
     bool ProcessEntries_00c53cf0();

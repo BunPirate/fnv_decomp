@@ -312,7 +312,7 @@ class Pick631
     Pick631();
     void SetFilter(Filter631 kFilter);
     void SetFrom(const hkVector4& kFrom);
-    void bhkPickData_SetTo(const hkVector4& arTo);
+    void SetTo(const hkVector4& arTo);
     void SetCollector(AllRayHits631* pkCollector);
     bool IsSingleHit();
     __m128 m_q00;
@@ -976,7 +976,7 @@ TESObjectREFR* ViewCaster::FindActivateREFR(const NiPoint3* aOrigin, const NiPoi
                                     Pick631 kPick;
                                     kPick.SetFilter(GetShape()->GetFilter());
                                     kPick.SetFrom(kFrom);
-                                    kPick.bhkPickData_SetTo(kHit.GetPosition());
+                                    kPick.SetTo(kHit.GetPosition());
                                     AllRayHits631 kRayHits;
                                     kPick.SetCollector(&kRayHits);
                                     pkCaster->CastRay(&kPick);

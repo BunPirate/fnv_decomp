@@ -154,7 +154,7 @@ void __thiscall CombatProcedureSearch::UpdateEngageTarget()
     pattacker->StopMoving();
     ClearMoveMode();
     if (eState == 5 || eState == 4)
-        pattacker->FadeIn();
+        pattacker->FadeIn_008bcd20();
     if (eState == 2 && pcombatGroup && pSearchDoor)
         ((FUN_0098c780_shell*)pcombatGroup)->CombatGroup_UnreserveSearchDoor((int)pSearchDoor);
 }
@@ -591,7 +591,7 @@ struct ActorSub : Actor
     SearchRef* Actor_GetFailedPathDestination();
     void Actor_FadeOut();
     double Actor_GetFadePercent();
-    bool Actor_GetCurrentPathfindingGoal(void*);
+    bool Actor_GetCurrentPathfindingGoal_008b3860(void*);
     bool Actor_SetPathfindingFlee(void*);
     void TESObjectREFR_SetAngleOnReferenceZ(float);
 };
@@ -872,7 +872,7 @@ void CombatProcedureSearch::UpdateSearchState()
             if (m_pPortalConnectivityGraphInfo && this->CheckDestinationTimer.Expired())
             {
                 PathingLocation loc53c;
-                if (pActor2->Actor_GetCurrentPathfindingGoal(&loc53c))
+                if (pActor2->Actor_GetCurrentPathfindingGoal_008b3860(&loc53c))
                 {
                     NiPoint3 vDiff = *reinterpret_cast<const NiPoint3*>(static_cast<const TESObjectREFR*>(pActor2)->GetPos()) - loc53c.FUN_005c3420<NiPoint3>();
                     float dist = vDiff.FUN_004a7290();
@@ -930,7 +930,7 @@ void CombatProcedureSearch::UpdateSearchState()
         {
             if (pActor2->Actor_GetFadePercent() < DAT_01012070)
             {
-                pActor2->FadeIn();
+                pActor2->FadeIn_008bcd20();
             }
             this->eState = 0;
         }

@@ -133,7 +133,7 @@ extern float DAT_0104e148;
 
 
 
-__forceinline void hkVector4::setAll(float f)
+__forceinline void hkVector4::SetAllComponents(float f)
 {
     m_vComponents = _mm_set_ps1(f);
 }
@@ -268,8 +268,8 @@ hkBool PairFinder::hkaDetectRagdollPenetration_detectPenetration(BoxSet* ragdoll
     {
         {
             hkAabb aabb;
-            aabb.m_kMinimumCorner.setAll(DAT_0104da48);
-            aabb.m_kMaximumCorner.setAll(DAT_0104e148);
+            aabb.m_kMinimumCorner.SetAllComponents(DAT_0104da48);
+            aabb.m_kMaximumCorner.SetAllComponents(DAT_0104e148);
             for (short i = 1; i < m_uiItemCount; i++)
             {
                 short idx = m_info->m_idx[i];

@@ -173,14 +173,14 @@ extern "C" void* DAT_0108e0a4;
 struct FUN_006cf9d0
 {
     void BSSimpleArray_WeaponData_1024_InitialSetup(unsigned int, unsigned int);
-    FUN_006cf9d0* BSSimpleArray_WeaponData_1024_ctor(unsigned int, unsigned int);
+    FUN_006cf9d0* BSSimpleArray_WeaponData_1024_BSSimpleArray_WeaponData_1024(unsigned int, unsigned int);
 };
 
 // @fnv 0x009a37e0
-// src: XBOX_DEBUG_PDB 0x009a37e0
+// src: XBOX_PDB 0x009a37e0
 // pdb: BSSimpleArray<WeaponData,1024>::BSSimpleArray<WeaponData,1024> | CombatState.obj | debug, call graph, high
 // pdb params: aiReserveSize, aiInitialSize
-FUN_006cf9d0* FUN_006cf9d0::BSSimpleArray_WeaponData_1024_ctor(unsigned int aiReserveSize, unsigned int aiInitialSize)
+FUN_006cf9d0* FUN_006cf9d0::BSSimpleArray_WeaponData_1024_BSSimpleArray_WeaponData_1024(unsigned int aiReserveSize, unsigned int aiInitialSize)
 {
     *(void**)this = &DAT_0108e0a4;
     BSSimpleArray_WeaponData_1024_InitialSetup(aiReserveSize, aiInitialSize);
@@ -3126,7 +3126,7 @@ struct SceneRef
 
 struct SceneOwner
 {
-    float GetGravity();
+    float GetGravity_00966980();
 };
 
 void ComputeLaunchAngle(float afDeltaXY, float afDeltaZ, float afSpeed, float afGravity, unsigned char abLargeRoot);
@@ -3149,7 +3149,7 @@ void CombatUtilities_FindAngleOfProjectile(SceneRef* apProjectile, Vec3Arg akToT
     {
         afSpeed = apProjectile->Projectile_GetSpeed();
     }
-    float scaled = reinterpret_cast<SceneOwner*>(apProjectile->FUN_004181e0())->GetGravity() * DAT_011f1c00;
+    float scaled = reinterpret_cast<SceneOwner*>(apProjectile->FUN_004181e0())->GetGravity_00966980() * DAT_011f1c00;
     ComputeLaunchAngle(len, fSavedZ, afSpeed, scaled, abHighArc);
 }
 
@@ -3475,7 +3475,7 @@ class FUN_009ac9a0_cls
 };
 
 // @fnv 0x009ac9a0
-// src: XBOX_DEBUG_PDB 0x009ac9a0
+// src: XBOX_DEBUG_PDB 0x009ac9a0 (was COMMUNITY)
 // pdb: Explosion::Kill | Explosion.obj | debug, call graph, high
 void FUN_009ac9a0_cls::Explosion_Kill()
 {

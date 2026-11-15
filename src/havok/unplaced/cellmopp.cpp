@@ -63,16 +63,16 @@ void CellMopp::Remove()
 
 struct FUN_00622290_cls
 {
-    int __thiscall CFilter_ctor(int aeLayer, int aiGroup, int aePart);
+    int __thiscall CFilter_CFilter(int aeLayer, int aiGroup, int aePart);
     void __thiscall SetPackedValue(int a, int b, int c);
 };
 
 // Calls SetPackedValue with the three arguments, then returns this.
 // @fnv 0x00622290
-// src: XBOX_DEBUG_PDB 0x00622290
+// src: XBOX_PDB 0x00622290
 // pdb: CFilter::CFilter | CellMopp.obj | debug, upstream name already matches, high
 // pdb params: aeLayer, aiGroup, aePart
-int __thiscall FUN_00622290_cls::CFilter_ctor(int aeLayer, int aiGroup, int aePart)
+int __thiscall FUN_00622290_cls::CFilter_CFilter(int aeLayer, int aiGroup, int aePart)
 {
     SetPackedValue(aeLayer, aiGroup, aePart);
     return (int)this;
@@ -152,7 +152,7 @@ bool CellMopp::QCreated()
 
 struct Base537
 {
-    void hkUnaryActionCinfo_ctor();
+    void hkUnaryActionCinfo_hkUnaryActionCinfo();
 };
 // 0x00622490 initializes parameters at +0x10 via 0x006224c0, not a NiRefObject-derived CellMopp.
 struct HeightFieldResetCall
@@ -167,7 +167,7 @@ struct FUN_00622490 : Base537
 // pdb: hkTriSampledHeightFieldBvTreeShapeCinfo::hkTriSampledHeightFieldBvTreeShapeCinfo | CellMopp.obj | debug, call graph (shared callers), high
 FUN_00622490::FUN_00622490()
 {
-    hkUnaryActionCinfo_ctor();
+    hkUnaryActionCinfo_hkUnaryActionCinfo();
     ((HeightFieldResetCall*)((char*)this + 0x10))->Reset();
 }
 
@@ -201,12 +201,12 @@ extern "C" int DAT_012682cc;
 struct FUN_00622390_Class
 {
     void __thiscall FUN_0056e6f0();
-    void* __thiscall bhkBvTreeShape_ctor();
+    void* __thiscall bhkBvTreeShape_bhkBvTreeShape();
 };
 // @fnv 0x00622390
-// src: XBOX_RETAIL_PDB 0x00622390
+// src: EXE 0x00622390
 // pdb: bhkBvTreeShape::bhkBvTreeShape | CellMopp.obj | retail, upstream name already matches, high
-void* __thiscall FUN_00622390_Class::bhkBvTreeShape_ctor()
+void* __thiscall FUN_00622390_Class::bhkBvTreeShape_bhkBvTreeShape()
 {
     FUN_0056e6f0();
     *(void**)this = &DAT_0104dbac;

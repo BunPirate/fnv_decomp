@@ -2872,7 +2872,7 @@ struct S_Obj
     int m8;
     int unk0c;
     S_Map m10;
-    S_Obj* hkPackfileData_ctor();
+    S_Obj* hkPackfileData_hkPackfileData();
     void SetValue08(int a, const char* b) throw();
     void FUN_00c90510() throw();
     void FUN_00c905b0() throw();
@@ -2961,7 +2961,7 @@ __forceinline S_Obj* S_toResource(S_Ctx* context, S_PH* object) throw()
     {
         S_Obj* resource = (S_Obj*)S_heap().alloc(0x64);
         ((S_Blk*)resource)->sz = 0x64;
-        S_Obj* replacement = resource->hkPackfileData_ctor();
+        S_Obj* replacement = resource->hkPackfileData_hkPackfileData();
         context->m4 = replacement;
         S_T2 target;
         context->Copier_findOrCopy(&target, object, 0);

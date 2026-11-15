@@ -5900,7 +5900,7 @@ struct AvoidActor
     float FUN_008be1b0();
     bool IsMoving_004938e0();
     bool DispatchToReceiver();
-    bool Actor_GetCurrentPathfindingGoal(AvoidLocation*);
+    bool Actor_GetCurrentPathfindingGoal_008b3860(AvoidLocation*);
     unsigned int GetVtbl20Result();
     bool FUN_008bc7d0(AvoidActor*);
     const AvoidPoint* GetCachedMoveDelta();
@@ -6047,7 +6047,7 @@ int AvoidHandler::UpdateAvoidance(float afDeltaT)
             if (obstacle->IsMoving_004938e0() && !obstacle->DispatchToReceiver())
                 moving = true;
             AvoidLocation location;
-            if (obstacle->Actor_GetCurrentPathfindingGoal(&location))
+            if (obstacle->Actor_GetCurrentPathfindingGoal_008b3860(&location))
             {
                 if (location.IsWithinDistanceOfSameLocation(
                         &AvoidLocation(actor, ((AvoidRequest*)request)->GetFloatAtOffset68())))

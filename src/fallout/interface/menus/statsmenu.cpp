@@ -399,7 +399,7 @@ bool ActiveEffect::HasConditions()
 }
 
 int __cdecl TruncateFloatToInt(float);
-float __cdecl AiFormulas_AVDeriveSkill(void*, int, bool);
+float __cdecl GetSkillValue(void*, int, bool);
 
 // @fnv 0x007dfb00
 // pdb: StatsMenu::SkillsUpdateFn | StatsMenu.obj | retail, object-file run extension, high
@@ -411,8 +411,8 @@ void __cdecl UpdateActorValueTile(Tile* apTile, ActorValue::Index aeIndex)
     {
         int ival = g_thePlayer->GetActorValueAsInteger(aeIndex);
         int ibase = g_thePlayer->GetPermanentActorValue(aeIndex);
-        float fderivedVal = AiFormulas_AVDeriveSkill((ActorValueOwner*)g_thePlayer, aeIndex, false);
-        float fderivedBase = AiFormulas_AVDeriveSkill((ActorValueOwner*)g_thePlayer, aeIndex, true);
+        float fderivedVal = GetSkillValue((ActorValueOwner*)g_thePlayer, aeIndex, false);
+        float fderivedBase = GetSkillValue((ActorValueOwner*)g_thePlayer, aeIndex, true);
         int idelta = (ival - ibase) + TruncateFloatToInt(fderivedVal - fderivedBase);
 
         apTile->Set(0x1005, ival);
@@ -623,7 +623,7 @@ struct StatusH
     void SetFieldBits(int, int);
 };
 // The stats-label normalization helper at 0x007b52a0 is absent from BSStringT.h.
-void __cdecl BSStringT_char_MakeUpper();
+void __cdecl NormalizeStatsLabel();
 
 int __cdecl MiscStatManager_GetVal(int);
 
@@ -823,16 +823,16 @@ Tile* StatsMenu_Create()
         StatsMenu::ms_pInventoryMenu->UpdateAllActorValues();
         ((MenuH*)StatsMenu::ms_pInventoryMenu)->UpdateXboxButtonState();
         strtmp = g_011d30c0.GetMenuTitle();
-        ((void (__thiscall*)(BSStringT<char>*))BSStringT_char_MakeUpper)(&strtmp);
+        ((void (__thiscall*)(BSStringT<char>*))NormalizeStatsLabel)(&strtmp);
         ptile->Set(GetTileValueID("_rads", -1), (const char*)strtmp, true);
         strtmp = g_011d1f08.GetMenuTitle();
-        ((void (__thiscall*)(BSStringT<char>*))BSStringT_char_MakeUpper)(&strtmp);
+        ((void (__thiscall*)(BSStringT<char>*))NormalizeStatsLabel)(&strtmp);
         ptile->Set(GetTileValueID("_h20", -1), (const char*)strtmp, true);
         strtmp = g_011d37c8.GetMenuTitle();
-        ((void (__thiscall*)(BSStringT<char>*))BSStringT_char_MakeUpper)(&strtmp);
+        ((void (__thiscall*)(BSStringT<char>*))NormalizeStatsLabel)(&strtmp);
         ptile->Set(GetTileValueID("_hunger", -1), (const char*)strtmp, true);
         strtmp = g_011d246c.GetMenuTitle();
-        ((void (__thiscall*)(BSStringT<char>*))BSStringT_char_MakeUpper)(&strtmp);
+        ((void (__thiscall*)(BSStringT<char>*))NormalizeStatsLabel)(&strtmp);
         ptile->Set(GetTileValueID("_sleep", -1), (const char*)strtmp, true);
         StatsMenu::ms_pInventoryMenu->pTiles[39]->Set(0xfc4, g_011d3fdc.GetMenuTitle(), true);
         StatsMenu::ms_pInventoryMenu->pTiles[40]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d1f5c.GetMenuTitle(),
@@ -2982,7 +2982,7 @@ public:
 };
 
 // @fnv 0x007e09d0
-// src: XBOX_DEBUG_PDB 0x007e09d0
+// src: XBOX_DEBUG_PDB 0x007e09d0 (was COMMUNITY)
 // pdb: StatsMenu::NamedEffectsList::Register | StatsMenu.obj | debug, call graph, high
 // pdb params: apActiveEffect
 void NamedEffectListMethods::StatsMenu_NamedEffectsList_Register(ActiveEffect* apActiveEffect)

@@ -232,7 +232,7 @@ struct FUN_00ddf170_cls
     SpawnedHandle m_14;
     SpawnedHandle m_20;
 
-    FUN_00ddf170_cls* hkStreamStatisticsCollector_ctor(int vtblReg, int memSize);
+    FUN_00ddf170_cls* hkStreamStatisticsCollector_hkStreamStatisticsCollector(int vtblReg, int memSize);
 };
 int hkString_strLen(const char* s);
 struct StrPacker

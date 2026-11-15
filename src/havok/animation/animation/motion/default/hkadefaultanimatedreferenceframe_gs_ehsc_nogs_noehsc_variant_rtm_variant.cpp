@@ -143,7 +143,7 @@ inline void hkVector4::sub4(const hkVector4& a)
 {
     m_vComponents = _mm_sub_ps(m_vComponents, a.m_vComponents);
 }
-inline void hkVector4::setAll(float a)
+inline void hkVector4::SetAllComponents(float a)
 {
     m_vComponents = _mm_set1_ps(a);
 }

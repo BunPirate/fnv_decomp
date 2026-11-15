@@ -202,8 +202,8 @@ bool FUN_00537b50_shell::TESObjectCELL_HasObjects()
 
 struct Base537
 {
-    void hkUnaryActionCinfo_ctor();
-    Base537* hkMoppBvTreeShapeCinfo_ctor();
+    void hkUnaryActionCinfo_hkUnaryActionCinfo();
+    Base537* hkMoppBvTreeShapeCinfo_hkMoppBvTreeShapeCinfo();
     int m_iWordAt00;
     int m_iWordAt04;
     int m_8;
@@ -211,11 +211,11 @@ struct Base537
 };
 
 // @fnv 0x00537b80
-// src: XBOX_DEBUG_PDB 0x00537b80
+// src: COMMUNITY 0x00537b80
 // pdb: hkMoppBvTreeShapeCinfo::hkMoppBvTreeShapeCinfo | TESLand.obj | debug, upstream name already matches, high
-Base537* Base537::hkMoppBvTreeShapeCinfo_ctor()
+Base537* Base537::hkMoppBvTreeShapeCinfo_hkMoppBvTreeShapeCinfo()
 {
-    hkUnaryActionCinfo_ctor();
+    hkUnaryActionCinfo_hkUnaryActionCinfo();
     m_8 = 0;
     m_iThirdValue = 1.0f;
     return this;
@@ -686,20 +686,20 @@ void __thiscall FUN_00535aa0_Class::OBJ_WEAP_CRITICAL_Endian()
 
 struct CallCls537
 {
-    void __thiscall hkActionCinfo_ctor();
+    void __thiscall hkActionCinfo_hkActionCinfo();
 };
 struct Cl537
 {
     int m_iWordAt00;
     int m_iWordAt04;
-    Cl537* __thiscall hkUnaryActionCinfo_ctor();
+    Cl537* __thiscall hkUnaryActionCinfo_hkUnaryActionCinfo();
 };
 // @fnv 0x00537bb0
-// src: XBOX_DEBUG_PDB 0x00537bb0
+// src: XBOX_PDB 0x00537bb0
 // pdb: hkUnaryActionCinfo::hkUnaryActionCinfo | GlobalFunc.obj | debug, upstream name already matches, high
-Cl537* __thiscall Cl537::hkUnaryActionCinfo_ctor()
+Cl537* __thiscall Cl537::hkUnaryActionCinfo_hkUnaryActionCinfo()
 {
-    ((CallCls537*)this)->hkActionCinfo_ctor();
+    ((CallCls537*)this)->hkActionCinfo_hkActionCinfo();
     m_iWordAt04 = 0;
     return this;
 }
@@ -1051,7 +1051,7 @@ struct Obj20_cls
 extern IOManager* DAT_01202d98;
 
 // @fnv 0x005282d0
-// src: XBOX_RETAIL_PDB 0x005282d0
+// src: XBOX_RETAIL_PDB 0x005282d0 (was COMMUNITY)
 // pdb: ExteriorCellLoader::WaitForTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high
 // pdb locals: iterator, ikey, sptask
 void ExteriorCellLoader::WaitForTasks()
@@ -1905,7 +1905,7 @@ struct Head175
     void* Modelloader_GetReferencedThis();
 };
 // @fnv 0x005281f0
-// src: XBOX_RETAIL_PDB 0x005281f0
+// src: XBOX_RETAIL_PDB 0x005281f0 (was COMMUNITY)
 // pdb: ExteriorCellLoader::TryCancelTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high
 // pdb locals: iterator, iuncanceledTasks, ikey, sptask
 int ExteriorCellLoader::TryCancelTasks()

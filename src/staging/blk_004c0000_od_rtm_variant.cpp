@@ -510,7 +510,7 @@ struct FUN_004d5a90_Class
 {
     int m_i0;
     int m_i4;
-    float LipSynchAnim_LoadFromFile();
+    float GetNegativeMagnitude();
 };
 extern "C" int __cdecl sprintf_s(char* destination, unsigned int size, const char* format, ...);
 extern const char DAT_01020d58[];

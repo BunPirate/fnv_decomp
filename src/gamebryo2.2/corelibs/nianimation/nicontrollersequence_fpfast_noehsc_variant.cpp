@@ -980,7 +980,7 @@ struct AnimationSequence : S_00a30880_Base
     UpdateNote** notes;
     unsigned short noteCount;
     float FindCorrespondingMorphFrame(AnimationSequence*, float);
-    float ComputeScaledTime(float, bool);
+    float ComputeScaledTime_00a30970(float, bool);
     void NiControllerSequence_SetInterpsWeightAndTime(float, float, float);
     void Update_00a34ba0(float time, bool update);
     __forceinline bool SetState(int value)

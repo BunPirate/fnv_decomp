@@ -47,7 +47,7 @@ bool BSFaceGenModel::ApplyCoordinateTexturingToMesh(FaceGenCoordinates* apCoord,
                 BSFaceGenManager_UnlockFaceGenAccess();
                 return false;
             }
-            pTextureData->m_pTextureData = EGTData_Create(pTextureData->m_kEGTFileName.String());
+            pTextureData->m_pTextureData = BSFaceGenModel_EGTData_Create(pTextureData->m_kEGTFileName.String());
         }
         if (!pTextureData->m_pTextureData) {
             BSFaceGenManager_UnlockFaceGenAccess();

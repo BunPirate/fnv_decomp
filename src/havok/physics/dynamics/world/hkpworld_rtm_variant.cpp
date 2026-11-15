@@ -3934,7 +3934,7 @@ static __declspec(noinline) void __cdecl SyncOverlap(PhantomInterface* phantom, 
     }
 }
 void hkpWorldAgentUtil_removeAgentAndItsToiEvents(Agent*);
-void hkAgentNnMachine_UpdateShapeCollectionFilter(Agent*, void*, EntityState*);
+void _hkAgentNnMachine_UpdateShapeCollectionFilter(Agent*, void*, EntityState*);
 void hkpTypedBroadPhaseDispatcher_removeDuplicates(PairArray*, PairArray*);
 struct BroadphaseDispatcher {
     void hkpTypedBroadPhaseDispatcher_addPairs(OverlapPair*, int, CollisionFilterInterface*);
@@ -4794,7 +4794,7 @@ struct S96_IslandArray {S96_Island** data; int size; int capacity;};
 struct S96_FilterCheck {virtual void slot0(); virtual S96_BoolResult Check(S96_Collidable*,S96_Collidable*);};
 struct S96_Filter {int unk00,unk04; S96_FilterCheck unk08;};
 struct S96_Operation {unsigned char unk00,unk01,unk02,unk03;};
-void __cdecl hkAgentNnMachine_UpdateShapeCollectionFilter(S96_Constraint*,void*,S96_Island*);
+void __cdecl _hkAgentNnMachine_UpdateShapeCollectionFilter(S96_Constraint*,void*,S96_Island*);
 void __cdecl hkpWorldAgentUtil_removeAgentAndItsToiEvents(S96_Constraint*);
 struct S96_RemovalList {S96_Constraint** data; int size; int capacity; S96_Constraint* local[32]; void clear(){size=0;} int GetLogicalSize() const {return size;} S96_Constraint*& back(){return data[size-1];} void popBack(){--size;}};
 struct S96_WorldShell : hkpWorld {
@@ -7469,7 +7469,7 @@ struct ObjectCtor {
     ObjectCtor* FUN_00cf6f90();
     ObjectCtor* InitializeFields_00d107d0(WorldCtor*);
     ObjectCtor* FUN_00cfd450(WorldCtor*);
-    ObjectCtor* hkpCollisionDispatcher_ctor(void*,ObjectCtor*);
+    ObjectCtor* hkpCollisionDispatcher_hkpCollisionDispatcher(void*,ObjectCtor*);
     ObjectCtor* FUN_00cbfba0();
     ObjectCtor* hkCriticalSection_ctor(int);
     ObjectCtor* FUN_00d02c80(WorldCtor*);
@@ -7685,7 +7685,7 @@ struct WorldCtor {
     ::hkQuadReal minimum,maximum;
     int markers,toiQueueSize,querySize,updateSize;
     unsigned char generation,unk341,unk342,unk343;
-    WorldCtor* hkpWorld_ctor(WorldInfoCtor*,int);
+    WorldCtor* hkpWorld_hkpWorld(WorldInfoCtor*,int);
     void hkpWorld_addEntity(ObjectCtor*,int);
 };
 namespace WorldCtorFactorySetup {
@@ -7956,11 +7956,11 @@ __forceinline DeactivationCtor& SolverCtor::configureTier(int tierIndex,float th
     return tier;
 }
 // @fnv 0x00c95a80
-// src: XBOX_RETAIL_PDB 0x00c95a80
+// src: XBOX_PDB 0x00c95a80
 // pdb: hkpWorld::hkpWorld | hkpWorld.obj | retail, upstream name already matches, high
 // pdb params: info, sdkversion
 // pdb locals: assertBuf, ostr, span, input, activeIsland, rbci
-WorldCtor* WorldCtor::hkpWorld_ctor(WorldInfoCtor* info, int sdkversion) {
+WorldCtor* WorldCtor::hkpWorld_hkpWorld(WorldInfoCtor* info, int sdkversion) {
     vtable=&DAT_010c6714;
     references=1;
     int tierIndex=0;
@@ -8083,7 +8083,7 @@ WorldCtor* WorldCtor::hkpWorld_ctor(WorldInfoCtor* info, int sdkversion) {
     broadphaseDispatcher->unk68.raw=borderListener ? &borderListener->unk08 : 0;
     broadphaseDispatcher->unk6c.raw=borderListener ? &borderListener->unk08 : 0;
     ObjectCtor* agent=allocObject<ObjectCtor>(0xc)->FUN_00cfd450(this);
-    dispatcher=allocObject<ObjectCtor>(0x1e50)->hkpCollisionDispatcher_ctor((void*)&Runtime_GetD107A0RTTIAddress,agent);
+    dispatcher=allocObject<ObjectCtor>(0x1e50)->hkpCollisionDispatcher_hkpCollisionDispatcher((void*)&Runtime_GetD107A0RTTIAddress,agent);
     release(agent);
     if(!info->filter) {
         object=allocObject<ObjectCtor>(0x30);

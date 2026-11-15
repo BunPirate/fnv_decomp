@@ -3197,7 +3197,7 @@ struct G67
 };
 struct Z
 {
-    RefObj* ProcessLists_GetActorRefInHigh(Faction*, int, int);
+    RefObj* ProcessLists_GetActorRefInHigh_00970b30(Faction*, int, int);
     RefObj* ProcessLists_GetActorRefInHigh(TESForm*, int);
     void AddObjectToList(NewObj*);
 };
@@ -3270,7 +3270,7 @@ void Actor::StealAlarm(TESObjectREFR* apRef, int apObj, int ainumb, int aiTotal,
         ax = (Faction*)s;
         if (!ax->GetEvil())
             f = true;
-        p = ((Z*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh(ax, 1, 0);
+        p = ((Z*)&DAT_011e0e80)->ProcessLists_GetActorRefInHigh_00970b30(ax, 1, 0);
     }
     else
     {

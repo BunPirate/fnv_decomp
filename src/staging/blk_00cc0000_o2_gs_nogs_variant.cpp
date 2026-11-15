@@ -12226,7 +12226,7 @@ struct C200125Owner
 };
 struct CC4560Obj
 {
-    void* __thiscall hkAngularDashpotActionCinfo_ctor();
+    void* __thiscall hkAngularDashpotActionCinfo_hkAngularDashpotActionCinfo();
 };
 struct CC4560Owner
 {
@@ -16522,7 +16522,7 @@ class CdfObject
     CdfSubObject m_12b;             // +0x12b
     float m_12c;                    // +0x12c
 
-    CdfObject* hkpRagdollConstraintData_Atoms_ctor();
+    CdfObject* hkpRagdollConstraintData_Atoms_Atoms();
 };
 #include <string.h>
 struct NamedEntryC136

@@ -112,15 +112,15 @@ struct FUN_00a51ab0_cls : FUN_00a51ab0_base
     float m_28;
     int m_2c;
 
-    FUN_00a51ab0_cls* NiBSplineColorInterpolator_ctor(int pkData, int kColorACPHandle, int pkBasisData);
+    FUN_00a51ab0_cls* NiBSplineColorInterpolator_NiBSplineColorInterpolator(int pkData, int kColorACPHandle, int pkBasisData);
 };
 
 // Calls InitBase, sets the vtable pointer, zeroes four floats and stores a2 into m_2c, then returns this.
 // @fnv 0x00a51ab0
-// src: XBOX_RETAIL_PDB 0x00a51ab0
+// src: GAMEBRYO_LIB 0x00a51ab0
 // pdb: NiBSplineColorInterpolator::NiBSplineColorInterpolator | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
 // pdb params: pkData, kColorACPHandle, pkBasisData
-FUN_00a51ab0_cls* FUN_00a51ab0_cls::NiBSplineColorInterpolator_ctor(int pkData, int kColorACPHandle, int pkBasisData)
+FUN_00a51ab0_cls* FUN_00a51ab0_cls::NiBSplineColorInterpolator_NiBSplineColorInterpolator(int pkData, int kColorACPHandle, int pkBasisData)
 {
     NiBSplineInterpolator_ctor(pkData, pkBasisData);
     m_vptr00 = (int)&DAT_01099d3c;

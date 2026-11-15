@@ -283,9 +283,9 @@ BGSTextureModel::BGSTextureModel()
 void __fastcall _ref_006815c0(void*);
 
 // @fnv 0x005e3c00
-// src: XBOX_DEBUG_PDB 0x005e3c00
+// src: XBOX_PDB 0x005e3c00
 // pdb: PART_DATA::PART_DATA | BGSBodyPart.obj | debug, upstream name already matches, high
-void* __fastcall PART_DATA_ctor(char* pObject)
+void* __fastcall PART_DATA_PART_DATA(char* pObject)
 {
     _ref_006815c0(pObject + 0x2c);
     _ref_006815c0(pObject + 0x38);

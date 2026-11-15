@@ -96,7 +96,7 @@ __forceinline void hkVector4::setZero4()
     m_vComponents = _mm_setzero_ps();
 }
 
-__forceinline void hkVector4::setAll(float r)
+__forceinline void hkVector4::SetAllComponents(float r)
 {
     m_vComponents = _mm_set_ps1(r);
 }
@@ -146,7 +146,7 @@ static __forceinline void setIdentity(hkQsTransform& t)
 {
     t.m_vTranslation.setZero4();
     *reinterpret_cast<LocalM128*>(&t.m_rotation) = DAT_010c71b0;
-    t.m_vScale.setAll(1.0f);
+    t.m_vScale.SetAllComponents(1.0f);
 }
 
 struct ScaleParams
@@ -184,8 +184,8 @@ void __cdecl hkQsTransform_ComputePoseScaleFactors(const ScaleParams* params, in
         hkReal lenB = extB.length3();
         hkReal fScaleA = lenB / lenA * params->m_scaleB / params->m_scaleA;
         hkReal fScaleB = lenA / lenB * params->m_scaleA / params->m_scaleB;
-        outA->m_vScale.setAll(fScaleA);
-        outB->m_vScale.setAll(fScaleB);
+        outA->m_vScale.SetAllComponents(fScaleA);
+        outB->m_vScale.SetAllComponents(fScaleB);
     }
     else if (params->m_iValueAfterFlags == 1)
     {
@@ -193,13 +193,13 @@ void __cdecl hkQsTransform_ComputePoseScaleFactors(const ScaleParams* params, in
         hkReal lenB = poseB[params->m_sBoneB].m_vTranslation.length3();
         hkReal fScaleA = lenB / lenA * params->m_scaleB / params->m_scaleA;
         hkReal fScaleB = lenA / lenB * params->m_scaleA / params->m_scaleB;
-        outA->m_vScale.setAll(fScaleA);
-        outB->m_vScale.setAll(fScaleB);
+        outA->m_vScale.SetAllComponents(fScaleA);
+        outB->m_vScale.SetAllComponents(fScaleB);
     }
     else
     {
-        outA->m_vScale.setAll(params->m_scaleB / params->m_scaleA);
-        outB->m_vScale.setAll(params->m_scaleA / params->m_scaleB);
+        outA->m_vScale.SetAllComponents(params->m_scaleB / params->m_scaleA);
+        outB->m_vScale.SetAllComponents(params->m_scaleA / params->m_scaleB);
     }
 }
 }  // namespace fnv_00ce55d0

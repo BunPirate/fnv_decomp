@@ -6390,7 +6390,7 @@ struct ItemBox
 };
 // Creates a tile in the container's menu, sets its values, inserts it into entries (sorted or appended), and updates the filtered-count value when in mode 1.
 // @fnv 0x007d7da0
-// src: XBOX_DEBUG_PDB 0x007d7da0
+// src: XBOX_DEBUG_PDB 0x007d7da0 (was COMMUNITY)
 // pdb: ListBox<BGSSaveLoadFileEntry *>::AddItem | StartMenu.obj | debug, call graph (shared callers), high
 // pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
 // pdb locals: pnew, pheight

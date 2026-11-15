@@ -2005,7 +2005,7 @@ void __stdcall D3DXVec3TransformNormal_00ee6df2(Vec3f* out, Vec3f* in, unsigned 
 void __stdcall D3DXVec3Normalize_00ee6dec(float* a, Vec3f* b);
 
 // @fnv 0x00b7c7b0
-// src: XBOX_DEBUG_PDB 0x00b7c7b0
+// src: XBOX_DEBUG_PDB 0x00b7c7b0 (was COMMUNITY)
 // pdb: ShadowLightShader::SetupGeometryOpt_LightDir | ShadowLightShader.obj | debug, call graph, high
 // pdb params: aInvworld
 // pdb locals: vLightDir, psslLight, pdirLight, vLightObjectDir, apRenderPass

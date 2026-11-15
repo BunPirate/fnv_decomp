@@ -106,7 +106,7 @@ void TESObjectCELL_UpdateParticlesOnly(NiAVObject*);                       // @r
 void UpdateControllersRecursive(NiAVObject*);             // @ref 0x00552790 UpdateControllersRecursive
 void Actor_RemovePickedUpObjectFromWorld(TESObjectREFR*, bool);                  // @ref 0x00892460 FUN_00892460
 void bhkWorld_Activate(NiAVObject*, bool, bool, int);          // @ref 0x00c6a270 FUN_00c6a270
-void bhkWorld_AdjustForceAddCount(NiAVObject*, bool, bool, bool);         // @ref 0x00c69fc0 FUN_00c69fc0
+void _bhkWorld_AdjustForceAddCount(NiAVObject*, bool, bool, bool);         // @ref 0x00c69fc0 FUN_00c69fc0
 void* GetObjectFromNode(NiAVObject*, bool, int);  // @ref 0x00c69ee0 GetObjectFromNode
 void* hkVector4_getZero();  // @ref 0x00458b20 FUN_00458b20
 class TaskQueueParallelWork
@@ -952,7 +952,7 @@ void TaskQueueInterface::TaskUnpackFunc(const BSPackedTask& arTask)
     }
     case 49: {
         NiAVObject* pObject = static_cast<NiAVObject*>(arTask.m_akPackedTaskVariantData[1].pData);
-        bhkWorld_AdjustForceAddCount(pObject, arTask.m_akPackedTaskVariantData[2].bData, arTask.m_akPackedTaskVariantData[3].bData,
+        _bhkWorld_AdjustForceAddCount(pObject, arTask.m_akPackedTaskVariantData[2].bData, arTask.m_akPackedTaskVariantData[3].bData,
                      arTask.m_akPackedTaskVariantData[4].bData);
         pObject->NiRefObject_DecRefCount();
         break;

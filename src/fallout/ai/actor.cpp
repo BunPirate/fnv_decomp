@@ -1637,7 +1637,7 @@ float FUN_00880660_cls::CallMember(char acChar, bool& b)
 
 struct ModList
 {
-    void SetModifier(bool acKey, float afValue);
+    void ModifierList_SetModifier(bool acKey, float afValue);
 };
 struct FUN_00880690_stand
 {
@@ -1670,7 +1670,7 @@ struct FUN_00880690_stand
 // pdb params: aiWhich, afValue
 void FUN_00880690_stand::Actor_InternalSetActorValue(bool a, float afValue)
 {
-    list.SetModifier(a, afValue);
+    list.ModifierList_SetModifier(a, afValue);
     v18(0x400000);
 }
 
@@ -3026,7 +3026,7 @@ struct FUN_00884d80_holder
 };
 // If cv is set, stores a into cv->f and calls cv->FUN_008848c0 with 0x2000.
 // @fnv 0x00884d80
-// src: XBOX_DEBUG_PDB 0x00884d80
+// src: XBOX_DEBUG_PDB 0x00884d80 (was COMMUNITY)
 // pdb: BaseProcess::SetCachedRunSpeed | Actor.obj | debug, call graph (shared callers), high
 // pdb params: afRunSpeed
 void FUN_00884d80_holder::BaseProcess_SetCachedRunSpeed(float afRunSpeed)
@@ -11407,7 +11407,7 @@ struct VCall_6e8
 
 // Returns the result of calling v442 on the object at offset 0x68, or false if that pointer is null.
 // @fnv 0x008ba440
-// src: XBOX_DEBUG_PDB 0x008ba440
+// src: XBOX_DEBUG_PDB 0x008ba440 (was COMMUNITY)
 // pdb: Actor::IsHeavyBodyArmorWorn | Actor.obj | debug, call graph, high
 bool FUN_008ba440_shell::Actor_IsHeavyBodyArmorWorn()
 {
@@ -12057,14 +12057,14 @@ struct FUN_008bc7f0_holder
     char pad[0x68];
     FUN_008bc7f0_obj* los;
     ::TESPackage* GetCurrentPackage();
-    bool Actor_IsFollowing(int apLeader);
+    bool Actor_IsFollowing_008bc7f0(int apLeader);
 };
 // Returns true if the current package's type is 1 or 7 and los->v74() equals a; otherwise false.
 // @fnv 0x008bc7f0
-// src: XBOX_RETAIL_PDB 0x008bc7f0
+// src: XBOX_PDB 0x008bc7f0
 // pdb: Actor::IsFollowing | Actor.obj | retail, object-file run extension, high
 // pdb locals: bflag, ppack
-bool FUN_008bc7f0_holder::Actor_IsFollowing(int apLeader)
+bool FUN_008bc7f0_holder::Actor_IsFollowing_008bc7f0(int apLeader)
 {
     if (los)
     {
@@ -12256,10 +12256,10 @@ struct blob12
 } // namespace fnv_008bcd20
 
 // @fnv 0x008bcd20
-// src: XBOX_RETAIL_PDB 0x008bcd20
+// src: XBOX_PDB 0x008bcd20
 // pdb: Actor::FadeIn | Actor.obj | retail, object-file gap fill, high
 // pdb locals: phighProcess
-void ::Actor::FadeIn()
+void ::Actor::FadeIn_008bcd20()
 {
     if (((::MobileObject*)this)->GetCurrentProcessLevel() == 0)
     {
@@ -22348,7 +22348,7 @@ struct PCH
 
 struct CombatCtrl
 {
-    bool StopCombat();
+    bool StopCombat_0097f4d0();
 };
 struct S1
 {
@@ -22670,7 +22670,7 @@ void fnv_008a06c0::ActorX::Actor_StopCombat(::Actor* apAttacker)
     ((ActorVT*)this)->V474(0);
     if (((ActorVT*)this)->V428())
     {
-        bool bstopped = ((S1*)this)->CallInnerVFunc139(apAttacker)->StopCombat();
+        bool bstopped = ((S1*)this)->CallInnerVFunc139(apAttacker)->StopCombat_0097f4d0();
         if (!((ActorVT*)this)->V22c(false) && bstopped)
         {
             ((fnv_008a06c0::Actor*)this)->SetWalkRunFlagDirty();
@@ -31526,14 +31526,14 @@ struct FUN_009de330_cls
 
 struct FUN_008b3860_cls
 {
-    void __thiscall Actor_GetCurrentPathfindingGoal(int apRetLocation);
+    void __thiscall Actor_GetCurrentPathfindingGoal_008b3860(int apRetLocation);
 };
 
 // @fnv 0x008b3860
-// src: XBOX_DEBUG_PDB 0x008b3860
+// src: XBOX_PDB 0x008b3860
 // pdb: Actor::GetCurrentPathfindingGoal | Actor.obj | debug, call graph (shared callers), high
 // pdb params: apRetLocation
-void __thiscall FUN_008b3860_cls::Actor_GetCurrentPathfindingGoal(int apRetLocation)
+void __thiscall FUN_008b3860_cls::Actor_GetCurrentPathfindingGoal_008b3860(int apRetLocation)
 {
     ((FUN_009de330_cls**)(this + 0x190))[0]->ApplyNodeLookup(apRetLocation);
 }
@@ -61049,7 +61049,7 @@ struct AB30Obj
 };
 struct ProcListsObj
 {
-    CrimeObj* ProcessLists_GetActorRefInHigh(void* apFaction, int abDetection, int abClosetoPlayer);
+    CrimeObj* ProcessLists_GetActorRefInHigh_00970b30(void* apFaction, int abDetection, int abClosetoPlayer);
     CrimeObj* ProcessLists_GetActorRefInHigh(void* apNpc, int abDetection);
 };
 struct MgrObj
@@ -61212,7 +61212,7 @@ void FUN_008987f0_shell::ProcessActorInteraction(Actor* apTarget, int arg1)
                                 if (((FormObj*)pForm)->FUN_00401170() == 8)
                                 {
                                     t5438 = pForm;
-                                    v24a7 = g_011e0e80.ProcessLists_GetActorRefInHigh(t5438, 0, 1);
+                                    v24a7 = g_011e0e80.ProcessLists_GetActorRefInHigh_00970b30(t5438, 0, 1);
                                 }
                                 else
                                 {
@@ -64138,7 +64138,7 @@ struct Process467
     virtual Source467* GetSource();
 };
 // @fnv 0x008a2d40
-// src: XBOX_RETAIL_PDB 0x008a2d40
+// src: XBOX_RETAIL_PDB 0x008a2d40 (was COMMUNITY)
 // pdb: Actor::GetItemBeingEscorted | Actor.obj | retail, call graph (shared callers), high
 // pdb locals: pitem, pObj, pTarget, pPackTarg, inum
 void* Actor::GetItemBeingEscorted()
@@ -102378,7 +102378,7 @@ struct H30b0
 };
 struct H97
 {
-    void AddTarget();
+    void AddTarget_0097f930();
 };
 struct HPL
 {
@@ -102529,7 +102529,7 @@ void S89::Actor_ForceAttackActor(void* apTarget, void* apLocation, bool a3, void
     {
         if (apTarget && ((H30b0*)((H330*)this)->CallInnerVFunc139())->CombatController_GetTarget() != apTarget)
         {
-            ((H97*)((H330b*)this)->CallInnerVFunc139(apTarget, nA, bFlag5, 0.0, 0.0))->AddTarget();
+            ((H97*)((H330b*)this)->CallInnerVFunc139(apTarget, nA, bFlag5, 0.0, 0.0))->AddTarget_0097f930();
             return;
         }
         if (apLocation)
@@ -105828,7 +105828,7 @@ typedef int(__thiscall* ActorTestCallback)(ActorAnimationView*);
 typedef bool(__thiscall* ActorFlagCallback)(ActorAnimationView*, int);
 // Builds a locomotion model path from the model name, loads the animation resource with a variant, and attaches it to the animation or link.
 // @fnv 0x008b73f0
-// src: XBOX_RETAIL_PDB 0x008b73f0
+// src: XBOX_RETAIL_PDB 0x008b73f0 (was COMMUNITY)
 // pdb: Actor::QueueReplacementLocomotion | Actor.obj | retail, string-set bridge, high
 // pdb params: abHurt, apParent
 void ActorAnimationView::Actor_QueueReplacementLocomotion(bool abHurt, Animation* apAnim, const char* apSearchPath,
@@ -110414,7 +110414,7 @@ struct xActor
 };
 // Checks if the actor can see akTarget within its FOV cone and via a raycast, returning true if the target is visible or within 25 units of the hit point.
 // @fnv 0x0088c240
-// src: XBOX_RETAIL_PDB 0x0088c240
+// src: XBOX_RETAIL_PDB 0x0088c240 (was COMMUNITY)
 // pdb: Actor::LineOfSight | Actor.obj | retail, object-file run extension, high
 // pdb params: abRunFormula, pTarget, abUseEyeLevel, aeInView, abfull360
 // pdb locals: bInSight, binCombat, pActorTarget, pcell, factorHeight, origPoint, phead, pbodyPartData, collector, pcombatController, pcache, fltr, icolFilter, pdestNode, esegments, pickRes, fzs, pmob, dz, ipickcount, destPoint, fTargetHeight, pw, aabbCacheSize ...
@@ -123947,7 +123947,7 @@ struct HQuery
     HQuery();
     void bhkPickData_SetFilter(unsigned int);
     void bhkPickData_SetFrom_0056d340(MVec4*);
-    void bhkPickData_SetTo(MVec4*);
+    void bhkPickData_SetTo_004a3f40(MVec4*);
     HBody* bhkPickData_GethkRigidBody();
 };
 struct HFilter
@@ -124994,7 +124994,7 @@ void HActor::Actor_HitMe(HHit* apData, signed char cMeleeEffect)
                         query.bhkPickData_SetFilter(filter.value);
                         position.hkVector4_setSub4(&position, &direction);
                         query.bhkPickData_SetFrom_0056d340(&position);
-                        query.bhkPickData_SetTo(&end);
+                        query.bhkPickData_SetTo_004a3f40(&end);
                         if (world && world->vfc8(&query))
                             body = query.bhkPickData_GethkRigidBody();
                     }
@@ -131350,7 +131350,7 @@ class LipAnimation
     ~LipAnimation();
     unsigned int GetLength();
     void FUN_004d5930(void* facegen, float f);
-    float LipSynchAnim_LoadFromFile();
+    float GetNegativeMagnitude();
     int FUN_004d5850(int);
 };
 
@@ -132415,9 +132415,9 @@ float ActorStub::Actor_SpeakSoundFunction(const char* apSoundFile, BSSoundHandle
 
     if (Dir2)
     {
-        Left2 = (float)((Dir2->LipSynchAnim_LoadFromFile() + BSFaceGenAnimationData_GetSpeechDelay()) * 1000.0);
+        Left2 = (float)((Dir2->GetNegativeMagnitude() + BSFaceGenAnimationData_GetSpeechDelay()) * 1000.0);
         aSoundHand->PlayAfter((int)Left2, 0);
-        result10 = (float)(Dir2->LipSynchAnim_LoadFromFile() + BSFaceGenAnimationData_GetSpeechDelay());
+        result10 = (float)(Dir2->GetNegativeMagnitude() + BSFaceGenAnimationData_GetSpeechDelay());
         if (unk10F4 > 0.0f)
         {
             result10 += unk10F4;

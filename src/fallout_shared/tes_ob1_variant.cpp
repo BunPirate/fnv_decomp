@@ -492,7 +492,7 @@ struct FUN_00454400_shell
 void __cdecl ClearAnimationCloneCount(void);
 struct FUN_004baba0_shell
 {
-    void RunAnimations();
+    void RunAnimations_004baba0();
 };
 struct FUN_00553820_shell
 {

@@ -164,7 +164,7 @@ int __cdecl BSstricmp(const char*, const char*);
 int Warning(const char*, ...);
 int NiTexturingProperty_GetType();
 bool fffReadTriFile(const NarrowString&, FaceGenTriData*);
-FaceGenTextureFile* EGTData_Create(const char*);
+FaceGenTextureFile* BSFaceGenModel_EGTData_Create(const char*);
 NiAVObject* BSFaceGenManager_GetFaceGenModelExtraData(NiAVObject*);
 
 // @fnv 0x00659ce0
@@ -306,7 +306,7 @@ bool BSFaceGenModel::LoadFaceGenTexture()
     {
         if (!pTextureData->EGTFileName.Length())
             return false;
-        pTextureData->m_pTextureData = EGTData_Create(pTextureData->EGTFileName.String());
+        pTextureData->m_pTextureData = BSFaceGenModel_EGTData_Create(pTextureData->EGTFileName.String());
     }
     return true;
 }
@@ -353,10 +353,10 @@ struct Dummy_00659780
 
 // Allocates a Dummy_00659780 object, constructing it from apEGTFilename, and returns it as a pointer.
 // @fnv 0x00659780
-// src: XBOX_DEBUG_PDB 0x00659780
+// src: COMMUNITY 0x00659780
 // pdb: EGTData::Create | BSFaceGenModel.obj | debug, call graph, high
 // pdb params: apEGTFilename
-FaceGenTextureFile* __cdecl EGTData_Create(const char* apEGTFilename)
+FaceGenTextureFile* __cdecl BSFaceGenModel_EGTData_Create(const char* apEGTFilename)
 {
     return (FaceGenTextureFile*)new Dummy_00659780(apEGTFilename);
 }
@@ -551,7 +551,7 @@ extern NiFixedString* DAT_011d5b50;
 
 // Allocates the interned "FMD" name and stores it in DAT_011d5b50.
 // @fnv 0x0065c570
-// src: XBOX_RETAIL_PDB 0x0065c570
+// src: XBOX_RETAIL_PDB 0x0065c570 (was COMMUNITY)
 // pdb: BSFaceGenModelExtraData::InitSDM | BSFaceGenModel.obj | retail, call graph, high
 void __cdecl BSFaceGenModelExtraData_InitSDM()
 {

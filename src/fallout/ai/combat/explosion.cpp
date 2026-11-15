@@ -390,7 +390,7 @@ struct FUN_009ae0f0
     float mC;
     float m10;
     float m14;
-    void __thiscall hkUnaryActionCinfo_ctor();
+    void __thiscall hkUnaryActionCinfo_hkUnaryActionCinfo();
     FUN_009ae0f0();
 };
 // Calls FUN_00537bb0, then sets m8 to runtimeFloatSettingDefault247 and mC, m10, m14 to 15.0f, 64.0f, 15.0f.
@@ -398,7 +398,7 @@ struct FUN_009ae0f0
 // pdb: hkLiquidActionCinfo::hkLiquidActionCinfo | Explosion.obj | debug, object-file run extension, low
 FUN_009ae0f0::FUN_009ae0f0()
 {
-    hkUnaryActionCinfo_ctor();
+    hkUnaryActionCinfo_hkUnaryActionCinfo();
     m8 = runtimeFloatSettingDefault247;
     mC = 15.0f;
     m10 = 64.0f;

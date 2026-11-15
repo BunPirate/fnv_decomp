@@ -14,7 +14,7 @@ struct FUN_0084b4e0_shell
 
 // Calls FUN_0084b750 with arg, stores the address of DAT_0107f494 into this, and returns this.
 // @fnv 0x0084b4e0
-// src: XBOX_DEBUG_PDB 0x0084b4e0
+// src: XBOX_DEBUG_PDB 0x0084b4e0 (was EXE)
 // pdb: NiTMap<__int64,int>::NiTMap<__int64,int> | BGSSaveLoadGame.obj | debug, call graph, high
 // pdb params: uiHashSize
 int FUN_0084b4e0_shell::NiTMap_int64_int_ctor(void* uiHashSize)

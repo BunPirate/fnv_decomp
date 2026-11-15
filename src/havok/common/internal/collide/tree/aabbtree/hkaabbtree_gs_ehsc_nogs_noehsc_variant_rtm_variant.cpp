@@ -294,7 +294,7 @@ public:
     FreeListD9C7 m_kFreeList;
 
     void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_removeLeafInternal(NodeD9C7* pkNode, NodeD9C7** ppkOut);
-    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx);
 };
 struct TreeAabb
 {

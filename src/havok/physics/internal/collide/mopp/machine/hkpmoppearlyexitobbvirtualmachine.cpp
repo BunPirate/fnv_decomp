@@ -14,7 +14,7 @@ struct S_00e647e0 {
     hkBool m_bHasHit; char unk41; char unk42; char unk43;
     S_00e647e0_Input* m_pRayCastInput;
     void ComputeValues_00e645b0(const void* a, const void* b, const void* c, S_00e647e0_Local* out);
-    void hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(S_00e647e0_Local* l, S_00e647e0_Shape* shape);
+    void queryOBBOnTree(S_00e647e0_Local* l, S_00e647e0_Shape* shape);
     hkBool SetupAndProcessShape(S_00e647e0_Input* input, const void* b, const void* c, const void* d);
 };
 // @fnv 0x00e647e0
@@ -32,7 +32,7 @@ hkBool S_00e647e0::SetupAndProcessShape(S_00e647e0_Input* input, const void* b, 
     ComputeValues_00e645b0(c, b, d, &localData);
     localData.unk44 = 0;
     m_bHasHit = false;
-    hkpMoppEarlyExitObbVirtualMachine_queryOBBOnTree(&localData, shape);
+    queryOBBOnTree(&localData, shape);
     return m_bHasHit;
 }
 

@@ -1630,7 +1630,7 @@ struct FUN_00e33910_item
     int unk10;
     int unk14;
     int unk18;
-    bool* isOk(bool* result);
+    bool* Test(bool* result);
 };
 
 class FUN_00e33910_cls
@@ -1655,7 +1655,7 @@ bool* FUN_00e33910_cls::AreAllItemsValid(bool* out)
         do
         {
             FUN_00e33910_item* item = (FUN_00e33910_item*)((char*)m_pItems + off);
-            if (*item->isOk(&flag) == 0)
+            if (*item->Test(&flag) == 0)
             {
                 *out = 0;
                 return out;
@@ -4600,15 +4600,15 @@ struct TyremarkInfoView
     float m_fMaxTyremarkPointDistance;
     hkArrayBase<TyremarkWheelView*> m_wheels;
 
-    TyremarkInfoView* hkpTyremarksInfo_ctor(const TyremarkVehicleView* data, int num_points);
+    TyremarkInfoView* hkpTyremarksInfo_hkpTyremarksInfo(const TyremarkVehicleView* data, int num_points);
 };
 
 // Initializes the TyremarkInfoView from a TyremarkVehicleView, allocating and storing wheel views for each wheel in the vehicle.
 // @fnv 0x00e3a2a0
-// src: XBOX_RETAIL_PDB 0x00e3a2a0
+// src: HAVOK_LIB 0x00e3a2a0
 // pdb: hkpTyremarksInfo::hkpTyremarksInfo | hkpTyremarksInfo.obj | retail, upstream name already matches, high
 // pdb params: data, num_points
-TyremarkInfoView* TyremarkInfoView::hkpTyremarksInfo_ctor(const TyremarkVehicleView* data, int num_points)
+TyremarkInfoView* TyremarkInfoView::hkpTyremarksInfo_hkpTyremarksInfo(const TyremarkVehicleView* data, int num_points)
 {
     m_ppVirtualMethodTable = &DAT_010e00dc;
     m_sReferenceCount = 1;

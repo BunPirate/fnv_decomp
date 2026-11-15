@@ -1916,14 +1916,14 @@ struct FUN_00a71cc0_cls
 {
     void* m_pVTable;
     void FUN_00a89720(int arg);
-    FUN_00a71cc0_cls* NiTriStrips_ctor(int pkModelData);
+    FUN_00a71cc0_cls* NiTriStrips_NiTriStrips(int pkModelData);
 };
 
 // @fnv 0x00a71cc0
-// src: XBOX_RETAIL_PDB 0x00a71cc0
+// src: EXE 0x00a71cc0
 // pdb: NiTriStrips::NiTriStrips | NiTriStrips.obj | retail, call graph, high
 // pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, usStrips, pusStripLengths, pusStripLists
-FUN_00a71cc0_cls* FUN_00a71cc0_cls::NiTriStrips_ctor(int pkModelData)
+FUN_00a71cc0_cls* FUN_00a71cc0_cls::NiTriStrips_NiTriStrips(int pkModelData)
 {
     FUN_00a89720(pkModelData);
     m_pVTable = (void*)&DAT_0109cd44;
@@ -4012,16 +4012,16 @@ struct FUN_00a7fb80_Class
     int m_2C;
     int m_30;
     void* __thiscall FUN_00a5c200();
-    void* __thiscall NiRenderedTexture_ctor();
+    void* __thiscall NiRenderedTexture_NiRenderedTexture();
 };
 struct Z2Setup
 {
     void* __thiscall NiTexture_AddTextureToList();
 };
 // @fnv 0x00a7fb80
-// src: XBOX_RETAIL_PDB 0x00a7fb80
+// src: GAMEBRYO_LIB 0x00a7fb80
 // pdb: NiRenderedTexture::NiRenderedTexture | NiRenderedTexture.obj | retail, upstream name already matches, high
-void* FUN_00a7fb80_Class::NiRenderedTexture_ctor()
+void* FUN_00a7fb80_Class::NiRenderedTexture_NiRenderedTexture()
 {
     FUN_00a5c200();
     m_ppVirtualMethodTable = &DAT_0109b944;

@@ -2595,14 +2595,14 @@ struct FNVObj {
     const void* vft;
     unsigned int references;
     ReferenceHandle handle;
-    FNVObj* NiMaterialLibrary_ctor(const ReferenceHandle& kName);
+    FNVObj* NiMaterialLibrary_NiMaterialLibrary(const ReferenceHandle& kName);
 };
 // Initializes the object's vtable and reference count, copies src into handle, and appends this to the global object array, growing it if full.
 // @fnv 0x00a8fe70
-// src: XBOX_RETAIL_PDB 0x00a8fe70
+// src: EXE 0x00a8fe70
 // pdb: NiMaterialLibrary::NiMaterialLibrary | NiMaterialLibrary.obj | retail, upstream name already matches, high
 // pdb params: kName
-FNVObj* FNVObj::NiMaterialLibrary_ctor(const ReferenceHandle& kName) {
+FNVObj* FNVObj::NiMaterialLibrary_NiMaterialLibrary(const ReferenceHandle& kName) {
     vft = &vftable_NiRefObject;
     references = 0;
     InterlockedIncrement(&DAT_011f4400);

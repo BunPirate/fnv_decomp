@@ -69,13 +69,13 @@ int __thiscall FUN_00ec1dc0_Class::IsStringEqualIgnoreCase(const char* pcStringA
 struct FUN_00ec1f20Class
 {
     void Movie_ClearData();
-    void* Movie_ctor();
+    void* Movie_Movie();
 };
 
 // @fnv 0x00ec1f20
-// src: XBOX_DEBUG_PDB 0x00ec1f20
+// src: COMMUNITY 0x00ec1f20
 // pdb: Movie::Movie | MoviePlayer.obj | debug, upstream name already matches, high
-void* FUN_00ec1f20Class::Movie_ctor()
+void* FUN_00ec1f20Class::Movie_Movie()
 {
     Movie_ClearData();
     return this;

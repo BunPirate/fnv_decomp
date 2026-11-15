@@ -383,7 +383,7 @@ MobileVectorLocal_0092f260& __cdecl NI2HK(MobileVectorLocal_0092f260&, const NiP
 
 struct FUN_004a3f40_helper
 {
-    void bhkPickData_SetTo(const MobileVectorLocal_0092f260&);
+    void bhkPickData_SetTo_004a3f40(const MobileVectorLocal_0092f260&);
 };
 
 // @fnv 0x004a3eb0
@@ -394,7 +394,7 @@ struct FUN_004a3f40_helper
 void FUN_004a3eb0_shell::bhkPickData_SetTo(void* arTo)
 {
     MobileVectorLocal_0092f260 hkv;
-    ((FUN_004a3f40_helper*)this)->bhkPickData_SetTo(NI2HK(hkv, *(const NiPoint3*)arTo));
+    ((FUN_004a3f40_helper*)this)->bhkPickData_SetTo_004a3f40(NI2HK(hkv, *(const NiPoint3*)arTo));
 }
 
 extern int DAT_0108a490;
@@ -3248,7 +3248,7 @@ struct FUN_009319c0_vt
 
 // Locks, deletes the queued object at offset 0x68 and enqueues its response when level is -1; otherwise allocates it and dispatches a start method by level.
 // @fnv 0x009319c0
-// src: XBOX_RETAIL_PDB 0x009319c0
+// src: XBOX_RETAIL_PDB 0x009319c0 (was COMMUNITY)
 // pdb: MobileObject::ChangeProcessLevel | MobileObject.obj | retail, call graph (shared callers), high
 // pdb locals: bChange
 bool FUN_009319c0_shell::MobileObject_ChangeProcessLevel(int aeProcessLevel)
@@ -11713,7 +11713,7 @@ struct Item
     ~Item();
     unsigned int Modelloader_GetReferencedThis();
     void FUN_004d5930(void*, float);
-    double LipSynchAnim_LoadFromFile();
+    double GetNegativeMagnitude();
     int FUN_004d5850(int);
 };
 struct ActorObject;
@@ -12588,9 +12588,9 @@ float ActorObject::MobileObject_DoSpeechLoadLipFiles(const char* apSoundFile, So
                 aSoundHand->SetStaticAttenuation((int)(*g_011e060c.Setting_Float_00403e20() * DAT_01017a40));
             if (curItem)
             {
-                timeMs = (float)((curItem->LipSynchAnim_LoadFromFile() + BSFaceGenAnimationData_GetSpeechDelay()) * DAT_01017b70);
+                timeMs = (float)((curItem->GetNegativeMagnitude() + BSFaceGenAnimationData_GetSpeechDelay()) * DAT_01017b70);
                 aSoundHand->FUN_00ad8870((int)timeMs, 0);
-                elapsed = (float)(curItem->LipSynchAnim_LoadFromFile() + BSFaceGenAnimationData_GetSpeechDelay());
+                elapsed = (float)(curItem->GetNegativeMagnitude() + BSFaceGenAnimationData_GetSpeechDelay());
                 if (active > DAT_01012060)
                     elapsed += active;
                 else if (aSoundHand->FUN_00ad8b30())

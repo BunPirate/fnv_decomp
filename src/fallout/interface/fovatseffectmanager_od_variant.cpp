@@ -74,9 +74,9 @@ public:
 extern int DAT_012007fc;
 
 // @fnv 0x008019d0
-// src: XBOX_RETAIL_PDB 0x008019d0
+// src: COMMUNITY 0x008019d0
 // pdb: FOVATSEffectManager::ShutdownEffect | FOVATSEffectManager.obj | retail, object-file run extension, high
-void FOVATSEffectManager::ShutdownEffect()
+void FOVATSEffectManager::VATSEffect_ShutdownEffect()
 {
     ImageSpaceManager::BSShaderManager_GetImageSpaceManager()->GetEffect_004ebbc0(0x0A)->SetFormType(0);
     ImageSpaceManager::BSShaderManager_GetImageSpaceManager()->GetEffect_004ebbc0(0x0B)->SetFormType(0);

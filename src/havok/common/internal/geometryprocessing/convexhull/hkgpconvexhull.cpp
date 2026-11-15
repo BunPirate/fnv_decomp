@@ -3342,14 +3342,14 @@ struct hkgpEdge {
 
 struct FUN_00d7c970_cls {
     hkgpEdge m_kEdge;
-    void hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next();
+    void hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next();
 };
 
 // Advances m_kEdge through triangle edges until a canonical edge is found, returning when one is located.
 // @fnv 0x00d7c970
-// src: XBOX_RETAIL_PDB 0x00d7c970
+// src: HAVOK_LIB 0x00d7c970
 // pdb: hkgpAbstractMesh<hkgpConvexHullImpl::Edge,hkgpConvexHullImpl::Vertex,hkgpConvexHullImpl::Triangle,hkContainerHeapAllocator>::EdgeIterator::next | hkgpConvexHull.obj | retail, object-file gap fill, high
-void FUN_00d7c970_cls::hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next()
+void FUN_00d7c970_cls::hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next()
 {
     while (m_kEdge.m_pkTriangle)
     {
@@ -3409,7 +3409,7 @@ struct HullEdge {
 struct HullEdgeIterator {
     HullEdge m_kEdge;
     HullEdgeIterator(HullEdge first);
-    void hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next();
+    void hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next();
 };
 // Constructs a HullEdgeIterator from a HullEdge, calling FUN_00d7c970 if the edge has a triangle and is not canonical.
 // @fnv 0x00d7d220
@@ -3417,7 +3417,7 @@ struct HullEdgeIterator {
 // pdb params: first
 HullEdgeIterator::HullEdgeIterator(HullEdge first) : m_kEdge(first)
 {
-    if (m_kEdge.m_pkTriangle && !m_kEdge.isCanonical()) hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_EdgeIterator_next();
+    if (m_kEdge.m_pkTriangle && !m_kEdge.isCanonical()) hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next();
 }
 
 #include <windows.h>

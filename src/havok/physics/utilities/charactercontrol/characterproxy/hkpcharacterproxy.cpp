@@ -38,7 +38,7 @@ __forceinline const float& hkVector4::operator()(int i) const { return reinterpr
 __forceinline void hkVector4::set(LocalM128 v) { m_vComponents = v; }
 __forceinline void hkVector4::set(float a, float b, float c, float d) { m_vComponents = _mm_setr_ps(a,b,c,d); }
 __forceinline void hkVector4::setZero4() { m_vComponents = _mm_setzero_ps(); }
-__forceinline void hkVector4::setAll(float v) { m_vComponents = _mm_set_ps1(v); }
+__forceinline void hkVector4::SetAllComponents(float v) { m_vComponents = _mm_set_ps1(v); }
 __forceinline void hkVector4::setAll3(float v) { m_vComponents = _mm_set_ps1(v); }
 __forceinline hkSimdReal::hkSimdReal(const LocalM128& v) : m_vValue(v) {}
 __forceinline hkSimdReal::hkSimdReal(float v) { m_vValue = _mm_load_ss(&v); }
@@ -1304,7 +1304,7 @@ static LocalM128 scaleAccel(LocalM128 a,float s) {LocalM128 v=_mm_load_ss(&s);re
 static LocalM128 scaleExtra(LocalM128 a,float s) {LocalM128 v=_mm_load_ss(&s);return _mm_mul_ps(_mm_shuffle_ps(v,v,0),a);}
 // Iterates active contacts, computes impulse responses using body inertia and correction, notifies listeners, and applies or collects results.
 // @fnv 0x00cacf80
-// src: XBOX_RETAIL_PDB 0x00cacf80
+// src: XBOX_RETAIL_PDB 0x00cacf80 (was COMMUNITY)
 // pdb: hkpCharacterProxy::applySurfaceInteractions | hkpCharacterProxy.obj | retail, object-file gap fill, high
 // pdb params: stepInfo, worldGravity, command, maxInteractions
 // pdb locals: numInteractions, input, val, output, pointVel, inertiaInv, jacAng, rc, deltaTime
@@ -1900,18 +1900,18 @@ void S_00caf4d0_Tracker::hkpCharacterProxy_updateManifold(const S_00caf4d0_Colle
 }
 
 struct ContactQuery {
-    void hkpCharacterProxy_checkSupportWithCollector(void*, unsigned, S_Collector*) throw();
-    void hkpCharacterProxy_checkSupport(void*, unsigned);
+    void ahkpCharacterProxy_checkSupportWithCollector(void*, unsigned, S_Collector*) throw();
+    void ahkpCharacterProxy_checkSupport(void*, unsigned);
 };
 // Creates a local S_Collector and calls FUN_00cae900 with a, b and the collector.
 // @fnv 0x00cafd00
-// src: XBOX_RETAIL_PDB 0x00cafd00
+// src: COMMUNITY 0x00cafd00
 // pdb: hkpCharacterProxy::checkSupport | hkpCharacterProxy.obj | retail, object-file gap fill, high
 // pdb params: direction, ground
 // pdb locals: startPointCollector
-void ContactQuery::hkpCharacterProxy_checkSupport(void* direction, unsigned ground) {
+void ContactQuery::ahkpCharacterProxy_checkSupport(void* direction, unsigned ground) {
     S_Collector collector;
-    hkpCharacterProxy_checkSupportWithCollector(direction,ground,&collector);
+    ahkpCharacterProxy_checkSupportWithCollector(direction,ground,&collector);
 }
 
 struct CadColl {
@@ -3265,15 +3265,15 @@ public:
     int unkac;
     bool m_bRefreshManifoldInCheckSupport;
     void hkpCharacterProxy_refreshManifold(S00cae900_Collector& startPointCollector);
-    void hkpCharacterProxy_checkSupportWithCollector(const hkVector4& direction, S00cae900_SurfaceInfo& ground, S00cae900_Collector& startPointCollector);
+    void ahkpCharacterProxy_checkSupportWithCollector(const hkVector4& direction, S00cae900_SurfaceInfo& ground, S00cae900_Collector& startPointCollector);
 };
 
 // @fnv 0x00cae900
-// src: XBOX_RETAIL_PDB 0x00cae900
+// src: COMMUNITY 0x00cae900
 // pdb: hkpCharacterProxy::checkSupportWithCollector | hkpCharacterProxy.obj | retail, object-file gap fill, high
 // pdb params: direction, ground, startPointCollector
 // pdb locals: input, output, constraints, storedVelocities, interactions, assertBuf, ostr
-void S00cae900_Proxy::hkpCharacterProxy_checkSupportWithCollector(const hkVector4& direction, S00cae900_SurfaceInfo& ground, S00cae900_Collector& startPointCollector)
+void S00cae900_Proxy::ahkpCharacterProxy_checkSupportWithCollector(const hkVector4& direction, S00cae900_SurfaceInfo& ground, S00cae900_Collector& startPointCollector)
 {
     S00cae900_timer("TtcheckSupport");
     if (m_bRefreshManifoldInCheckSupport)
@@ -3305,7 +3305,7 @@ void S00cae900_Proxy::hkpCharacterProxy_checkSupportWithCollector(const hkVector
     input.m_fTimeStep = 1.0f / 60.0f;
     input.m_fConstraintParameter = 1.0f / 60.0f;
     input.m_vFourthInputVector = m_vStart;
-    input.m_vThirdInputVector.setAll(m_fMaxCharacterSpeedForSolver);
+    input.m_vThirdInputVector.SetAllComponents(m_fMaxCharacterSpeedForSolver);
     output.m_pPlaneStatuses = surfaceConstraintInteractions.begin();
     reinterpret_cast<S00cae900_Listeners*>(this)->hkpCharacterProxy_fireConstraintsProcessed(&m_kContactManifold, &input);
 
@@ -3724,7 +3724,7 @@ void S00caefd0_Proxy::hkpCharacterProxy_checkSupportDeprecated(const hkVector4& 
     input.m_fTimeStep = kInvSixtySV;
     input.m_fConstraintParameter = kInvSixtySV;
     input.m_vFourthInputVector = m_vStart;
-    input.m_vThirdInputVector.setAll(m_fMaxCharacterSpeedForSolver);
+    input.m_vThirdInputVector.SetAllComponents(m_fMaxCharacterSpeedForSolver);
     output.m_pPlaneStatuses = surfaceConstraintInteractions.begin();
     const_cast<S00caefd0_Proxy*>(this)->hkpCharacterProxy_fireConstraintsProcessed(const_cast<S00caefd0_Array<S00caefd0_RootPoint>*>(&m_kContactManifold), &input);
     hkSimplexSolverSolve(input, output);

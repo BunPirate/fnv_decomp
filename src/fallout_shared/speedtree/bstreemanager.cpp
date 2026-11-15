@@ -179,7 +179,7 @@ struct S664990
 };
 // If DAT_011d5c48 is set, calls its DestroyIfFlagged with 1, then clears DAT_011d5c48.
 // @fnv 0x00664940
-// src: XBOX_RETAIL_PDB 0x00664940
+// src: XBOX_RETAIL_PDB 0x00664940 (was COMMUNITY)
 // pdb: BSTreeManager::Destroy | BSTreeManager.obj | retail, call graph (shared callers), high
 void BSTreeManager_Destroy()
 {
@@ -220,7 +220,7 @@ void* FUN_00664990_shell::DestroyIfFlagged(unsigned int flags)
 extern Setting DAT_011f9158;
 // Returns the result of FUN_006655a0 multiplied by the float value stored in DAT_011f9158.
 // @fnv 0x00665570
-// src: XBOX_DEBUG_PDB 0x00665570
+// src: XBOX_DEBUG_PDB 0x00665570 (was COMMUNITY)
 // pdb: BSTreeManager::GetNearDistance | BSTreeManager.obj | debug, call graph, high
 float BSTreeManager_GetNearDistance()
 {
@@ -231,7 +231,7 @@ double GetOriginalRuntimeFloatSetting1296();
 extern Setting DAT_011f9158;
 // Returns the value from GetOriginalRuntimeFloatSetting1296 multiplied by the float stored in DAT_011f9158.
 // @fnv 0x006655c0
-// src: XBOX_DEBUG_PDB 0x006655c0
+// src: XBOX_DEBUG_PDB 0x006655c0 (was COMMUNITY)
 // pdb: BSTreeManager::GetFarDistance | BSTreeManager.obj | debug, call graph, high
 float BSTreeManager_GetFarDistance()
 {

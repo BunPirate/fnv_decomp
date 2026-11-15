@@ -680,7 +680,7 @@ struct CombatAvoidanceSphere
 };
 
 // @fnv 0x00997400
-// src: XBOX_RETAIL_PDB 0x00997400
+// src: XBOX_RETAIL_PDB 0x00997400 (was COMMUNITY)
 // pdb: CombatLocation::SetRef | CombatState.obj | retail, object-file run extension, high
 // pdb params: apRef
 void CombatAvoidanceSphere::CombatLocation_SetRef(TESObjectREFR* apRef)
@@ -732,7 +732,7 @@ struct Unk975C0
     void CombatCoverSearchInfo_Clear();
 };
 // @fnv 0x009975c0
-// src: XBOX_DEBUG_PDB 0x009975c0
+// src: XBOX_DEBUG_PDB 0x009975c0 (was COMMUNITY)
 // pdb: CombatCoverSearchInfo::Clear | CombatState.obj | debug, call graph (shared callers), high
 void Unk975C0::CombatCoverSearchInfo_Clear()
 {
@@ -1257,12 +1257,12 @@ struct FUN_009a08d0_Cls
     Inner097 u8;
     float f18;
     float f1c;
-    FUN_009a08d0_Cls* CombatLocationTarget_ctor();
+    FUN_009a08d0_Cls* CombatLocationTarget_CombatLocationTarget();
 };
 // @fnv 0x009a08d0
-// src: XBOX_DEBUG_PDB 0x009a08d0
+// src: XBOX_PDB 0x009a08d0
 // pdb: CombatLocationTarget::CombatLocationTarget | CombatState.obj | debug, upstream name already matches, high
-FUN_009a08d0_Cls* FUN_009a08d0_Cls::CombatLocationTarget_ctor()
+FUN_009a08d0_Cls* FUN_009a08d0_Cls::CombatLocationTarget_CombatLocationTarget()
 {
     b0 = 0;
     b1 = 0;
@@ -1600,14 +1600,14 @@ struct Sub08
 };
 struct Holder
 {
-    void CombatLocationTarget_LoadGame(BGSLoadFormBuffer*);
+    void CombatState_LocationTarget_LoadGame(BGSLoadFormBuffer*);
 };
 // Reads bytes at offsets 0, 1, 0x18 and 0x1C, a value at offset 4, and delegates offset 8 to FUN_00527ba0, all via the load buffer.
 // @fnv 0x009a31b0
-// src: XBOX_DEBUG_PDB 0x009a31b0
+// src: COMMUNITY 0x009a31b0
 // pdb: CombatLocationTarget::LoadGame | CombatState.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
-void Holder::CombatLocationTarget_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
+void Holder::CombatState_LocationTarget_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     apLoadGameBuffer->ReadTypedData(this, 1);
     apLoadGameBuffer->ReadTypedData((void*)((char*)this + 1), 1);
@@ -1807,7 +1807,7 @@ struct CombatSaveGameData
 };
 // Reads this object's fields from the buffer, then loads a count and each of that many PathingCoverLocation entries via LoadGame.
 // @fnv 0x009a3050
-// src: XBOX_DEBUG_PDB 0x009a3050
+// src: XBOX_DEBUG_PDB 0x009a3050 (was COMMUNITY)
 // pdb: CombatCoverSearchInfo::LoadGame | CombatState.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
 // pdb locals: isaveGameCount, i, coverLocation
@@ -1839,14 +1839,14 @@ struct FUN_0097ee20_shell
     float f18;
     int f1c;
     void BGSWorldLocation_BGSWorldLocation();
-    FUN_0097ee20_shell* CombatLocation_ctor();
+    FUN_0097ee20_shell* CombatLocation_CombatLocation();
 };
 
 // Calls FUN_0097ede0, then sets f10 to 0, f14 to -1, f18 to 0.0f and f1c to 0, returning this.
 // @fnv 0x0097ee20
-// src: XBOX_DEBUG_PDB 0x0097ee20
+// src: XBOX_PDB 0x0097ee20
 // pdb: CombatLocation::CombatLocation | CombatController.obj | debug, upstream name already matches, high
-FUN_0097ee20_shell* FUN_0097ee20_shell::CombatLocation_ctor()
+FUN_0097ee20_shell* FUN_0097ee20_shell::CombatLocation_CombatLocation()
 {
     BGSWorldLocation_BGSWorldLocation();
     f10 = 0;
@@ -2621,14 +2621,14 @@ struct FUN_0099aa80_struct : StandInShell
     char b51;
     char b52;
 
-    FUN_0099aa80_struct* PathingCoverLocation_ctor(FUN_0099aa80_struct* other);
+    FUN_0099aa80_struct* PathingCoverLocation_PathingCoverLocation(FUN_0099aa80_struct* other);
 };
 
 // @fnv 0x0099aa80
-// src: XBOX_RETAIL_PDB 0x0099aa80
+// src: EXE 0x0099aa80
 // pdb: PathingCoverLocation::PathingCoverLocation | CombatState.obj | retail, upstream name already matches, high
 // pdb params: __that
-FUN_0099aa80_struct* FUN_0099aa80_struct::PathingCoverLocation_ctor(FUN_0099aa80_struct* other)
+FUN_0099aa80_struct* FUN_0099aa80_struct::PathingCoverLocation_PathingCoverLocation(FUN_0099aa80_struct* other)
 {
     FUN_006dcc40(other);
     vtable = &DAT_0106cbc0;
@@ -4509,7 +4509,7 @@ class FUN_009a3220_cls
 
 // Re-resolves m_04 through FUN_004839c0 and dynamic_cast to TESObjectREFR, or clears it to null when m_04 is null.
 // @fnv 0x009a3220
-// src: XBOX_DEBUG_PDB 0x009a3220
+// src: XBOX_DEBUG_PDB 0x009a3220 (was COMMUNITY)
 // pdb: CombatLocationTarget::InitLoadGame | CombatState.obj | debug, call graph, high
 // pdb params: apLoadGameBuffer
 void FUN_009a3220_cls::CombatLocationTarget_InitLoadGame(int apLoadGameBuffer)
@@ -7226,7 +7226,7 @@ struct LocalData2C
     int unk14;
     float unk18;
     int unk1c;
-    LocalData2C* CombatLocation_ctor();
+    LocalData2C* CombatLocation_CombatLocation();
 };
 
 struct CombatDecompClass : FUN_0099a9a0_shell
@@ -7321,7 +7321,7 @@ bool CombatDecompClass::InitSubObject(RetObjParam* pRetObj, int a2, int a3, floa
     this->CombatState_ClearSecondaryCoverLocation(0);
     this->unkE8 = new FUN_006d3150();
     LocalData2C local2c;
-    local2c.CombatLocation_ctor();
+    local2c.CombatLocation_CombatLocation();
     if (!this->FindBestAdvanceLocation(&this->unk128, this->unkE8, &local2c, a3, a2, a4, a5))
     {
         this->CombatState_ClearSecondaryCoverLocation(0);

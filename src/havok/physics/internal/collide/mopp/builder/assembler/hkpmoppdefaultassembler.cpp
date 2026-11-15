@@ -1865,7 +1865,7 @@ struct FUN_00e09540_Self
 };
 
 // @fnv 0x00e09540
-// src: XBOX_DEBUG_PDB 0x00e09540
+// src: XBOX_DEBUG_PDB 0x00e09540 (was HAVOK_LIB)
 // pdb: hkpMoppAssemblerNodeInfo::updateExtents | hkpMoppDefaultAssembler.obj | debug, call graph, high
 // pdb params: node, codeInfo
 void FUN_00e09540_Self::hkpMoppAssemblerNodeInfo_updateExtents()

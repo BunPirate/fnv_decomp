@@ -7197,7 +7197,7 @@ int __cdecl bhkCharacterProxy_GetCinfoSize()
 
 struct FUN_00c6cef0_target
 {
-    void hkpCharacterProxy_checkSupport(int direction, int ground);
+    void ahkpCharacterProxy_checkSupport(int direction, int ground);
 };
 
 struct FUN_00c6cef0_cls
@@ -7223,7 +7223,7 @@ void FUN_00c6cef0_cls::CallTargetWithArgs(int a, int b)
         if (target != 0)
         {
             bhkCharacterController_UnMarkWrite();
-            target->hkpCharacterProxy_checkSupport(a, b);
+            target->ahkpCharacterProxy_checkSupport(a, b);
             bhkCharacterController_UnMarkWrite();
         }
     }
@@ -11472,7 +11472,7 @@ class FUN_00c79d60_cls
 
 // Sets or clears bit 0 of the m_30 flags on the three entries in m_84->m_a0 based on a1/a2/a3, then calls v3a or v37 on the object from m_58->v03().
 // @fnv 0x00c79d60
-// src: XBOX_RETAIL_PDB 0x00c79d60
+// src: XBOX_RETAIL_PDB 0x00c79d60 (was COMMUNITY)
 // pdb: bhkRagdollController::UpdateDebugSkeleton | bhkRagdollController.obj | retail, object-file gap fill, high
 // pdb params: abKeyframed, abRagdoll, abFinal
 // pdb locals: pragdollNode, pparNode
@@ -15327,7 +15327,7 @@ struct FUN_00c6e0b0_Class
 };
 
 // @fnv 0x00c6e0b0
-// src: XBOX_RETAIL_PDB 0x00c6e0b0
+// src: XBOX_RETAIL_PDB 0x00c6e0b0 (was COMMUNITY)
 // pdb: bhkCharacterController::FindDisplayGeometry | bhkCharacterController.obj | retail, call graph, high
 // pdb locals: pdebug, pav, pnode, collisionName, iEnd, i
 void* FUN_00c6e0b0_Class::bhkCharacterController_FindDisplayGeometry()
@@ -21993,7 +21993,7 @@ struct C6E180Owner
 
 // Sets the motion transform's scale to fNewScale, adding (old - new scale) to the translate Z component and subtracting it from the rotate Z component.
 // @fnv 0x00c6e180
-// src: XBOX_RETAIL_PDB 0x00c6e180
+// src: XBOX_RETAIL_PDB 0x00c6e180 (was COMMUNITY)
 // pdb: bhkCharacterController::SetRadius | bhkCharacterController.obj | retail, call graph, high
 // pdb params: afRadius
 // pdb locals: pcs, fraddiff, top, bottom, foldRadius

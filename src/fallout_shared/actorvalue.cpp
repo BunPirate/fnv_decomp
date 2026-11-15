@@ -698,11 +698,11 @@ extern double DAT_01012060;
 bool __cdecl ActorValue_IsFlagSet(int, unsigned int);
 
 // @fnv 0x0066eea0
-// src: XBOX_DEBUG_PDB 0x0066eea0
+// src: COMMUNITY 0x0066eea0
 // pdb: ActorValue::CheckClampDamageModifier | ActorValue.obj | debug, call graph (shared callers), high
 // pdb params: apActor, aiWhich, afDelta
 // pdb locals: fresult, fold
-float __cdecl ActorValue_CheckClampDamageModifier(ActorValueOwner* apActor, int aiWhich, float afDelta)
+float __cdecl Actor_CheckClampDamageModifier(ActorValueOwner* apActor, int aiWhich, float afDelta)
 {
     float result = afDelta;
 

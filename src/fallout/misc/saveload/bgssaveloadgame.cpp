@@ -485,7 +485,7 @@ struct ReferencesMapH
 struct ReconstructFormsH
 {
     void BGSReconstructFormsInAllFilesMap_AddReference(TESObjectCELL* apParentCell, unsigned int aiRefID, bool aiFlags);
-    void BGSReconstructFormsInAllFilesMap_AddReference(TESWorldSpace* apWorldSpace, int aiCellX, int aiCellY, unsigned int aiRefID, bool aiFlags);
+    void BGSReconstructFormsInAllFilesMap_AddReference_008438b0(TESWorldSpace* apWorldSpace, int aiCellX, int aiCellY, unsigned int aiRefID, bool aiFlags);
 };
 unsigned int __cdecl BGSSaveLoadInitialData_LoadInitialDataStruct_0(SaveLoadFile* file, int type, ReferencePlacementData* data);
 TESForm* __cdecl BGSSaveLoadInitialData_CreateReference(unsigned int aiFormID, ReferencePlacementData* apReferenceInitialData, TESForm* apPreExistingForm);
@@ -570,7 +570,7 @@ unsigned int BGSSaveLoadGame::CheckInitialData(::SaveLoadFile* apFile, BGSLoadFo
                     (*(ReconstructFormsH**)((char*)this + 0x20))->BGSReconstructFormsInAllFilesMap_AddReference(pcell, iformID, false);
                 else
                     (*(ReconstructFormsH**)((char*)this + 0x20))
-                        ->BGSReconstructFormsInAllFilesMap_AddReference(pworld, refData.m_iGridPositionX, refData.m_iGridCoordinateY, iformID, false);
+                        ->BGSReconstructFormsInAllFilesMap_AddReference_008438b0(pworld, refData.m_iGridPositionX, refData.m_iGridCoordinateY, iformID, false);
                 apLoadGameBuffer->FUN_0042ce50(true);
                 apLoadGameBuffer->SetFormPending(true);
             }

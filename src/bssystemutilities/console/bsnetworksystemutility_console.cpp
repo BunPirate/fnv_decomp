@@ -19,9 +19,9 @@ NetworkSystemUtility& NetworkSystemUtility::GetRandomGenerator()
 }
 
 // @fnv 0x00af2d40
-// src: XBOX_DEBUG_PDB 0x00af2d40
+// src: COMMUNITY 0x00af2d40
 // pdb: BSNetworkSystemUtility::BSNetworkSystemUtility | BSNetworkSystemUtility_Xenon.obj | debug, upstream name already matches, high
-void* __fastcall BSNetworkSystemUtility_ctor(void* pThis)
+void* __fastcall BSNetworkSystemUtility_BSNetworkSystemUtility(void* pThis)
 {
     *(bool*)pThis = false;
     *((void**)pThis + 1) = 0;

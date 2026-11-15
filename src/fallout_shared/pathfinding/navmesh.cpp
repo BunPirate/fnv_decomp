@@ -83,7 +83,7 @@ InventoryStackRecord* MiddleHighProcess::GetActiveWeapon() const
 // pdb: NavMeshPtr::NavMeshPtr | ExtraDataList.obj | debug, call graph, high
 NavMeshStaticAvoidNode* NavMesh::NavMeshPtr_ctor()
 {
-    NiPointer_NavMesh_ctor(0);
+    NiPointer_NavMesh_NiPointer_NavMesh_0042fd70(0);
     return (NavMeshStaticAvoidNode*)this;
 }
 
@@ -316,7 +316,7 @@ void __fastcall FUN_005890c0(int* self, FUN_00691720_arg a);
 
 // Calls FUN_005890c0 on self, then stores the address of DAT_01031fac into *self and returns self.
 // @fnv 0x00691720
-// src: XBOX_DEBUG_PDB 0x00691720
+// src: XBOX_DEBUG_PDB 0x00691720 (was EXE)
 // pdb: NiTMap<unsigned short,NavMeshPOVData>::NiTMap<unsigned short,NavMeshPOVData> | NavMesh.obj | debug, call graph, high
 // pdb params: uiHashSize
 int* __fastcall NiTMap_unsigned_short_NavMeshPOVData_ctor(int* self, FUN_00691720_arg a)
@@ -409,14 +409,14 @@ struct G00559a40
 struct Holder42
 {
     char* p;
-    Holder42* NiPointer_NavMesh_ctor(char*);
+    Holder42* NiPointer_NavMesh_NiPointer_NavMesh_0042fd70(char*);
 };
 // Stores v in p and, when v is non-null, calls FUN_0040f6e0 on the object at v+0x1c; returns this.
 // @fnv 0x0042fd70
-// src: XBOX_DEBUG_PDB 0x0042fd70
+// src: XBOX_PDB 0x0042fd70
 // pdb: NiPointer<NavMesh>::NiPointer<NavMesh> | ExtraDataList.obj | debug, call graph (shared callers), high
 // pdb params: pObject
-Holder42* Holder42::NiPointer_NavMesh_ctor(char* pObject)
+Holder42* Holder42::NiPointer_NavMesh_NiPointer_NavMesh_0042fd70(char* pObject)
 {
     p = pObject;
     if (p)
@@ -1165,7 +1165,7 @@ NavMesh::~NavMesh()
     ExtraEdgeInfo.Clear(true);
     DoorPortals.Clear(true);
     CoverArray.Clear(true);
-    MeshGrid.NavMeshGrid_Clear();
+    MeshGrid.Clear_0069d2d0();
     if (pNavMeshInfo)
         ((TESRecipe*)pNavMeshInfo)->SetCategory(0u);
     if (pTriangleToObstacleMap)
@@ -1200,7 +1200,7 @@ template <> void BSSimpleArray<NavMeshPtr, 1024>::UpdateEntryValue(NavMeshPtr* p
 namespace fnv_00690d50 {
 struct FUN_0069d2d0_s
 {
-    void NavMeshGrid_Clear();
+    void Clear_0069d2d0();
 };
 struct FUN_006b6a00_s
 {
@@ -1224,7 +1224,7 @@ void FUN_00690d50_shell::NavMesh_ClearNavMesh(bool abCheckout)
     ((BSSimpleArray<NavMeshVertex, 1024>*)((char*)this + 0x28))->Clear(true);
     ((BSSimpleArray<NavMeshTriangle, 1024>*)((char*)this + 0x38))->Clear(true);
     ((BSSimpleArray<EdgeExtraInfo, 1024>*)((char*)this + 0x48))->Clear(true);
-    ((FUN_0069d2d0_s*)((char*)this + 0xa8))->NavMeshGrid_Clear();
+    ((FUN_0069d2d0_s*)((char*)this + 0xa8))->Clear_0069d2d0();
     ((BSSimpleArray<unsigned short, 1024>*)((char*)this + 0x78))->Clear(true);
     ((BSSimpleArray<NiPointer<ObstacleUndoData>, 1024>*)((char*)this + 0xd0))->RemoveAll(true);
     ((BSSimpleArray<NavMeshTriangleDoorPortal, 1024>*)((char*)this + 0x58))->Clear(true);
@@ -1982,13 +1982,13 @@ struct D2d0Cls
     float m_0c;
     int m_10, m_14, m_18, m_1c, m_20;
     D2d0Elem* m_24;
-    void NavMeshGrid_Clear();
+    void Clear_0069d2d0();
 };
 // Deletes the m_24 array and clears it, resets m_00 to 0 and sets m_0c to DAT_01016970.
 // @fnv 0x0069d2d0
-// src: XBOX_RETAIL_PDB 0x0069d2d0
+// src: COMMUNITY 0x0069d2d0
 // pdb: NavMeshGrid::Clear | NavMeshGrid.obj | retail, call graph (shared callers), high
-void D2d0Cls::NavMeshGrid_Clear()
+void D2d0Cls::Clear_0069d2d0()
 {
     if (m_24)
     {

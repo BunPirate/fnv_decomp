@@ -164,7 +164,7 @@ FUN_00845690_Owner* FUN_00845690_Owner::Destructor(unsigned int flags)
 }
 
 // @fnv 0x006b7b30
-// src: XBOX_DEBUG_PDB 0x006b7b30
+// src: XBOX_DEBUG_PDB 0x006b7b30 (was COMMUNITY)
 // pdb: GetKeyForNavMeshInfo | NavMeshInfoMap.obj | debug, call graph, high
 // pdb params: apNavMeshInfo
 // pdb locals: pcell

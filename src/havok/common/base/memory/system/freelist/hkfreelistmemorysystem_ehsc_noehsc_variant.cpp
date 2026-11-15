@@ -917,10 +917,10 @@ struct S_00cd0a60_sub1c
     int unka90;
     int unka94;
     int unka98;
-    void hkFreeListAllocator_ctor(S_00cd0a60_sub8* server);
+    void hkFreeListAllocator_00d60270(S_00cd0a60_sub8* server);
     __forceinline S_00cd0a60_sub1c(S_00cd0a60_sub8* a1)
     {
-        hkFreeListAllocator_ctor(a1);
+        hkFreeListAllocator_00d60270(a1);
     }
 };
 struct S_00cd0a60_VtBase
@@ -1160,7 +1160,7 @@ struct S_00cd0a60_elem
     char unk12c;
     int unk130;
     int unk134;
-    void hkThreadMemory_ctor();
+    void hkThreadMemory_hkThreadMemory();
 };
 struct S_00cd0a60_arr
 {
@@ -1170,7 +1170,7 @@ struct S_00cd0a60_arr
         S_00cd0a60_elem* p = e;
         for (int i = 31; i >= 0; --i)
         {
-            p->hkThreadMemory_ctor();
+            p->hkThreadMemory_hkThreadMemory();
             p->unk128 = 0;
             p->unk12c = 0;
             p->unk130 = 0;

@@ -154,7 +154,7 @@ float BSAnimGroupSequence::GetScaledTime(float afTime)
     default:
         return 0.0f;
     }
-    return ComputeScaledTime(afTime + m_fSequenceOffset, true);
+    return ComputeScaledTime_00a30970(afTime + m_fSequenceOffset, true);
 }
 
 // Reads a time, a byte, and three ints from the buffer, stores fTime minus fBase into f48, sets f4c and f50 to -DAT_01023850, then calls FUN_004eec60 with fBase.
@@ -266,9 +266,9 @@ bool BSAnimGroupSequence::AttachToOwner(NiAVObject* target, int argument)
 unsigned short __cdecl BSAnimGroupSequence_GetSequenceSaveSize();
 
 // @fnv 0x004efb10
-// src: XBOX_DEBUG_PDB 0x004efb10
+// src: XBOX_PDB 0x004efb10
 // pdb: BSAnimGroupSequence::GetSaveSize | BSAnimGroupSequence.obj | debug, call graph, high
-unsigned short __thiscall BSAnimGroupSequence::GetSaveSize()
+unsigned short __thiscall BSAnimGroupSequence::GetSaveSize_004efb10()
 {
     return BSAnimGroupSequence_GetSequenceSaveSize();
 }
@@ -289,7 +289,7 @@ void __fastcall BSAnimGroupSequence_ClearBlendInterp(NiControllerSequence* seque
 
 // Adds value to m_0x48 and saves the sum, m_0x44, m_0x34, m_0x38 and m_0x54 into the save buffer.
 // @fnv 0x004efc90
-// src: XBOX_RETAIL_PDB 0x004efc90
+// src: XBOX_RETAIL_PDB 0x004efc90 (was COMMUNITY)
 // pdb: BSAnimGroupSequence::SaveGame | BSAnimGroupSequence.obj | retail, call graph, high
 // pdb params: afTime
 // pdb locals: foffset

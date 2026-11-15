@@ -144,6 +144,6 @@ int __cdecl BSstricmp(const char*, const char*);
 int Warning(const char*, ...);
 int NiTexturingProperty_GetType();
 bool fffReadTriFile(const NarrowString&, FaceGenTriData*);
-FaceGenTextureFile* EGTData_Create(const char*);
+FaceGenTextureFile* BSFaceGenModel_EGTData_Create(const char*);
 NiAVObject* BSFaceGenManager_GetFaceGenModelExtraData(NiAVObject*);
 #endif

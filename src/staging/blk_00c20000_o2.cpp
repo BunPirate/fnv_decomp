@@ -53,7 +53,7 @@ NiPSysPositionModifier* NiPSysPositionModifier_CreateObject()
 }  // namespace fnv_00c28b20
 
 namespace fnv_00c29d00 {
-void* __fastcall NiPSysModifierBoolCtlr_ctor(void* pcModifierName);
+void* __fastcall NiPSysModifierBoolCtlr_NiPSysModifierBoolCtlr(void* pcModifierName);
 extern int DAT_010bebbc;
 
 // @fnv 0x00c29d00
@@ -65,7 +65,7 @@ void* __cdecl NiPSysModifierActiveCtlr_CreateObject()
     void* p = BSFadeNode::operator new(0x40);
     if (p)
     {
-        NiPSysModifierBoolCtlr_ctor(p);
+        NiPSysModifierBoolCtlr_NiPSysModifierBoolCtlr(p);
         *reinterpret_cast<void**>(p) = &DAT_010bebbc;
         return p;
     }

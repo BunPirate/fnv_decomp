@@ -447,16 +447,16 @@ struct FUN_00b00820_tail
 };
 struct FUN_00b00820_shell
 {
-    FUN_00b00820_shell* BSSystemDir_ctor(unsigned int apcPath);
+    FUN_00b00820_shell* BSSystemDir_BSSystemDir(unsigned int apcPath);
     void FUN_00b006b0(unsigned int value);
 };
 
 // Clears pendingState and sequence at offset 0x248, calls FUN_00b006b0 with value, and returns this.
 // @fnv 0x00b00820
-// src: XBOX_RETAIL_PDB 0x00b00820
+// src: COMMUNITY 0x00b00820
 // pdb: BSSystemDir::BSSystemDir | BSSystemDir.obj | retail, upstream name already matches, high
 // pdb params: apcPath
-FUN_00b00820_shell* FUN_00b00820_shell::BSSystemDir_ctor(unsigned int apcPath)
+FUN_00b00820_shell* FUN_00b00820_shell::BSSystemDir_BSSystemDir(unsigned int apcPath)
 {
     reinterpret_cast<FUN_00b00820_tail*>(reinterpret_cast<char*>(this) + 0x248)->pendingState = 0;
     reinterpret_cast<FUN_00b00820_tail*>(reinterpret_cast<char*>(this) + 0x248)->sequence = 0;

@@ -29,7 +29,7 @@ public:
     float& GetVectorElement(int index);
     CollisionFilter bhkCharacterController_GetCollisionFilter();
     void bhkRigidBody_SetAngularVelocity(const NiPoint3& arVel);
-    void bhkRigidBody_SetAngularVelocity(void* arVel);
+    void bhkRigidBody_SetAngularVelocity_005617c0(void* arVel);
     void SetInactive();
     void bhkCharacterController_SetWorld(int);
     void hkSphere_setRadius(float);

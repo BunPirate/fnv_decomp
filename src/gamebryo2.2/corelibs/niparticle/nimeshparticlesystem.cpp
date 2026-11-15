@@ -222,7 +222,7 @@ NiMeshParticleSystemClone* __thiscall NiMeshParticleSystemClone::NiMeshParticleS
     }
     else
         result = 0;
-    CopyMembers(result, kCloning);
+    CopyMembers_00c1b6f0(result, kCloning);
     result->m_f110 = m_f110;
     *(unsigned char*)((char*)result + 0x114) = *(unsigned char*)((char*)this + 0x114);
     return result;

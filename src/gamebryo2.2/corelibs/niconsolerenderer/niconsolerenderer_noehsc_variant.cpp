@@ -480,7 +480,7 @@ struct BSBatchRenderer__AlphaList
 };
 struct NiConsoleRenderer_shellEx : GraphicsRenderer
 {
-    void __thiscall NiXenonRenderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader);
+    void __thiscall NiDX9Renderer_ReleaseD3DShader(NiD3DShaderInterface* pkD3DShader);
 };
 void _delete(void*, unsigned int);
 struct S
@@ -9934,7 +9934,7 @@ struct PackingGeometry
 };
 struct PackingVertexManager
 {
-    unsigned int NiXenonVertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
+    unsigned int NiDX9VertexBufferManager_PackSkinnedVB(NiGeometryData*, void*, PackingData*, unsigned short, void*, unsigned int);
 };
 struct PackingIndexManager
 {

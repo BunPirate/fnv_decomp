@@ -26,7 +26,7 @@ public:
     void FinishSetup();
     void SetLightEnabled();
     bool Projectile_IsFlagSet(int flag);
-    void TESObjectREFR_SetLight(void* apObj, bool abStateOn);
+    void TESObjectREFR_SetLight_005726e0(void* apObj, bool abStateOn);
     bool TurnOff(int apActionActor, bool abSilent);
     bool Projectile_DisarmPlacedExplosives(int apActionActor, bool abSilent);
     void ReportHavokDeactivation();

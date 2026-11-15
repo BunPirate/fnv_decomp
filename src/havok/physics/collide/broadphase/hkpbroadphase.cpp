@@ -17,13 +17,13 @@ struct InitObject
     unsigned short m_w06;
     SpawnedObject m_sub;
     unsigned int m_i10;
-    InitObject* hkpBroadPhase_ctor();
+    InitObject* hkpBroadPhase_hkpBroadPhase();
 };
 
 // @fnv 0x00d97010
-// src: XBOX_RETAIL_PDB 0x00d97010
+// src: HAVOK_LIB 0x00d97010
 // pdb: hkpBroadPhase::hkpBroadPhase | hkpBroadPhase.obj | retail, upstream name already matches, high
-InitObject* InitObject::hkpBroadPhase_ctor()
+InitObject* InitObject::hkpBroadPhase_hkpBroadPhase()
 {
     m_w06 = 1;
     m_pGlobal = DAT_010d3f7c;

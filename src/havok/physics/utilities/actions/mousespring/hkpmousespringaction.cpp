@@ -262,15 +262,15 @@ struct Ms_cls
     float objDamping;
     int shapeKey;
     hkArrayBase<int> cb;
-    Ms_cls* hkpMouseSpringAction_ctor(LocalM128* positionInRbLocal, LocalM128* mousePositionInWorld, float springDamping, float springElasticity, float objectDamping, Ms_Ent* rb, hkArray<int>* appliedCallbacks);
+    Ms_cls* hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* positionInRbLocal, LocalM128* mousePositionInWorld, float springDamping, float springElasticity, float objectDamping, Ms_Ent* rb, hkArray<int>* appliedCallbacks);
 };
 
 // Initializes the Ms_cls object with position, mouse, and damping parameters, copies an array, and computes a shape key via a collision test against the world.
 // @fnv 0x00cbb560
-// src: XBOX_RETAIL_PDB 0x00cbb560
+// src: EXE 0x00cbb560
 // pdb: hkpMouseSpringAction::hkpMouseSpringAction | hkpMouseSpringAction.obj | retail, object-file gap fill, high
 // pdb params: flag
-Ms_cls* Ms_cls::hkpMouseSpringAction_ctor(LocalM128* positionInRbLocal, LocalM128* mousePositionInWorld, float springDamping, float springElasticity, float objectDamping,
+Ms_cls* Ms_cls::hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* positionInRbLocal, LocalM128* mousePositionInWorld, float springDamping, float springElasticity, float objectDamping,
                              Ms_Ent* rb, hkArray<int>* appliedCallbacks)
 {
     ((Ms_B*)this)->FUN_00d2b260(rb, 0);

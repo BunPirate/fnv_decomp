@@ -171,14 +171,14 @@ void NiPSysEmitterCtlr::LinkObject(NiStream& kStream)
 }
 
 // Constructor entry points not yet declared by the shared controller headers.
-void __fastcall NiInterpController_ctor(NiInterpController* controller) throw();
+void __fastcall ConstructInterpController(NiInterpController* controller) throw();
 extern void* kVtbl_NiSingleInterpController;
 
 // @fnv 0x00a38e00
 // pdb: NiSingleInterpController::NiSingleInterpController | NiSingleInterpController.obj | retail, call graph, medium
 NiSingleInterpController* __fastcall ConstructSingleInterpController(NiSingleInterpController* controller)
 {
-    NiInterpController_ctor(controller);
+    ConstructInterpController(controller);
     *(void**)controller = &kVtbl_NiSingleInterpController;
     controller->m_spInterpolator.m_pObject = 0;
     return controller;

@@ -6119,7 +6119,7 @@ struct Mgr
     unsigned char m1b90;
     unsigned char m1b91;
     unsigned short m1b92;
-    Mgr* Controls_ctor(int arg);
+    Mgr* Controls_Controls(int arg);
     void SetEnabled(int enable);
     void Controls_InitDefaultKeybinds(int a);
 };
@@ -6132,10 +6132,10 @@ __forceinline Elem2* NewZeroedElem2()
 }
 
 // @fnv 0x00a22660
-// src: XBOX_RETAIL_PDB 0x00a22660
+// src: COMMUNITY 0x00a22660
 // pdb: Controls::Controls | XControls.obj | retail, upstream name already matches, high
 // pdb locals: I, ikeyIdx
-Mgr* Mgr::Controls_ctor(int arg)
+Mgr* Mgr::Controls_Controls(int arg)
 {
     this->m18f4 = 0;
     this->m04 = 0;

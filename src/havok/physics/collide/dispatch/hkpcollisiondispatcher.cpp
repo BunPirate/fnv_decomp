@@ -2501,15 +2501,15 @@ struct FUN_00cfc030_cls
     unsigned short unk06;
     unsigned int unk08;
     void Reset_cfb080();
-    FUN_00cfc030_cls* hkpCollisionDispatcher_ctor(unsigned int defaultCollisionAgent, unsigned int defaultContactMgrFactory);
+    FUN_00cfc030_cls* hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int defaultCollisionAgent, unsigned int defaultContactMgrFactory);
 };
 
 // Initializes the object by zeroing arrays, setting up a reference-counted pointer array from v, and initializing a bit rotation sequence.
 // @fnv 0x00cfc030
-// src: XBOX_RETAIL_PDB 0x00cfc030
+// src: HAVOK_LIB 0x00cfc030
 // pdb: hkpCollisionDispatcher::hkpCollisionDispatcher | hkpCollisionDispatcher.obj | retail, upstream name already matches, high
 // pdb params: defaultCollisionAgent, defaultContactMgrFactory
-FUN_00cfc030_cls* FUN_00cfc030_cls::hkpCollisionDispatcher_ctor(unsigned int defaultCollisionAgent, unsigned int defaultContactMgrFactory)
+FUN_00cfc030_cls* FUN_00cfc030_cls::hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int defaultCollisionAgent, unsigned int defaultContactMgrFactory)
 {
     *(volatile unsigned short*)&unk06 = 1;
 
@@ -4114,15 +4114,15 @@ struct Cls_cfcba0
     int unk2c;
     unsigned short unk30;
     unsigned short unk32;
-    Cls_cfcba0* hkpManifoldPointAddedEvent_ctor(unsigned short contactPointId, Src_cfcba0* contactMgr, int collisionInput, int collisionOutput, int a4, int b, int cp, int gskCache, int a8,
+    Cls_cfcba0* hkpManifoldPointAddedEvent_hkpManifoldPointAddedEvent(unsigned short contactPointId, Src_cfcba0* contactMgr, int collisionInput, int collisionOutput, int a4, int b, int cp, int gskCache, int a8,
                              float projectedVelocity);
 };
 // Sets fields from parameters, stores a1 in unk24, sets unk32 from a1->unk12 when a1->unk08 is zero, and returns this.
 // @fnv 0x00cfcba0
-// src: XBOX_DEBUG_PDB 0x00cfcba0
+// src: HAVOK_LIB 0x00cfcba0
 // pdb: hkpManifoldPointAddedEvent::hkpManifoldPointAddedEvent | hkpReportContactMgr.obj | debug, upstream name already matches, high
 // pdb params: contactPointId, contactMgr, collisionInput, collisionOutput, a, b, cp, gskCache, cpp, projectedVelocity
-Cls_cfcba0* Cls_cfcba0::hkpManifoldPointAddedEvent_ctor(unsigned short contactPointId, Src_cfcba0* contactMgr, int collisionInput, int collisionOutput, int a4, int b, int cp, int gskCache,
+Cls_cfcba0* Cls_cfcba0::hkpManifoldPointAddedEvent_hkpManifoldPointAddedEvent(unsigned short contactPointId, Src_cfcba0* contactMgr, int collisionInput, int collisionOutput, int a4, int b, int cp, int gskCache,
                                      int a8, float projectedVelocity)
 {
     unk00 = a4;

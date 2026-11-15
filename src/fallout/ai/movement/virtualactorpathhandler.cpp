@@ -39,7 +39,7 @@ inline NiPoint3 operator*(float scalar, const NiPoint3& point)
 // Actor.h lacks the player-comparison call at 0x008bc7f0; this adds no actor layout or virtual slots.
 struct PlayerComparisonCall : Actor
 {
-    bool Actor_IsFollowing(PlayerCharacter*);
+    bool Actor_IsFollowing_008bc7f0(PlayerCharacter*);
 };
 
 class UseDoorCalls
@@ -134,7 +134,7 @@ int VirtualActorPathHandler::UpdatePathMovement(float afDeltaT)
     BaseProcess* pprocess = pActor->GetCurrentProcess();
     if (pprocess && pprocess->GetSitSleepState())
         return 0;
-    if (((PlayerS*)g_thePlayer)->IsSleepingOrResting() || ((PlayerComparisonCall*)pActor)->Actor_IsFollowing(g_thePlayer))
+    if (((PlayerS*)g_thePlayer)->IsSleepingOrResting() || ((PlayerComparisonCall*)pActor)->Actor_IsFollowing_008bc7f0(g_thePlayer))
     {
         fdelta = _DAT_01012640 / g_calendar.GetGameTimeScale();
     }

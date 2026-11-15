@@ -1220,7 +1220,7 @@ struct Base2_d632c0
 
 struct Obj_d632c0 : Base1_d632c0, Base2_d632c0
 {
-    Obj_d632c0* hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts);
+    Obj_d632c0* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
 
 // @fnv 0x00d632c0
@@ -1232,7 +1232,7 @@ Base2_d632c0* hkpWorldMemoryViewer_create(int contexts)
     hkMemoryRouter* holder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
     Obj_d632c0* obj = (Obj_d632c0*)reinterpret_cast<hkMemoryAllocator*>(holder->m_heap)->blockAlloc(0x54);
     obj->size = 0x54;
-    obj = obj->hkpWorldMemoryViewer_ctor(0, contexts);
+    obj = obj->hkpWorldMemoryViewer_hkpWorldMemoryViewer(0, contexts);
     return obj;
 }
 

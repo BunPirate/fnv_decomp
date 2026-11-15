@@ -3266,7 +3266,7 @@ struct P09AV
     static bool __cdecl GetFlag(int, unsigned int);
 };
 
-float __cdecl ActorValue_CheckClampDamageModifier(void*, int, float);
+float __cdecl Actor_CheckClampDamageModifier(void*, int, float);
 
 
 // If the flag for aiWhich lacks 0x100, computes a value from apActor and afValue and applies it via ModifyModifier for case 0x10.
@@ -3283,7 +3283,7 @@ void LowProcess::GameModActorValueF(Actor* apActor, int aiWhich, float afValue)
     switch (aiWhich)
     {
     case 0x10: {
-        float f = ActorValue_CheckClampDamageModifier(apActor ? (char*)apActor + 0xa4 : 0, aiWhich, afValue);
+        float f = Actor_CheckClampDamageModifier(apActor ? (char*)apActor + 0xa4 : 0, aiWhich, afValue);
         ((ActorValueModifierList*)((char*)this + 0x94))->ModifyModifier((char)aiWhich, f, ActorValueModifierList::ClampNone);
         break;
     }

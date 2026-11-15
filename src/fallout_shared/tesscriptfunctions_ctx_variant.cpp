@@ -57,7 +57,7 @@ extern Actor* g_thePlayer;
 void Interface_UpdateInventory();
 
 // @fnv 0x005d0300
-// src: XBOX_RETAIL_PDB 0x005d0300
+// src: XBOX_RETAIL_PDB 0x005d0300 (was EXE)
 // pdb: Script::UnEquipItemFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iFlag, pItem, iHideMessageFlag, pactor, abforce, pinventory, pextra, pstring, pitem

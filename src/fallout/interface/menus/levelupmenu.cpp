@@ -319,7 +319,7 @@ struct PC7d : Pad<294>
 };
 extern PC7d* g_thePlayer;
 // @fnv 0x00786570
-// src: XBOX_RETAIL_PDB 0x00786570
+// src: XBOX_RETAIL_PDB 0x00786570 (was COMMUNITY)
 // pdb: LevelUpMenu::SetPerksFunc | LevelUpMenu.obj | retail, object-file run extension, high
 // pdb params: apTile, apPerk
 void LevelUpMenu_SetPerksFunc(Tile* apTile, BGSPerk* apPerk)

@@ -1047,7 +1047,7 @@ struct S_004fee20
 };
 // Returns true when the talking activator is a radio station and the associated check succeeds.
 // @fnv 0x004fee20
-// src: XBOX_RETAIL_PDB 0x004fee20
+// src: XBOX_RETAIL_PDB 0x004fee20 (was COMMUNITY)
 // pdb: BGSTalkingActivator::IsNonPipboyRadioStation | BGSTalkingActivator.obj | retail, object-file run extension, high
 bool S_004fee20::BGSTalkingActivator_IsNonPipboyRadioStation()
 {
@@ -1946,11 +1946,11 @@ extern TESObjectREFR* _g_thePlayer;
 
 // Walks the player's region node list and returns true if any child list contains target.
 // @fnv 0x004f2640
-// src: XBOX_DEBUG_PDB 0x004f2640
+// src: COMMUNITY 0x004f2640
 // pdb: TESRegionDataImposter::IsImposterInActiveRegionList | TESRegionDataImposter.obj | debug, call graph, high
 // pdb params: apImposter
 // pdb locals: pRegionIter, pRegion, pData, pImposterData, pList
-bool __cdecl TESRegionDataImposter_IsImposterInActiveRegionList(RDLItem* apImposter)
+bool __cdecl TESObjectREFR_IsImposterInActiveRegionList(RDLItem* apImposter)
 {
     RDLNode* regionNode = reinterpret_cast<RegionPlayer*>(_g_thePlayer)->PlayerCharacter_GetAllOccupiedRegions();
     RDLItem* listEntry;

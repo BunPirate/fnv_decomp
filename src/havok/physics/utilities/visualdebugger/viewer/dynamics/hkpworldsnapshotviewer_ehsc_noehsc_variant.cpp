@@ -94,7 +94,7 @@ extern int DAT_010d1774;
 extern int DAT_010d1764;
 struct SubObject
 {
-    void hkStreamStatisticsCollector_ctor(int vtblReg, int memSize);
+    void Init(int vtblReg, int memSize);
 };
 struct FUN_00d63280_cls
 {
@@ -111,7 +111,7 @@ struct FUN_00d63280_cls
     SubObject m_sub28;
 
     void Setup(int contexts);
-    FUN_00d63280_cls* hkpWorldMemoryViewer_ctor(int vtlbReg, int contexts);
+    FUN_00d63280_cls* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
 
 

@@ -57,14 +57,14 @@ template <> int BSStringT<char>::Equals(const char* s)
 struct FUN_007002d0_Class
 {
     void __thiscall FUN_00700480(int, int);
-    FUN_007002d0_Class* __thiscall BGSMenuPacker_ctor();
+    FUN_007002d0_Class* __thiscall BGSMenuPacker_BGSMenuPacker();
 };
 
 // Calls FUN_00700480 with 0 and 1, clears the byte at offset 0x21, and returns this.
 // @fnv 0x007002d0
-// src: XBOX_RETAIL_PDB 0x007002d0
+// src: COMMUNITY 0x007002d0
 // pdb: BGSMenuPacker::BGSMenuPacker | BGSMenuPacker.obj | retail, upstream name already matches, high
-FUN_007002d0_Class* __thiscall FUN_007002d0_Class::BGSMenuPacker_ctor()
+FUN_007002d0_Class* __thiscall FUN_007002d0_Class::BGSMenuPacker_BGSMenuPacker()
 {
     FUN_00700480(0, 1);
     *(char*)((char*)this + 0x21) = 0;
@@ -327,7 +327,7 @@ void Tile::SetSpeechChallengeFailure_0071aa60(bool value)
 extern "C" void __cdecl FUN_00ecb849(int, int, int);
 
 // @fnv 0x0071cfd0
-// src: XBOX_DEBUG_PDB 0x0071cfd0
+// src: XBOX_DEBUG_PDB 0x0071cfd0 (was COMMUNITY)
 // pdb: _tcsncmp | MenuConsole.obj | debug, call graph, high
 // pdb params: _s1, _s2, _n
 void __cdecl _tcsncmp(int _s1, int _s2, int _n)
@@ -516,7 +516,7 @@ extern "C" void* __cdecl InterfaceManager_GetSingleton();
 
 // If FUN_004b7210 returns an object whose GetKey is nonzero, calls FUN_009bdf60 on it with arg.
 // @fnv 0x00703310
-// src: XBOX_DEBUG_PDB 0x00703310
+// src: XBOX_DEBUG_PDB 0x00703310 (was COMMUNITY)
 // pdb: Interface::SetPickREFR | Interface.obj | debug, call graph, high
 // pdb params: apRef
 void Interface_SetPickREFR(int apRef)
@@ -624,7 +624,7 @@ namespace fnv_00707b30 {
 InterfaceManager* InterfaceManager_GetSingleton();
 void InterfaceManager_IsCurrentRenderedMenuTopmost();
 // @fnv 0x00707b30
-// src: XBOX_DEBUG_PDB 0x00707b30
+// src: XBOX_DEBUG_PDB 0x00707b30 (was COMMUNITY)
 // pdb: Interface::IsCurrentRenderedMenuTopmost | Interface.obj | debug, call graph, high
 void Interface_IsCurrentRenderedMenuTopmost()
 {
@@ -1959,7 +1959,7 @@ struct ConsoleText
 };
 // Formats the text, appends it to the console line queue, wraps it into lines using the console font, and trims overflow lines.
 // @fnv 0x0071d0a0
-// src: XBOX_DEBUG_PDB 0x0071d0a0
+// src: XBOX_DEBUG_PDB 0x0071d0a0 (was COMMUNITY)
 // pdb: MenuConsole::PrintLine | MenuConsole.obj | debug, call graph (shared callers), high
 // pdb params: apString, axList
 // pdb locals: pstring, iwidth, pstring_start, xstring, inum_lines, iheight, b, a, bat_end, psave_me

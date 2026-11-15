@@ -12,7 +12,7 @@ int __cdecl Object_GetCurrentState() {
     return currentState;
 }
 
-struct Built { int field00; short field04; int field08; int __thiscall hkpToiContactPointViewer_ctor(int); };
+struct Built { int field00; short field04; int field08; int __thiscall hkpToiContactPointViewer_hkpToiContactPointViewer(int); };
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 // Allocates a 0x2c-byte Built via the global allocator, sets its field04 to 0x2c, calls FUN_00d682d0(arg), and returns result+8 or 0.
 // @fnv 0x00d686b0
@@ -26,7 +26,7 @@ int __cdecl hkpToiContactPointViewer_create(int contexts)
     typedef void* (__thiscall* AllocateFunction)(hkMemoryAllocator*, int);
     Built* pBuilt = (Built*)(*reinterpret_cast<AllocateFunction**>(allocator))[1](allocator, 0x2c);
     pBuilt->field04 = 0x2c;
-    int result = pBuilt->hkpToiContactPointViewer_ctor(contexts);
+    int result = pBuilt->hkpToiContactPointViewer_hkpToiContactPointViewer(contexts);
     if (result) return result + 8;
     return 0;
 }
@@ -111,15 +111,15 @@ struct FUN_00d682d0_cls {
     int unk24;
     void* m_vtbl28;
 
-    void* hkpToiContactPointViewer_ctor(int contexts);
+    void* hkpToiContactPointViewer_hkpToiContactPointViewer(int contexts);
 };
 
 // Calls FUN_00ddccb0 with a1, then stores five DAT_ pointers into this at offsets 0x28, 0x00, 0x08, 0x20 and 0x28, and returns this.
 // @fnv 0x00d682d0
-// src: XBOX_RETAIL_PDB 0x00d682d0
+// src: HAVOK_LIB 0x00d682d0
 // pdb: hkpToiContactPointViewer::hkpToiContactPointViewer | hkpToiContactPointViewer.obj | retail, upstream name already matches, high
 // pdb params: contexts
-void* FUN_00d682d0_cls::hkpToiContactPointViewer_ctor(int contexts)
+void* FUN_00d682d0_cls::hkpToiContactPointViewer_hkpToiContactPointViewer(int contexts)
 {
     FUN_00ddccb0(contexts);
     *(void* volatile*)((char*)this + 0x28) = (void*)&DAT_0104dd7c;
