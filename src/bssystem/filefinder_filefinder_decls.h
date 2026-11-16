@@ -31,7 +31,7 @@ extern MemoryManager g_memoryManager;
 class ArchiveManager
 {
   public:
-    static NiFile* ArchiveManager_GetFile(const char*, unsigned int, unsigned int);
+    static NiFile* GetFile(const char*, unsigned int, unsigned int);
 };
 
 #endif

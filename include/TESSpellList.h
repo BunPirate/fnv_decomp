@@ -33,7 +33,7 @@ public:
     void Save();
     void TESSpellList_AddSpell_0048d210(TESLevSpell* apSpellIn);
     void TESSpellList_AddSpell_0048d290(unsigned int spellID);
-    void TESSpellList_Save();
+    void TESSpellList_SaveSubRecord();
     BSSimpleList<InventoryStackRecord*>* GetOffsetC();
     void LoadGame(BGSLoadFormBuffer* buffer);
     static bool RemoveSpell(BSFileEntry* spell);

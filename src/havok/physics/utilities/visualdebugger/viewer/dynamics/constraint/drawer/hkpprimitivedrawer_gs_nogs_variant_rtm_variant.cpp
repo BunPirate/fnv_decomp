@@ -60,7 +60,7 @@ void CpuObjectDerived::ProcessEntries_00e10a20(const hkVector4* center, hkVector
     perp->normalize3();
     axis->normalize3();
     hkRotation rot;
-    rot.hkRotation_setAxisAngle(axis, startAngle);
+    rot.setAxisAngle(axis, startAngle);
     __m128 rad4 = _mm_load_ss(&radius);
     rad4 = _mm_shuffle_ps(rad4, rad4, 0);
     hkVector4 cur;
@@ -68,7 +68,7 @@ void CpuObjectDerived::ProcessEntries_00e10a20(const hkVector4* center, hkVector
     cur.hkVector4_setRotatedDir(&rot, &cur);
     cur.m_vComponents = _mm_add_ps(center->m_vComponents, cur.m_vComponents);
     float stepAngle = (endAngle - startAngle) / numSegments;
-    rot.hkRotation_setAxisAngle(axis, stepAngle);
+    rot.setAxisAngle(axis, stepAngle);
     for (int i = 0; i < numSegments; ++i)
     {
         hkVector4 next;

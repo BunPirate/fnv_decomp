@@ -359,7 +359,7 @@ void FUN_00aa5e30_shell::CommitMemory(char* apBuffer, unsigned int aiBufferSize,
     while (!(bool)(int)(VirtualAlloc(apBuffer + aiBufferSize, aiAdditionalSize, 0x1000, 4) != 0))
     {
         bool ballowSystemAlloc = true;
-        imemoryPass = g_memoryManager.MemoryManager_ProcessMemoryProblem(0, imemoryPass, &ballowSystemAlloc);
+        imemoryPass = g_memoryManager.ProcessMemoryProblem(0, imemoryPass, &ballowSystemAlloc);
     }
 }
 
@@ -667,7 +667,7 @@ char* FUN_00aa5ec0_shell::ScrapHeapManager_AllocateBuffer(unsigned int aiInitial
     while (!(bool)(int)(VirtualAlloc(pbuffer, aiInitialSize, 0x1000u, 4) != 0))
     {
         bool ballowSystemAlloc = true;
-        imemoryPass = g_memoryManager.MemoryManager_ProcessMemoryProblem(0, imemoryPass, &ballowSystemAlloc);
+        imemoryPass = g_memoryManager.ProcessMemoryProblem(0, imemoryPass, &ballowSystemAlloc);
     }
     return pbuffer;
 }

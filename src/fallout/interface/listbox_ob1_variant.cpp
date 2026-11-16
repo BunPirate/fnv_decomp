@@ -2019,12 +2019,12 @@ class AGListItem
     }
     static void operator delete(void* p);
 };
-class RefValueAction : public AGListItem // src: EXE 0x01094c44 (vtable; old: AGValueItem)
+class Tile_RefValueAction : public AGListItem // src: EXE 0x01094c44 (vtable; old: AGValueItem)
 {
   public:
-    virtual ~RefValueAction();
+    virtual ~Tile_RefValueAction();
     TileValue* m_pIntegerData;
-    RefValueAction()
+    Tile_RefValueAction()
     {}
 };
 void __cdecl Tile_AddReaction(TileValue* apRefVal, void* apDependantVal);
@@ -2035,7 +2035,7 @@ class AGOwner
     int unk04;
     int unk08;
     int unk0C;
-    RefValueAction* m_pHead;
+    Tile_RefValueAction* m_pHead;
     void Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait);
 };
 
@@ -2046,14 +2046,14 @@ class AGOwner
 // pdb locals: ptail, pnewAction
 void AGOwner::Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait)
 {
-    RefValueAction* pLast = m_pHead;
-    RefValueAction* pItem = new RefValueAction;
+    Tile_RefValueAction* pLast = m_pHead;
+    Tile_RefValueAction* pItem = new Tile_RefValueAction;
     pItem->m_iIndex = aiActionType;
     pItem->m_pIntegerData = (TileValue*)apSourceTile->GetOrCreateTraitValue(aeSourceTrait);
     if (pLast)
     {
         while (pLast->m_pNext)
-            pLast = (RefValueAction*)pLast->m_pNext;
+            pLast = (Tile_RefValueAction*)pLast->m_pNext;
         pLast->m_pNext = pItem;
     }
     else

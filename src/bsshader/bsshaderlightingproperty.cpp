@@ -2198,11 +2198,11 @@ void LightSortOwner::SortShadowSceneLights(int aiMemoryContext)
         NiTListItem<ShadowSceneLight*>* pkNode = (NiTListItem<ShadowSceneLight*>*)kIter;
         ShadowSceneLight* pkLight = m_kShadowSceneLights.GetNext(kIter);
         NiTListIterator kTestIter = m_kShadowSceneLights.GetHeadPos();
-        float fKey = pkLight->ShadowSceneLight_GetLuminanceToBound(aiMemoryContext);
+        float fKey = pkLight->GetLuminanceToBound(aiMemoryContext);
         while (kTestIter != pkNode && kTestIter)
         {
             NiTListItem<ShadowSceneLight*>* pkTest = (NiTListItem<ShadowSceneLight*>*)kTestIter;
-            if (fKey < m_kShadowSceneLights.GetNext(kTestIter)->ShadowSceneLight_GetLuminanceToBound(aiMemoryContext))
+            if (fKey < m_kShadowSceneLights.GetNext(kTestIter)->GetLuminanceToBound(aiMemoryContext))
             {
                 if (pkNode != pkTest)
                 {

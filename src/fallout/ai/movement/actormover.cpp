@@ -1105,7 +1105,7 @@ void __cdecl SetupPathingRequest(Actor* apActor, PathingRequest* apRequest, NiPo
                                  void* apAvoidNodes)
 {
     PathingLocation pathingLocation(aGoalLocation, apCell, apWorldSpace);
-    apRequest->PathingRequest_SetOrigin(apActor);
+    apRequest->InitFromActor(apActor);
     apRequest->SetDestination(&pathingLocation);
     if (afTargetRadius <= 0.0)
     {

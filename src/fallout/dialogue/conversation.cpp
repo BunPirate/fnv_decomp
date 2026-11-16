@@ -239,7 +239,7 @@ void Conversation::LoadGameBGS_0083c330(BGSLoadFormBuffer* buffer)
     for (; index < currentItem; ++index)
     {
         DialogueItem* item = new DialogueItem;
-        item->DialogueItem_LoadGame(buffer);
+        item->LoadGame(buffer);
         lDialogueItems.AddTail(item);
     }
 

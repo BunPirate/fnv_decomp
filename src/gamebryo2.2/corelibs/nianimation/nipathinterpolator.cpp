@@ -695,7 +695,7 @@ void NiPathInterpolator::GetPercentLoc(float fPercent, unsigned int& uiI1, unsig
         float fError = NiPathInterpolator_PathLength(i1, i2, fLocalTime) - fAccumulatedDistance;
         if ((float)fabs(fError) <= DAT_01032980)
             break;
-        fLocalTime = (float)(fLocalTime - fError / NiPathInterpolator_PathSpeed(i1, i2, fLocalTime));
+        fLocalTime = (float)(fLocalTime - fError / PathSpeed(i1, i2, fLocalTime));
     }
     uiI1 = i1;
     uiI2 = i2;
@@ -961,13 +961,13 @@ __declspec(noinline) FV3 PathBasis::FUN_0053d1a0(const FV3& pt) const
 
 // Computes the path basis matrix at a given time by interpolating position, tangent, and curvature, applying m_fLastPercent, axis, and bank adjustments.
 // @fnv 0x00a3de50
+}  // namespace fnv_00a3de50
+using namespace fnv_00a3de50;
+
 // src: XBOX_RETAIL_PDB 0x00a3de50
 // pdb: NiPathInterpolator::CalcRefFrame | NiPathInterpolator.obj | retail, object-file run extension, high
 // pdb params: ui1, ui2, fNormTime, kRefFrame
 // pdb locals: uiNumPathKeys, pkPathKeys, kTmp2, kTm, kNormal, ePathType, kBinormal, ucSize, kTmp, fCurvature, kTangent, fA1, kNormal1, fA0, kTmpTan, fCurvature1, ui2a, ui1a, right, up, kTemp, kBankMat, fBankAmt
-}  // namespace fnv_00a3de50
-using namespace fnv_00a3de50;
-
 void __thiscall NiPathInterpolator::CalcRefFrame(unsigned int ui1, unsigned int ui2, float fNormTime, NiMatrix3* kRefFrame)
 {
     NiMatrix3* out = kRefFrame;

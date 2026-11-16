@@ -91,7 +91,7 @@ class VATS
     void Update(int mode, bool force);
     float GetModeTimeMultiplier();
     void QuitVATSPlayback(bool abForceQuit, bool abFinishCommandPlayback);
-    void VATS_QueueAction(VATSCommand*);
+    void QueueAction(VATSCommand*);
     void FUN_009c6c30(int, bool);
     void ForceTargetKillShot(TESObjectREFR*, int);
     void UpdateVATSLight(Actor*);
@@ -100,7 +100,7 @@ class VATS
     Node* FUN_006815c0();
     void FUN_0063f7b0();
     void RemoveCommandsForTarget(TESObjectREFR*);
-    bool VATS_IsMeleeCommand(VATSCommand*);
+    bool IsMeleeCommand(VATSCommand*);
     bool VATS_GetLineOfSight(VATSCommand*);
     void UpdateMeleeAttack(VATSCommand*);
     void FreeHeadAction();
@@ -660,7 +660,7 @@ void VATS::UpdateMeleeAttack(VATSCommand* apCommand)
     if (apCommand->m_ucFirstActionCode)
     {
         if ((TemporaryEffect*)DAT_011f21f0 == DAT_011f21e8 || (TemporaryEffect*)DAT_011f21f0 == DAT_011f21ec ||
-            this->VATS_IsMeleeCommand(apCommand))
+            this->IsMeleeCommand(apCommand))
         {
             if (apCommand->pTarget)
             {
@@ -812,7 +812,7 @@ void VATS::UpdateVATSLight(Actor* apVictim)
                     NiPoint3 _kSpawn = *(const NiPoint3*)((const Actor*)pOwner)->GetPos() + NiPoint3(0.0f, 0.0f, ((const Actor*)pOwner)->GetActorHeight());
 
                     float fScaleTmp =
-                        ((ShadowSceneNode*)NiAdditionalGeometryData::GetShadowSceneNodeForIndex(0U))->ShadowSceneNode_GetViewLuminanceAtPoint(_kSpawn, &iOutVal, &fA9, &fB_, *(const NiPoint3*)((const Actor*)g_pkPlayer9c9)->GetPos(),
+                        ((ShadowSceneNode*)NiAdditionalGeometryData::GetShadowSceneNodeForIndex(0U))->GetViewLuminanceAtPoint(_kSpawn, &iOutVal, &fA9, &fB_, *(const NiPoint3*)((const Actor*)g_pkPlayer9c9)->GetPos(),
                                                       reinterpret_cast<LightTarget9c9*>(spVATSLight.operator->())->ShadowSceneLight_GetLight()) *
                         100.0;
 
@@ -909,7 +909,7 @@ extern int DAT_011f21b8;
 // pdb locals: panim, pseq, bnewCamera, deltaPos
 void VATS::HandleCommand(VATSCommand* command)
 {
-    if (VATS_IsMeleeCommand(command))
+    if (IsMeleeCommand(command))
     {
         FUN_009c95e0_Anim* animation = (FUN_009c95e0_Anim*)((const Actor*)DAT_011f21f0)->GetAnimation();
         if (DAT_011f21b8 == 0)
@@ -1000,7 +1000,7 @@ void VATS::ForceTargetKillShot(TESObjectREFR* apTarget, int eDamageLimb)
     }
     cmd->m_pActionObject->SetFlag(0x10, true);
     DAT_011f21f0 = g_thePlayer;
-    VATS_QueueAction(cmd);
+    QueueAction(cmd);
     FUN_009c6c30(4, false);
 }
 

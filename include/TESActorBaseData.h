@@ -167,9 +167,9 @@ public:
     unsigned short GetSaveSize(unsigned int flags);
     void SaveGame(BGSSaveFormBuffer* buffer);
     void SaveGame(unsigned int aiFlags);
-    void LoadGame(BGSLoadFormBuffer* buffer);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void LoadGame(unsigned int, unsigned int);
-    void SetPCFactionFlags(int flags);
+    void SetPCFactionFlags(int aeflag);
     bool HasFaction(TESFaction* faction);
     void ClearFactionList();
     void CopyFactionList(TESActorBaseData* source);

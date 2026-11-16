@@ -773,6 +773,7 @@ inline void BSMultiBoundShape::BSMultiBoundOBB_GetVertices(NiPoint3* apPoints)
     apPoints[7] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX + axisY + axisZ;
 }
 
+// src: XBOX_DEBUG_PDB 0x00c37e00
 inline void BSMultiBoundShape::BSMultiBoundOBB_GetPlanes(NiPlane* apPlanes)
 {
     for (int i = 0; i < 3; i++)

@@ -1000,7 +1000,7 @@ void hkp3AxisSweep::calcContentStatistics(hkStatisticsCollector* collector, cons
     addArray(collector, "Axis", m_axis2);
 
     if (m_iMarkerCount != 0) {
-        collector->hkStatisticsCollector_addNormalChunk("Markers", m_pOverlappingMarkerInfo, m_iMarkerCount * sizeof(OverlappingMarkerInfo), 0);
+        collector->addNormalChunk("Markers", m_pOverlappingMarkerInfo, m_iMarkerCount * sizeof(OverlappingMarkerInfo), 0);
     }
 
     for (int i = 0; i < m_iMarkerCount; ++i) {

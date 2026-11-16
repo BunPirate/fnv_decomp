@@ -5183,7 +5183,7 @@ void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 // pdb: hkpConstraintChainUtil::getAdjointEntities | hkpConstraintChainUtil.obj | retail, object-file gap fill, high
 // pdb params: allConstraints, entity, entitiesOut, constraintsOut
 // pdb locals: instance
-void __cdecl hkpConstraintChainUtil_getAdjointEntities(ChainArray<void*>* allConstraints, void* entity, ChainArray<void*>* entitiesOut, ChainArray<void*>* constraintsOut) { // src: XBOX_RETAIL_PDB 0x00e5b830
+void __cdecl hkpConstraintChainUtil_getAdjointEntities(ChainArray<void*>* allConstraints, void* entity, ChainArray<void*>* entitiesOut, ChainArray<void*>* constraintsOut) {
     for (int i = 0; i < allConstraints->m_iElementCount; ++i) {
         ChainElem* elem = (ChainElem*)allConstraints->m_data[i];
         void* a = elem->m_link14;
@@ -5555,7 +5555,7 @@ char* CheckPointsWithinThreshold(char*,int,int,ElevationArray<KnotVector>*,Eleva
 // pdb: hkaNURBS::LeastSquaresFit | hkaNURBS.obj | retail, object-file gap fill, high
 // pdb params: n, p, P, U, m, Q, ub, numericalTolerance, errorBound
 // pdb locals: AA, status, PP, b, xx, assertBuf, ostr, S
-char* hkaNURBS_LeastSquaresFit(char* result,int n,int degree,ElevationArray<KnotVector>* output,ElevationArray<float>* knots,int m,ElevationArray<KnotVector>* points,ElevationArray<float>* params,float tolerance,float tolerance2) { // src: XBOX_RETAIL_PDB 0x00e57620
+char* hkaNURBS_LeastSquaresFit(char* result,int n,int degree,ElevationArray<KnotVector>* output,ElevationArray<float>* knots,int m,ElevationArray<KnotVector>* points,ElevationArray<float>* params,float tolerance,float tolerance2) {
  if(n>m) {*result=0;return result;}
  SparseGrid grid;
  grid.ResetSpawnArrays(m-1,n-1);
@@ -6232,7 +6232,7 @@ typedef FUN_00cf3ea0 Se5b160_Instance;
 // pdb: hkpConstraintUtils::convertToPowered | hkpConstraintUtils.obj | retail, string-set bridge, high
 // pdb params: originalConstraint, constraintMotor, enableMotors
 // pdb locals: assertBuf, ostr
-Se5b160_Instance* __cdecl hkpConstraintUtils_convertToPowered(const Se5b160_Instance* __restrict originalConstraint, Se5b160_Motor* constraintMotor, bool enableMotors) { // src: XBOX_RETAIL_PDB 0x00e5b160
+Se5b160_Instance* __cdecl hkpConstraintUtils_convertToPowered(const Se5b160_Instance* __restrict originalConstraint, Se5b160_Motor* constraintMotor, bool enableMotors) {
     Se5b160_Instance* newConstraint = 0;
     Se5b160_Data* constraintData = originalConstraint->m_data;
     Se5b160_Entity* entityA = originalConstraint->getEntityA();

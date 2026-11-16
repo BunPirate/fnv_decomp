@@ -131,7 +131,7 @@ class NiAVObject : public NiObjectNET
     NiPoint3 GetWorldTranslation();
     const NiTransform& GetWorldTransform() const;
     float GetFloatAt64();
-    float NiAVObject_GetWorldBoundRadius();
+    float GetWorldBoundRadius();
     void SetRotation(const NiMatrix3& rotation);
     void SetLocalRotation(const NiMatrix3& rotation);
     void SetLocalRotation(const H::NiMatrix3& rotation);

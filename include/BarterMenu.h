@@ -67,7 +67,7 @@ public:
     void UpdateLists(int);
     void UpdateLists(TESBoundObject*);
     void CompleteTransaction();
-    void BarterMenu_SetFilterModeTitle(int);
+    void SetFilterModeTitle(int);
     void HandleTileClick(int, Tile*);
     void UpdateTileState(int, void*);
     bool HandleAction(int, int);

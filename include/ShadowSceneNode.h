@@ -90,7 +90,7 @@ class ShadowSceneNode : public NiNode
     void RemoveSceneObject(NiNode* object, bool flag);
     void UpdateShadowLights();
     float CalculateLightingAtPoint(NiPoint3 point, int& count, float& ambient, float& diffuse, NiLight* ignore);
-    float ShadowSceneNode_GetViewLuminanceAtPoint(NiPoint3 kPos, int* piOut, float* pfA, float* pfB, NiPoint3 kPos2, NiAVObject* pkLight);
+    float GetViewLuminanceAtPoint(NiPoint3 kPos, int* piOut, float* pfA, float* pfB, NiPoint3 kPos2, NiAVObject* pkLight);
     void SetFogPropertyForIndex(BSFogProperty* property);
     ShadowSceneLight* GetShadowSceneLight(NiLight* light, bool flag);
     void SetCreatureType(unsigned char type);

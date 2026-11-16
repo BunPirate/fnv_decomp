@@ -43,7 +43,7 @@ class ContainerItemExtra
     unsigned int pOwnerForm[3]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ContainerItemExtra();
     void ContainerItemExtra_AdjustHealthPercent(float);
-    void ContainerItemExtra_InitItem(TESForm*);
+    void InitItem(TESForm*);
 };
 struct LeveledObject
 {
@@ -415,7 +415,7 @@ void TESLeveledList::InitItem(TESForm* apOwner)
                 resolveState.node = resolveState.node->GetNext();
             }
             if (resolveState.entry && resolveState.entry->m_pExtraData)
-                resolveState.entry->m_pExtraData->ContainerItemExtra_InitItem(apOwner);
+                resolveState.entry->m_pExtraData->InitItem(apOwner);
         }
         if (pChanceGlobal)
         {
@@ -621,7 +621,7 @@ void TESLeveledList::CalculateCurrentFormListForRef(TESObjectREFR* apRef, TESCon
 
     float fLevelMult = 1.0f;
     int iallbelowforce = 0;
-    apRef->GetExtraData()->ExtraDataList_GetLevCreaMultiplier(fLevelMult, iallbelowforce);
+    apRef->GetExtraData()->GetLevCreaMultiplier(fLevelMult, iallbelowforce);
 
     unsigned int icalclevel = 1;
     icalclevel = apRef->GetReferenceLevel(true);

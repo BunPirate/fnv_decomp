@@ -1767,7 +1767,7 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 // pdb: class FalloutAudioMedia, size 0x1, 0 members
 struct FalloutAudioMedia
 {
-    static void __cdecl FalloutAudioMedia_Update();
+    static void __cdecl Update();
 };
 struct S78080
 {
@@ -1782,7 +1782,7 @@ S78080* __stdcall MemoryLevelManager_GetSingleton(int);
 void __cdecl ModelLoader_LoadQueuedPriorityCallback()
 {
     MemoryLevelManager_GetSingleton(0)->MemoryLevelManager_CheckMemoryLevel();
-    FalloutAudioMedia::FalloutAudioMedia_Update();
+    FalloutAudioMedia::Update();
     if (g_TESSaveLoadGame->GetLoading() && g_TESSaveLoadGame->GetLoading())
         g_TESSaveLoadGame->TESSaveLoadGame_StartLoadingSequence();
 }

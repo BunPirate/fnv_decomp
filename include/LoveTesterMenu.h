@@ -187,7 +187,7 @@ public:
     LoveTesterMenu();
     bool InitializeCollection(int* missingIndex);
     void Setup();
-    void* LoveTesterMenu_InitCamera();
+    void* InitCamera();
     void TurnPage(int);
     bool TurnPage(bool bForward);
     bool HandleKeyInput(int key);

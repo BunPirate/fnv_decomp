@@ -172,8 +172,8 @@ class PathManager
   public:
     static PathManager* GetRandomGenerator();
     void PathManager_Resume();
-    bool PathManager_QIdle();
-    void PathManager_CancelCurrentPathsAndPause();
+    bool QIdle();
+    void CancelCurrentPathsAndPause();
 };
 
 extern ExteriorCellLoader* DAT_011c9618;
@@ -496,7 +496,7 @@ void BGSSaveLoadManager::EndLoadGame()
 // pdb locals: bmultiThreadedAudio, i
 void BGSSaveLoadManager::StartLoadGame()
 {
-    DAT_011c9618->ExteriorCellLoader_ClearData();
+    DAT_011c9618->ClearData();
     g_modelLoader->CancelAllFiles_00448420();
     Script_ClearButtonPressed();
     Script_ClearOptimizations();
@@ -516,14 +516,14 @@ void BGSSaveLoadManager::StartLoadGame()
     if (g_thePlayer)
         reinterpret_cast<VATS*>(g_thePlayer)->Update(2, true);
     g_TES->RefreshWorldState(1, 0, 0);
-    while (!PathManager::GetRandomGenerator()->PathManager_QIdle())
+    while (!PathManager::GetRandomGenerator()->QIdle())
     {
         // Preserve the original receiver in ECX when calling the shared static declaration.
         reinterpret_cast<void (__fastcall*)(PathManager*)>(&ScriptLocals::ProcessPendingTasks)(
             PathManager::GetRandomGenerator());
         NavMeshObstacleManager::GetSingleton()->Update();
     }
-    PathManager::GetRandomGenerator()->PathManager_CancelCurrentPathsAndPause();
+    PathManager::GetRandomGenerator()->CancelCurrentPathsAndPause();
 }
 
 // Reads the save file version and returns false after showing an error message if it is not 47 or 48.

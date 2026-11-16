@@ -31,7 +31,7 @@ public:
     };
 
     NiMemStream();
-    NiMemStream(void* buffer, unsigned int size);
+    NiMemStream(void* pBuffer, unsigned int uiSize);
     virtual ~NiMemStream();
     virtual operator bool();
     virtual void Seek(int iNumBytes);

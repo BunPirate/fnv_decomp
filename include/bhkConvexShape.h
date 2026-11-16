@@ -15,7 +15,7 @@ public:
     virtual ~bhkConvexShape();
 
     virtual const NiRTTI* GetRTTI() const;
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& arStream);
     virtual void SaveBinary(NiStream& stream);
     virtual void GetViewerStrings(NiViewerStringsArray* viewerStrings);
 

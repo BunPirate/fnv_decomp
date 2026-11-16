@@ -29,7 +29,7 @@ public:
     void FUN_005e4bc0();
     void ResetFormData();
     void ClearBodyParts();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void AddBodyPart(BGSBodyPart* apPart);
     BGSBodyPart* GetPart(unsigned int limbIndex);
     BGSBodyPart* GetValueByIndex(int aeIndex);

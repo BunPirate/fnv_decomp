@@ -73,7 +73,7 @@ public:
     void* AdvanceCounter();
     PathingInfoEntry* GetPathingInfoEntry(PathingInfoEntry&);
     int AppendPathNodeLocations(int, BSSimpleArray<PathingLocation, 1024>*, TESObjectREFR*);
-    bool PathBuilder_FindEntryPoint(PacketNodeRecord*, PacketNodeRecord*, PathingLocation&);
+    bool FindEntryPoint(PacketNodeRecord*, PacketNodeRecord*, PathingLocation&);
     int AppendNearbyPathLocations(PathingLocation*, BSSimpleArray<PathingLocation, 1024>*, int, TESObjectREFR*);
     void* GetElementAddress30_006e8f40(void*);
     void* BSSimpleArray_VirtualPathingNode_1024_GetAt(void* a1);

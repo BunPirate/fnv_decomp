@@ -3113,11 +3113,11 @@ struct SubX
 
 // Iterates m_38 and m_3C, calling FUN_0054ba00 on non-null entries accepted by FUN_004511e0, then calls FUN_00628da0 on the result of m_C0.FUN_00559450().
 // @fnv 0x00459750
+} // namespace fnv_00459750
 // src: XBOX_RETAIL_PDB 0x00459750
 // pdb: TES::FinishLoadGame | TES.obj | retail, call graph, high
 // pdb params: apLoadGameBuffer
 // pdb locals: i
-} // namespace fnv_00459750
 void TES::FinishLoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     using namespace fnv_00459750;

@@ -385,7 +385,7 @@ bool ScriptRunner::EvaluateLine(Script* apScript, const SCRIPT_OUTPUT aeExp, TES
                             for (short valueIndex = 0; valueIndex < valueCount; valueIndex++)
                             {
                                 double expressionValue;
-                                Script::Script_GetValue(expressionValue, data, offset, apFunctionOwner, m_currentContainer, apScript,
+                                Script::GetValue(expressionValue, data, offset, apFunctionOwner, m_currentContainer, apScript,
                                                  m_currentVars, true);
                             }
                             offset += 4;

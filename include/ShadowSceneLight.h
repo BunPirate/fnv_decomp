@@ -86,5 +86,5 @@ public:
     bool BoundWithinLightRadius(NiPoint3* apBound, NiLight* light, float afRadiusScale);
     bool TestSphereFrustum(const NiSphere& sphere);
     float ComputeLightAttenuation(NiPoint3 point, NiLight* light);
-    float ShadowSceneLight_GetLuminanceToBound(int apBound);
+    float GetLuminanceToBound(int apBound);
 };

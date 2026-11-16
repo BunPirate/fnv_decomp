@@ -110,9 +110,9 @@ void TESActorBase::Reset3DForLoadedActors(bool acResetFlags)
     mobIter.pActorBase = this;
     mobIter.cFlags = acResetFlags;
     mobIter.FUN_006ecd40(0);
-    g_kProcessLists.ProcessLists_IterateMobs(&mobIter);
+    g_kProcessLists.IterateMobs(&mobIter);
     mobIter.FUN_006ecd40(1);
-    g_kProcessLists.ProcessLists_IterateMobs(&mobIter);
+    g_kProcessLists.IterateMobs(&mobIter);
     if (g_thePlayer->GetActorBase() == this)
     {
         if (g_thePlayer->GetProcess())

@@ -37,9 +37,9 @@ class BSDistantTreeShader : public BSShader
     NiColorA m_kColor3;                                      // +0xCC, 16 bytes
     NiColorA m_kColor4;                                      // +0xDC, 16 bytes
     NiColorA m_kColor5;                                      // +0xEC, 16 bytes
-    virtual BSShader* BSDistantTreeShader_CreateShader();
+    virtual BSShader* CreateShader();
     void InitializeShaderData();
-    void BSDistantTreeShader_CreateConstantMaps();
+    void CreateConstantMaps();
     BSDistantTreeShader* FUN_00bb6c30(NiD3DVertexDeclaration*);
     void BSDistantTreeShader_LoadStagesAndPasses();
     // const NiRTTI* __cdecl BSDistantTreeShader::*()

@@ -467,7 +467,7 @@ void Actor::UpdateMovement_00886cb0(float afDelta, int aiUnused)
     {
         NiPoint3 kTarget = DAT_011f426c;
         int iTargetFlags = 0;
-        if (!FUN_vt4b4() && !Actor_GetKnockedDownMovementDelta(&kTarget))
+        if (!FUN_vt4b4() && !GetKnockedDownMovementDelta(&kTarget))
         {
             iTargetFlags = ((Holder*)pActorMover)->FUN_vt20();
             if (!((Holder*)pActorMover)->FUN_vt24(&kTarget))

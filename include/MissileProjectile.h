@@ -25,7 +25,7 @@ public:
     virtual unsigned int GetProjectileType();
     virtual void Do3DLoaded();
     virtual void HandleTracer();
-    virtual void UpdateProjectile(float timeDelta);
+    virtual void UpdateProjectile(float afDelta);
     virtual bool OnActorHit(Actor* actor, bool silent);
     virtual bool OnCollision(Actor* actor, const NiPoint3& contactPoint,
                              const NiPoint3& contactNormal, hkpCollidable* collidable,
@@ -43,7 +43,7 @@ public:
     void* FUN_009b7a20(unsigned int flags);
     void FUN_009b7bc0();
     void UpdateProjectile_009b8030(float afDelta);
-    void MissileProjectile_DetermineImpactResult();
+    void DetermineImpactResult();
     bool AddImpact_009b8900(int apCollidee, int aContactPoint, int aContactNormal, Collider890* apTargetCollidable,
                       int aiKey, int aeForceMaterial);
     void ProcessImpale();

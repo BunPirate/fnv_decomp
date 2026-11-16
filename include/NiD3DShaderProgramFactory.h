@@ -21,8 +21,8 @@ public:
 
     char* GetFirstName(void**);
     const char* GetNextName(void*&);
-    void NiD3DShaderProgramFactory_AddProgramDirectory(const char* pacDirectory);
-    void NiD3DShaderProgramFactory_RemoveProgramDirectory(const char*);
+    void AddProgramDirectory(const char* pacDirectory);
+    void RemoveProgramDirectory(const char*);
     void RemoveDirectoryEntry(const char* pcDirectory);
     ShaderBufferRecord* __thiscall FindVertexShader(const char* pcShaderName);
     ShaderBufferRecord* __thiscall FindPixelShader(const char* pcShaderName);

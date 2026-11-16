@@ -24,10 +24,10 @@ public:
 
     Explosion();
     virtual ~Explosion();
-    virtual void SaveGame(BGSSaveFormBuffer* arg);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual void LoadGame(BGSLoadFormBuffer* arg);
     virtual void Unk_19(void* arg);
-    virtual void Revert(BGSLoadFormBuffer* buffer);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void Unk_21(BGSLoadFormBuffer* arg);
     virtual void Update(float delta);
     virtual void Initialize();
@@ -61,7 +61,7 @@ public:
     float GetEffectiveValue();
     int* FindEntryResultByCategory(int category);
 
-    bool Explosion_IsDistant();
+    bool IsDistant();
     float Explosion_GetRadius();
     Proj* FUN_004181e0();
     NiPoint3* FUN_00430830();

@@ -33,5 +33,5 @@ public:
     template <class T, class Allocator>
     void addArray(const char* name, const hkArray<T, Allocator>& array);
 
-    void hkStatisticsCollector_addNormalChunk(const char* name, const void* p, int size, int allocated) throw();
+    void addNormalChunk(const char* name, const void* p, int size, int allocated) throw();
 };

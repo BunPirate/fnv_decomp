@@ -301,7 +301,7 @@ struct hkpMoppCodeGenerator : hkReferencedObject
     unsigned char* m_code; // src: XBOX_RETAIL_PDB +0x10 (old: byteData)
     MergeArray<int> m_jumpCommands; // src: XBOX_RETAIL_PDB +0x14 (old: state)
     hkpMoppCodeGenerator(int) throw();
-    hkpMoppCode* hkpMoppCodeGenerator_compileCode() throw();
+    hkpMoppCode* compileCode() throw();
     ~hkpMoppCodeGenerator() throw();
 };
 struct CostSettings
@@ -465,7 +465,7 @@ hkpMoppCode* MoppBuilder::AllocateStorage_00dd4cb0(PrimitiveSource* source, void
     hkpMoppCode* code;
     if (!chunks)
     {
-        code = generator.hkpMoppCodeGenerator_compileCode();
+        code = generator.compileCode();
     }
     else
     {
@@ -502,7 +502,7 @@ hkpMoppCode* MoppBuilder::AllocateStorage_00dd4cb0(PrimitiveSource* source, void
         for (int i = 0; i < chunks->count; ++i)
         {
             unsigned char* dest = bytes.data + offsets.data[i];
-            hkpMoppCode* part = chunks->at(i).generator->hkpMoppCodeGenerator_compileCode();
+            hkpMoppCode* part = chunks->at(i).generator->compileCode();
             hkString_memCpy(dest, part->m_data.m_data, part->m_data.m_iElementCount);
             delete part;
             chunks->at(i).generator->removeReference();

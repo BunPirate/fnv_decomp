@@ -17,7 +17,7 @@ public:
 
     virtual void InitItem(void);
     virtual bool LoadForm(TESFile* apFile);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     void ResetFormData();
     PlaceableWaterData* GetExtraPartList();
@@ -26,7 +26,7 @@ public:
     void BGSPlaceableWater_SetReflectsLODLand(bool value);
     void BGSPlaceableWater_SetReflectsSky(bool value);
     void BGSPlaceableWater_SetRefractionEnabled(bool value);
-    void BGSPlaceableWater_SetRefractsLand(bool value);
+    void SetRefractsLand(bool value);
     void BGSPlaceableWater_SetUnderwaterFog(bool value);
     void BGSPlaceableWater_SetAutomaticWater(bool value);
     void BGSPlaceableWater_SetObjectTexCoordsEnabled(bool value);

@@ -128,7 +128,7 @@ typedef unsigned __int64 hkUint64D66D;
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 
 // These entry points are absent from the shared class declarations.
-extern "C" void hkpMouseSpringAction_ctor(); // src: XBOX_RETAIL_PDB 0x00cbb560 (old: ConstructMouseSpringAction)
+extern "C" void hkpMouseSpringAction_ctor(); // src: XBOX_RETAIL_PDB 0x00cbb560
 extern "C" void SetMouseSpringMaxRelativeForce();
 extern "C" void AddMouseSpringAction();
 

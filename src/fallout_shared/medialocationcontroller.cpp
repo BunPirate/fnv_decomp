@@ -284,7 +284,7 @@ bool MediaLocationController::Update(bool abInCombat)
             pCurrentMediaSet->Reset();
         pCurrentMediaSet = 0;
     }
-    g = pFaction ? pFaction->TESFaction_GetFactionReaction(static_cast<TESFaction*>(
+    g = pFaction ? pFaction->GetFactionReaction(static_cast<TESFaction*>(
                        BGSDefaultObjectManager::GetDefaultObjectByIndex(DEFAULT_OBJECT_DO_PLAYER_FACTION)))
                  : FIGHT_REACTION_FIGHT_REACTION_NEUTRAL;
     l = g_thePlayer->GetMusicMarkerReference();

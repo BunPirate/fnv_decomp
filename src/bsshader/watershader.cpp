@@ -116,7 +116,7 @@ BSShader* WaterShader::CreateShader()
     WaterShader* shader = new WaterShader;
     shader->Initialize();
     shader->InitializeShaderData();
-    shader->WaterShader_LoadStagesAndPasses();
+    shader->LoadStagesAndPasses();
     shader->InitShaderConstants();
     shader->UseShaderDeclaration(declaration);
     m_uiMemoryContext.Restore(threadState);
@@ -1084,7 +1084,7 @@ struct WaterShaderReleaser : WaterShader
 void WaterShaderReleaser::WaterShader_ReloadShaders()
 {
     ReleaseBase();
-    WaterShader_LoadStagesAndPasses();
+    LoadStagesAndPasses();
 }
 
 struct WaterVec3

@@ -1522,7 +1522,7 @@ void TESDataHandler::GetReferencesInArea(TESObjectCELL* apPoint1Cell, const NiPo
     {
         TESWorldSpace* world = apPoint1Cell->GetParentWorldSpace();
         if (world)
-            world->TESWorldSpace_EnumReferencesCloseToPoint(aPoint1, afRadius1, aPoint2, afRadius2, apfnEnumFunc, aiEnumData);
+            world->EnumReferencesCloseToPoint(aPoint1, afRadius1, aPoint2, afRadius2, apfnEnumFunc, aiEnumData);
     }
     else
         apPoint1Cell->GetReferencesInArea(aPoint1, afRadius1, aPoint2, afRadius2, apfnEnumFunc, aiEnumData);
@@ -1815,7 +1815,7 @@ void TESDataHandler::GenerateDefaultObjects()
     DAT_011ca280 = 0;
     DAT_011ca284 = 0;
     DAT_011ca288 = 0;
-    ActorValue::ActorValue_RegisterActorValues();
+    ActorValue::RegisterActorValues();
     DAT_011ca700->CreateDefaultPath();
     DAT_011ca284 = dynamic_cast<BGSExplosion*>(TESFormInitFlag::GetFormByID(0x1f5));
     if (!DAT_011ca284)
@@ -2374,7 +2374,7 @@ void TESDataHandler::GenerateDefaultObjects()
         modifier->InitializeModifierData();
         GetTESImageSpaceModifierList()->AddHead(modifier);
     }
-    MagicSystem::MagicSystem_GenerateDefaultObjects();
+    MagicSystem::GenerateDefaultObjects();
     if (!TESFormInitFlag::GetFormByID(330))
     {
         EffectSetting* effect = new EffectSetting;
@@ -3008,11 +3008,11 @@ struct LC3_FindData
 };
 
 // @fnv 0x00463070
+} // namespace fnv_00463070
 // src: XBOX_RETAIL_PDB 0x00463070
 // pdb: TESDataHandler::CompileFiles | TESDataHandler.obj | retail, call graph (shared callers), high
 // pdb params: abDownloadedContentOnly
 // pdb locals: pcamshot, pRecipe, pnoteList, pDehydrationList, pacousticSpaceList, plastList, pCFTask, pweather, pChallenge, pNote, pRadiation, pSleepDeprevationList, pLSList, pspellList, pcamshotlist, pReputation, pDeck, ppartData, pimpdatalist, pWorldList, badmaster, pFaction, pFactList, pCasino ...
-} // namespace fnv_00463070
 bool TESDataHandler::CompileFiles(bool abDownloadedContentOnly)
 {
     using namespace fnv_00463070;
@@ -3967,7 +3967,8 @@ bool __fastcall HasLightFlag20(const TESObjectLIGH* self)
 
 
 
-void InventoryChanges::InventoryChanges_ClearAllChangeItems()
+// src: XBOX_RETAIL_PDB 0x004d3660
+void InventoryChanges::ClearAllChangeItems()
 {}
 
 
@@ -3978,7 +3979,7 @@ void TESDataHandler::ClearBarterContainer()
 {
     if (pBarterContainer)
     {
-        pBarterContainer->InventoryChanges_ClearAllChangeItems();
+        pBarterContainer->ClearAllChangeItems();
     }
 }
 
@@ -4046,7 +4047,7 @@ bool TESObjectLIGH::GetCanCarry()
 void TESDataHandler::ClearRecipeContainer()
 {
     if (pRecipeContainer)
-        pRecipeContainer->InventoryChanges_ClearAllChangeItems();
+        pRecipeContainer->ClearAllChangeItems();
 }
 
 

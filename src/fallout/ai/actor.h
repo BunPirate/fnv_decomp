@@ -154,7 +154,7 @@ void Actor::UpdateActorMovement(float delta)
         }
         if (!((ActorPacketView*)this)->IsMoving(false) && ((ActorProcessView*)GetProcess())->IsInIdleState() &&
             pCurrentAnimation && !pCurrentAnimation->GetControllerSequence(4))
-            Actor_StartWeaponGroup(17, pCurrentAnimation);
+            StartWeaponGroup(17, pCurrentAnimation);
         UpdateAnimationMovement(pCurrentAnimation, delta);
         if (!((ActorPacketView*)this)->IsDead())
             speed = ((PlayerCharacter*)this)->HasCombatState()

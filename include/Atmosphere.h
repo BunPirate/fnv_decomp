@@ -9,7 +9,7 @@ class Atmosphere : public SkyObject
 public:
     Atmosphere();
     virtual ~Atmosphere();
-    virtual void Update(Sky* pWeatherSky, float fSeconds);
+    virtual void Update(Sky* apSky, float afSecondsPassed);
     virtual void Init2(NiNode* pRoot, int arg);
 
     void SetAtmosphere(NiNode* apSkyRoot, NiFogProperty* apFog);

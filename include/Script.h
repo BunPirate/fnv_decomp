@@ -62,7 +62,7 @@ public:
 
     static bool GetLocalData(TESForm* form, ExtraDataList* extraData, unsigned int index);
     static bool __cdecl GetLocalData(void* form, void* extraData, unsigned int index);
-    static bool Script_GetValue(double& adValue, const char* apCompiledData, unsigned int& auiDataOffset,
+    static bool GetValue(double& adValue, const char* apCompiledData, unsigned int& auiDataOffset,
                          TESObjectREFR* apRefObject, TESObjectREFR* apContainer,
                          Script* apScript, ScriptLocals* apScriptLocals, bool abEndian);
     static void SetScaleBase(TESObjectREFR* reference, float afValue);
@@ -86,7 +86,7 @@ public:
     bool Run(TESObjectREFR* subject, void* args);
     virtual void ClearData();
     virtual bool LoadForm(TESFile* file);
-    bool Load(TESFile* file);
+    bool Load(TESFile* pFile);
     virtual void CopyFrom(const TESForm* form);
     void ClearAllReferenceObjects();
     static void CopyListToView(BSSimpleList<ScriptVariableInfo*>* source, BSSimpleList<ScriptVariableInfo*>* dest, Script* script);
@@ -122,7 +122,7 @@ public:
     static bool GetTalkedToPC(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool FindScriptVariable(TESObjectREFR*, void*, void*, double&);
     static bool GetIsRaining(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
-    static bool Script_GetIsRainingConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool GetIsRainingConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool GetInCell(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool EvaluateCellMembership(TESObjectREFR*, void*, void*, double&);
     static bool GetInFaction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
@@ -159,7 +159,7 @@ public:
     static bool IsIdlePlayingFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool CheckIdlePlaying(TESObjectREFR*, void*, void*, double&);
     static bool IsTalkingFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
-    static bool Script_IsTalkingConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool IsTalkingConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool GetDayOfWeekFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool ParseScript(TESObjectREFR*, void*, void*, double&);
     static bool IsPCSleepingFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
@@ -167,33 +167,33 @@ public:
     static bool GetDestroyedFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool HandleScriptOperation(TESObjectREFR*, void*, void*, double&);
     static bool HasBeenEatenFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
-    static bool Script_HasBeenEatenConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool HasBeenEatenConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool GetUnconsciousFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool ResolveScriptValue(TESObjectREFR*, void*, void*, double&);
     static bool IsInCombatFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
-    static bool Script_IsInCombatConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool IsInCombatConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool IsInInteriorFunction(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
-    static bool Script_IsInInteriorConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool IsInInteriorConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool EvaluateReferenceCondition(TESObjectREFR*, void*, void*, double&);
     static bool CheckActorCondition(TESObjectREFR*, void*, void*, double&);
-    static bool Script_GetStageConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool GetStageConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool EvaluateFirstReferenceOperand(TESObjectREFR*, void*, void*, double&);
     static bool EvaluateSecondReferenceOperand(TESObjectREFR*, void*, void*, double&);
-    static bool Script_GetPosConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool GetPosConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool EvaluateReferenceScriptValue(TESObjectREFR*, void*, void*, double&);
     static bool ResolveScriptReference(TESObjectREFR*, void*, void*, double&);
-    static bool Script_HasMagicEffectConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool HasMagicEffectConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool EvaluateSeventhReferenceOperand(TESObjectREFR*, void*, void*, double&);
     static bool GetScriptParameter(TESObjectREFR*, void*, void*, double&);
     static bool HandleScriptExpression(TESObjectREFR*, void*, void*, double&);
     static bool GetScriptResult(TESObjectREFR*, void*, void*, double&);
     static bool AdvanceScriptInstruction(TESObjectREFR*, void*, void*, double&);
     static bool HandleScriptReference(TESObjectREFR*, void*, void*, double&);
-    static bool Script_GetPlayerEnemyofFactionConditionFunction(TESObjectREFR*, void*, void*, double&);
-    static bool Script_GetPCMiscStatConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool GetPlayerEnemyofFactionConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool GetPCMiscStatConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool HandleScriptEvent(TESObjectREFR*, void*, void*, double&);
-    static bool Script_GetFactionRelationConditionFunction(TESObjectREFR*, void*, void*, double&);
-    static bool Script_GetMenuModeConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool GetFactionRelationConditionFunction(TESObjectREFR*, void*, void*, double&);
+    static bool GetMenuModeConditionFunction(TESObjectREFR*, void*, void*, double&);
     static bool GetQuestCompleted(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool GetQuestRunning(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);
     static bool GetStage(const ScriptParameter*, const char*, TESObjectREFR*, TESObjectREFR*, Script*, ScriptLocals*, double&, unsigned int&);

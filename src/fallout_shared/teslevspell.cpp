@@ -96,7 +96,7 @@ bool TESLevSpell::LoadForm(TESFile* apFile)
                 apFile->GetChunkData(&levObj, 0xc);
                 if (apFile->GetChunkData())
                     ((TmpEndian*)&levObj)->LEVELED_OBJECT_FILE_Endian();
-                DAT_011c8f98 = TESLeveledList::TESLeveledList_AddLeveledObject(levObj.sLevel, levObj.m_sCount, levObj.pForm, 0);
+                DAT_011c8f98 = TESLeveledList::AddLeveledObject(levObj.sLevel, levObj.m_sCount, levObj.pForm, 0);
                 break;
             }
             case 'DEOC':

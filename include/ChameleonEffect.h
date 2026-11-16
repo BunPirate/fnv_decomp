@@ -12,7 +12,7 @@ public:
     virtual ActiveEffect* Copy();
     virtual void FinishLoadGameTES(Actor* actor);
     virtual void Revert(Actor* apActor);
-    virtual void Revert(BGSLoadFormBuffer* apBuffer);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void ApplyLoadBuffer(BGSLoadFormBuffer* apBuffer);
     virtual void Start();
     virtual void Finish();

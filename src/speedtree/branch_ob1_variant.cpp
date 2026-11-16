@@ -836,7 +836,7 @@ struct CIdvBranch // src: XBOX_DEBUG_PDB 0x00b10dc0 (first debug link of 2 high-
     ~CIdvBranch();
     void CIdvBranch_BuildBlossomVectors();
     void CIdvBranch_ComputeFlareEntries(BranchConfig*);
-    float CIdvBranch_ComputeHighLevelVertexWeight(int, float, float);
+    float ComputeHighLevelVertexWeight(int, float, float);
     float UpdateState_00b14b10(float, float);
     void ProcessEntries_00b14450(FUN_00b130a0*, float, float, unsigned short, BranchMesh*, const BranchPoint&, float, unsigned int,
                       float, int);
@@ -862,6 +862,7 @@ inline CRotTransform CRotTransform::Multiply(const CRotTransform& a)
     result.m22 = m20 * a.m02 + m21 * a.m12 + m22 * a.m22;
     return result;
 }
+// src: XBOX_RETAIL_PDB 0x00b12ec0
 inline void CRotTransform::RotateAxisFromIdentity(float fAngle, BranchPoint cAxis)
 {
     float sine = (float)FUN_00eca060((float)(fAngle / DAT_010a4d90));
@@ -1013,7 +1014,7 @@ void CIdvBranch::CIdvBranch_Compute(unsigned int nSeed, float fSize, int nLevel,
         float qHXYKT = fWindWeight;
         if (nLevel <= DAT_011ad14c)
         {
-            qhxpxJd->weight = CIdvBranch_ComputeHighLevelVertexWeight(nLevel, 0.0f, qfTOqo);
+            qhxpxJd->weight = ComputeHighLevelVertexWeight(nLevel, 0.0f, qfTOqo);
             qHXYKT = qhxpxJd->weight;
         }
         else if (DAT_011f8c04)
@@ -1061,7 +1062,7 @@ void CIdvBranch::CIdvBranch_Compute(unsigned int nSeed, float fSize, int nLevel,
             float qrzAir = fWindWeight;
             if (nLevel <= DAT_011ad14c)
             {
-                qGfbX->weight = CIdvBranch_ComputeHighLevelVertexWeight(nLevel, qZAdkzg, qrKBG);
+                qGfbX->weight = ComputeHighLevelVertexWeight(nLevel, qZAdkzg, qrKBG);
                 qrzAir = qGfbX->weight;
             }
             else if (DAT_011f8c04)

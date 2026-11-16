@@ -16957,7 +16957,7 @@ struct ObjC57 : TESObjectDoorController
            unsigned short* pusStripLists);
 };
 // @fnv 0x00c57d70
-// src: XBOX_DEBUG_PDB 0x00c57d70
+// src: XBOX_DEBUG_PDB 0x00c57d70 (was COMMUNITY)
 // pdb: BSTestObjects::CreateTorus | BSTestObjects.obj | debug, unique string literal, high
 // pdb params: afInnerRadius, afOuterRadius, aiSlices, aiStacks, apColor
 // pdb locals: arraySize, normals, sideDelta, theta, currentStrip, sinTheta, vertices, cosTheta, torus, stripLengths, stripLists, numVertices, colors, ringDelta, numVerticesPerStrip, i, cosTheta1, phi, theta1, sinTheta1, j, cosPhi, dist, sinPhi

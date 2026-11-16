@@ -60,6 +60,6 @@ public:
     void WriteIndexChunk(char*);  // exe 0x006b4e80
     bool HasNonZeroAtOffset54() const; // exe 0x0069dfb0
     bool HasNonZeroAtOffset54();  // exe 0x0069dfb0
-    void NavMeshInfo_CreateFromNavMesh(NavMesh*); // exe 0x006b5560
+    void CreateFromNavMesh(NavMesh*); // exe 0x006b5560
     bool ResolveNavMesh(NavMeshPtr&) const;
 };

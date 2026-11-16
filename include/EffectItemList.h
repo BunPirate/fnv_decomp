@@ -25,8 +25,8 @@ public:
     EffectItem* GetCostliestEffect(int aeRange, bool abAreaOnly);
     EffectItem* GetCostliestEffect(int m_eRange, int iUnk);
     void Load(TESFile* apFile, const char* apSpellName);
-    bool EffectItemList_Compare(EffectItemList* apCompare);
-    void EffectItemList_Copy(EffectItemList* apCopy);
+    bool Compare(EffectItemList* apCompare);
+    void Copy(EffectItemList* apCopy);
     void RemoveAllEffectItems();
     bool HasTargetEffect();
     bool HasNonDetrimentalEffectWithFlag(unsigned int flag);

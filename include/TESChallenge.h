@@ -29,7 +29,7 @@ public:
     virtual void InitializeComponent();
     virtual bool LoadForm(TESFile* file);
     virtual void SaveForm(void);
-    virtual void SaveGame(BGSSaveFormBuffer* arg);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);

@@ -404,7 +404,7 @@ void EvadeProcedure::UpdateFleeState()
     case 0: {
         NiPoint3 actorPosition = *actor->GetPosition();
         PathingRequestFlee fleeRequest;
-        fleeRequest.PathingRequest::PathingRequest_SetOrigin(actor);
+        fleeRequest.PathingRequest::InitFromActor(actor);
         fleeRequest.SetInitialPathHeading(actor->GetRadius(0));
         if (actor->IsCreature())
             fleeRequest.SetCantOpenDoors(actor->FUN_004181e0()->data.CanSwim());

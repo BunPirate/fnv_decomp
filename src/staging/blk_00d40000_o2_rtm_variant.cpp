@@ -1837,6 +1837,7 @@ __declspec(noinline) static int anonymous_namespace_loadBinaryTagfileIntoWorld(H
     kBuf.hkVersionPatchManager_applyPatches(streamIn, classReg);
     return 0;
 }
+// src: XBOX_RETAIL_PDB 0x00d48840
 __declspec(noinline) static void* anonymous_namespace_loadNewPackfileOnHeap(void* streamIn, void* details, Hk48fc0_Format* errorOut,
                                                        void* classReg, void* typeReg)
 {

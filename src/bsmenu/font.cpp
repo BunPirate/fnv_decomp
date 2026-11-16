@@ -2389,7 +2389,7 @@ struct FontTextManager
 };
 
 // pdb: structure CharData, size 0x14 (here 0x38), 5 members
-struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first debug link of 2 high-tier links to its methods; old: FontTextParams)
+struct FontManager_CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first debug link of 2 high-tier links to its methods; old: FontTextParams)
 {
     int m_iType;
     bool bFlag;
@@ -2402,7 +2402,7 @@ struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first debug link of 2 high-ti
     int unk30;
     int unk34;
 
-    CharData(int aiFontIndex, bool acChar, NiColorA axColor, int aiJustification)
+    FontManager_CharData(int aiFontIndex, bool acChar, NiColorA axColor, int aiJustification)
     {
         m_iType = FontTextMax(FontTextMin(aiFontIndex, 8), 0);
         bFlag = acChar;
@@ -2431,7 +2431,7 @@ struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first debug link of 2 high-ti
     static __forceinline void* operator new(unsigned int s) { return g_memoryManager.Allocate(s); }
     static __forceinline void operator delete(void*) {}
 
-    CharData* Copy();
+    FontManager_CharData* Copy();
 };
 
 // Allocates a copy of this FontTextParams, copies the text and metrics, resets unk30 to 0 and returns the new object.
@@ -2439,9 +2439,9 @@ struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first debug link of 2 high-ti
 // src: XBOX_DEBUG_PDB 0x00a1b660
 // pdb: FontManager::CharData::Copy | Font.obj | debug, call graph, high
 // pdb locals: pnew
-CharData* CharData::Copy()
+FontManager_CharData* FontManager_CharData::Copy()
 {
-    CharData* pCopy = new CharData(m_iType, bFlag, kColor, iAlignment);
+    FontManager_CharData* pCopy = new FontManager_CharData(m_iType, bFlag, kColor, iAlignment);
     pCopy->kText = kText;
     pCopy->iLineHeight = iLineHeight;
     pCopy->iHeight = iHeight;
@@ -3298,6 +3298,7 @@ struct LayoutItem {
         position=0;
     }
     void SetFont(int index) { font=index; FontManager_CharData_SetChar(character); }
+    // src: XBOX_DEBUG_PDB 0x00a1b660
     LayoutItem* Copy() {
         LayoutItem* item=new LayoutItem(font,character,color,unk18);
         item->string=string;
@@ -3862,7 +3863,7 @@ void Font::PrepText(const char* apOrigString,TextLayout::Layout* axData) {
       TextLayout::FUN_00ec65a6(originalPath,260,pathSlot13);
       TextLayout::BSsprintf(pathSlot13,260,TextLayout::DAT_010950a8,originalPath);
      }
-     Font_AddTextIcon(pathSlot13);
+     AddTextIcon(pathSlot13);
      replacementSlot0[slashSlot0]=1;replacementSlot0[slashSlot0+1]=0;
      replacementLengthSlot18=TextLayout::strlen(replacementSlot0);
      deltaSlot0=replacementLengthSlot18-consumed;
@@ -4057,7 +4058,7 @@ void Builder::BuildPage(Node* node,Layout* layout){
 
 Page* pageSlot35=0;int remainingSlot28=index;int iconIndexSlot11=0;Shape* shapesSlot32[8];int indices[8];Link<Page*>* cursorSlot10=pages.Head();while(cursorSlot10&&remainingSlot28--)pages.Next(cursorSlot10);if(cursorSlot10)pageSlot35=cursorSlot10->value;else return;
 
-for(unsigned int fontIndex=0;fontIndex<8;fontIndex++){indices[fontIndex]=0;shapesSlot32[fontIndex]=0;int count=pageSlot35->CountEmptyNameEntries(fontIndex);if(count>0){shapesSlot32[fontIndex]=GetDebrisManager()->GetFont(fontIndex)->Font_MakeTriShape(count,&Color(117.0f/255.0f,59.0f/255.0f,33.0f/255.0f,1.0f),true);shapesSlot32[fontIndex]->SetPosition(DAT_011f426c);}}
+for(unsigned int fontIndex=0;fontIndex<8;fontIndex++){indices[fontIndex]=0;shapesSlot32[fontIndex]=0;int count=pageSlot35->CountEmptyNameEntries(fontIndex);if(count>0){shapesSlot32[fontIndex]=GetDebrisManager()->GetFont(fontIndex)->MakeTriShape(count,&Color(117.0f/255.0f,59.0f/255.0f,33.0f/255.0f,1.0f),true);shapesSlot32[fontIndex]->SetPosition(DAT_011f426c);}}
 
 List<Shape*> imagesSlot52;Shape* iconsSlot17=0;if(!((Icons*)GetDebrisManager()->GetFont(0)->ButtonIcons)->Empty()){iconsSlot17=GetDebrisManager()->GetFont(0)->MakeIconsTriShape();iconsSlot17->SetPositionThroughShape(DAT_011f426c);imagesSlot52.Add(iconsSlot17);}
 
@@ -4065,7 +4066,7 @@ if(pageSlot35){int lineIndexSlot43=0;NiPoint3 position=DAT_011f426c;Link<Line*>*
 
 Link<Run*>* runCursorSlot19=lineSlot0->runs.Head();while(runCursorSlot19){Run* runSlot0=lineSlot0->runs.Next(runCursorSlot19);Font* fontSlot0=GetDebrisManager()->GetFont(runSlot0->font);if((unsigned char)((!runSlot0->text.Get()||!runSlot0->text[0])?1:0)){
 
-NiPoint3 glyphPosition=position;glyphPosition.x+=runSlot0->offset;if(runSlot0->letter==1){GetDebrisManager()->GetFont(0)->Font_AddIcon(iconIndexSlot11++,iconsSlot17,glyphPosition);}else fontSlot0->BuildGlyphQuad(&((Letter*)fontSlot0->pFontData->pFontLetters)[runSlot0->letter],indices[runSlot0->font]++,shapesSlot32[runSlot0->font],glyphPosition,&runSlot0->color);
+NiPoint3 glyphPosition=position;glyphPosition.x+=runSlot0->offset;if(runSlot0->letter==1){GetDebrisManager()->GetFont(0)->AddIcon(iconIndexSlot11++,iconsSlot17,glyphPosition);}else fontSlot0->BuildGlyphQuad(&((Letter*)fontSlot0->pFontData->pFontLetters)[runSlot0->letter],indices[runSlot0->font]++,shapesSlot32[runSlot0->font],glyphPosition,&runSlot0->color);
 
 }else{NiPoint3 imagePosition=position;imagePosition.x+=runSlot0->offset;Shape* image=GetDebrisManager()->FontManager_MakeImage(runSlot0->text,imagePosition,runSlot0->width,runSlot0->height+runSlot0->padding);if(image)imagesSlot52.NiTList_AddTail(image);}}
 

@@ -2172,6 +2172,7 @@ __declspec(noinline) AggObj* AggObj::hkMonitorStreamAnalyzer_Node_ctor(int paren
     unk00 = ext_init(parent, name, type);
     return this;
 }
+// src: XBOX_RETAIL_PDB 0x00e0d0a0
 __declspec(noinline) void AggObj::hkMonitorStreamAnalyzer_Node_dtor()
 {
     ext_free(unk00);

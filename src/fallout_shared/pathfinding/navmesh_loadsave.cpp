@@ -1079,7 +1079,7 @@ bool FUN_00692950_shell::NavMesh_Load(TESFile* apFile)
         {
             Warning("MASTERFILE: Did not find matching NavMeshInfo for NavMesh ID %08X, Creating a temporary one",
                     ((TESForm*)this)->GetFormID());
-            NavMesh_UpdateNavMeshInfo();
+            UpdateNavMeshInfo();
         }
         else
         {

@@ -96,7 +96,7 @@ public:
     InventoryMenu();
     Tile* FUN_00726070();
     void UpdateButtons();
-    void InventoryMenu_ClearCurrentItem();
+    void ClearCurrentItem();
     void UpdateItemDisplay(int, Tile*);
     void Click(int, int);
     void Select(int, int);

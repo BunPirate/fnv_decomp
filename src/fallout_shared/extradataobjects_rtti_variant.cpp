@@ -119,7 +119,7 @@ void ExtraLitWaterRefs::InitItem_00434050(TESForm* apOwner)
         }
         else
         {
-            static_cast<LitWaterReference*>(pRef)->BSFile_GetDevice(apOwner, true)->ExtraDataList_SetWaterLightRef();
+            static_cast<LitWaterReference*>(pRef)->BSFile_GetDevice(apOwner, true)->SetWaterLightRef();
             kResolved4.AddHead(pRef);
         }
         pNodeB8 = pNodeB8->GetNext();

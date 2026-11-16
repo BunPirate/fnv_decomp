@@ -11,7 +11,7 @@ public:
     ParalysisEffect(void* apCaster, void* apSpell, void* apEffect);
 
     virtual ActiveEffect* Copy();
-    virtual void Update(float delta);
+    virtual void Update(float afSecondsElapsed);
     virtual void FinishLoadGameTES(Actor* apActor);
     virtual void Revert(Actor* apActor);
     virtual void Start();

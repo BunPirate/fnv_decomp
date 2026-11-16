@@ -9704,6 +9704,7 @@ struct S00d7fb80_TriangleList {
 __forceinline void* operator new(unsigned int, S00d7fb80_Vertex* p) throw() { return p; }
 __forceinline void* operator new(unsigned int, S00d7fb80_Triangle* p) throw() { return p; }
 
+// src: XBOX_RETAIL_PDB 0x00d7ef20
 __declspec(noinline) S00d7fb80_Vertex* S00d7fb80_VertexList::hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(const S00d7fb80_Vertex& value)
 {
     S00d7fb80_Vertex* item = new (allocateItem()) S00d7fb80_Vertex(value);

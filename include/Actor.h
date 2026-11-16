@@ -187,7 +187,7 @@ public:
     virtual void Unk_C6(void);
     virtual void Unk_C7(void);
     virtual bool IsDead(void);
-    virtual void Resurrect(bool resetInventory, bool attach3D, bool unk);
+    virtual void Resurrect(bool abResetInventory, bool abAttach3D, bool abGetupResurect);
     virtual void Unk_CA(void);
     virtual void Unk_CB(void);
     virtual void Unk_CC(void);
@@ -331,7 +331,7 @@ public:
     Animation* GetAnimation();
     void SetAnimationGroupAction(int);
     void RefreshActorData();
-    void Actor_StartWeaponGroup(int, Animation*);
+    void StartWeaponGroup(int, Animation*);
     void UpdateAnimationMovement(Animation*, float);
     void PickAnimations(float, float);
     NiPoint3 GetMovementPosition();
@@ -341,7 +341,7 @@ public:
     void UpdateActorEffectState();
     void UpdateDeathState(float);
     void RestoreHealth(float);
-    void Actor_RestoreFatigue(float);
+    void RestoreFatigue(float);
     float GetFatigue();
     bool CanEnterLifeState();
     void StopMoving();
@@ -352,7 +352,7 @@ public:
     void PreloadPermanentMagic();
     void SetActorLifeState(ACTOR_LIFE_STATE aeLifeState);
     void UpdateFlag800State();
-    bool Actor_GetKnockedDownMovementDelta(NiPoint3* aMovementDelta);
+    bool GetKnockedDownMovementDelta(NiPoint3* aMovementDelta);
     void UpdateControllerFlag();
     void TryMakeTargetThing();
     void SetTravelPackage(void*, bool, bool, bool, void*, void*, float, float);
@@ -487,7 +487,7 @@ public:
     void* GetItemBeingEscorted();                       // 0x008a2d40
     TESForm* TESObjectREFR_GetOwner();                    // 0x00567790
     void Actor_AttackAlarm(Actor*, int, bool);       // 0x008c0460
-    void Actor_SetHasBeenEaten(bool);         // 0x008a80c0
+    void SetHasBeenEaten(bool);         // 0x008a80c0
     void Actor_MurderAlarm(Actor*);                  // 0x008c09e0
     void Actor_SetPlayerTeammate(int);                     // 0x008bca90
     bool TESObjectREFR_HasObjectId(void*);                   // 0x00575450
@@ -554,8 +554,8 @@ public:
     bool Actor_IsProcessingTresPassAlarm();
     bool IsCurrentlyAlerted();
     bool Actor_IsSleeping();
-    bool Actor_LineOfSight(const NiPoint3&, int, int);
-    bool Actor_IsPointInViewCone(const NiPoint3&, float);
+    bool LineOfSight(const NiPoint3&, int, int);
+    bool IsPointInViewCone(const NiPoint3&, float);
     int CalculateDetectionLevel(int, Actor*, bool*, bool, int, bool, bool*);
     bool HasFaction(TESForm*);
     bool CanBeDetected();

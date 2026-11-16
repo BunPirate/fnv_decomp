@@ -13,7 +13,7 @@ public:
     virtual void CopyFrom(const TESForm* form);
     virtual bool Compare(TESForm* form);
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     unsigned char data[0x58]; // src: XBOX_RETAIL_PDB +0x18 (old: formData)
 };

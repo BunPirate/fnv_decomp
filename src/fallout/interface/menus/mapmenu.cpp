@@ -885,7 +885,7 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
                         0);
                     PlayerMarkerSpace = CalculatePlayerMarkerSpace(reinterpret_cast<MapPoint3&>(PlayerMarkerPos));
                     if (PlayerMarkerSpace)
-                        ((TESWorldSpace*)PlayerMarkerSpace)->TESWorldSpace_AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(PlayerMarkerPos)), true);
+                        ((TESWorldSpace*)PlayerMarkerSpace)->AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(PlayerMarkerPos)), true);
                 }
                 if (pAdjustNorthRotationCell)
                     pAdjustNorthRotationCell->AdjustCoordForNorthRotation(reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(PlayerMarkerPos)), reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(PlayerMarkerPos)), false);
@@ -1890,7 +1890,7 @@ MapPoint3 MapMenu::WorldToMapPosition(MapPoint3 aWorldCoord, TESWorldSpace* apWo
 
     if (apWorldspace != 0 && *reinterpret_cast<unsigned int*>(reinterpret_cast<unsigned char*>(this) + 0x80) == 0x21)
     {
-        apWorldspace->TESWorldSpace_AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(aWorldCoord), false);
+        apWorldspace->AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(aWorldCoord), false);
     }
 
     markerPosition.x = (aWorldCoord.x - *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xe8)) /
@@ -2335,7 +2335,7 @@ MapPoint3 MapMenu::MapToWorldCoord(MapPoint3 aMapCoord, TESWorldSpace* apWorldsp
 
     if (apWorldspace != 0 && *(int*)((char*)this + 0x80) == 0x21)
     {
-        apWorldspace->TESWorldSpace_AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(result), true);
+        apWorldspace->AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(result), true);
     }
 
     return result;
@@ -2765,7 +2765,7 @@ Tile* __cdecl MapMenu_Create()
     }
     Tile* menuTile = interfaceManager->CombatController_GetCombatState()->ReadFile("Data\\Menus\\Main\\map_menu.xml");
     DAT_011da368 = (MapMenu*)menuTile->GetMenu();
-    Menu::Menu_RemoveFromXMLArchive("Data\\Menus\\Main\\map_menu.xml", DAT_011da368);
+    Menu::RemoveFromXMLArchive("Data\\Menus\\Main\\map_menu.xml", DAT_011da368);
     if (DAT_011da368 && DAT_011da368->GetClass() == 0x3ff)
     {
         DAT_011da368->Menu_SetRenderedMenu();
@@ -6871,11 +6871,11 @@ extern const char* DAT_011a0404[];
 
 // Ensures root space and map data, updates tile dimensions, and populates marker list from root space references.
 // @fnv 0x0079cdb0
+}  // namespace fnv_0079cdb0
+
 // src: XBOX_RETAIL_PDB 0x0079cdb0
 // pdb: MapMenu::UpdateWorldMap | MapMenu.obj | retail, string-set bridge, high
 // pdb locals: prootWorldData, inextMarkerIndex, pfullMarkerList, pcurrMarkerObj, pcurrMarker, pmarkerTile, markerPos, pmarkerRootWorldspace, sLocName, markerTilePos, pRep
-}  // namespace fnv_0079cdb0
-
 void MapMenu::UpdateWorldMap()
 {
     fnv_0079cdb0::MMMapData* pkData = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) ? reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace)->GetWorldMapData() : 0;

@@ -678,7 +678,7 @@ extern const char str_01074bc8[];
 extern const char str_01074bb8[];
 // Builds texture paths with _sprintf_s and FUN_004b7240, then creates each texture via g_TES->CreateTextureImage into tex[0..26].
 // @fnv 0x00796100
-// src: XBOX_RETAIL_PDB 0x00796100
+// src: XBOX_RETAIL_PDB 0x00796100 (was COMMUNITY)
 // pdb: LoveTesterMenu::LoadButtonAndTextImages | LoveTesterMenu.obj | retail, string-set bridge, high
 // pdb locals: strPlatform, strtmp, pfilepath, i
 }  // namespace fnv_00796100
@@ -1468,7 +1468,7 @@ void __cdecl PlaySpecialBookSoundAndSetStat(Button_7caa80* button)
             ((Player_7caa80*)g_thePlayer)->PlayerCharacter_SetActorBaseValue(key, MinInt(value + 1, 10));
         }
     }
-    DAT_011daa38->SPECIALBookMenu_RefreshPage();
+    DAT_011daa38->RefreshPage();
 }
 }  // namespace fnv_007caa80
 

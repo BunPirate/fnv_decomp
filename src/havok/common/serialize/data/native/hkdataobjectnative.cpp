@@ -988,9 +988,9 @@ class hkClassMemberAccessor
     void* m_address; // src: XBOX_RETAIL_PDB +0x0 (old: m_pTargetObject)
     const hkClassMember* m_member; // src: XBOX_RETAIL_PDB +0x4 (old: m_kMemberDescriptor)
 
-    hkClassMemberAccessor(void* obj, void* name) throw()
+    hkClassMemberAccessor(void* var, void* memberName) throw()
     {
-        hkClassMemberAccessor_ctor(obj, name);
+        hkClassMemberAccessor_ctor(var, memberName);
     }
     void hkClassMemberAccessor_ctor(void* var, void* memberName) throw();
     hkClassMember* hkClassMemberAccessor_getClassMember() throw();
@@ -998,9 +998,9 @@ class hkClassMemberAccessor
     unsigned int* hkClassMemberAccessor_asStringPtr(int i) throw();
 
     void hkClassMemberAccessor_ctor(hkVariant& var, const hkClassMember* memberName) throw();
-    hkClassMemberAccessor(hkVariant& kObject, const hkClassMember* pkMember)
+    hkClassMemberAccessor(hkVariant& var, const hkClassMember* memberName)
     {
-        hkClassMemberAccessor_ctor(kObject, pkMember);
+        hkClassMemberAccessor_ctor(var, memberName);
     }
 
     const hkClassMember& hkClassMemberAccessor_getClassMember() const throw();

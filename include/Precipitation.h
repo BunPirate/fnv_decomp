@@ -24,7 +24,7 @@ public:
     const void* pQueuedModel; // src: XBOX_RETAIL_PDB +0x14 (old: m_pPrecipitationData)
 
     void Load(const char* apFilename);
-    NiAVObject* Precipitation_CreateShaderGeometry(SkyShaderProperty* apParticleSystem, NiAVObject* akWorldTransform);
+    NiAVObject* CreateShaderGeometry(SkyShaderProperty* apParticleSystem, NiAVObject* akWorldTransform);
     void Update(float afSecondsPassed);
     void FlushAll();
 };

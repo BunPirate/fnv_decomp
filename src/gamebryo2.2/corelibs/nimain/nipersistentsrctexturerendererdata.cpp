@@ -559,7 +559,7 @@ void NiPersistentSrcTextureRendererData::LoadBinary(NiStream& kStream)
 {
     LoadStream& stream = (LoadStream&)kStream;
     NiObject::LoadBinary(kStream);
-    m_kPixelFormat.NiPixelFormat_LoadBinary(&kStream);
+    m_kPixelFormat.LoadBinary(&kStream);
     stream.Resolve();
     Load(stream, m_uiMipmapLevels);
     Load(stream, m_uiPixelStride);

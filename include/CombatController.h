@@ -165,7 +165,7 @@ public:
     // Overrides of primary vtable slots 4, 21, 23, 25 and 33.
     virtual ~CombatController();
     virtual void SaveGame(BGSSaveFormBuffer* arg);
-    virtual void LoadGame(BGSLoadFormBuffer* arg);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void Unk_19(void* arg);
     virtual void Unk_21(BGSLoadFormBuffer* arg);
 

@@ -536,7 +536,7 @@ void BarterMenu::HandleTileClick(int aiID, Tile* apTarget)
                 m_iMerchantFilter = 5;
             else if (m_iMerchantFilter > 5)
                 m_iMerchantFilter = 0;
-            BarterMenu_SetFilterModeTitle((int)m_apTiles[3]);
+            SetFilterModeTitle((int)m_apTiles[3]);
             reinterpret_cast<BmFilteredList&>(m_kMerchantList).ApplyFilter(BarterMenu_FilterModeFunc);
         } while (!reinterpret_cast<BmFilteredList&>(m_kMerchantList).ListBox_ItemChange_NumUnfiltered() && m_iMerchantFilter != 0);
         break;
@@ -551,7 +551,7 @@ void BarterMenu::HandleTileClick(int aiID, Tile* apTarget)
                 m_iPlayerFilter = 5;
             else if (m_iPlayerFilter > 5)
                 m_iPlayerFilter = 0;
-            BarterMenu_SetFilterModeTitle((int)m_apTiles[8]);
+            SetFilterModeTitle((int)m_apTiles[8]);
             reinterpret_cast<BmFilteredList&>(m_kPlayerList).ApplyFilter(BarterMenu_FilterModeFunc);
         } while (!reinterpret_cast<BmFilteredList&>(m_kPlayerList).ListBox_ItemChange_NumUnfiltered() && m_iPlayerFilter != 0);
         break;
@@ -1533,9 +1533,6 @@ int __cdecl MinInt(int aiValue, int aiValue2);
 
 // Transfers merchant and player barter items, adjusts caps based on m_barterTotal, plays a sound, resets totals and clears the equipped weapon if it was sold.
 // @fnv 0x0072fd10
-// src: XBOX_RETAIL_PDB 0x0072fd10
-// pdb: BarterMenu::CompleteTransaction | BarterMenu.obj | retail, string-set bridge, high
-// pdb locals: pinventory, iwholeAmount, pammo, pvendorContainer, pcurrBuyItemRef, pbuyItem, pbuyExtra, pcurrSellItemRef, psellItem, psellExtra, tempGold
 }  // namespace fnv_0072fd10
 
 // The shared audio factory still returns a legacy handle type. Use its entry point
@@ -1543,6 +1540,9 @@ int __cdecl MinInt(int aiValue, int aiValue2);
 typedef BSSoundHandle (BSAudio::*BarterSoundFactory)(const char*, unsigned int, bool);
 typedef bool (BSSoundHandle::*BarterSoundPlay)();
 
+// src: XBOX_RETAIL_PDB 0x0072fd10
+// pdb: BarterMenu::CompleteTransaction | BarterMenu.obj | retail, string-set bridge, high
+// pdb locals: pinventory, iwholeAmount, pammo, pvendorContainer, pcurrBuyItemRef, pbuyItem, pbuyExtra, pcurrSellItemRef, psellItem, psellExtra, tempGold
 void BarterMenu::CompleteTransaction()
 {
     TESObjectREFR* pTarget3 =
@@ -1590,7 +1590,7 @@ void BarterMenu::CompleteTransaction()
     {
         pChanges = InventoryChanges::GetOrAddInventoryChanges((TESObjectREFR*)fnv_0072fd10::g_player_011dea3c);
         if (pChanges)
-            pChanges->InventoryChanges_RemoveGold((TESObjectREFR*)fnv_0072fd10::g_player_011dea3c, -iAmount5, pTarget3);
+            pChanges->RemoveGold((TESObjectREFR*)fnv_0072fd10::g_player_011dea3c, -iAmount5, pTarget3);
         ((BSAudio::GetSingleton()->*reinterpret_cast<BarterSoundFactory>(&BSAudio::BSAudio_GetSoundHandleByEditorName))(
             "ITMBottlecapsDown", 0x101, false).*reinterpret_cast<BarterSoundPlay>(&BSSoundHandle::Play))();
     }

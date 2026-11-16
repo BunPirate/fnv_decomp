@@ -573,7 +573,7 @@ public:
 // pdb: hkpMoppAgent::createBvBvAgent | hkpMoppAgent.obj | retail, object-file gap fill, high
 // pdb params: bodyA, bodyB, input, mgr
 // pdb locals: assertBuf, ostr
-D2F240Agent* hkpMoppAgent_createBvBvAgent(const D2F240CdBody& bodyA, const D2F240CdBody& bodyB, const void* input, void* mgr) { // src: XBOX_RETAIL_PDB 0x00d2f240
+D2F240Agent* hkpMoppAgent_createBvBvAgent(const D2F240CdBody& bodyA, const D2F240CdBody& bodyB, const void* input, void* mgr) {
     if (bodyA.m_pkBody->m_pkShape->m_iType < bodyB.m_pkBody->m_pkShape->m_iType)
         return new D2F240Agent(mgr);
     return new D2F240SymmetricAgent(mgr);

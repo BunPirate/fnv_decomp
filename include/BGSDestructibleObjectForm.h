@@ -55,7 +55,7 @@ public:
     static unsigned int GetDestructionStageCount(TESForm* form);
     static BGSDestructibleObjectForm* GetDestructibleObjectForm(TESForm* form);
     static int GetModelSwapIndex(TESForm* form, TESModel* model);
-    static TESModel* GetModelSwap(TESForm* form, int index);
+    static TESModel* GetModelSwap(TESForm* apForm, int aiModelSwapIndex);
     bool HasValidStages();
     bool GetTargetableInVATS();
     void SetTargetableInVATS(bool targetable);

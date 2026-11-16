@@ -50,7 +50,7 @@ class BSTempEffectSimpleDecal : public BSTempEffect
     void ClipMesh(Geometry* apAVObj);
     void ClipMesh(Param* apAVObj);
     bool ProcessGeometry(NiAVObject* object);
-    bool ProcessGeometry(unsigned int object);
+    bool ProcessGeometry(unsigned int apAVObj);
     bool ProcessGeometry(Param* apAVObj);
     int CreateTriData_0068ca90();
     void ResizeMeshBuffers();
@@ -69,7 +69,7 @@ class BSTempEffectSimpleDecal : public BSTempEffect
                                   const NiPoint3* positions, const NiPoint3* attributes,
                                   int* outIndices, NiPoint3* outPositions,
                                   NiPoint3* outAttributes);
-    static int BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(void* apPlane, int aiVertexCount, NiPoint3* apInIndex,
+    static int ClipPolygonAgainstPlane(void* apPlane, int aiVertexCount, NiPoint3* apInIndex,
                                   float* apInVertex, NiPoint3* apInNormal,
                                   float* apOutIndex, NiPoint3* apOutVertex,
                                   NiPoint3* apOutNormal);

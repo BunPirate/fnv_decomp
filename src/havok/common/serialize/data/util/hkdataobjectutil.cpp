@@ -859,7 +859,7 @@ struct Cloner
     S_00dc5970_Map m_kHandleMap;
 
     S_00dc5970_ClassImpl* findDestClass(S_00dc5970_ClassImpl* classname) throw();  // copyClass
-    void Cloner_copyObjectMembers(S_00dc5970_Object& dstObject, const S_00dc5970_Object& srcObject) throw();
+    void copyObjectMembers(S_00dc5970_Object& dstObject, const S_00dc5970_Object& srcObject) throw();
     S_00dc5970_Object copyObject(const S_00dc5970_Object& srcObject) throw();
     void CopyValue(ValueQ dst, const ValueQ& src) throw();
     Object copyObject(const Object& srcObject) throw();
@@ -883,7 +883,7 @@ S_00dc5970_Object Cloner::copyObject(const S_00dc5970_Object& srcObject) throw()
         S_00dc5970_Class dstClass(findDestClass(srcObject.GetVariantValue().getImplementation()));
         S_00dc5970_Object dstObj(m_kSourceWorld.GetObject(dstClass));
         m_kHandleMap.insert(srcObject.GetObjectHandle(), dstObj.GetObjectHandle());
-        Cloner_copyObjectMembers(dstObj, srcObject);
+        copyObjectMembers(dstObj, srcObject);
         return dstObj;
     }
     return S_00dc5970_Object(0);

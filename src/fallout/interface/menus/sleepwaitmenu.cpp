@@ -86,7 +86,7 @@ void SleepWaitMenu_Close()
     if (DAT_011da920)
     {
         if (!g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
-            DAT_011e0e80.ProcessLists_Update3DAfterResting();
+            DAT_011e0e80.Update3DAfterResting();
         if (DAT_011da920->m_bState2)
             DAT_011d8804->RemoveFader(0, 0);
         DAT_011da920->FUN_00726070()->Set(0x1772, 1);

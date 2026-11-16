@@ -2280,10 +2280,10 @@ template <> inline void NiTArray<NiObjectGroup*, NiTMallocInterface<NiObjectGrou
 namespace fnv_00a647f0 {
 // Reads the group count from the stream, resizes the group array, and allocates NiObjectGroup instances for each group.
 // @fnv 0x00a647f0
+}  // namespace fnv_00a647f0
 // src: XBOX_RETAIL_PDB 0x00a647f0
 // pdb: NiStream::LoadObjectGroups | NiStream.obj | retail, call graph (shared callers), high
 // pdb locals: uiNumGroups, uiGroup, uiSize, pkGroup
-}  // namespace fnv_00a647f0
 void NiStream::LoadObjectGroups()
 {
     unsigned int uiNumGroups;

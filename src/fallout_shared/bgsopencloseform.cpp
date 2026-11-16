@@ -156,7 +156,7 @@ bool BGSOpenCloseForm::SetOpenState(TESObjectREFR* apRef, bool abOpen, bool abSn
                 controller->FUN_0047aa40(true);
                 if (abSnap)
                 {
-                    apRef->GetExtraData()->ExtraDataList_SetRagDollData(0);
+                    apRef->GetExtraData()->SetRagDollData(0);
                     controller->StopSequence(active, 0.0f);
                     controller->ActivateControllerSequence(inactive, 0, false, 1.0f, 0.0f, static_cast<NiControllerSequence*>(0));
                     inactive->PathingLOSGridMap_SetSightRadius(-DAT_0101ab70);

@@ -185,7 +185,7 @@ bool NavMeshInfoSearch::CollectConnections(const AStarNodeType* apNode,
             TESObjectREFR* m_pLinkedDoorReference = pPathNodeDoor->Set3DObject()->GetLinkedDoor();
             if (!m_pLinkedDoorReference)
                 continue;
-            NavMeshPortalData* pExtraNavMeshPortal = m_pLinkedDoorReference->GetExtraData()->ExtraDataList_GetNavMeshPortal();
+            NavMeshPortalData* pExtraNavMeshPortal = m_pLinkedDoorReference->GetExtraData()->GetNavMeshPortal();
             if (pExtraNavMeshPortal)
             {
                 const NavMeshInfo* pNextMesh =

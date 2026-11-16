@@ -21,7 +21,7 @@ class NiScreenElementsData : public NiTriShapeData
     virtual void GetViewerStrings(NiViewerStringsArray*);
 
     void NiScreenElementsData_UpdateBound();
-    bool NiScreenElementsData_Insert(int, int, int);
+    bool Insert(int, int, int);
     bool FUN_00a88130(int, int, float, float, float, float);
     void FUN_00a67050(int);
 

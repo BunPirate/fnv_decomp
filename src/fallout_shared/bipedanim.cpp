@@ -2343,9 +2343,9 @@ void BipedAnimHelper::ApplySkinTextures(NiAVObject* apObj, bool abForceReadjust)
 
     bool bResultTmp = false;
     if (abForceReadjust)
-        bResultTmp = pNPC->TESNPC_GetRace()->TESRace_GetBodyTexture(_ptrA, ptrB3, pNPC, (BIPED_OBJECT)bipedObject, true);
+        bResultTmp = pNPC->TESNPC_GetRace()->GetBodyTexture(_ptrA, ptrB3, pNPC, (BIPED_OBJECT)bipedObject, true);
     else
-        bResultTmp = pNPC->TESNPC_GetRace()->TESRace_GetBodyTexture(_ptrA, ptrB3, pNPC, (BIPED_OBJECT)bipedObject, false);
+        bResultTmp = pNPC->TESNPC_GetRace()->GetBodyTexture(_ptrA, ptrB3, pNPC, (BIPED_OBJECT)bipedObject, false);
 
     if (pNPC && !bResultTmp)
     {
@@ -2557,7 +2557,7 @@ void BipedLoadAccess::BipedAnim_LoadBipedParts(bool abForceLoadImmediate)
             if (!abForceLoadImmediate && IsSlotHidden((BIPED_OBJECT)slot) && m_pActor != g_thePlayer && *DAT_011c5ef0.Bool() &&
                 BSFaceGenManager_GetUseFaceGenHeads() && FUN_004abfa0())
             {
-                BipedAnim_QueueHelmetLoad(IO_TASK_PRIORITY_IO_TASK_PRIORITY_CRITICAL, 0, (BIPED_OBJECT)slot);
+                QueueHelmetLoad(IO_TASK_PRIORITY_IO_TASK_PRIORITY_CRITICAL, 0, (BIPED_OBJECT)slot);
                 continue;
             }
             if (!object[slot].m_pModel->GetModelLength())

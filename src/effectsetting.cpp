@@ -70,7 +70,7 @@ double NiAbs_00408820(float value);
 // @fnv 0x00408570
 void EffectSetting::UpdateEffectName(const char* name)
 {
-    int comparison = EffectSetting_GetEffectName().StrCmp(name, true);
+    int comparison = GetEffectName().StrCmp(name, true);
     if (comparison)
         SetFullName(name);
 }

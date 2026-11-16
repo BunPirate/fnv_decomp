@@ -109,7 +109,7 @@ public:
 
     bool Load(TESFile* apFile);
     void UpdateEffectName(const char* name);
-    BSStringT<char> EffectSetting_GetEffectName() const;
+    BSStringT<char> GetEffectName() const;
     bool HasEffectID();
     int GetEffectID();
     void SetEffectID(int value);

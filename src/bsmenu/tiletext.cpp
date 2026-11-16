@@ -730,7 +730,7 @@ NiNode* TileText::CalculateNode()
         params.maxLines = maximumTmp;
         params.multibyte = allowedX;
 
-        if (!FontManager::Get()->FontManager_CreateText(current, &params, reinterpret_cast<NodePtr&>(spModel)))
+        if (!FontManager::Get()->CreateText(current, &params, reinterpret_cast<NodePtr&>(spModel)))
             return 0;
 
         maximumX = params.width;

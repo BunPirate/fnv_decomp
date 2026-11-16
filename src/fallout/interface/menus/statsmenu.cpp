@@ -680,7 +680,7 @@ Tile* StatsMenu_Create()
     float ftop_depth = Tile::GetInterfaceScale();
     Tile* ptile = ((Tile*)((IMH*)pin)->CombatController_GetCombatState())->ReadFile("Data\\Menus\\Main\\stats_menu.xml");
     StatsMenu::ms_pInventoryMenu = (StatsMenu*)((Tile*)ptile)->GetMenu();
-    MenuH::Menu_RemoveFromXMLArchive("Data\\Menus\\Main\\stats_menu.xml", StatsMenu::ms_pInventoryMenu);
+    MenuH::RemoveFromXMLArchive("Data\\Menus\\Main\\stats_menu.xml", StatsMenu::ms_pInventoryMenu);
     ((MenuH*)StatsMenu::ms_pInventoryMenu)->Menu_SetRenderedMenu();
     if (StatsMenu::ms_pInventoryMenu && StatsMenu::ms_pInventoryMenu->GetClass() == StatsMenu_GetClassStatic())
     {
@@ -1332,7 +1332,7 @@ int __cdecl CompareEntryNames(void* pEntryA, void* pEntryB)
 // pdb params: apItem1, apItem2
 int __cdecl StatsMenu_NamedEffectSortFn(EffectSetting* apItem1, EffectSetting* apItem2)
 {
-    return fnv_007e0510::_stricmp(apItem1->EffectSetting_GetEffectName(), apItem2->EffectSetting_GetEffectName());
+    return fnv_007e0510::_stricmp(apItem1->GetEffectName(), apItem2->GetEffectName());
 }
 
 bool __fastcall PlayerCharacter_IsHardcore(PlayerCharacter* pPlayer);
@@ -3551,10 +3551,10 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
         for (BSSimpleList<EffectSetting*>* pnamelistnode = &peffectlistnode->GetItem()->m_kNamedEffectsList;
              pnamelistnode && pnamelistnode->GetItem(); pnamelistnode = pnamelistnode->GetNext())
         {
-            if (((EffectSetting*)pnamelistnode->GetItem())->EffectSetting_GetEffectName())
+            if (((EffectSetting*)pnamelistnode->GetItem())->GetEffectName())
             {
                 strtmp.PrintfString(DAT_01019f08,
-                               (const char*)((EffectSetting*)pnamelistnode->GetItem())->EffectSetting_GetEffectName());
+                               (const char*)((EffectSetting*)pnamelistnode->GetItem())->GetEffectName());
                 ((BSStringT<char>& (__thiscall*)(BSStringT<char>*, const BSStringT<char>&))AppendStatsEffectString)(&streffects, strtmp);
                 if (pnamelistnode->GetNext())
                     streffects += DAT_01012630;

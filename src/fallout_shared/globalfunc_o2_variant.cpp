@@ -2671,6 +2671,7 @@ class World6b3c0
 };
 
 // Defined here (as in the original unit) so the compiler sees Insert never modifies its argument.
+// src: XBOX_RETAIL_PDB 0x00c68b50
 void RefSet6b3c0::BSSimpleList_NiPointer_ObstacleData_AddHead(const RefPtr6b3c0& item)
 {
     if (item.m_p == 0)

@@ -115,7 +115,7 @@ bool MagicItemForm::Compare(TESForm* apCompare)
         return true;
 
     if (reinterpret_cast<EffectItemList*>(reinterpret_cast<char*>(this) + 0x24)
-            ->EffectItemList_Compare(pmagicItem ? reinterpret_cast<EffectItemList*>(reinterpret_cast<char*>(pmagicItem) + 0x24)
+            ->Compare(pmagicItem ? reinterpret_cast<EffectItemList*>(reinterpret_cast<char*>(pmagicItem) + 0x24)
                                   : 0))
         return true;
 
@@ -140,5 +140,5 @@ void MagicItemForm::CopyFrom(const TESForm* apCopy)
     }
     TESForm::CopyFrom(apCopy);
     ((MagicItem*)((char*)this + 0x18))->CopyMagicItemData(rec ? (MagicItem*)((char*)rec + 0x18) : 0);
-    ((EffectItemList*)((char*)this + 0x24))->EffectItemList_Copy(rec ? (EffectItemList*)((char*)rec + 0x24) : 0);
+    ((EffectItemList*)((char*)this + 0x24))->Copy(rec ? (EffectItemList*)((char*)rec + 0x24) : 0);
 }

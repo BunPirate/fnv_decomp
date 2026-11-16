@@ -3,7 +3,7 @@
 #define FNV_TESDATAHANDLER_DEFAULTS_H
 
 
-namespace ActorValue { void ActorValue_RegisterActorValues(); }
+namespace ActorValue { void RegisterActorValues(); }
 class CameraPathManager
 {
   public:
@@ -15,7 +15,7 @@ class TESGlobalMap
   public:
     void SetAt(const char*, TESGlobal*);
 };
-namespace MagicSystem { void MagicSystem_GenerateDefaultObjects(); }
+namespace MagicSystem { void GenerateDefaultObjects(); }
 void TESTopic_AddDefaultTopics();
 void BGSEquipType_GenerateDefaultMenuIcons();
 void EffectSettingCollection_AddEffect(EffectSetting*);

@@ -851,7 +851,7 @@ void __fastcall bhkWorld_ProcessBatchRemovals(bhkWorld* self, void*, bool a)
     if (a)
         self->FlushEntries();
     else
-        self->bhkWorld_RemoveBatchedEntities();
+        self->RemoveBatchedEntities();
 }
 
 struct FUN_00c75ad0_T

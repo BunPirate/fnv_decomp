@@ -1386,8 +1386,8 @@ struct ModelLoader
 {
     void QueueModelFilePath(const char*, int, QueuedFile*);
     void ProcessModelRequest(TESModel*, int, QueuedFile*, int, bool, bool, bool);
-    void ModelLoader_QueueEGMFile(TESModel*, int, QueuedFile*, unsigned int);
-    void ModelLoader_QueueTRIFile(TESModel*, int, QueuedFile*, unsigned int);
+    void QueueEGMFile(TESModel*, int, QueuedFile*, unsigned int);
+    void QueueTRIFile(TESModel*, int, QueuedFile*, unsigned int);
 };
 extern ModelLoader* g_modelLoader;
 struct FUN_004ac110_shell
@@ -1477,7 +1477,7 @@ void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile*
         CopyStringChecked(pTexturePath, 260, "Textures\\");
         AppendStringChecked(pTexturePath, 260, ((FNStub*)((char*)faceGenData.m_pHair + 0x3c))->GetFullName());
         g_modelLoader->QueueModelFilePath(pTexturePath, aePriority, apParent);
-        g_modelLoader->ModelLoader_QueueEGMFile(faceGenData.m_pHair ? (TESModel*)((char*)faceGenData.m_pHair + 0x24) : 0, aePriority,
+        g_modelLoader->QueueEGMFile(faceGenData.m_pHair ? (TESModel*)((char*)faceGenData.m_pHair + 0x24) : 0, aePriority,
                                 apParent, 9);
     }
     char pheadModTexture[260];
@@ -1521,8 +1521,8 @@ void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile*
         if (pmodel && ((FUN_0048cee0_shell*)pmodel)->FUN_0048cee0())
         {
             g_modelLoader->ProcessModelRequest(pmodel, aePriority, apParent, 0, false, false, true);
-            g_modelLoader->ModelLoader_QueueEGMFile(pmodel, aePriority, apParent, ipart);
-            g_modelLoader->ModelLoader_QueueTRIFile(pmodel, aePriority, apParent, ipart);
+            g_modelLoader->QueueEGMFile(pmodel, aePriority, apParent, ipart);
+            g_modelLoader->QueueTRIFile(pmodel, aePriority, apParent, ipart);
         }
     }
     HPList* pheadPartList = &faceGenData.Accessories;
@@ -1533,8 +1533,8 @@ void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile*
         {
             g_modelLoader->ProcessModelRequest(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority,
                                                apParent, 0, false, false, true);
-            g_modelLoader->ModelLoader_QueueEGMFile(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent, ipart);
-            g_modelLoader->ModelLoader_QueueTRIFile(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent,
+            g_modelLoader->QueueEGMFile(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent, ipart);
+            g_modelLoader->QueueTRIFile(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent,
                                             ipart);
         }
         pheadPartList = _ref_00726070(pheadPartList);
@@ -4941,8 +4941,8 @@ Sol* GetOrCreateFaceGenModel(char* apEGMFilename, char* apNIFFilename, char* apT
     if (BSFaceGenManager::GetFaceGenManager()->m_pModelCache == 0)
     {
         BSFaceGenManager::GetFaceGenManager()->m_pModelCache = new BSFaceGenModelMap;
-        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->BSFaceGenModelMap_SetMaxDataSize(0, g_011d59f4.FUN_004503f0());
-        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->BSFaceGenModelMap_SetMaxDataSize(1, g_011d5afc.FUN_004503f0());
+        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->SetMaxDataSize(0, g_011d59f4.FUN_004503f0());
+        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->SetMaxDataSize(1, g_011d5afc.FUN_004503f0());
     }
 
     if (apEGMFilename)

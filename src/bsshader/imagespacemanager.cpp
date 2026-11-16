@@ -145,7 +145,7 @@ void ImageSpaceManager::InitGeometry()
 {
     (*reinterpret_cast<NiPointer<NiScreenElementsData>*>(spScreenTriShapeData)) = new NiScreenElementsData(false, false, 1, 1, 1, 4, 1, 2, 1);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape)) = new NiScreenElements((*reinterpret_cast<NiPointer<NiScreenElementsData>*>(spScreenTriShapeData)));
-    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->NiScreenElementsData_Insert(4, 0, 0);
+    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->Insert(4, 0, 0);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->SetRectangleBounds(0, DAT_01012054, 1.0f, DAT_010162c0, DAT_0104a494);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->FUN_00a88130(0, 0, 0.0f, 0.0f, 1.0f, 1.0f);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spScreenTriShape))->GetData()->NiScreenElementsData_UpdateBound();
@@ -2457,7 +2457,7 @@ void ImageSpaceManager::CreatePartialScreenGeometry(float afWidthRatio, float af
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape)) = ::new NiScreenElements(spScreenData);
     float width = afWidthRatio * 2.0f;
     float height = afHeightRatio * -2.0;
-    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->NiScreenElementsData_Insert(4, 0, 0);
+    (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->Insert(4, 0, 0);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->SetRectangleBounds(0, DAT_01012054, 1.0f, width, height);
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->NiScreenElementsData_UpdateBound();
     (*reinterpret_cast<NiPointer<NiScreenElements>*>(spPartialScreenTriShape))->GetData()->FUN_00a88130(0, 0, 0.0f, 0.0f, afWidthRatio, afHeightRatio);

@@ -500,7 +500,7 @@ void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* island)
 
                     { int h = GetOperationType();
 
-                    int color=reinterpret_cast<int>(m_color); 
+                    int color=reinterpret_cast<int>(m_color);
                     hkContactPointViewer_displayArrow(reinterpret_cast<Target*>(m_displayHandler), y, &y->normal, color, &v->value10, h); }
 
                 } } i++; } }

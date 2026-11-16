@@ -24,12 +24,12 @@ class Tile3D : public Tile
     virtual void SetAlphaAndOverlayColor(NiNode* node, float alpha, NiColorAlpha* color);
 
     void SetParent(Tile3D* parent, Tile3D* replacedChild);
-    bool Tile3D_FindManagerNode(NiAVObject* apNode);
-    void Tile3D_UpdateNIF();
+    bool FindManagerNode(NiAVObject* apNode);
+    void UpdateNIF();
     void RemovePropertyRecursive(char* target);
-    void Tile3D_RemoveProperties(NiAVObject* object);
+    void RemoveProperties(NiAVObject* object);
     void ConvertShadersToTileShader(NiNode* node);
-    void Tile3D_SetupShaderPropertiesRecurse(NiAVObject* apNode);
+    void SetupShaderPropertiesRecurse(NiAVObject* apNode);
     bool UpdateAnimation(float value, bool force);
     void UpdateAnimation(float value, int force);
     const char* __thiscall GetTypeName_00a0bdd0();

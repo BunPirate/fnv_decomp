@@ -255,7 +255,7 @@ public:
     virtual bool ProcessUseItemAt(Actor*); // RTTI slot 502                                          // 0x008f9320 (slot 502)
     void MiddleHighProcess_FindBedChairs(Actor*, int, int);                                    // 0x00922670
     ActorPackageData* FUN_008d0430();                                       // 0x008d0430
-    void HighProcess_ProcessGuardInit(Actor*, void*);                                       // 0x00902640
+    void ProcessGuardInit(Actor*, void*);                                       // 0x00902640
     void HighProcess_ProcessGuardWaitToAttack(Actor*, void*);                                       // 0x00902c80
     virtual unsigned int GetAttackChance(Actor* apActor, float afDistanceSq, float afShortDistSq, float afLongDistSq, bool abAlarmOrCombat, bool abPureTravel) const; // RTTI slot 211 // 0x008daa20 (slot 211)
     virtual bool ShouldAttackTarget(Actor*, Actor*, bool, bool, ActorCombatGroup*, bool, bool, bool, bool, bool, bool, bool, TESPackage*); // RTTI slot 207                                   // 0x009001c0 (slot 207)
@@ -417,9 +417,9 @@ public:
     void FUN_0090dc60(Actor*, int, int, int); // 0x0090dc60: folded stack arguments
     void FUN_008f3fe0(Actor*, float); // 0x008f3fe0
     void FUN_008eeac0(Actor*); // 0x008eeac0
-    void HighProcess_ProcessWanderOneHour(Actor*, float); // 0x008f36c0
+    void ProcessWanderOneHour(Actor*, float); // 0x008f36c0
     bool HighProcess_ProcessSleepOneHour(Actor*, float); // 0x008f3550
-    bool HighProcess_ProcessEatOneHour(Actor*, float); // 0x008f3600
+    bool ProcessEatOneHour(Actor*, float); // 0x008f3600
     void HighProcess_ProcessPatrolOneHour(Actor*, float); // 0x008f4000
     void ChangeWeapon(Actor* apActor, TESObjectWEAP* apWeapon);                       // 0x009037e0
 };

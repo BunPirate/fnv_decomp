@@ -24,5 +24,5 @@ public:
     void ScaleTarget(void* apDest, ArgB* arCloneData);
 
     static NiObject* __cdecl CreateObject();
-    static const NiRTTI bhkSphereShape_ms_RTTI;
+    static const NiRTTI bhkSphereShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268288 (old: DAT_01268288/g_01268288/ms_kRTTI)
 };

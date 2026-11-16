@@ -49,7 +49,7 @@ public:
     void SetChanceGlobal(TESGlobal* global);
     void InitializeLeveledList();
     void SortLeveledList();
-    LeveledObject* TESLeveledList_AddLeveledObject(unsigned short asLevel, unsigned short asCount, TESForm* apForm, ContainerItemExtra* apExtra);
+    LeveledObject* AddLeveledObject(unsigned short asLevel, unsigned short asCount, TESForm* apForm, ContainerItemExtra* apExtra);
     void DeleteLeveledObject(LeveledObject* object);
     void SelectLeveledObject(unsigned short level, TESForm** form, unsigned short* count, ContainerItemExtra** extra, bool recurse, int mode);
     void CalculateCurrentForm(unsigned short asLevel, TESForm*& apOutForm, unsigned short& asOutCount, ContainerItemExtra*& apOutExtra, bool abRecurse, int aiAllBelowForce);

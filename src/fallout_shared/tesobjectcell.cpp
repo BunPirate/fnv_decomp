@@ -2729,11 +2729,11 @@ struct RefStub
 
 bool __fastcall IsSlidingDoor(TESObjectDOOR*);
 // @fnv 0x005575d0
+} // namespace fnv_005575d0
+
 // src: XBOX_RETAIL_PDB 0x005575d0
 // pdb: TESObjectCELL::AddObstaclesAndDoors | TESObjectCELL.obj | retail, object-file gap fill, high
 // pdb locals: plist, pref, pdoor
-} // namespace fnv_005575d0
-
 void TESObjectCELL::AddObstaclesAndDoors()
 {
     using namespace fnv_005575d0;
@@ -2966,11 +2966,11 @@ struct NiNodeVtbl
 };
 
 // @fnv 0x00545a30
+} // namespace fnv_00545a30
+
 // src: XBOX_RETAIL_PDB 0x00545a30
 // pdb: TESObjectCELL::AttachMultiBoundNodes | TESObjectCELL.obj | retail, call graph, high
 // pdb locals: pparent, iter, spnode, pref
-} // namespace fnv_00545a30
-
 void TESObjectCELL::AttachMultiBoundNodes()
 {
     using namespace fnv_00545a30;
@@ -4060,7 +4060,7 @@ struct RefListOps
 };
 
 // @fnv 0x0054c740
-// src: XBOX_RETAIL_PDB 0x0054c740
+// src: XBOX_RETAIL_PDB 0x0054c740 (was XBOX_PDB)
 // pdb: TESObjectCELL::RunScripts | TESObjectCELL.obj | retail, call graph, high
 // pdb params: bIgnore3D, bIgnoreActors
 // pdb locals: plist, bquit, pref, plastlist
@@ -4411,12 +4411,12 @@ struct FUN_00550c60_RefFns
 };
 FUN_00550c60_AB* __fastcall ExtraDataList_GetLevCreaOriginalBase(BaseExtraList*);
 // @fnv 0x00550c60
+} // namespace fnv_00550c60
+
 // src: XBOX_DEBUG_PDB 0x00550c60
 // pdb: TESObjectCELL::CalcLeveledCreatures | TESObjectCELL.obj | debug, call graph, high
 // pdb params: abAllowRecalc
 // pdb locals: plist, icurrenttime, badvanced, pref, porigbase, pbase, pactor
-} // namespace fnv_00550c60
-
 void TESObjectCELL::CalcLeveledCreatures(bool abAllowRecalc)
 {
     using namespace fnv_00550c60;
@@ -5149,12 +5149,12 @@ struct WaterRefObj
     virtual CellPoint3* GetPos();
 };
 // @fnv 0x00547250
+} // namespace fnv_00547250
+
 // src: XBOX_DEBUG_PDB 0x00547250
 // pdb: TESObjectCELL::GetWaterHeight | TESObjectCELL.obj | debug, call graph, high
 // pdb params: arPos, afHeight
 // pdb locals: bhitWater, ploadedData, pt, plist, max, pwaterRef, angle, pnode, min, pshape, fheight
-} // namespace fnv_00547250
-
 bool TESObjectCELL::GetWaterHeight(void* arPos, float* afHeight)
 {
     using namespace fnv_00547250;
@@ -13212,12 +13212,12 @@ float BSMAX_00404010(float, float);
 void Warning_005b5e40(const char*, ...);
 // Resets output, iterates the cell's reference list to gather rotation bounds, logs and resets outliers, and stores the midpoint of the min/max rotations.
 // @fnv 0x0054c030
+} // namespace fnv_0054c030
+
 // src: XBOX_RETAIL_PDB 0x0054c030
 // pdb: TESObjectCELL::CalcRefCenterPoint | TESObjectCELL.obj | retail, unique string literal, high
 // pdb params: aOutCenter
 // pdb locals: plist, minLocation, irefcount, maxLocation, pref, bprocess, boutsideBroadphase, diff, tempCenter, bbad, pos, rot, extents
-} // namespace fnv_0054c030
-
 void TESObjectCELL::CalcRefCenterPoint(RotationPoint& aOutCenter)
 {
     using namespace fnv_0054c030;

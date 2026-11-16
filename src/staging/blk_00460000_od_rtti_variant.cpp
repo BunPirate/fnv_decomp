@@ -1038,7 +1038,7 @@ struct FUN_0047fe80_class : BaseFormComponent
     virtual void FUN_0047fe80_v2();
     virtual void FUN_0047fe80_v3();
     virtual unsigned short GetAttackDamage();
-    bool __thiscall IsAttackDamageDifferent(BaseFormComponent* other);
+    bool __thiscall IsAttackDamageDifferent(BaseFormComponent* apCompareFC);
 };
 extern double DAT_01017a40;
 extern const float DAT_01012054;

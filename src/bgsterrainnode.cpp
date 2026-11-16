@@ -887,7 +887,7 @@ void TerrainNodeX::BGSTerrainNode_UpdateTrees(int aViewPosition)
                 if (pTrees->IsLoaded())
                 {
                     pTrees->Prepare();
-                    pTrees->BGSDistantTreeBlock_UpdateShaderProperties();
+                    pTrees->UpdateShaderProperties();
                 }
             }
         }

@@ -18,13 +18,13 @@ class AudioMgr_BSAudio
 {
 public:
     static AudioMgr_BSAudio* Get();
-    AudioPlaybackHandle Make(int id, SndForm* form);
+    AudioPlaybackHandle Make(int apFilename, SndForm* aiTypeFlags);
     AudioPlaybackHandle Make2(int id);
     bool PlayAt(void* apObj, float afFadeSeconds, int aiFlags);
-    AudioPlaybackHandle GetHandle(const char* name, int flags, int a);
-    AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags, int a);
+    AudioPlaybackHandle GetHandle(const char* apSoundName, int aiTypeFlags, int a);
+    AudioPlaybackHandle GetSoundByEditorID(const char* apSoundName, int aiTypeFlags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags);
-    Snd Make(void* a, SndSrc* b);
+    Snd Make(void* apFilename, SndSrc* aiTypeFlags);
 };
 #include "../../../../include/BSAudio.h"
 #include "../../../../include/NiAVObject.h"

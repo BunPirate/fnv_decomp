@@ -303,7 +303,7 @@ void __stdcall NiD3DShaderFactory_AddProgramDirectory(const char* pacDirectory)
 {
     NiD3DShaderProgramFactory* pkFactory = NiD3DShaderProgramFactory_GetInstance();
     if (pkFactory)
-        pkFactory->NiD3DShaderProgramFactory_AddProgramDirectory(pacDirectory);
+        pkFactory->AddProgramDirectory(pacDirectory);
 }
 }  // namespace fnv_00e91f60
 
@@ -320,7 +320,7 @@ void __stdcall NiD3DShaderFactory_RemoveProgramDirectory(char* pacDirectory)
 {
     NiD3DShaderProgramFactory* pkFactory = NiD3DShaderProgramFactory_GetInstance();
     if (pkFactory)
-        pkFactory->NiD3DShaderProgramFactory_RemoveProgramDirectory(pacDirectory);
+        pkFactory->RemoveProgramDirectory(pacDirectory);
 }
 }  // namespace fnv_00e91f80
 

@@ -32,7 +32,7 @@ public:
         void RemoveAll();
     };
 
-    NiGPUProgramCache(void* a, unsigned char b, unsigned char c);
+    NiGPUProgramCache(void* uiVersion, unsigned char bAutoWriteCacheToDisk, unsigned char bLocked);
     virtual ~NiGPUProgramCache();
     virtual void vf02();
     virtual void vf03();

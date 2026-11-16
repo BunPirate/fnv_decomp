@@ -24,9 +24,9 @@ public:
     void AddSoundForType(SoundListEntry*, CREATURE_SOUND_TYPE);
     BSSimpleList<SoundListEntry*>* GetSoundListForType(CREATURE_SOUND_TYPE);
     bool LoadCreatureSound(TESFile*, CREATURE_SOUND_TYPE, TESCreature*);
-    SoundOps* CreatureSounds_PickCreatureSound(int);
-    void CreatureSounds_Copy(CreatureSounds*);
-    bool CreatureSounds_Compare(CreatureSounds* other);
+    SoundOps* PickCreatureSound(int);
+    void Copy(CreatureSounds*);
+    bool Compare(CreatureSounds* other);
 
     union
     {

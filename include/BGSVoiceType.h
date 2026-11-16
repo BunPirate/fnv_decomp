@@ -24,7 +24,7 @@ public:
     virtual bool LoadForm2(TESFile* modInfo);
     virtual void SaveForm();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
     bool Load(TESFile* apFile);
     void Save_005f0140();

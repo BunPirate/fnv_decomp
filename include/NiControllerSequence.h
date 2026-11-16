@@ -76,9 +76,9 @@ class NiControllerSequence : public NiObject
     virtual bhkRigidBody* IsBhkRigidBody() const;
     virtual bhkLimitedHingeConstraint* IsBhkLimitedHingeConstraint() const;
     virtual NiObject* MakeClone(CloningProcess& arCloning);
-    virtual void LoadBinary(NiStream& arStream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual void LinkObject(NiStream& kStream);
-    virtual bool RegisterStreamables(NiStream& arStream);
+    virtual bool RegisterStreamables(NiStream& kStream);
     virtual void SaveBinary(NiStream& arStream);
     virtual bool IsEqual(NiObject* apObject) const;
     virtual void GetViewerStrings(NiViewerStringsArray* apStrings);

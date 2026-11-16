@@ -8,7 +8,7 @@ class HavokError : public hkError
 public:
     HavokError();
     virtual ~HavokError() throw();
-    virtual int message(int type, int id, const char* description, const char* file, int line);
+    virtual int message(int m, int id, const char* description, const char* file, int line);
     virtual void vf06();
     virtual void beginSection(int id, const char* name);
     virtual void endSection();

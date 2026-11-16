@@ -16,8 +16,8 @@ public:
 
     QueuedFileEntry& operator=(const QueuedFileEntry& other);
     char* GetFileName();
-    void SetFileName(char* name);
-    void SetFileName(const char* name);
+    void SetFileName(char* apFileName);
+    void SetFileName(const char* apFileName);
     BSFileEntry* GetFileEntry();
     void SetFileEntry(BSFileEntry* entry);
     void LookupFileEntry(int aeArchiveTypeIndex);

@@ -146,7 +146,7 @@ NiNode* TESCreature::Create3DModel(TESObjectREFR* apRef)
         {
             if (SceneObjectLookup::GetObjectByName(node, "Bip01"))
             {
-                biped->BipedAnim_InitRoot(node);
+                biped->InitBoneSlots(node);
                 node->UpdateSceneObject();
                 NiUpdateData update(0.0f, false, false);
                 node->Update(update);

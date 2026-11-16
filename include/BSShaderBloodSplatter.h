@@ -23,8 +23,8 @@ public:
     static void* __cdecl operator new(unsigned int size);
 
     BSShader* CreateShader();
-    void BSShaderBloodSplatter_LoadShaders();
-    bool BSShaderBloodSplatter_LoadStagesAndPasses();
+    void LoadShaders();
+    bool LoadStagesAndPasses();
     void BSShaderBloodSplatterProperty_SetClampD3D(unsigned int);
     void BSShaderBloodSplatter_InitPass(unsigned int);
     void NiD3DPass_SetPixelShader(NiRefObject*);

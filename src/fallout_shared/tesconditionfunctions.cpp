@@ -17655,6 +17655,7 @@ unsigned int FUN_005a4b40Class::Actor_GetMinorCrimesNumber()
     return 0;
 }
 
+// src: XBOX_RETAIL_PDB 0x008b7e20
 int FUN_005a4b40Class::Actor_GetFactionMinorCrime()
 {
     return 0;

@@ -1078,7 +1078,7 @@ void TESCreature::SaveForm()
     BeginFormRecord();
     TESFullName::Save_00487010();
     TESModel::WriteToBuffer(0x4c444f4d, 0x54444f4d);
-    TESSpellList::TESSpellList_Save();
+    TESSpellList::TESSpellList_SaveSubRecord();
     ((Sub70_5f7c20*)((char*)this + 0x70))->FUN_0047bd70();
     TESModelList::CopyModelListToBuffer(0x5a46494e, 0x5446494e);
     TESActorBaseData::Save();
@@ -1947,7 +1947,7 @@ void TESCreature::CopyFrom(const TESForm* apCopy)
     if (src2->GetCreatureSounds())
     {
         ptr = CreateCreatureSounds();
-        ptr->CreatureSounds_Copy(src2->GetCreatureSounds());
+        ptr->Copy(src2->GetCreatureSounds());
     }
     else
     {

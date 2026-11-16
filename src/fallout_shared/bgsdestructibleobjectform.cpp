@@ -116,7 +116,7 @@ TESModel* TESObjectREFR::GetTESModel()
         {
             TESObjectWEAP* weapon = (TESObjectWEAP*)GetObjectReference();
             if (GetExtraData()->GetWeaponModIndex())
-                model = weapon->TESObjectWEAP_GetModTESModel(GetExtraData()->GetWeaponModIndex(), false);
+                model = weapon->GetModTESModel(GetExtraData()->GetWeaponModIndex(), false);
             else
                 model = weapon->GetWeaponModel();
         }

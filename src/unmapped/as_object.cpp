@@ -97,7 +97,7 @@ void TESObjectCELL::RemoveNonPersistentRefs()
                             ((FUN_00881d10*)pActor)->SetHoursPassed();
                     }
                     g_TESSaveLoadGame->FUN_008d0370(pRef);
-                    g_BGSSaveLoadGame->BGSSaveLoadGame_UnloadForm(pRef, 0);
+                    g_BGSSaveLoadGame->UnloadForm(pRef, 0);
                     bool bPrint = true;
                     if (g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading() &&
                         ((Class_0084a700*)g_BGSSaveLoadGame)->HasChangeForForm(pRef, CF845(8)) &&
@@ -142,7 +142,7 @@ void TESObjectCELL::RemoveNonPersistentRefs()
                 if (!pNavFile || pNavFile->IsMasterFile())
                 {
                     NavMeshPtr apSearchNavMesh = pNavMeshArray->GetNavMeshAt(i);
-                    g_BGSSaveLoadGame->BGSSaveLoadGame_UnloadForm(apSearchNavMesh.AnimatingText_GetFullText(), 0);
+                    g_BGSSaveLoadGame->UnloadForm(apSearchNavMesh.AnimatingText_GetFullText(), 0);
                     pNavMeshArray->RemoveAndCollect(i);
                     i--;
                 }

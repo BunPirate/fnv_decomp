@@ -1643,7 +1643,7 @@ StartMenu::~StartMenu()
 }
 
 
-struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first retail link of 1 high-tier links to its methods; old: StartMenu_Option)
+struct StartMenu_Option
 {
     void InitPointer();
     void* FUN_007ce660(unsigned int flags);
@@ -1653,7 +1653,7 @@ void _Deallocate(void* p);
 
 // @fnv 0x007ce660
 // pdb: StartMenu::Option::`scalar deleting destructor' | StartMenu.obj | retail, vtable slot, high
-void* Option::FUN_007ce660(unsigned int flags)
+void* StartMenu_Option::FUN_007ce660(unsigned int flags)
 {
     InitPointer();
     if (flags & 1)

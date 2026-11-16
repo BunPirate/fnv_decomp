@@ -1180,7 +1180,7 @@ ArchiveFile* __cdecl ArchiveManager_GetFileByFileEntry(int aeArchiveTypeIndex, B
     NiPointer<Archive> sparchive(ArchiveManager::FindArchiveForFileEntry(apFileEntry, (ARCHIVE_TYPE)0xffff));
     if (sparchive.m_pObject)
     {
-        pfile = sparchive->Archive_GetFileByFileEntry(apFileEntry, aiBufferSize, apFileName);
+        pfile = sparchive->GetFileByFileEntry(apFileEntry, aiBufferSize, apFileName);
     }
     return pfile;
 }

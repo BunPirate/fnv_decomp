@@ -636,7 +636,7 @@ void ActiveEffect::UpdateEffect(float afSecondsElapsed)
                                 if (IsConditionMet())
                                     TaskQueueInterface::GetInstance()->TaskQueueInterface_QueueMHEInstantiateHitEffects(this);
                                 else
-                                    pHitEffectList = MagicHitEffect::MagicHitEffect_InstantiateHitEffects(this);
+                                    pHitEffectList = MagicHitEffect::InstantiateHitEffects(this);
                             }
                         }
                     }
@@ -671,7 +671,7 @@ void ActiveEffect::UpdateEffect(float afSecondsElapsed)
                             delete (List_009e03e0*)pHitEffectList;
                             pHitEffectList = 0;
                         }
-                        pHitEffectList = MagicHitEffect::MagicHitEffect_InstantiateHitEffects(this);
+                        pHitEffectList = MagicHitEffect::InstantiateHitEffects(this);
                         static_cast<EffectStateAccess*>(this)->ClearFlags(0x40);
                     }
                     if (bdeferredSound)

@@ -793,7 +793,7 @@ bool __cdecl Script_ParseString(int unused, char const* data, TESObjectREFR* ref
         for (i = 0; i < count; ++i)
         {
             values[i] = 0.0;
-            if (!Script::Script_GetValue(values[i], data, value, reference1, reference2, script, locals, true))
+            if (!Script::GetValue(values[i], data, value, reference1, reference2, script, locals, true))
             {
                 return false;
             }

@@ -14,7 +14,7 @@ class NiBinaryExtraData : public NiExtraData
     virtual ~NiBinaryExtraData();
 
     virtual NiObject* MakeClone(CloningProcess& arCloning);
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual void LinkObject(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* pObject) const;

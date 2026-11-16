@@ -30,7 +30,7 @@ public:
     void BaseFormRecord(BaseFormComponent* component);
     bool IsEqualToBase(BaseFormComponent* component);
     void Save();
-    static unsigned int GetFullNameLength(TESForm* form);
+    static unsigned int GetFullNameLength(TESForm* apObj);
     unsigned int GetFullNameLength();
     static char* GetFullName(TESForm* form);
     char* GetFullName();

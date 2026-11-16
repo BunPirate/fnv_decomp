@@ -398,7 +398,7 @@ void __cdecl CreateLoveTesterMenu(int aiValue)
         }
         DAT_011da2c8->unk58 = aiValue;
         DAT_011da2c8->Setup();
-        g_011da2f4 = DAT_011da2c8->LoveTesterMenu_InitCamera();
+        g_011da2f4 = DAT_011da2c8->InitCamera();
         SetLoveTesterEnabled(true);
         menu->SetMenuVisibility(false);
     }

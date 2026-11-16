@@ -8911,11 +8911,11 @@ struct E1D960Pair {
 struct QueryBase {
     virtual ~QueryBase() throw() {}
 };
-struct TreeTreeNodePairCollector : QueryBase { // src: EXE 0x010cd690 (vtable; old: QueryCtx)
+struct hkAabbTreeQueryUtils_TreeTreeNodePairCollector : QueryBase { // src: EXE 0x010cd690 (vtable; old: QueryCtx)
     E1D960ArrayLocalForm<E1D960Pair>* arr;
-    TreeTreeNodePairCollector(E1D960ArrayLocalForm<E1D960Pair>* a) throw() : arr(a) {}
+    hkAabbTreeQueryUtils_TreeTreeNodePairCollector(E1D960ArrayLocalForm<E1D960Pair>* a) throw() : arr(a) {}
 };
-void __cdecl hkAabbTreeQueryUtils_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_queryTreeCollision(void* a, void* b, TreeTreeNodePairCollector* collector) throw();
+void __cdecl hkAabbTreeQueryUtils_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_queryTreeCollision(void* a, void* b, hkAabbTreeQueryUtils_TreeTreeNodePairCollector* collector) throw();
 bool __cdecl hkgpMesh_clipTriangles(void* ma, E12160Triangle* ta, void* mb, E12160Triangle* tb, float minDist) throw();
 struct DelTarget {
     virtual ~DelTarget();
@@ -8954,7 +8954,7 @@ FUN_00e1b750* MeshMerge960::hkgpMesh_trim(Builder* hull)
         ((E15Target*)this)->hkgpMesh_rebuildTrianglesTree();
         E1D960ArrayLocalForm<E1D960Pair> pairs;
         {
-            TreeTreeNodePairCollector ctx(&pairs);
+            hkAabbTreeQueryUtils_TreeTreeNodePairCollector ctx(&pairs);
             hkAabbTreeQueryUtils_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_queryTreeCollision(sub, sub, &ctx);
         }
         for (int i = 0; i < pairs.m_iElementCount; i++) {
@@ -8981,7 +8981,7 @@ FUN_00e1b750* MeshMerge960::hkgpMesh_trim(Builder* hull)
             ((E15Target*)obj)->hkgpMesh_rebuildTrianglesTree();
             ((E15Target*)this)->hkgpMesh_rebuildTrianglesTree();
             {
-                TreeTreeNodePairCollector ctx(&pairs);
+                hkAabbTreeQueryUtils_TreeTreeNodePairCollector ctx(&pairs);
                 hkAabbTreeQueryUtils_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_queryTreeCollision(&((FUN_00e1b750*)this)->sub40, sub, &ctx);
             }
             for (int i = 0; i < pairs.m_iElementCount; i++) {
@@ -11701,7 +11701,7 @@ struct S00e25cd0_Tri
 };
 // Finds or creates a box entry for edge in m_24c, allocates an edge data slot if new, and appends or replaces data in it.
 // @fnv 0x00e25cd0
-// src: XBOX_RETAIL_PDB 0x00e25cd0
+// src: XBOX_RETAIL_PDB 0x00e25cd0 (was HAVOK_LIB)
 // pdb: hkgpTriangulatorType<hkgpTriangulatorBase::VertexBase,hkgpTriangulatorBase::TriangleBase,hkgpTriangulatorBase::DefaultEdgeData<hkContainerHeapAllocator>,hkContainerHeapAllocator,-1>::setEdgeData | hkgpMesh.obj | retail, object-file gap fill, high
 // pdb params: edge, data
 // pdb locals: assertBuf, ostr
@@ -13815,15 +13815,15 @@ struct S_e1ce10_Tree {
     void UpdateState_00d9be30() throw();
     void UpdateState_00d9d110(const S_e1ce10_Aabb& aabb, S_e1ce10_Vertex* item) throw(); // insert
 };
-struct WeldingPolicy { // src: EXE 0x010ead18 (vtable; old: S_e1ce10_Collector)
+struct hkgpMesh_WeldingPolicy { // src: EXE 0x010ead18 (vtable; old: S_e1ce10_Collector)
     virtual void v00() throw();
     S_e1ce10_Vec4 m_vContactPosition;
     float m_radiusSquared;
     S_e1ce10_Vertex* m_closest;
-    WeldingPolicy(const S_e1ce10_Vec4& p, float radius) throw()
+    hkgpMesh_WeldingPolicy(const S_e1ce10_Vec4& p, float radius) throw()
         : m_vContactPosition(p), m_radiusSquared(radius * radius), m_closest(0) {}
 };
-void __cdecl AabbTree_ProcessIfPresent_00d1d570(S_e1ce10_Tree* tree, const S_e1ce10_Aabb* aabb, WeldingPolicy* collector) throw();
+void __cdecl AabbTree_ProcessIfPresent_00d1d570(S_e1ce10_Tree* tree, const S_e1ce10_Aabb* aabb, hkgpMesh_WeldingPolicy* collector) throw();
 // report stream / error
 struct S_e1ce10_Ostream {
     int unk00;
@@ -13883,7 +13883,7 @@ void S_e1ce10_Mesh::hkgpMesh_appendFromGeometry(const hkGeometry& geom, const S_
     for (int i = 0; i < numVertices; i++) {
         S_e1ce10_Vec4 v;
         reinterpret_cast<hkVector4&>(v).setTransformedPos_00c7f640(reinterpret_cast<const hkTransform&>(xform), reinterpret_cast<const hkVector4*>(reinterpret_cast<const S_e1ce10_ArrayLocalForm<S_e1ce10_Vec4>&>(geom.m_vertices).m_data)[i]);
-        WeldingPolicy collector(v, m_weldTolerance);
+        hkgpMesh_WeldingPolicy collector(v, m_weldTolerance);
         S_e1ce10_Aabb aabb;
         S_e1ce10_calcAabb(v, m_weldTolerance, aabb);
         AabbTree_ProcessIfPresent_00d1d570(&tree, &aabb, &collector);

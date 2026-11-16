@@ -12,7 +12,7 @@ class TESLevCharacter : public TESBoundAnimObject, public TESLeveledList, public
 public:
     TESLevCharacter();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x102864c slot 8 = 0x50a930)
     bool LoadForm(TESFile* apFile);
 

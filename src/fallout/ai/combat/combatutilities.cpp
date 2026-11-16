@@ -962,7 +962,7 @@ bool __cdecl CombatUtilities_IsTargetWithinStrikeAngle(Actor* apAttacker, Actor*
         float fX_2 = 0.0f;
         float fYA = 0.0f;
         void* pkNodeRes = BSUtilities_GetObjectByName(g_thePlayer_011dea3c->PlayerCharacter_Get3D_00950bb0(0), s_szProjectileNode);
-        g_thePlayer_011dea3c->PlayerCharacter_ApplyAutoAimActor(0, pkNodeRes, &fX_2, &fYA, 0, 1.175494351e-38F, 1.175494351e-38F);
+        g_thePlayer_011dea3c->ApplyAutoAimActor(0, pkNodeRes, &fX_2, &fYA, 0, 1.175494351e-38F, 1.175494351e-38F);
         if (g_thePlayer_011dea3c->PlayerCharacter_GetAutoAimActor())
             fAimDirectionOffset = fX_2;
     }

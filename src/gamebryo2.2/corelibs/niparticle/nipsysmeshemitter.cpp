@@ -126,7 +126,7 @@ struct NiPSysMeshEmitter : NiPSysEmitter
     {
         void FUN_00c1e9a0(unsigned int);
     } m_kGeometryEmitters;
-    void NiPSysMeshEmitter_AddGeometryEmitter(NiGeometry*);
+    void AddGeometryEmitter(NiGeometry*);
     void LinkObject_00c1f990(NiStream&);
 };
 // @fnv 0x00c1f990
@@ -143,7 +143,7 @@ void NiPSysMeshEmitter::LinkObject_00c1f990(NiStream& kStream)
         for (i = 0; i < uiSize; i++)
         {
             pkChild = (NiGeometry*)kStream.GetLoadedObject();
-            NiPSysMeshEmitter_AddGeometryEmitter(pkChild);
+            AddGeometryEmitter(pkChild);
         }
     }
 }

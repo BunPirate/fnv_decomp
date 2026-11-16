@@ -241,7 +241,7 @@ public:
     void AddSpawnEntry(SpawnRequest* request, int typeA, int typeB);
     void AddSpawnEntry(CollisionAgentFunctionTable* record, int typeA, int typeB);
     int AddEntry(SrcRec* record, int typeA, int typeB);
-    int hkpCollisionDispatcher_registerAgent3(Agent3FunctionTable* f, int typeA, int typeB);
+    int registerAgent3(Agent3FunctionTable* f, int typeA, int typeB);
     void Destroy();
     hkpCollisionDispatcher* hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int creationFunction, unsigned int factory);
     void Reset_cfb080();

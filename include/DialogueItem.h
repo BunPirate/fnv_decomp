@@ -25,7 +25,7 @@ public:
     DialogueItem(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, TESObjectREFR* speaker);
     ~DialogueItem();
     static void operator delete(void*);
-    void DialogueItem_LoadGame(BGSLoadFormBuffer*);
+    void LoadGame(BGSLoadFormBuffer*);
     void RefreshObjectRef(BGSLoadFormBuffer*);
     bool SelectDefaultResponseList();
     bool NextResponse();

@@ -131,7 +131,7 @@ void FUN_006694c0_shell::SetPad5(float value)
 // pdb: class CSpeedTreeRT, size 0xa0 (here 0x1), 31 members
 struct CSpeedTreeRT
 {
-    unsigned short CSpeedTreeRT_GetNumBranchLodLevels();
+    unsigned short GetNumBranchLodLevels();
     unsigned short GetUnsignedShortValue();
 };
 
@@ -140,7 +140,7 @@ struct CSpeedTreeRT
 // pdb: BSTreeModel::GetNumBranchLODLevels | BSTreeModel.obj | retail, upstream name already matches, high
 unsigned short BSTreeModel::GetNumBranchLODLevels()
 {
-    return m_pTreeRuntime ? m_pTreeRuntime->CSpeedTreeRT_GetNumBranchLodLevels() : 0;
+    return m_pTreeRuntime ? m_pTreeRuntime->GetNumBranchLodLevels() : 0;
 }
 
 struct FUN_006699d0_shell
@@ -227,7 +227,7 @@ NiAlphaProperty* BSTreeModel_CreateAlphaProperty()
     NiAlphaProperty* pAlphaProperty = new NiAlphaProperty;
     pAlphaProperty->NiAlphaProperty_SetAlphaBlending(false);
     pAlphaProperty->SetFlag512(true);
-    pAlphaProperty->NiAlphaProperty_SetTestMode(4);
+    pAlphaProperty->SetTestMode(4);
     pAlphaProperty->NiAlphaProperty_SetTestRef(0x54);
     return pAlphaProperty;
 }
@@ -1460,9 +1460,9 @@ void FUN_00667190_shell::LoadTreeCollision(TESObjectTREE* apTreeObj)
     CopyTreeString(acPath, 0x104, "Data\\Meshes\\Trees");
     AppendTreeString(acPath, 0x104, kModelName.acName);
     AppendTreeString(acPath, 0x104, ".NIF");
-    if (FileFinder::Exist(acPath, 0, 6, 1) && kStream.BSStream_Load(acPath, false) && kStream.NiStream::NiStream_GetObjectCount() == 1)
+    if (FileFinder::Exist(acPath, 0, 6, 1) && kStream.BSStream_Load(acPath, false) && kStream.NiStream::GetObjectCount() == 1)
     {
-        NiAVObject* pObject = kStream.NiStream::NiStream_GetObjectAt(0);
+        NiAVObject* pObject = kStream.NiStream::GetObjectAt(0);
         NiNode* kNode = (NiNode*)NiDynamicCast(&DAT_011f4280, pObject);
         bhkCollisionObject* pCollisionObjectCur = bhkNiCollisionObject_GetbhkNiCollisionObject(kNode);
         bhkWorldObject* pWorldObject = pCollisionObjectCur ? pCollisionObjectCur->bhkNiCollisionObject_GetWorldObject() : 0;

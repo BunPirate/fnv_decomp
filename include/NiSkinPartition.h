@@ -23,6 +23,6 @@ public:
         unsigned short m_usBonesPerVertex; // src: XBOX_RETAIL_PDB +0x24 (old: m_usWeightsPerVertex)
         void* m_pkBuffData; // src: XBOX_RETAIL_PDB +0x28 (old: m_pkGeometryRendererData)
 
-        unsigned int NiSkinPartition_Partition_GetStripLengthSum();
+        unsigned int GetStripLengthSum();
     };
 };

@@ -158,7 +158,7 @@ public:
     unsigned char GetShift(int);
     unsigned char GetShift(Component);
     unsigned char QBitsPerPixel();
-    void NiPixelFormat_LoadBinary(NiStream*);
+    void LoadBinary(NiStream*);
     void LoadBinary(NiStream&);
     void SaveBinary(NiStream*);
     void SaveBinary(NiStream&);

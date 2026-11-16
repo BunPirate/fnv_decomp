@@ -28,7 +28,7 @@ public:
 
     void ResetFormData();
     bool AppendPerkEntry(BGSPerkEntry* entry);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void ApplyPerkEntries(Actor* actor, unsigned char rank, bool alternate);
     bool IsPerkHidden() const;
     unsigned char BGSPerk_GetNumRanks();

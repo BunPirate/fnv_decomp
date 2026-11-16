@@ -65,7 +65,7 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x102c51c slot 8 = 0x51f630)
     bool LoadForm(TESFile* apFile);
     void QueueResourceLoad(int priority, QueuedFile* file, bool flag);
@@ -95,7 +95,7 @@ public:
     bool GetHasScope();
     bool GetHasModScope();
     TESModel* GetWeaponModel();
-    TESModel* TESObjectWEAP_GetModTESModel(unsigned char mods, bool flag);
+    TESModel* GetModTESModel(unsigned char mods, bool flag);
     TESSound* GetField238();
     TESSound* GetField23C();
     void Fire(TESObjectREFR* apSource);

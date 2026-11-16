@@ -1559,7 +1559,7 @@ void CTreeEngine::ParseTreeInfo(ElementIterator* cFile)
             }
         case 0x7d5: {
             iCount = ((ElementIterator*)cFile)->GetNextElement();
-            CTreeEngine_SetSeed(iCount);
+            SetSeed(iCount);
             break;
         }
         case 0x7d3:

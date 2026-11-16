@@ -133,7 +133,7 @@ bool EffectItem::IsUsageMonitorEffect()
 // pdb: EffectItem::GetEffectName | EffectItem.obj | retail, upstream name already matches, high
 BSStringT<char> EffectItem::GetEffectName()
 {
-    return m_pEffectSetting->EffectSetting_GetEffectName();
+    return m_pEffectSetting->GetEffectName();
 }
 
 // Destroys the effect item's contents and, if flags has bit 0 set, deallocates the object; returns this.

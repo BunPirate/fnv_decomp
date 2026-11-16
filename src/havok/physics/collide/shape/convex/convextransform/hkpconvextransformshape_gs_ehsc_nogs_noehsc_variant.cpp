@@ -78,7 +78,7 @@ struct Shape_00d5d800
 };
 struct Xf_00d5d800 : hkTransform
 {
-    void hkTransform_setMul(const hkTransform& a, const hkTransform& b);
+    void hkTransform_setMul(const hkTransform& aTb, const hkTransform& bTc);
 };
 struct Cls_00d5d800
 {

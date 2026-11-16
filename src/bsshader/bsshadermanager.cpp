@@ -3535,7 +3535,7 @@ RefShader* __cdecl TileShader_CreateShader();
 RefShader* __cdecl FUN_00bc93c0();
 RefShader* __cdecl FUN_00bc59b0();
 RefShader* __cdecl BSShaderBloodSplatter_CreateShader();
-RefShader* __cdecl BSDistantTreeShader_CreateShader();
+RefShader* __cdecl CreateTreeShader();
 
 // Returns the cached RefShader for the given index, lazily creating it via a switch on the index if it is not yet initialized.
 // @fnv 0x00b55560
@@ -3624,7 +3624,7 @@ Shader* __cdecl BSShaderManager_GetShader(void* aiShaderIndex)
             shaders[(unsigned int)aiShaderIndex] = BSShaderBloodSplatter_CreateShader();
             break;
         case 8:
-            shaders[(unsigned int)aiShaderIndex] = BSDistantTreeShader_CreateShader();
+            shaders[(unsigned int)aiShaderIndex] = CreateTreeShader();
             break;
         }
     }

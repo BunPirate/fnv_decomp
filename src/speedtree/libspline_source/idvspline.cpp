@@ -484,9 +484,9 @@ double CExpression::Eval(const char* sptr, TESObjectREFR* apFunctionOwner, TESOb
                 unsigned int iOffset = 0;
                 Value.Type = 1;
                 if (abEndian)
-                    Script::Script_GetValue(Value.m_dFloatingPointValue, input.data, iOffset, apFunctionOwner, apContainer, script,
+                    Script::GetValue(Value.m_dFloatingPointValue, input.data, iOffset, apFunctionOwner, apContainer, script,
                                      scriptLocals, abEndian);
-                else if (!Script::Script_GetValue(Value.m_dFloatingPointValue, token.text, iOffset, apFunctionOwner, apContainer,
+                else if (!Script::GetValue(Value.m_dFloatingPointValue, token.text, iOffset, apFunctionOwner, apContainer,
                                            script, scriptLocals, false))
                 {
                     SetError(EXPRESSION_ERROR_ERROR_EXPRESSION_SYNTAX);

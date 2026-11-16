@@ -2949,7 +2949,6 @@ struct BinaryDataRecord
 NiGPUProgram* NiSequence_ConvertSequence(BinaryDataRecord*, unsigned int, void*) throw();
 // Looks up the GPU program at index in the stream (or via CreateResultFromStreamObject for older versions), optionally passes extra to it, and stores it in result.
 // @fnv 0x00a47f40
-// src: XBOX_RETAIL_PDB 0x00a47f40
 // pdb: NiSequence::CreateFromKFFile | NiSequence.obj | retail, object-file gap fill, high
 // pdb params: pcSequenceFile, uiIndex, aspSequence, pcSequenceName
 // pdb locals: kStream

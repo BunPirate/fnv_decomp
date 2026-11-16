@@ -9,7 +9,7 @@ class BGSStaticCollection : public TESBoundObject, public TESModelTextureSwap
 public:
     BGSStaticCollection();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     virtual bool LoadForm(TESFile* apFile);
     virtual void InitItem();
 };

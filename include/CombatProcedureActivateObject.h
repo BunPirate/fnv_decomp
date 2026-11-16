@@ -15,8 +15,8 @@ public:
     virtual void Unk04();
     virtual void Unk10(int);
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     int Return8();
     void FUN_009ca740();

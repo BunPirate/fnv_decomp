@@ -1250,7 +1250,7 @@ struct StringBuf {
 // pdb: hkClassMember::getTypeOf | hkClassMember.obj | retail, string-set bridge, high
 // pdb params: name
 // pdb locals: sname
-int __cdecl hkClassMember_getTypeOf(const char* typeName) { // src: XBOX_RETAIL_PDB 0x00d86c00
+int __cdecl hkClassMember_getTypeOf(const char* typeName) {
     if (j_strncmp(typeName, "enum ", 5) == 0)
         return 0x18;
     if (j_strncmp(typeName, "flags ", 6) == 0)
@@ -1799,7 +1799,7 @@ struct Arg1 {
 // pdb: hkCpuSolveIntegrateVelocitiesJob | hkpCpuSolveConstraintsJobs.obj | retail, string-set bridge, high
 // pdb params: tl, jobQueue, jobInOut
 // pdb locals: isSolvingFinished
-void hkCpuSolveIntegrateVelocitiesJob(Arg0* tl, Arg1* jobQueue, Arg2* jobInOut) { // src: XBOX_RETAIL_PDB 0x00d94670
+void hkCpuSolveIntegrateVelocitiesJob(Arg0* tl, Arg1* jobQueue, Arg2* jobInOut) {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* cur = stream->m_end.m_storage;
     if (cur < stream->m_capacityMinus16.val()) {

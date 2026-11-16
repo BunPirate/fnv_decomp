@@ -22,10 +22,10 @@ public:
 
     WorldExt* GetHkpWorld() throw();
     void AddObject(NiAVObject* object, bool a, bool b, int c, int d);
-    void bhkWorld_AddBatchedConstraints() throw();
+    void AddBatchedConstraints() throw();
     void ReleaseBodies();
     void ClearReferences();
-    void bhkWorld_RemoveBatchedEntities();
+    void RemoveBatchedEntities();
     void FlushEntries() throw();
     void SetProcessEnabled(int arg) throw();
     void SetWorldActive(bool arg);

@@ -85,7 +85,7 @@ NiPixelData::NiPixelData(unsigned int uiWidth, unsigned int uiHeight, const NiPi
         }
     }
 
-    NiPixelData_AllocateData(m_uiMipmapLevels, uiFaces, offsets[m_uiMipmapLevels]);
+    AllocateData(m_uiMipmapLevels, uiFaces, offsets[m_uiMipmapLevels]);
     unsigned int uiTableBytes = m_uiMipmapLevels * sizeof(unsigned int);
     fnv_zlib_memcpy(m_puiWidth, widths, uiTableBytes);
     fnv_zlib_memcpy(m_puiHeight, heights, uiTableBytes);
@@ -270,7 +270,7 @@ void NiPixelData::LoadBinary(NiStream& kStream)
 {
     NiStream& stream = kStream;
     NiObject::LoadBinary(stream);
-    m_kPixelFormat.NiPixelFormat_LoadBinary(&stream);
+    m_kPixelFormat.LoadBinary(&stream);
     stream.ReadLinkIDStub();
 
     unsigned int auiOffsetInBytes[16];
@@ -293,7 +293,7 @@ void NiPixelData::LoadBinary(NiStream& kStream)
     else
         ReadBinaryValue(stream, m_uiFaces);
 
-    NiPixelData_AllocateData(m_uiMipmapLevels, m_uiFaces, auiOffsetInBytes[m_uiMipmapLevels]);
+    AllocateData(m_uiMipmapLevels, m_uiFaces, auiOffsetInBytes[m_uiMipmapLevels]);
 
     unsigned int uiMipmapArrayBytes = m_uiMipmapLevels * sizeof(unsigned int);
     fnv_zlib_memcpy(m_puiWidth, auiWidth, uiMipmapArrayBytes);
@@ -562,7 +562,7 @@ NiPixelData* NiPixelData::NiPixelData_00a7c030(const NiPixelData& kSrc)
     unsigned int uiTotalBytes = kSrc.m_puiOffsetInBytes[m_uiMipmapLevels];
     auiOffsetInBytes[m_uiMipmapLevels] = uiTotalBytes;
 
-    NiPixelData_AllocateData(m_uiMipmapLevels, m_uiFaces, uiTotalBytes);
+    AllocateData(m_uiMipmapLevels, m_uiFaces, uiTotalBytes);
 
     unsigned int uiDimBytes = sizeof(unsigned int) * m_uiMipmapLevels;
     memcpy(m_puiWidth, auiWidth, uiDimBytes);

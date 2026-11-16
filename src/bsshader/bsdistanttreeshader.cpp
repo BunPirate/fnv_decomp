@@ -655,10 +655,9 @@ struct FUN_00bb6c30
     void BSDistantTreeShader_LoadStagesAndPasses();
 };
 // @fnv 0x00bb6e30
-// src: XBOX_RETAIL_PDB 0x00bb6e30
 // pdb: BSDistantTreeShader::CreateShader | BSDistantTreeShader.obj | retail, call graph, high
 // pdb locals: pdecl, eInput, pshader
-FUN_00bb6c30* BSDistantTreeShader_CreateShader()
+FUN_00bb6c30* CreateTreeShader()
 {
     TreeVertexDecl* declaration = NiDX9ShaderDeclaration_Create(DAT_011f9508, 4, true);
     declaration->SetElement(0, 0, 0, 2, 0);

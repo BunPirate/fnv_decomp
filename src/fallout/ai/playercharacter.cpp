@@ -11806,7 +11806,7 @@ void FUN_009444d0_shell::PlayerCharacter_UpdatePlayerCombat(float afDelta)
         *(float*)((char*)this + 0xd6c) = 0.0f;
     iplayerCombatantLostCount = 0;
     iplayerCombatantCount = ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)
-                                ->CombatManager_GetCombatantCount(_g_thePlayer, &iplayerCombatantLostCount);
+                                ->GetCombatantCount(_g_thePlayer, &iplayerCombatantLostCount);
     if (iplayerCombatantCount > 0)
     {
         *(bool*)((char*)this + 0xdf0) = true;
@@ -36468,7 +36468,7 @@ bool PlayerCharacter::AddEatDrinkItem(MagicItem* apItem)
 
     if (badded != 0)
     {
-        reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->MagicTarget_StartSpell(reinterpret_cast<unsigned int>(apItem));
+        reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->StartSpell(reinterpret_cast<unsigned int>(apItem));
         reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->MagicTarget_EvaluateSpellConditions();
         reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->UpdateActiveEffects(0.01f);
     }
@@ -64232,7 +64232,7 @@ struct SandmanTargetActor
 // pdb locals: pnew, ploc, ppack
 void PlayerSandmanPackageOperations::PlayerCharacter_InitiateSandmanPackage(SandmanTargetActor* apTarget, int apfurniture, int aMarker, bool auiIndex)
 {
-    layoutPadding1C8[13] = reinterpret_cast<ProcessLists*>(&DAT_011e0e80)->ProcessLists_GetHighestDetectionLevelForActor(static_cast<PlayerCharacter*>(g_thePlayer), 0);
+    layoutPadding1C8[13] = reinterpret_cast<ProcessLists*>(&DAT_011e0e80)->GetHighestDetectionLevelForActor(static_cast<PlayerCharacter*>(g_thePlayer), 0);
     F5cc7a0(1);
     F950340(1);
     reinterpret_cast<ProcStandIn*>(pCurrentProcess)->vf210(0, this);

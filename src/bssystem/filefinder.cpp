@@ -99,7 +99,7 @@ NiFile* FileFinder::GetFile(const char* apName, NiFile::OpenMode aeMode, unsigne
                 if (pFile == ARCHIVE)
                 {
                     if (!pInputFile)
-                        pInputFile = ArchiveManager::ArchiveManager_GetFile(cFileName, aiSize, aiArchiveType);
+                        pInputFile = ArchiveManager::GetFile(cFileName, aiSize, aiArchiveType);
                     else
                         bFileFound = true;
                 }

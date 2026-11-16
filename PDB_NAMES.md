@@ -20,15 +20,15 @@ The compilers are Microsoft's, from the downloads the CI uses, checked against t
 
 ## What changes
 
-### Renames (29,291)
+### Renames (29,257)
 
 | Kind | Renamed | Example |
 |---|---|---|
-| Parameters | 20,699 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
+| Parameters | 20,672 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
 | Fields | 4,852 | `CombatProcedureBeInCover` +0x44: `m_waitingOutTimer` → `WaitingOutOfCoverTimer` |
-| Functions | 3,146 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
+| Functions | 3,141 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
 | Globals | 517 | `DAT_0126b1b0` → `hkpVehicleInstanceClass` |
-| Classes | 77 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
+| Classes | 75 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
 
 The renames were made with a C++ parser (libclang in MSVC-compatibility mode). Each reference is tied to its exact
 entity:
@@ -43,7 +43,12 @@ any that made a unit fail or compile differently was left out.
 
 Naming rules:
 - A method keeps its current class. When the PDB puts it on a different class, it becomes `Class_Method`, the
-  convention the project already uses for a real name on a stand-in scope.
+  convention the project already uses for a real name on a stand-in scope. A function declared in several places
+  (stand-in views) is named per declaration: the PDB method name where the declaration is on the PDB class itself,
+  `Class_Method` elsewhere. Where that class already has a member of that name, or `main` spelled it with an address
+  suffix, that declaration keeps `main`'s name. 192 renamed functions keep `main`'s name in some other declaration;
+  the mapping lists them as `unchanged_symbols`.
+- A nested class takes `Outer_Inner`, as `main` does (`StatsMenu_NamedEffectsList` for `StatsMenu::NamedEffectsList`).
 - Static members and function-local statics become `Class_member` or `Class_Function_name`.
 - A class is renamed only where the real class is not already defined elsewhere in the tree.
 - A renamed function's provenance tag becomes `XBOX_RETAIL_PDB` or `XBOX_DEBUG_PDB`. When it replaces another tag, the
@@ -54,11 +59,14 @@ Naming rules:
   member offset or address, and the old name, so each one can be found and reversed on its own:
   `Timer WaitingOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x44 (old: m_waitingOutTimer)`. Field names come from the
   retail build's type records. A global is marked on each of its declarations. When several renamed fields share one
-  declaration, the marker names each. 54 of the 77 class names come from the PC executable's own RTTI (the vtable
-  `main` already named), so they are tagged `EXE` with the vtable's address. The other 23 come from high-tier links to
+  declaration, the marker names each. 53 of the 75 class names come from the PC executable's own RTTI (the vtable
+  `main` already named), so they are tagged `EXE` with the vtable's address. The other 22 come from high-tier links to
   their own methods here (not counting name-only links). They carry the build most of those links come from, retail on
-  a tie (17 `XBOX_RETAIL_PDB`, 6 `XBOX_DEBUG_PDB`), and the address of the first such link from that build.
+  a tie (16 `XBOX_RETAIL_PDB`, 6 `XBOX_DEBUG_PDB`), and the address of the first such link from that build.
   Renamed parameters have no marker; they are in the mapping (see the end of this file).
+- A renamed parameter is renamed at the definition and at every declaration of the same function: those bound to its
+  address in `build/units.json`, and those on the PDB class under the PDB name with the same parameter types.
+  A declaration in neither group (an unbound view of the function with other parameter types) keeps `main`'s names.
 - A link made only because `main` already used the PDB name (link method "upstream name already matches") renames no
   function or class: the name is the evidence, so its spelling stays. Its parameter names are applied when `main`
   already ties the function to the PDB class: it is a method of that class here, `main` names it `Class_Method` (or
@@ -118,7 +126,7 @@ linked by their name-string argument, which has to match a public symbol in the 
 
 | Not renamed | Count | Why |
 |---|---|---|
-| Virtual functions | 6,973 | An override family has to be renamed together. Renaming one moves vtable slots, which was measured to change code. |
+| Virtual functions | 6,978 | An override family has to be renamed together. Renaming one moves vtable slots, which was measured to change code. |
 | Functions the parser found no definition for | 5,552 | Mostly units clang cannot fully parse (648 of 2,989), or names it decorates differently. |
 | Rejected by the build | 2,045 | They made a unit fail to compile or compile differently, usually through a use the parser missed. |
 | Declared twice under two names in one file | 860 | One address declared twice (for example `GetExtraData` and `FUN_00a5bdd0`); renaming both would collide. |
@@ -142,15 +150,17 @@ All of these still get the real name in a comment.
   can keep an older name. 0x0078b9b0 prints `CalcLoadScreenTypeTextWindowVerts()`, yet in the debug build it is
   `LoadingMenu::CalcLoadScreenTypeTextWindowFaces` that loads this message, and neither PDB has a `Verts` function, so
   the name is `Faces`. Where a message seems to contradict a link, the test is which function of the Xbox 360 build
-  loads it. No other renamed function's message names a different function. One message differs from the name
-  (`computeMemberSize`, whose message says `structureLayout::getMemberSize()`), but that link comes from the same
-  string, so the message is Havok's own older wording.
+  loads it. 0x00865020 is the other such case: it is linked to `BGSLoadGameSubBuffer::SaveHavokData`, and its
+  warning names `SaveAnimation()`, but in both Xbox 360 builds `SaveHavokData` loads that same warning (as does
+  `SaveAnimation`), so the name holds. No other renamed function's message names a different function. One message
+  differs from the name (`computeMemberSize`, whose message says `structureLayout::getMemberSize()`), but that link
+  comes from the same string, so the message is Havok's own older wording.
 - **Overloads.** Run extension and gap fill can land on a sibling overload of the same name. The name is then right,
   but the Xbox 360 address in the mapping, and names taken from that function, can belong to the sibling. Review found
   this at 0x009a52f0 (`AddThreat`) and 0x0043a9a0 (`LoadGame`); their comments name the matching overload, and the
-  mapping gives its address as `x360_address_matching_overload`. 49 parameter names in 38 functions are not symbols of
-  the linked Xbox 360 function itself: 34 come from a sibling overload of the same name and 15 from the other build's
-  copy of the function. The mapping marks each with `name_found_in`.
+  mapping gives its address as `x360_address_matching_overload`. 39 parameter names in 29 functions are not symbols of
+  the linked Xbox 360 function itself: 35 come from a sibling overload of the same name and 4 from the other
+  build's copy of the function. The mapping marks each with `name_found_in`.
 - **Folded code.** A function the linker folded with identical code stands for several originals, so its name is one
   of several.
 - **Field types.** Field renames follow the PDB layout at an offset. Where a class here models a smaller or
@@ -165,7 +175,8 @@ Every link and every rename is listed, as JSON Lines, on the branch
 comes from. It is kept out of this pull request because the check accepts only source, `build/units.json` and Markdown.
 It holds extracted names and metadata (addresses, offsets, link methods); no PDB files or executable bytes.
 
-- `functions_renamed.jsonl`: address, old and new decorated names, the PDB name, build, link method, tier, marker.
+- `functions_renamed.jsonl`: address, old and new decorated names, the decorated names of declarations that keep
+  `main`'s name, the PDB name, build, link method, tier, marker.
 - `functions_linked.jsonl`: every one of the 37,460 links, renamed or not, with the reason when not.
 - `fields.jsonl`: class, offset, old name, new name, PDB type, file and line of the marker.
 - `globals.jsonl`: address, old names, new name, PDB symbol, and each declaration's file, line and marker.

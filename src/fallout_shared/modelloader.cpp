@@ -195,7 +195,7 @@ class ModelLoader
   public:
     bool EnqueueFile(const char*, IO_TASK_PRIORITY, QueuedFile*);
     bool DispatchVirtualCall(char*, fnv_0043baf0::FUN_0043baf0*);
-    void ModelLoader_RemoveQueuedTextureFromMap(BSFileEntry*);
+    void ForwardToVTableSlot(BSFileEntry*);
     bool GetModel(char*, NiPointer<Model>&);
     void LoadModel(const char*, NiPointer<Model>&);
     void ProcessModelRequest(TESModel*, int, Task43E*, int, bool, int, int);
@@ -203,7 +203,7 @@ class ModelLoader
     void ProcessQueuedFile();
     static void UpdateLoadingStatusCallback();
     void UpdateLoadingStatus();
-    void ModelLoader_RemoveAnimIdleFromMap(QueuedFile*);
+    void DispatchAnimIdle(QueuedFile*);
     void UpdateReferenceNode(TESObjectREFR*, NiNode*);
     void UpdateModelNode(NiNode*);
     void LockFreeStringMap_Model_LockFreeStringMapIterator_dtor();
@@ -559,11 +559,11 @@ void QueuedAnimIdle::ProcessLoadedAnimIdle()
         !BSTask_int64_GetTaskCanceled())
         reinterpret_cast<AnimIdle*>(
             reinterpret_cast<NiPointer<QueuedFile>*>(reinterpret_cast<char*>(this) + 0x3c)->operator QueuedFile*())
-            ->AnimIdle_Loaded(reinterpret_cast<KFModel*>(
+            ->Loaded(reinterpret_cast<KFModel*>(
                 reinterpret_cast<NiPointer<QueuedFile>*>(reinterpret_cast<char*>(this) + 0x30)
                     ->
                     operator QueuedFile*()));
-    g_modelLoader->ModelLoader_RemoveAnimIdleFromMap(
+    g_modelLoader->DispatchAnimIdle(
         reinterpret_cast<NiPointer<QueuedFile>*>(reinterpret_cast<char*>(this) + 0x3c)->operator QueuedFile*());
 }
 
@@ -8549,7 +8549,7 @@ void TextureCancellationOperations::CancelTexture(int aePreviousState, void* apT
         if (reinterpret_cast<FUN_0043c630_shell*>(this)->QueuedTexture_GetInQueuedTextureMap())
         {
             reinterpret_cast<FUN_0043c100_shell*>(this)->QueuedTexture_SetInQueuedTextureMap(false);
-            g_modelLoader->ModelLoader_RemoveQueuedTextureFromMap(GetFileEntry());
+            g_modelLoader->ForwardToVTableSlot(GetFileEntry());
         }
     }
 }
@@ -11032,7 +11032,7 @@ void ModelLoaderHelper445::ModelLoader_QueueCreatureParts(TESModel* apModel, int
                 ModelLoader_QueueBoundObject(entry->FUN_0044ddc0(aePriority, apParent, apQueuedForRef));
                 delete entry;
             }
-            entry = changes->InventoryChanges_GetBestAmmo(creature, 0);
+            entry = changes->GetBestAmmo(creature, 0);
             if (entry)
             {
                 ModelLoader_QueueBoundObject(entry->FUN_0044ddc0(aePriority, apParent, apQueuedForRef));
@@ -12909,7 +12909,7 @@ struct FUN_0043e840_shell : public ModelLoader
 void FUN_0043e840_shell::QueuedAnimIdle_Cancel(int aePreviousState, int apTaskOwner)
 {
     QueuedFile_Cancel(aePreviousState, apTaskOwner);
-    g_modelLoader->ModelLoader_RemoveAnimIdleFromMap((QueuedFile*)Modelloader_GetReferencedThis((int*)((char*)this + 0x3c)));
+    g_modelLoader->DispatchAnimIdle((QueuedFile*)Modelloader_GetReferencedThis((int*)((char*)this + 0x3c)));
 }
 
 struct FUN_0043eac0_class
@@ -18719,7 +18719,7 @@ void QueuedActor::QueueDismemberedLimbLoads()
         IO_TASK_PRIORITY epriority = ((IOTask*)this)->IOTask_GetIOTaskPriority();
         for (unsigned int i = 0; i < ((fnv_004412e0::TESObjectREFR_GetFlags_Helper*)&pextraLimbs->parts)->CallGetFlags(); i++)
         {
-            fnv_004412e0::DismembermentPart* pdismemberedLimb = reinterpret_cast<fnv_004412e0::DismembermentPart*>(pextraLimbs->ExtraDismemberedLimbs_GetDismemberedLimb(i));
+            fnv_004412e0::DismembermentPart* pdismemberedLimb = reinterpret_cast<fnv_004412e0::DismembermentPart*>(pextraLimbs->GetDismemberedLimb(i));
             for (unsigned int j = 0; j < ((fnv_004412e0::TESObjectREFR_GetFlags_Helper*)&pdismemberedLimb->parts)->CallGetFlags();
                  j++)
             {

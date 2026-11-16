@@ -12,5 +12,5 @@ public:
     unsigned int GetInstanceSize();
     void* FUN_009ba520(unsigned int);
 
-    static const NiRTTI bhkHingeConstraint_ms_RTTI;
+    static const NiRTTI bhkHingeConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268438 (old: g_01268438/ms_kRTTI)
 };

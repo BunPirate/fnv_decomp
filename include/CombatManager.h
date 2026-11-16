@@ -40,14 +40,14 @@ public:
     void ClearData(bool);
     static void Create();
     static void Destroy();
-    void Update(bool arg);
+    void Update(bool abTimeStopped);
     void UpdateCombatGroups(bool arg);
     void UpdateCombatants();
     void ResetTargetMap();
     CombatController* AddCombatant(Actor*, Actor*, unsigned int, bool);
     CombatController* AddCombatantToGroup(Actor*, ActorCombatGroup*);
     CombatController* AddPretendCombatant(Actor*, TESPackage*);
-    unsigned int CombatManager_GetCombatantCount(Actor* target, unsigned int* recentCount);
+    unsigned int GetCombatantCount(Actor* target, unsigned int* recentCount);
     bool CheckShouldFlee(Actor*, Actor*);
     void AssignCombatTarget(Actor*, Actor*);
     bool GetWanttoHelpGroup(Actor*, Actor*);
@@ -72,7 +72,7 @@ public:
     CombatCoverMap* GetCoverMap();
     CombatTargetMap* GetTargetMap();
     void SaveGame(BGSSaveGameBuffer*);
-    void CombatManager_LoadGame(BGSLoadGameBuffer* buffer);
+    void LoadGame(BGSLoadGameBuffer* buffer);
     void InitLoadGame(BGSLoadGameBuffer*);
     void FinishLoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
     void Revert(BGSLoadGameBuffer*);
@@ -87,7 +87,7 @@ public:
     // MSVC supplies __vecDelDtor(unsigned int) from the destructor.
 #endif
     ~CombatManager();
-    void CombatManager_NotifyCombatGroupRemovedTarget(void*, void*);
+    void SwapAndDispatch(void*, void*);
     void FUN_008d0600(void*, void*);
     void CombatManager_UpdateCombatants();
     ActorCombatGroup* FindByKey(unsigned int aiGroupID);

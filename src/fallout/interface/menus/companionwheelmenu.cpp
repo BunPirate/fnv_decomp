@@ -261,7 +261,7 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
 
     case 2:
         Do_ToggleStayFollow();
-        this->CompanionWheelMenu_SetButtonAsHighlighted(aiID, true);
+        this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
 
@@ -271,20 +271,20 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
         break;
 
     case 0:
-        this->CompanionWheelMenu_Do_ToggleAggressivePassive();
-        this->CompanionWheelMenu_SetButtonAsHighlighted(aiID, true);
+        this->Do_ToggleAggressivePassive();
+        this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
 
     case 1:
         this->HealCompanion();
-        this->CompanionWheelMenu_SetButtonAsHighlighted(aiID, true);
+        this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
 
     case 7:
         Do_ToggleRangedMelee();
-        this->CompanionWheelMenu_SetButtonAsHighlighted(aiID, true);
+        this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
 
@@ -295,7 +295,7 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
 
     case 5:
         Do_ToggleNearFar();
-        this->CompanionWheelMenu_SetButtonAsHighlighted(aiID, true);
+        this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
     }

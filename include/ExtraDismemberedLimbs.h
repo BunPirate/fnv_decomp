@@ -13,7 +13,7 @@ public:
     virtual ~ExtraDismemberedLimbs();
 
     unsigned int GetCount();
-    DismembermentPart* ExtraDismemberedLimbs_GetDismemberedLimb(unsigned int aiIndex);
+    DismembermentPart* GetDismemberedLimb(unsigned int aiIndex);
     bool IsBitSet(int limb);
     void SetBit(int limb, bool removed);
     void* __thiscall Destroy();

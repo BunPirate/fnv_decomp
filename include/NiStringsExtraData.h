@@ -12,7 +12,7 @@ class NiStringsExtraData : public NiExtraData
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& arCloning);
     virtual void LoadBinary(NiStream& stream);
-    virtual void SaveBinary(NiStream& stream);
+    virtual void SaveBinary(NiStream& kStream);
     virtual bool IsEqual(NiObject* pObject) const;
     virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
 

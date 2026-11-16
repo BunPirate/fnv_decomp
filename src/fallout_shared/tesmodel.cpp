@@ -136,7 +136,7 @@ typedef char _sizecheck_TESLeveledList[sizeof(TESLeveledList) == 28 ? 1 : -1];
 void TESLeveledList::AddScriptAddedLeveledObject(TESForm* apOwner, unsigned short asLevel, unsigned short asCount, TESForm* apForm,
                                       ContainerItemExtra* apExtra)
 {
-    LeveledObject* plev = TESLeveledList_AddLeveledObject(asLevel, asCount, apForm, apExtra);
+    LeveledObject* plev = AddLeveledObject(asLevel, asCount, apForm, apExtra);
     if (plev)
     {
         ScriptAddedList.AddHead(plev);

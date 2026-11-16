@@ -1091,6 +1091,7 @@ struct FUN_00691a90_class
     void __thiscall BSSimpleArray_NavMeshVertex_1024_dtor();
 };
 
+// src: XBOX_DEBUG_PDB 0x00691a90
 void __thiscall FUN_00691a90_class::BSSimpleArray_NavMeshVertex_1024_dtor()
 {}
 

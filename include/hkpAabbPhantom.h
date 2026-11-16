@@ -19,7 +19,7 @@ public:
 
     hkpAabbPhantom(const hkAabb& aabb, unsigned int collisionFilterInfo);
     hkpAabbPhantom* initialize(const hkAabb& aabb, unsigned int collisionFilterInfo);
-    void setAabb(const hkAabbQ& aabb);
+    void setAabb(const hkAabbQ& newAabb);
     void __thiscall castRay(void* input, void* output);
     void hkpAabbPhantom_setAabb(const hkAabbQ& newAabb);
     void __thiscall hkpAabbPhantom_setAabb(const hkAabb& newAabb);

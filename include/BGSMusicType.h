@@ -25,7 +25,7 @@ public:
     virtual bool LoadForm(TESFile* apFile);
     virtual void InitItem();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void UpdateLoadingStatusCallback();
     bool GetLooping();
     float GetAttenuation();

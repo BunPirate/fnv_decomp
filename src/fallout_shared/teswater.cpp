@@ -239,7 +239,7 @@ int TES::FindCellAtPosition(const NiPoint3* apPos, bool abAllowPartialRemovals)
     }
     BSTaskThread_SetUpdateSleepEnabled(false);
     bool bIsLoadingMenu = Interface::IsGamePaused();
-    if (!bIsLoadingMenu && DAT_011c9618->QueuedCellCount() && !g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
+    if (!bIsLoadingMenu && DAT_011c9618->CallVirtual17() && !g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
     {
         TES_ShowLoadingAreaMessage("Loading Area (queued cells)...");
         bIsLoadingMenu = true;
@@ -291,7 +291,7 @@ int TES::FindCellAtPosition(const NiPoint3* apPos, bool abAllowPartialRemovals)
         pGridCellA->SetGridPosition(iGridX, iGridY);
         if (TESObjectCELL::GetExteriorbhkWorld())
         {
-            if (!bIsLoadingMenu && (!bMovedFar || !DAT_011c9618->QueuedCellCount()))
+            if (!bIsLoadingMenu && (!bMovedFar || !DAT_011c9618->CallVirtual17()))
                 TESObjectCELL::GetExteriorbhkWorld()->RefreshWorld();
             if (bMovedFar)
                 TESObjectCELL::GetExteriorbhkWorld()->SetWorldActive(false);
@@ -307,7 +307,7 @@ int TES::FindCellAtPosition(const NiPoint3* apPos, bool abAllowPartialRemovals)
             SetSkyMode(0);
         if (TESObjectCELL::GetExteriorbhkWorld())
             TESObjectCELL::GetExteriorbhkWorld()->bhkWorld_StartBatchingAdds();
-        TES_GridArrayLoad();
+        GridArrayLoad();
         TES_SetUpdateGridString();
         if (TESObjectCELL::GetExteriorbhkWorld())
         {
@@ -400,7 +400,7 @@ void TESWaterSystem::UpdateWaterZone(TESObjectREFR* apWaterRef, TESObjectREFR* a
     WaterSurface* pGroup = GetWaterZone(apWaterRef, apLookupRef, afHeight);
     if (!pGroup)
         return;
-    TESWaterSystem_RemoveTESObjectFromWaterGroup(apLookupRef, pGroup);
+    RemoveTESObjectFromWaterGroup(apLookupRef, pGroup);
 }
 
 

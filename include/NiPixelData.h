@@ -25,7 +25,7 @@ public:
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
 
     static unsigned int CalculateMipmapLevels(unsigned int width, unsigned int height);
-    void NiPixelData_AllocateData(unsigned int uiLevels, unsigned int uiFaces, unsigned int uiBytes);
+    void AllocateData(unsigned int uiLevels, unsigned int uiFaces, unsigned int uiBytes);
     NiPalette* GetPalette() const throw();
     void SetPalette(NiPalette* palette);
     void SetOwnsPixelData(bool value) { bNoConvert = value; }

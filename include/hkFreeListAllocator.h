@@ -49,15 +49,15 @@ public:
     };
 
     virtual ~hkFreeListAllocator();
-    virtual void* blockAlloc(int iNumBytes);
-    virtual void blockFree(void* pItem, int iNumBytes);
+    virtual void* blockAlloc(int nbytes);
+    virtual void blockFree(void* p, int nbytes);
   public:  // variable-size buffers (slots 3-5)
     virtual void* bufAlloc(int& kReqNumBytesInOut);
     virtual void bufFree(void* pItem, int iNumBytes);
     virtual void* bufRealloc(void* pPold, int iOldNumBytes, int& kReqNumBytesInOut);
   public:  // batches and capacity queries (slots 6-9)
-    virtual void blockAllocBatch(void** pPtrsOut, int iNumPtrs, int iBlockSize);
-    virtual void blockFreeBatch(void** pPtrsIn, int iNumPtrs, int iBlockSize);
+    virtual void blockAllocBatch(void** blocksOut, int nblocks, int nbytes);
+    virtual void blockFreeBatch(void** pPtrsIn, int nblocks, int nbytes);
     virtual bool canAllocSingleBlock(int iNumBytes);
     virtual bool canAllocTotal(int iNumBytes);
   public:  // statistics (slots 10-12)

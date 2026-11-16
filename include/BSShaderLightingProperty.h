@@ -30,14 +30,14 @@ class BSShaderLightingProperty : public BSShaderProperty
     ShadowSceneLight* GetFirstAttachedLight(void*& iter);
     ShadowSceneLight* GetFirstAttachedLight(void** iter);
     ShadowSceneLight* GetFirstActiveLight(void*& aitIter);
-    ShadowSceneLight* GetFirstActiveLight(void** iter);
+    ShadowSceneLight* GetFirstActiveLight(void** aitIter);
     ShadowSceneLight* GetFirstActiveNonShadowLight(void*& iter);
     ShadowSceneLight* GetFirstActiveNonShadowLight(void** iter);
     ShadowSceneLight* GetNextLight(void*& iter);
     ShadowSceneLight* GetNextLight(void** iter);
     ShadowSceneLight* GetNextAttachedLight(void*& iter);
     ShadowSceneLight* GetNextAttachedLight(void** iter);
-    ShadowSceneLight* BSShaderLightingProperty_RemoveLight(void* apSSLight);
+    ShadowSceneLight* GetNextAttachedLight(void* apSSLight);
     ShadowSceneLight* GetNextVisibleNonShadowLight(void*& iter);
     ShadowSceneLight* GetNextVisibleNonShadowLight(void** iter);
     void AttachLight(ShadowSceneLight* light, NiBound* bound);
@@ -48,7 +48,7 @@ class BSShaderLightingProperty : public BSShaderProperty
     unsigned char IsLightingProperty();
 
     static void SetShaderConstant(int index, NiColorA value);
-    static void SetLight(unsigned int index, ShadowSceneLight* light, float scale);
+    static void SetLight(unsigned int auiLightIndex, ShadowSceneLight* apLight, float afForcedDarkness);
     static void SetLight1x2x(unsigned int index, ShadowSceneLight* light, float scale);
     static void SetPointLight3x(unsigned int index, ShadowSceneLight* light, float scale);
     static void SetSpotLight3x(unsigned int index, ShadowSceneLight* light, float scale);

@@ -12,8 +12,8 @@ public:
     virtual bool UpdateFloat(float time, NiObjectNET* target, float& value);
 
     bool Update(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
-    bool StoreSingleValue(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
-    bool BlendValues(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
+    bool UpdateAccumulatedTransform(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
+    bool UpdateSingleInterpolator(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
 
     float m_fFloatValue;
 };

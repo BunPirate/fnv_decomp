@@ -9171,7 +9171,7 @@ void FUN_0055ac20_Class::PlayerCharacter_ClearGrabObject()
 // Call target for the method not yet declared by the shared header.
 extern void FNV2062_FourFloatVector_FUN_005611e0();
 // @fnv 0x005611c0
-// src: XBOX_DEBUG_PDB 0x005611c0
+// src: XBOX_DEBUG_PDB 0x005611c0 (was COMMUNITY)
 // pdb: hkQuaternion::normalize | TESObjectREFR.obj | debug, call graph, high
 void hkVector4::hkQuaternion_normalize()
 {

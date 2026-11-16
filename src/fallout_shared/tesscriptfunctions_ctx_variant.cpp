@@ -25,7 +25,7 @@ class FalloutAudioMedia
   public:
     static void PlayMedia(BGSMusicType*);
     static void EndMediaUpdate();
-    static void FalloutAudioMedia_Update();
+    static void Update();
 };
 class ScriptLocals;
 

@@ -856,7 +856,7 @@ void ShadowSceneLight::ClearShadowObjects()
                 int* pbIsLighting = &b;
                 BSShaderLightingProperty* pkMatch = (*pbIsLighting) ? pkProp : 0;
                 if (pkMatch)
-                    pkMatch->BSShaderLightingProperty_RemoveLight(static_cast<void*>(this));
+                    pkMatch->GetNextAttachedLight(static_cast<void*>(this));
             }
         }
     }

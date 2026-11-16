@@ -1430,7 +1430,7 @@ extern BGSMoviePlayer* DAT_0126fac4;
 // pdb: class FalloutAudioMedia, size 0x1, 0 members
 struct FalloutAudioMedia
 {
-    static void FalloutAudioMedia_Update();
+    static void Update();
     static void PlayMedia(MEDIATYPE, const char*, unsigned int, bool, bool, float, unsigned int);
 };
 struct NN_00605d70
@@ -1604,7 +1604,7 @@ void LoadingMenu::Update_00789820()
     if (((Tile*)this->m_pTiles[11])->IsVisible())
         this->UpdateWheel();
     BSAudio::GetSingleton()->Update(true);
-    FalloutAudioMedia::FalloutAudioMedia_Update();
+    FalloutAudioMedia::Update();
 }
 
 extern unsigned char DAT_011cabb8;
@@ -1773,7 +1773,9 @@ void LoadingMenu::UpdateXPProgressTilesAlphas(float afAlpha, int anSlide)
     }
 }
 
-void LoadingMenu::GetPlayerTileDefaultSettings() // src: XBOX_RETAIL_PDB 0x0078b810 (pdb: LoadingMenu::GetPlayerTileDefaultSettings | LoadingMenu.obj | retail, call graph (anchored callee segments), high)
+// src: XBOX_RETAIL_PDB 0x0078b810
+// pdb: LoadingMenu::GetPlayerTileDefaultSettings | LoadingMenu.obj | retail, call graph (anchored callee segments), high
+void LoadingMenu::GetPlayerTileDefaultSettings()
 {
     for (int i = 0; i < 38; i++)
     {

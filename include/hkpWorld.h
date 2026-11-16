@@ -153,7 +153,7 @@ class hkpWorld : public hkReferencedObject
     void unlock();
     hkpPhysicsSystem* getWorldAsOneSystem() const;
     void* getUserData() const;
-    void hkpWorld_reenableCollisionBetweenEntityPair(hkpEntity* entityA, hkpEntity* entityB);
+    void reenableCollisionBetweenEntityPair(hkpEntity* entityA, hkpEntity* entityB);
     hkBoolResult ProcessTarget(hkpRigidBody* entity);
     void RemoveActionFromEntity(hkpUnaryAction* action, hkpEntity* entity);
     void __cdecl AddCollisionShape(void* entity) throw();

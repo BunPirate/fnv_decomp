@@ -103,7 +103,7 @@ FUN_00527e30::FUN_00527e30() : m(2, 0x25, 0xc)
 // pdb: ExteriorCellLoader::CancelAllCellLoads | ExteriorCellLoader.obj | debug, upstream name already matches, high
 void ExteriorCellLoader::ExteriorCellLoader_CancelAllCellLoads()
 {
-    ExteriorCellLoader_ClearData();
+    ClearData();
 }
 
 extern "C" int __cdecl sprintf_s(char*, int, const char*, ...);
@@ -786,9 +786,8 @@ void FUN_005272b0_Class::ClearAndDestroy()
 }
 
 // @fnv 0x005285a0
-// src: XBOX_DEBUG_PDB 0x005285a0
 // pdb: ExteriorCellLoader::QueuedCellCount | ExteriorCellLoader.obj | debug, call graph, high
-int __thiscall ExteriorCellLoader::QueuedCellCount()
+int __thiscall ExteriorCellLoader::CallVirtual17()
 {
     return ((int(__thiscall*)(void*))(*(void***)this)[17])(this);
 }

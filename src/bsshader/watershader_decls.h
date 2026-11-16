@@ -74,7 +74,7 @@ class WaterShader : public BSShader
     static BSShader* CreateShader();
     void InitializeShaderData();
     void CreateConstantMaps();
-    void WaterShader_LoadStagesAndPasses();
+    void LoadStagesAndPasses();
     virtual ~WaterShader();
     // const NiRTTI* __cdecl WaterShader::*()
     // WaterShader

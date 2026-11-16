@@ -32,7 +32,7 @@ public:
 
     bool IsLoaded();
     void Prepare();
-    void BGSDistantTreeBlock_UpdateShaderProperties();
+    void UpdateShaderProperties();
     void MarkTreeInstance(unsigned int);
     void MarkTreeInstance(unsigned int aID, bool update);
     void ClearInstanceFlag(unsigned int aID);

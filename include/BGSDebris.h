@@ -23,7 +23,7 @@ public:
 
     BSSimpleList<DebrisModelEntry*>* GetDataList();
     BSSimpleList<DebrisModelEntry*>* GetData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Preload(int priority, void* file);
     DebrisModelEntry* AddDebrisData(char acPercentage, const char* apFileName, char acFlags);
     void InsertDebrisIfValid(DebrisModelEntry* entry);

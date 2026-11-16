@@ -46,7 +46,7 @@ public:
     double GetVariable(unsigned int, Script*);
     BSSimpleList<ScriptLocalVariable*>* GetLocalList();
     bool IsReferenceVariable(unsigned int);
-    unsigned short ScriptLocals_GetSaveSize();
+    unsigned short GetSaveSize();
     void SaveGame(BGSSaveFormBuffer*);
     void SaveGame();
     void LoadGame(BGSLoadFormBuffer*);

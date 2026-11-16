@@ -723,7 +723,7 @@ struct OpPacket {
     const void* right;
 };
 struct EventSink {
-    void hkpTypedBroadPhaseDispatcher_addPairs(const Pair* p, int action, FilterCore* core);
+    void hkpTypedBroadPhaseDispatcher_addPairs(const Pair* newPairs, int numNewPairs, FilterCore* core);
 };
 int __cdecl FindEntryValue(const void*, const void*);
 struct FUN_00c913b0_Class {

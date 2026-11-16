@@ -327,7 +327,7 @@ bool FUN_006e4650_class::PathingCoverLocation_CheckDynamicCoverValid(int aiLastM
     if (FUN_006dd610(nm))
     {
         NiPointer<PathingSolution> sol(0);
-        if (nm->NavMesh_GetObstacleForTriangle(GetShortValueAtOffset24(sol)) && *(int*)((char*)sol.operator->() + 0x70) == aiLastMovedTime)
+        if (nm->GetObstacleForTriangle(GetShortValueAtOffset24(sol)) && *(int*)((char*)sol.operator->() + 0x70) == aiLastMovedTime)
             return true;
     }
     return false;
@@ -370,7 +370,7 @@ int S_006e4740::PathingCoverLocation_GetDynamicCoverObstacleTimeStamp()
     if (FUN_006dd610(nm))
     {
         NiPointer<PathingSolution> sol(0);
-        if (nm->NavMesh_GetObstacleForTriangle(GetShortValueAtOffset24(sol)))
+        if (nm->GetObstacleForTriangle(GetShortValueAtOffset24(sol)))
         {
             return *(int*)((char*)sol.operator->() + 0x70);
         }

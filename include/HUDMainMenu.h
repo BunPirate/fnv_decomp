@@ -102,8 +102,8 @@ public:
     void HUDMainMenu_KillQuestUpdates();
 
     static HUDMainMenu* g_pHudMainMenuInstance;
-    static void HUDMainMenu_SetTargetType(TESObjectREFR*, bool);
-    static void HUDMainMenu_SetGunScopeVisible(bool);
+    static void SetTargetType(TESObjectREFR*, bool);
+    static void SetGunScopeVisible(bool);
     static bool UpdateTargetReference(TESObjectREFR*, bool, bool);
     bool RefreshTargetDisplay();
     static void UpdateTargetActor(Actor* apActor);

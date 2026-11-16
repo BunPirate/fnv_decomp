@@ -1067,7 +1067,7 @@ void Explosion::Init3D()
     if (obj)
     {
         float scale = 1.0f;
-        if (Explosion_IsDistant())
+        if (IsDistant())
         {
             Chain* node = obj->V0c();
             BSFadeNode* fade = node ? (BSFadeNode*)((Sub*)node)->V10() : 0;

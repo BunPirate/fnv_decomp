@@ -113,9 +113,9 @@ inline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
     m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
-inline void hkVector4::mul4(const hkSimdReal& r)
+inline void hkVector4::mul4(const hkSimdReal& s)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), m_vComponents);
+    m_vComponents = _mm_mul_ps(s.broadcast(), m_vComponents);
 }
 inline void hkVector4::add4(const hkVector4& a)
 {

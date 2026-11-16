@@ -7,9 +7,9 @@ class ExteriorCellLoader // src: XBOX_DEBUG_PDB 0x00527fc0 (first debug link of 
 {
 public:
     void ExteriorCellLoader_CancelAllCellLoads();
-    void ExteriorCellLoader_ClearData();
+    void ClearData();
     void ExteriorCellLoader_QueueCellLoad(TESObjectCELL*);
-    int QueuedCellCount();
+    int CallVirtual17();
     void PostProcessCompletedTasks();
     int ExteriorCellLoader_TryCancelTasks();
     void ExteriorCellLoader_WaitForTasks();

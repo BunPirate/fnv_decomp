@@ -22,11 +22,11 @@ bool NiBlendFloatInterpolator::Update(float fTime, NiObjectNET* pkInterpTarget, 
 {
     bool result = false;
     if (m_ucInterpCount == 1)
-        result = NiBlendFloatInterpolator::StoreSingleValue(fTime, pkInterpTarget, fValue);
+        result = NiBlendFloatInterpolator::UpdateAccumulatedTransform(fTime, pkInterpTarget, fValue);
     else if (m_ucInterpCount > 0)
     {
         NiBlendInterpolator::NormalizeWeights();
-        result = NiBlendFloatInterpolator::BlendValues(fTime, pkInterpTarget, fValue);
+        result = NiBlendFloatInterpolator::UpdateSingleInterpolator(fTime, pkInterpTarget, fValue);
     }
     m_fLastTime = fTime;
     return result;
@@ -48,10 +48,9 @@ void NiBlendFloatInterpolator::LoadBinary(NiStream& kStream)
 }
 
 // @fnv 0x00a40640
-// src: XBOX_RETAIL_PDB 0x00a40640
 // pdb: NiBlendFloatInterpolator::StoreSingleValue | NiBlendFloatInterpolator.obj | retail, object-file run extension, high
 // pdb params: fTime, pkInterpTarget, fValue
-bool NiBlendFloatInterpolator::StoreSingleValue(float fTime, NiObjectNET* pkInterpTarget, float& fValue)
+bool NiBlendFloatInterpolator::UpdateAccumulatedTransform(float fTime, NiObjectNET* pkInterpTarget, float& fValue)
 {
     if (m_uFlags & 1)
         fTime = m_fSingleTime;
@@ -78,11 +77,10 @@ __forceinline bool NiBlendInterpolator::GetBlendUpdateTime(float& time, NiBlendI
 
 // Blends weighted float values from the interpolator array into m_fFloatValue, normalizing by total weight, and writes the result to value.
 // @fnv 0x00a406c0
-// src: XBOX_RETAIL_PDB 0x00a406c0
 // pdb: NiBlendFloatInterpolator::BlendValues | NiBlendFloatInterpolator.obj | retail, object-file run extension, high
 // pdb params: fTime, pkInterpTarget, fValue
 // pdb locals: bModifiedValue, fTotalNormalizedWeight, uc, pkInterpolator, fUpdateTime, bSuccess
-bool NiBlendFloatInterpolator::BlendValues(float fTime, NiObjectNET* pkInterpTarget, float& fValue)
+bool NiBlendFloatInterpolator::UpdateSingleInterpolator(float fTime, NiObjectNET* pkInterpTarget, float& fValue)
 {
     m_fFloatValue = 0.0f;
     bool valid = false;

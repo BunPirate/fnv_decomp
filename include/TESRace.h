@@ -56,7 +56,7 @@ public:
     BGSTextureModel* GetBodyTextureModel(int sex);
     FaceGenMatrix<float> (*GetMeanFaceCoord(SEX sex))[2];
     bool GetBodyModTextureFileName(TESNPC* npc, char* path, char* texturePath);
-    bool TESRace_GetBodyTexture(NiPointer<NiTexture>& aspOutBaseTexture, NiPointer<NiTexture>& aspOutModTexture, TESNPC* apNPC, BIPED_OBJECT aePart, bool abForceCreate);
+    bool GetBodyTexture(NiPointer<NiTexture>& aspOutBaseTexture, NiPointer<NiTexture>& aspOutModTexture, TESNPC* apNPC, BIPED_OBJECT aePart, bool abForceCreate);
     float GetHeight(SEX sex);
     float GetWeight(SEX sex);
     bool BuildFaceGenHead(BSFaceGenNiNode*& head, BSFaceGenNiNode*& hair, TESNPC* npc, bool arg3, bool arg4, SEX sex);

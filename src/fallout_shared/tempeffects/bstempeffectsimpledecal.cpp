@@ -212,27 +212,27 @@ int BSTempEffectSimpleDecal::ClipPolygonByPlanes(int count, float* apInVerts, Ni
     NiPoint3 tempPos[9];
     NiPoint3 tempC[9];
     float n[9];
-    int tempB = BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(&pClippingPlanes[0], count, (NiPoint3*)apInVerts, (float*)apInB, apInC, n,
+    int tempB = ClipPolygonAgainstPlane(&pClippingPlanes[0], count, (NiPoint3*)apInVerts, (float*)apInB, apInC, n,
                                    tempPos, tempC);
     if (tempB)
     {
-        tempB = BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(&pClippingPlanes[1], tempB, (NiPoint3*)n, (float*)tempPos, tempC, apOutB,
+        tempB = ClipPolygonAgainstPlane(&pClippingPlanes[1], tempB, (NiPoint3*)n, (float*)tempPos, tempC, apOutB,
                                    apOutPos, apOutC);
         if (tempB)
         {
-            tempB = BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(&pClippingPlanes[2], tempB, (NiPoint3*)apOutB, (float*)apOutPos, apOutC, n,
+            tempB = ClipPolygonAgainstPlane(&pClippingPlanes[2], tempB, (NiPoint3*)apOutB, (float*)apOutPos, apOutC, n,
                                        tempPos, tempC);
             if (tempB)
             {
-                tempB = BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(&pClippingPlanes[3], tempB, (NiPoint3*)n, (float*)tempPos, tempC, apOutB,
+                tempB = ClipPolygonAgainstPlane(&pClippingPlanes[3], tempB, (NiPoint3*)n, (float*)tempPos, tempC, apOutB,
                                            apOutPos, apOutC);
                 if (tempB)
                 {
-                    tempB = BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(&pClippingPlanes[5], tempB, (NiPoint3*)apOutB, (float*)apOutPos,
+                    tempB = ClipPolygonAgainstPlane(&pClippingPlanes[5], tempB, (NiPoint3*)apOutB, (float*)apOutPos,
                                                apOutC, n, tempPos, tempC);
                     if (tempB)
                     {
-                        tempB = BSTempEffectSimpleDecal_ClipPolygonAgainstPlane(&pClippingPlanes[4], tempB, (NiPoint3*)n, (float*)tempPos, tempC,
+                        tempB = ClipPolygonAgainstPlane(&pClippingPlanes[4], tempB, (NiPoint3*)n, (float*)tempPos, tempC,
                                                    apOutB, apOutPos, apOutC);
                     }
                 }
@@ -1285,7 +1285,7 @@ bool BSTempEffectSimpleDecal::FinalizeGeometry()
         NiAlphaProperty* e = new NiAlphaProperty;
         e->NiAlphaProperty_SetAlphaBlending(bUseAlphaBlending);
         e->SetFlag512(bUseAlphaTesting);
-        e->NiAlphaProperty_SetTestMode(4);
+        e->SetTestMode(4);
         e->NiAlphaProperty_SetTestRef(128);
         ((Graph*)(NiAVObject*)sp3D)->AttachProperty(e);
         if (bTwoSided)

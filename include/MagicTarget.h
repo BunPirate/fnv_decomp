@@ -77,7 +77,7 @@ public:
     void MagicTarget_EvaluateSpellConditions();
     float MagicTarget_GetUsageMonitorEffectMagnitude(MagicItem* apSpell);
     bool MagicTarget_HasDamageHealthEffect();
-    void MagicTarget_StartSpell(unsigned int apSpell);
+    void StartSpell(unsigned int apSpell);
     void RemoveEffectsByArchetype(int aiArchetype, int iProcessLevel);
     void MagicTarget_DispelAllSpells(bool immediate);
     void MagicTarget_SetDisplacementSpell(void* pOwner, int iKind);

@@ -18,7 +18,7 @@ public:
     virtual unsigned int GetProjectileType();
     virtual void Do3DLoaded();
     virtual void HandleTracer();
-    virtual void UpdateProjectile(float timeDelta);
+    virtual void UpdateProjectile(float afDelta);
     virtual bool OnCollision(Actor* actor, const NiPoint3& contactPoint,
                              const NiPoint3& contactNormal, hkpCollidable* collidable,
                              unsigned int collisionShapeKey, unsigned int hitMaterial);

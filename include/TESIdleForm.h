@@ -47,7 +47,7 @@ public:
     NiFormArray* AssignParentPath();
     unsigned int GetChildCount();
     TESIdleForm* GetChildByIndex(unsigned int index);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1049d0c slot 8 = 0x5fe810)
     bool LoadForm(TESFile* apFile);
     bool InitParents();

@@ -9,7 +9,7 @@ public:
     CalmEffect(void*, void*, void*);
 
     virtual ActiveEffect* Copy();
-    virtual void Update(float delta);
+    virtual void Update(float afSecondsElapsed);
     virtual bool IsEffectValid(MagicTarget* target);
     virtual void Start();
     virtual void Finish();

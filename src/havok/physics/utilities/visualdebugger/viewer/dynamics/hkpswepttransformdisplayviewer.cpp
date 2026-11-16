@@ -294,7 +294,7 @@ void hkpSweptTransformDisplayViewer::RemoveWorldData(int index)
 {
     m_kWorldDataList[index]->m_pOwningWorld->AddEntityListener((SweptEntityListener*)(hkpEntityListener*)this);
     m_kWorldDataList[index]->m_pOwningWorld->AddPostSimulationListener((SweptPostSimListener*)(hkpWorldPostSimulationListener*)this);
-    hkpSweptTransformDisplayViewer_removeAllGeometries(index);
+    removeAllGeometries(index);
     delete m_kWorldDataList[index];
     m_kWorldDataList.removeAt(index);
 }

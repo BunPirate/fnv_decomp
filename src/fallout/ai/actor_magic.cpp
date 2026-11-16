@@ -614,7 +614,7 @@ void Actor::UpdateActorPresentation()
 {
     if (BSShaderManager_IsRefractionEnabled() && IsRefractive())
     {
-        Unk_E1(true, GetExtraData()->ExtraDataList_GetRefractionPropertyExtra()->fRefractionPower);
+        Unk_E1(true, GetExtraData()->GetRefractionPropertyExtra()->fRefractionPower);
     }
     else
     {
@@ -804,7 +804,7 @@ void Actor::ConfigureActorState(bool first, bool second)
             RestoreHealth(context);
         if ((pCurrentProcess && ((ActorMagicProcess*)pCurrentProcess)->GetCachedFlag(0x40000000)) ||
             GetFatigue() < DAT_01012060)
-            Actor_RestoreFatigue(context);
+            RestoreFatigue(context);
         Unk_F7(context);
     }
     fLastUpdate = time;
@@ -1082,7 +1082,7 @@ void HighProcess::SetMaxAlpha(float afAlpha)
 bool Actor::IsRefractive()
 {
     ExtraDataList* pextraDataList = GetExtraData();
-    if (pextraDataList && pextraDataList->ExtraDataList_GetRefractionPropertyExtra())
+    if (pextraDataList && pextraDataList->GetRefractionPropertyExtra())
         return true;
     return false;
 }
@@ -4514,7 +4514,7 @@ void ScrollCastingMethods::CastScroll(Object8C1* pkObject, int iCount)
         reinterpret_cast<ScrollEquipFunction>((*reinterpret_cast<void***>(this))[0x5f])(this, pkObject, 0, 1, 0, 0, 0, 0, 0, 1, 0);
         reinterpret_cast<EntryList8C1*>(reinterpret_cast<char*>(this) + (offsetof(Actor, apTargetLight) - offsetof(MagicCaster, apTargetLight)))->Add(pkObject->m_kUnsortedGeometryList.GetFirst(), iCount, 0);
         if (this == static_cast<Actor*>(g_thePlayer))
-            g_thePlayer->PlayerCharacter_SetSelectedScroll(0);
+            g_thePlayer->SetSelectedScroll(0);
     }
 }
 

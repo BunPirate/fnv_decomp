@@ -28,7 +28,7 @@ class NiAlphaProperty : public NiProperty
     virtual void LoadBinary(NiStream& kStream);
 
     void SetFlag512(bool bAlpha);
-    void NiAlphaProperty_SetTestMode(unsigned short eTestFunc);
+    void SetTestMode(unsigned short eTestFunc);
 
     void NiAlphaProperty_SetAlphaBlending(bool enable);
     void NiAlphaProperty_SetTestRef(unsigned char value);

@@ -3269,6 +3269,7 @@ void hkpWorldAgentUtil_warpTime(hkpSimulationIsland* island, float oldTime, floa
 
 void hkpWorldCallbackUtil_fireIslandActivated(hkpWorld* w, hkpSimulationIsland* island);
 
+// src: XBOX_RETAIL_PDB 0x00cb3d10
 static __declspec(noinline) hkpSimulationIsland* findSmallSparseActiveIsland(hkpWorld* w, S00cb5100_Arr* islands, int islandSizeAddon,
                                                                  hkpSimulationIsland* islandToIgnore)
 {

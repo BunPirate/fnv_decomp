@@ -120,7 +120,7 @@ bool BSSoundHandle::IsValid()
     {
         return false;
     }
-    return BSAudioManager::GetRandomGenerator().BSAudioManager_IsValid(iSoundID);
+    return BSAudioManager::GetRandomGenerator().IsValid(iSoundID);
 }
 
 // This singleton helper is distinct from the shared instance RefreshTargetDisplay method.
@@ -208,7 +208,7 @@ void BSSoundHandle::SetMinMax(float afMin, float afMax)
     if (iSoundID == 0xFFFFFFFF)
         return;
 
-    BSAudioManager::GetRandomGenerator().BSAudioManager_SetMinMax(iSoundID, afMin, afMax);
+    BSAudioManager::GetRandomGenerator().SetMinMax(iSoundID, afMin, afMax);
 }
 
 // @fnv 0x00ad8c20

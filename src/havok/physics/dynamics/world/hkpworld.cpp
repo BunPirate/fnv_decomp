@@ -1371,7 +1371,7 @@ bool bhkWorld::StepSimulation() {
             this->iEntityBatchCount = remaining;
             DAT_012677a2 = 1;
         }
-        this->bhkWorld_AddBatchedConstraints();
+        this->AddBatchedConstraints();
         ((BhkWorldOperations*)this)->bhkWorld_AddBatchedActions();
     }
 
@@ -12188,9 +12188,9 @@ __forceinline void hkVector4::setBroadcast3(const hkVector4& v)
 {
     m_vComponents = _mm_shuffle_ps(v.m_vComponents, v.m_vComponents, 0xff);
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const LocalM128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    const LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const LocalM128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), sum);
 }

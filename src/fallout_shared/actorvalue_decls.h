@@ -58,7 +58,7 @@ FNV_STATIC_ASSERT(offsetof(TESFullName, m_kName) == 0x4);
 
 namespace ActorValue {
 ActorValueInfo* GetActorValueInfo(Index index);
-void ActorValue_RegisterActorValues();
+void RegisterActorValues();
 }
 namespace ActorValue {
 void RegisterActorValue(Index, char*, Section, unsigned int, ActorValueDeriveCallback, ActorValueMappingCallback,
@@ -110,7 +110,7 @@ namespace ActorValue {
 Index GetActorValueForSectionIndex(Section, char);
 unsigned int GetCountForSection(Section);
 const char* GetActorValueName(Index);
-bool ActorValue_GetDerivedActorValue(ActorValueOwner*, Index, float&);
+bool GetDerivedActorValue(ActorValueOwner*, Index, float&);
 void NotifyActorValueChanged(ActorValueOwner*, Index, float, float, ActorValueOwner*);
 Index* GetDependentActorValueIndices(Index, int&);
 bool HasActorValueChangedCallback(Index);

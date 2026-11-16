@@ -373,7 +373,7 @@ struct FUN_0086e3f0_shell : public NiGeometry
 // pdb params: usNumVertices, usNumTriangles, ausTriList
 bool FUN_0086e3f0_shell::NiScreenElements_Insert(unsigned short usNumVertices, unsigned short usNumTriangles, int ausTriList)
 {
-    return ((NiScreenElementsData*)GetModelData())->NiScreenElementsData_Insert(usNumVertices, usNumTriangles, ausTriList);
+    return ((NiScreenElementsData*)GetModelData())->Insert(usNumVertices, usNumTriangles, ausTriList);
 }
 
 class NiGeometryData;
@@ -743,7 +743,7 @@ struct FUN_0086f640_shell : public Main
 class FalloutAudioMedia
 {
   public:
-    static void __cdecl FalloutAudioMedia_Update();
+    static void __cdecl Update();
 };
 
 class SoundPlaybackManager
@@ -759,7 +759,7 @@ void FUN_0086f640_shell::TESMain_OnIdle_UpdateAudio()
 {
     ::BSAudio::GetSingleton()->Update(true);
     FalloutRadio::Update(false);
-    FalloutAudioMedia::FalloutAudioMedia_Update();
+    FalloutAudioMedia::Update();
     SoundPlaybackManager::UpdateRegionSounds();
 }
 

@@ -85,7 +85,7 @@ public:
     bool WearingVoiceModulateItem();
     bool HasItemOfType(unsigned int);
     bool FindItemInInventory(TESBoundObject*, int, int, int*, unsigned int, TESObjectREFR*);
-    bool InventoryChanges_ContainerHasObjects(TESBoundObject*, int, int, int&, unsigned int, TESObjectREFR*);
+    bool ContainerHasObjects(TESBoundObject*, int, int, int&, unsigned int, TESObjectREFR*);
     InventoryStackRecord* FindInventoryItem(TESObjectREFR*, bool*);
     bool HasQuestObject();
     bool HasScript();
@@ -102,7 +102,7 @@ public:
     InventoryStackRecord* GetBestLight(TESActorBase*, bool);
     ItemEntry* SelectBestWeapon(TESCreature*, int*, int, int);
     InventoryEntryData* SelectBestWeapon(TESCreature*, float*, int, bool);
-    ItemEntry* InventoryChanges_GetBestAmmo(TESCreature*, int);
+    ItemEntry* GetBestAmmo(TESCreature*, int);
     InventoryStackRecord* GetInventoryEntryData(int, bool);
     InventoryStackRecord* GetInventoryEntryData(BIPED_OBJECT, bool);
     InventoryStackRecord* GetEquippedItemForSlot(int);
@@ -127,7 +127,7 @@ public:
     InventoryStackRecord* GetFirstInventoryEntry();
     int GetInventoryEntryCount();
     InventoryEntry* GetNextInventoryEntry(InventoryList*);
-    void InventoryChanges_RemoveGold(TESObjectREFR*, int, TESObjectREFR*);
+    void RemoveGold(TESObjectREFR*, int, TESObjectREFR*);
     float RemoveAllTypedItems(TESObjectREFR*, TESObjectREFR*, bool, bool, bool, bool, int, BGSListForm*);
     float RemoveAllItems(TESObjectREFR*, TESObjectREFR*, bool, bool, bool, bool, int, BGSListForm*);
     void DuplicateAllItems(TESObjectREFR*, TESObjectREFR*);
@@ -146,10 +146,10 @@ public:
     InventoryStackRecord* FindEntryWithExtraListType(int);
     void SetItemsBacktoDefaultState();
     void CopyInventoryChanges(InventoryChanges*, TESObjectREFR*, bool);
-    void InventoryChanges_ClearAllChangeItems();
+    void ClearAllChangeItems();
     void ClearInventoryChanges();
     void ResetCachedWeights();
-    void InventoryChanges_RemoveItemType(int, bool, int);
+    void RemoveItemType(int, bool, int);
     unsigned short GetSaveSize();
     void SaveGame(BGSSaveFormBuffer*);
     void SaveGame();

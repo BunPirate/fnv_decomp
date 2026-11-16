@@ -80,7 +80,7 @@ public:
     TESSound* GetCastSound();
 
     static int ms_iDialogMenuValue;
-    static void DialogMenu_Close();
-    static Tile* DialogMenu_Create(MobileObject*, TESTopic*, MobileObject*);
-    static void* DialogMenu_Create(void*, void*, void*);
+    static void Close();
+    static Tile* Create(MobileObject*, TESTopic*, MobileObject*);
+    static void* Create(void*, void*, void*);
 };

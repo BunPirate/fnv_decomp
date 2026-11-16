@@ -123,7 +123,7 @@ public:
     SavedEntryMap* Modelloader_GetReferencedThis();
     bool BGSSaveLoadGame_GetPlayerLocationInvalid();
     void __thiscall RevertCurrentChanges(int, int);
-    void BGSSaveLoadGame_UnloadForm(void*, int);
+    void UnloadForm(void*, int);
     void SetLoadingMovedRefs_00849c00(bool);
     void QueueSubBuffer(int, BGSLoadFormBuffer*, int);
     void SaveGameWarningFunction(const char* apMessage, char* varArgs);

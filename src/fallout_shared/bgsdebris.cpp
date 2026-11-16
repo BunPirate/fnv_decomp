@@ -35,7 +35,7 @@ template <class T> unsigned int BSStringLength(const T*);
 class ModelLoader
 {
   public:
-    void ModelLoader_QueueModel(const char*, void*, int, void*, int, int, int, int);
+    void QueueModel(const char*, void*, int, void*, int, int, int, int);
 };
 extern ModelLoader* g_modelLoader;
 
@@ -77,7 +77,7 @@ void BGSDebris::QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apPar
     {
         DebrisModelEntry* data = list->GetItem();
         if (data && data->path && BSStringLength(data->path))
-            g_modelLoader->ModelLoader_QueueModel(data->path, &data->model, aePriority, apParent, 1, 1, 0, 0);
+            g_modelLoader->QueueModel(data->path, &data->model, aePriority, apParent, 1, 1, 0, 0);
         list = list->GetNext();
     }
 }

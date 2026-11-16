@@ -118,7 +118,7 @@ class BipedAnim
     BSFaceGenModel* GetFaceGenModelForSlot(BIPED_OBJECT);
     void UpdateBipedWeapon(TESObjectWEAP*, unsigned char);
     void ClearBipedObject(BipedAnimObject*, bool, TESForm*);
-    void BipedAnim_QueueHelmetLoad(IO_TASK_PRIORITY, void*, BIPED_OBJECT);
+    void QueueHelmetLoad(IO_TASK_PRIORITY, void*, BIPED_OBJECT);
     static bool CanLoadHiddenBipedObjects();
     static void ApplyReferenceExtraData(NiNode*, NiNode*, BIPED_OBJECT, TESObjectREFR*);
     static BSShaderPPLightingProperty* GetLightingProperty(NiAVObject*);

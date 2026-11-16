@@ -87,7 +87,7 @@ struct TaskQueueInterface
 {
     static TaskQueueInterface* GetInstance();
     void TaskQueueInterface_QueueNodeDetach(void* apObject);
-    void TaskQueueInterface_QueueNodeAttach(void* apChildNode, void* apNewParetNode, bool abFirstAvailable, bool abUpdateProperties);
+    void QueueTaskWithTwoObjects(void* apChildNode, void* apNewParetNode, bool abFirstAvailable, bool abUpdateProperties);
     void TaskQueueInterface_QueueObjectUpdate(void* p);
 };
 
@@ -1488,7 +1488,7 @@ void FUN_006eae40_shell::PathManagerImpl_Update()
     {
         if (AILinearTaskThreadManager_ShouldQueue3DTask())
         {
-            TaskQueueInterface::GetInstance()->TaskQueueInterface_QueueNodeAttach(spObj2, g_011d6e5c, true, false);
+            TaskQueueInterface::GetInstance()->QueueTaskWithTwoObjects(spObj2, g_011d6e5c, true, false);
         }
         else
         {

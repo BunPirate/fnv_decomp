@@ -797,7 +797,7 @@ class C5C30Derived : public C5C30Primary, public C5C30Secondary
   public:
     C5C30Derived();
 // @fnv 0x00525c30
-    virtual void FUN_00525c30(unsigned int aiFlags, unsigned int aiCurrentFlags);
+    virtual void FUN_00525c30(unsigned int uiA, unsigned int uiB);
 };
 
 C5C30Derived::C5C30Derived()

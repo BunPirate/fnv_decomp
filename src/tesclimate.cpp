@@ -150,7 +150,7 @@ void __cdecl TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 void TESClimate::SaveForm()
 {
     TESForm::BeginFormRecord();
-    weatherList.TESWeatherList_Save(0x54534c57);
+    weatherList.Save(0x54534c57);
     int i = 0;
     for (; i < 2; ++i)
         m_kSunTextures[i].Save(0x4d414e46 + i);
@@ -183,7 +183,7 @@ bool TESClimate::Compare(TESForm* apCompare)
     if (m_kStarsModel.CompareWithBase(static_cast<BaseFormComponent*>(&i->m_kStarsModel)))
         return true;
 
-    if (weatherList.TESWeatherList_CompareComponent(&i->weatherList))
+    if (weatherList.CompareComponent(&i->weatherList))
         return true;
 
     if (memcmp(m_ucTimeSettings, i->m_ucTimeSettings, 6) != 0)

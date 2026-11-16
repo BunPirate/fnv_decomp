@@ -221,7 +221,7 @@ void BSAudio::UnPauseSynchTimer()
 void BSAudio::Update(bool abPlayGameWorldSounds)
 {
     AutoMemContext guard(0xb);
-    BSAudioManager::GetRandomGenerator().BSAudioManager_Update(abPlayGameWorldSounds);
+    BSAudioManager::GetRandomGenerator().Update(abPlayGameWorldSounds);
 }
 
 // @fnv 0x00ad7fa0
@@ -640,7 +640,7 @@ struct FUN_00ad81c0_shell
 void FUN_00ad81c0_shell::SetAudioThreadModeAndForward(unsigned int auiValue)
 {
     AudioThreadModeScope scope;
-    BSAudioManager::GetRandomGenerator().BSAudioManager_SetAudioCacheSizeInK(static_cast<int>(auiValue));
+    BSAudioManager::GetRandomGenerator().SetAudioCacheSizeInK(static_cast<int>(auiValue));
 }
 }  // namespace fnv_00ad81c0
 

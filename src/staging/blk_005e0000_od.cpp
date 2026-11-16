@@ -43,7 +43,7 @@ public:
     AudioPlaybackHandle GetHandle(const char* apSoundName, int aiTypeFlags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* apSoundName, int aiTypeFlags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags);
-    Snd Make(void* a, SndSrc* b);
+    Snd Make(void* apFilename, SndSrc* aiTypeFlags);
 };
 #include "../../include/GO.h"
 #include "../../include/NiBound.h"

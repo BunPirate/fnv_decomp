@@ -224,7 +224,7 @@ public:
     bool FUN_00461580(unsigned int);
     CombatSlot* GetActionAtIndex(int);
     bool CombatState_FindBestCoverLocation(void*, void*, CombatSearch*, CombatSpot*, int);
-    bool CombatState_FindBestDodgeLocation(CombatSpot*, int, int, float, float);
+    bool FindBestDodgeLocation(CombatSpot*, int, int, float, float);
     bool FindBestAdvanceLocation(void*, CombatSearch*, CombatSpot*, int, CombatPos*, float, int);
     bool CombatState_FindGrenadeThrowLocation(CombatSpot*, char*, int);
     bool CombatState_FindBestFleeLocation(CombatSearch*, CombatSpot*, int);

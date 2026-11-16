@@ -174,7 +174,7 @@ void S_00d87e30::ProcessCollisionEvent(S_00d87e30_Event* constraint)
     if (!world)
         return;
     world->lockCriticalOperations();
-    world->hkpWorld_reenableCollisionBetweenEntityPair(a, b);
+    world->reenableCollisionBetweenEntityPair(a, b);
     world->unlockAndAttemptToExecutePendingOperations();
 }
 

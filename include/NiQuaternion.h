@@ -70,7 +70,7 @@ public:
     void GetAngleAxis(float& angle, NiPoint3& axis);
     void GetAngleAxis(float* angle, NiPoint3* axis);
     void FromAngleAxis(float angle, NiPoint3* axis);
-    void FromAngleAxisX(float angle);
+    void FromAngleAxisX(float fAngle);
     void FromAngleAxisY(float angle);
     void FromAngleAxisZ(float angle);
     void SetRotationFromEulerXYZ(float x, float y, float z);

@@ -73,8 +73,8 @@ public:
     InventoryChanges* GetContainerChangeData();
     void SetContainerChanges(InventoryChanges* apChanges);
     bool HasExtraDataType0x2F();
-    bool ExtraDataList_IsExtraDefaultforContainer(int type);
-    bool ExtraDataList_GetWeaponModSlotActive(int slot);
+    bool IsExtraDefaultforContainer(int type);
+    bool GetWeaponModSlotActive(int slot);
     void RemoveExtraDataType0x15();
     LockExtraData* GetLock();
     TESForm* GetOwnerForm();
@@ -87,14 +87,14 @@ public:
     ScriptLocals* GetScriptLocalData();
     RegionPoint* GetStartingPositionData();
     TESObjectREFR* GetReplacementReference();
-    void ExtraDataList_AddGuard(Actor* actor);
+    void AddGuard(Actor* actor);
     void AddOrCreateExtraItem(void* crime, float stamp);
     void InitLoadGame(BGSLoadFormBuffer* buffer, TESForm* form);
     // 0x0041cd70 / 0x0041cda0 / 0x0041cc90: the package of the ExtraTresPassPackage extra (type 0x1a, +0xc)
     TrespassPackage* GetTrespassPackage();
     void ClearTrespassPackage();
     void SetTrespassPackage(TrespassPackage* package);
-    ExtraRefractionProperty* ExtraDataList_GetRefractionPropertyExtra();
+    ExtraRefractionProperty* GetRefractionPropertyExtra();
     TESPackage* GetPackageOverride();
     Actor* GetTalkingActor();
     void SetPackageOverride(TESPackage*, int, Actor*, bool, bool, bool);
@@ -110,11 +110,11 @@ public:
     void SetSavedHavokData(char* data);
     unsigned char GetWeaponModIndex();
     void SetLeveledItemIndex(int index);
-    void ExtraDataList_GetLevCreaMultiplier(float& multiplier, int& count);
+    void GetLevCreaMultiplier(float& multiplier, int& count);
     void CallExtraDataListMethod35(TESObjectCELL* cell);
-    void ExtraDataList_SetRagDollData(TESObjectREFR* reference);
+    void SetRagDollData(TESObjectREFR* reference);
     float GetRadius();
-    NavMeshPortalData* ExtraDataList_GetNavMeshPortal();
+    NavMeshPortalData* GetNavMeshPortal();
     TESObjectREFR* GetTargetObjectReference();
     TextureReceiver* GetStartingAngle(void* data);
     void Set3DObject(NiAVObject* object);
@@ -151,7 +151,7 @@ public:
     void ExtraDataList_SetRefractsRef(TESForm* apRef, bool bValue);
     TESModel* ExtraDataList_GetModelSwap();
     float FUN_00422450();
-    void ExtraDataList_SetWaterLightRef();
+    void SetWaterLightRef();
     bool ExtraDataList_GetWorn(bool flag);
     void ExtraDataList_SetCanNotWear(bool flag);
 
@@ -163,13 +163,13 @@ public:
     // 0x00419700
     void SetOwnership(TESForm* apOwner);
     // 0x004197d0
-    void ExtraDataList_SetGlobal(TESGlobal* apGlobal);
+    void SetGlobal(TESGlobal* apGlobal);
     // 0x004198a0
     void SetRank(int aiRank);
     // 0x00419ad0
     void SetCount(short asCount);
     // 0x0042eb60
-    void ExtraDataList_SetAmmoExtra(TESForm* apAmmoType, int aiCount);
+    void SetAmmoExtra(TESForm* apAmmoType, int aiCount);
     // 0x0041aa20
     void SetEquippedState(bool abWorn, bool abwearleft);
     // 0x0042dde0
@@ -179,7 +179,7 @@ public:
     // 0x0041d280
     void SetLeveledItem(int aiLevelItem);
     // 0x0041d330
-    void ExtraDataList_SetLevelItemExtraFlag(unsigned char bflag);
+    void SetLevelItemExtraFlag(unsigned char bflag);
     // 0x00419970
     void SetHealth(float afHealth);
     // 0x0041b580
@@ -223,7 +223,7 @@ public:
     // 0x0041b7e0
     void SetCell3D(NiCell3DNode* apNode);
     // 0x0041e160
-    void ExtraDataList_SetWaterType(TESWaterForm* apWater);
+    void SetWaterType(TESWaterForm* apWater);
     // 0x0041bd10
     void SetMusicType(BGSMusicType* apType);
     // 0x0041c090
@@ -233,7 +233,7 @@ public:
     // 0x0041c190
     void SetClimate(TESClimate* apClimate);
     // 0x0041c290
-    void ExtraDataList_SetImageSpace(TESImageSpace* apImageSpace);
+    void SetImageSpace(TESImageSpace* apImageSpace);
     // 0x0041c390
     void SetImpactSwapData(ImpactSwap* apSwap);
     // 0x0041c7f0
@@ -246,11 +246,11 @@ public:
     // 0x0041d700
     void SetPackageDoneState(TESPackage* apPack, unsigned char acDay);
     // 0x00418550
-    void ExtraDataList_SetOriginalReferenceExtra(TESObjectREFR* apRef);
+    void SetOriginalReferenceExtra(TESObjectREFR* apRef);
     // 0x0041da40
     void SetEnableStateParentRef(TESObjectREFR* apParent);
     // 0x0041dc70
-    void ExtraDataList_SetEnableStateParentFlags(unsigned char acFlags);
+    void SetEnableStateParentFlags(unsigned char acFlags);
     // 0x0041e250
     void SetRandomTeleportMarker(TESObjectREFR* apMarker);
     // 0x0041e440
@@ -282,7 +282,7 @@ public:
     // 0x0042e800
     ExtraFactionChanges* GetFactionChangesExtra();
     // 0x0042e2c0
-    void ExtraDataList_SetNavMeshPortal(BSExtraData* apPortal);
+    void SetNavMeshPortal(BSExtraData* apPortal);
     // 0x0041fa60
     void AddPrimitive(BGSPrimitive* apPrimitive);
     // 0x00422050
@@ -292,7 +292,7 @@ public:
     // 0x0041fc10
     void SetPatrolRefData(PatrolRefData* apPatrolRefData);
     // 0x00422150
-    void ExtraDataList_SetOcclusionPlane(BSOcclusionShapeNode* apShape);
+    void SetOcclusionPlane(BSOcclusionShapeNode* apShape);
     // 0x0041fec0
     void SetRoomRefData(PatrolReferenceData* apData);
     // 0x00420a60
@@ -310,7 +310,7 @@ public:
     // 0x0042f200
     void SetIgnoredBySandbox(bool abVal);
     // 0x0042f420
-    ExtraFollowerSwimBreadcrumbs* ExtraDataList_GetOrCreateExtraFollowerSwimBreadcrumbs();
+    ExtraFollowerSwimBreadcrumbs* GetOrCreateExtraFollowerSwimBreadcrumbs();
     // 0x0042e380
     void RemoveExtraByType(unsigned char acSlot);
     // 0x004103d0

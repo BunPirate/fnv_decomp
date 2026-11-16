@@ -683,7 +683,7 @@ class hkCpuJobThreadPool
     int unk13C;
     const char* m_pName;
     int m_iTimerBufferPerThreadAllocation;
-    void hkCpuJobThreadPool_addThread();
+    void addThread();
 };
 
 // Configures a WorkerThreadDataD2D entry with thread pool, ID, and processor affinity, then starts the worker thread via m_iThreadHandle.
@@ -691,7 +691,7 @@ class hkCpuJobThreadPool
 // src: XBOX_RETAIL_PDB 0x00d2d240
 // pdb: hkCpuJobThreadPool::addThread | hkCpuJobThreadPool.obj | retail, object-file gap fill, high
 // pdb locals: assertBuf, ostr
-void hkCpuJobThreadPool::hkCpuJobThreadPool_addThread()
+void hkCpuJobThreadPool::addThread()
 {
     WorkerThreadDataD2D& data = m_kThreadData[m_iHardwareInfoValue];
 

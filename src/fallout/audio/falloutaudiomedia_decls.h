@@ -37,7 +37,7 @@ class FalloutAudioMedia
     static char IsRadioPlaying();
     static bool IsMediaPlaying(MEDIATYPE, bool);
     static void Startup();
-    static void FalloutAudioMedia_Update();
+    static void Update();
 };
 
 namespace fnv_anon_falloutaudiomedia {}

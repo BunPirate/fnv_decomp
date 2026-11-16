@@ -27,7 +27,7 @@ class NiNode : public NiAVObject
     virtual ~NiNode();
 
     virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
+    virtual void LinkObject(NiStream& kStream);
     virtual void SaveBinary(NiStream& stream);
     virtual void ProcessClone(CloningProcess& process);
     virtual NiAVObject* GetObjectByName(const NiFixedString& kName) const;

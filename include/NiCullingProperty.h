@@ -7,7 +7,7 @@ class NiCullingProperty : public NiProperty
 {
   public:
     virtual NiCullingProperty* MakeClone(CloningProcess& kCloning);
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
 
     void NiProperty_CopyMembers(void* destination, CloningProcess& kCloning);
     void NiProperty_CopyMembers(NiCullingProperty* destination, CloningProcess& kCloning);

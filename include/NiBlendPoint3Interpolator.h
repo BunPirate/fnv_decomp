@@ -15,7 +15,7 @@ class NiBlendPoint3Interpolator : public NiBlendInterpolator
     virtual void LoadBinary(NiStream& stream);
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
-    virtual void SaveBinary(NiStream& stream);
+    virtual void SaveBinary(NiStream& kStream);
     virtual bool IsEqual(NiObject* object) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
     virtual bool UpdatePoint3(float time, NiObjectNET* target, NiPoint3& value);

@@ -375,12 +375,12 @@ struct EntrySet
     void Add(ShaderEntry* const& p);
 };
 
-struct NiGPUProgramDesc : NiRefObject // src: EXE 0x010f0134 (vtable; old: ShaderGroup)
+struct NiGPUProgramCache_NiGPUProgramDesc : NiRefObject // src: EXE 0x010f0134 (vtable; old: ShaderGroup)
 {
     ShaderPtr m_pGeometryShader;
     EntrySet m_kEntries;
-    virtual ~NiGPUProgramDesc();
-    NiGPUProgramDesc() throw()
+    virtual ~NiGPUProgramCache_NiGPUProgramDesc();
+    NiGPUProgramCache_NiGPUProgramDesc() throw()
     {
         m_pGeometryShader.m_p = 0;
         m_kEntries.m_pBase = 0;
@@ -391,8 +391,8 @@ struct NiGPUProgramDesc : NiRefObject // src: EXE 0x010f0134 (vtable; old: Shade
 
 struct GroupPtrArg
 {
-    NiGPUProgramDesc* m_p;
-    GroupPtrArg(NiGPUProgramDesc* p) : m_p(p)
+    NiGPUProgramCache_NiGPUProgramDesc* m_p;
+    GroupPtrArg(NiGPUProgramCache_NiGPUProgramDesc* p) : m_p(p)
     {
         if (m_p)
             InterlockedIncrement(reinterpret_cast<volatile long*>(&m_p->m_uiRefCount));
@@ -406,7 +406,7 @@ struct GroupPtrArg
 
 struct GroupMap
 {
-    bool GetAt(const NiFixedString& kKey, NiGPUProgramDesc*& val);
+    bool GetAt(const NiFixedString& kKey, NiGPUProgramCache_NiGPUProgramDesc*& val);
     void NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt(const NiFixedString& kKey, GroupPtrArg val);
 };
 
@@ -535,7 +535,7 @@ bool ShaderLib::NiGPUProgramCache_LoadEntry(S_00a8d8b0* kStream, bool& bDeprecat
     }
     GroupMap* map;
     {
-        NiGPUProgramDesc* found = 0;
+        NiGPUProgramCache_NiGPUProgramDesc* found = 0;
         map = &m_kObjectGroups;
         if (map->GetAt(name, found))
             skip = true;
@@ -545,9 +545,9 @@ bool ShaderLib::NiGPUProgramCache_LoadEntry(S_00a8d8b0* kStream, bool& bDeprecat
                 found->DeleteThis();
         }
     }
-    NiGPUProgramDesc* group = 0;
+    NiGPUProgramCache_NiGPUProgramDesc* group = 0;
     if (!skip)
-        group = new NiGPUProgramDesc;
+        group = new NiGPUProgramCache_NiGPUProgramDesc;
 
     void* shader = 0;
     if (!LoadShader(kStream, name, shader, skip))

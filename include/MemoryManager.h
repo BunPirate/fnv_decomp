@@ -136,7 +136,7 @@ class MemoryManager
     void ShutdownHeapTracking();
     void SetupDuplicatedPools();
     void ClearDuplicatedPools();
-    unsigned int MemoryManager_ProcessMemoryProblem(IMemoryHeap* apHeap, int aiMemoryPass, bool* apbAllowSystemAllocs);
+    unsigned int ProcessMemoryProblem(IMemoryHeap* apHeap, int aiMemoryPass, bool* apbAllowSystemAllocs);
     void DumpMemoryManagerInfo();
     int OutputModuleInfoToFile(IMemoryManagerFile* file);
     int OutputPoolInfoToFile(IMemoryManagerFile* file);

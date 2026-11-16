@@ -107,7 +107,7 @@ struct hkpAabbTreeWorldManager { // src: XBOX_RETAIL_PDB 0x00d08800 (first retai
     EntryMap entries;
     unsigned char fullScan; int scanStart; int scanLimit;
     unsigned char unk68; unsigned char dirty;
-    __declspec(noinline) bool hkpAabbTreeWorldManager_scanActiveListAndGetInactivated(hkArrayBase<hkpCollidable*>&);
+    __declspec(noinline) bool scanActiveListAndGetInactivated(hkArrayBase<hkpCollidable*>&);
     unsigned short hkpAabbTreeWorldManager_getNodeIdx(hkpCollidable*);
     bool isActive(int& value, hkpCollidable* node) { unsigned short id = hkpAabbTreeWorldManager_getNodeIdx(node); return value == 1 && id != 0xffff; }
     void hkpAabbTreeWorldManager_pushBackToActiveList(hkpCollidable*);
@@ -169,7 +169,7 @@ void hkpAabbTreeWorldManager::incrementalBuild(int jobQueue, int jobThreadPool) 
         hkTimerBeginList("LtIncrementalBuild", "StClear Tree");
         hkTimerSplit("StFind Inactivated");
         if (dirty) {
-            changed = hkpAabbTreeWorldManager_scanActiveListAndGetInactivated(inactive);
+            changed = scanActiveListAndGetInactivated(inactive);
             hkTimerSplit("StUpdate Inactive Tree");
             Tree* t = tree;
             for (int i=0;i<inactive.GetLogicalSize();++i) {
@@ -211,7 +211,8 @@ void hkpAabbTreeWorldManager::incrementalBuild(int jobQueue, int jobThreadPool) 
 static __forceinline hkpEntity* getEntityOwner(hkpCollidable* node) {
     return node->m_broadPhaseHandle.m_type==1 ? (hkpEntity*)((char*)node+node->m_ownerOffset) : 0;
 }
-__declspec(noinline) bool hkpAabbTreeWorldManager::hkpAabbTreeWorldManager_scanActiveListAndGetInactivated(hkArrayBase<hkpCollidable*>& inactivatedOut) {
+// src: XBOX_RETAIL_PDB 0x00d08800
+__declspec(noinline) bool hkpAabbTreeWorldManager::scanActiveListAndGetInactivated(hkArrayBase<hkpCollidable*>& inactivatedOut) {
     if (fullScan) {
         for (int index=nodes.GetLogicalSize()-1;index>=0;--index) {
             hkpEntity* owner=getEntityOwner(nodes[index]);

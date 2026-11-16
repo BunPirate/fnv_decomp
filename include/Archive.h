@@ -66,7 +66,7 @@ public:
     bool FindFile_00af9bf0(int arDirHash, int arFileHash, int* apFolderIndex, int apFileIndex, int apFileName);
     // 0x00afa6e0: returns the file record of a directory/file hash pair, or 0.
     int GetFileEntryForFile(int arDirectoryHash, int arFileNameHash, int apFileName);
-    ArchiveFile* Archive_GetFileByFileEntry(BSFileEntry*, unsigned int, unsigned int);
+    ArchiveFile* GetFileByFileEntry(BSFileEntry*, unsigned int, unsigned int);
     const char* Archive_GetFileNameForFileEntry(ArchiveFileEntry* apFileEntry);
     int Archive_GetFileString(int, unsigned int);
     void FUN_00865e50(void* apData, unsigned int aSize, int aFlags);

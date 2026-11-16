@@ -131,7 +131,7 @@ unsigned short ScriptEffect::GetSaveSize(Actor* apActor)
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x2a)
         usSaveSize += 2;
     if (pEffectLocals)
-        usSaveSize += pEffectLocals->ScriptLocals_GetSaveSize();
+        usSaveSize += pEffectLocals->GetSaveSize();
     return usSaveSize;
 }
 
@@ -185,7 +185,7 @@ void ScriptEffect::SaveGame(Actor* apActor)
     {
         if (pEffectLocals)
         {
-            count = pEffectLocals->ScriptLocals_GetSaveSize();
+            count = pEffectLocals->GetSaveSize();
         }
         g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&count, 2u);
     }

@@ -32,7 +32,7 @@ public:
 
     void ResetFormData();
     virtual void InitItem();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1026064 slot 8 = 0x502cd0)
     bool LoadForm(TESFile* apFile);
     unsigned char GetByteAtOffsetB0();

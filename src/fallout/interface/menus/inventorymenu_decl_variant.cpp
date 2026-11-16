@@ -583,7 +583,7 @@ void InventoryMenu::UpdateItemDisplay(int aiID, Tile* apTarget)
     }
     else if (aiID == 30)
     {
-        InventoryMenu_ClearCurrentItem();
+        ClearCurrentItem();
         m_pTiles[11]->Tile_Set_00a01350(0xfcc, InventorySelection::DAT_01073aac, 1);
         if (!reinterpret_cast<InventorySelection::Entry&>(m_kMenuData).FUN_00701740())
             m_pTiles[11]->FUN_00700320(0xfa3, true);

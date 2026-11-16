@@ -40,9 +40,9 @@ public:
 
     void SetUseSoft(bool);
     void SetTargetAngle(float);
-    void PathingRequest_SetOrigin(Actor*);
-    void PathingRequest_SetOrigin(EvadeActor*);
-    void PathingRequest_SetOrigin(MoveActor454*);
+    void InitFromActor(Actor*);
+    void InitFromActor(EvadeActor*);
+    void InitFromActor(MoveActor454*);
     void SetInitialPathHeading(float);
     void SetCantOpenDoors(bool);
     void SetCanSwim(bool);

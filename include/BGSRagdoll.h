@@ -33,5 +33,5 @@ public:
     virtual void InitItem(void);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 };

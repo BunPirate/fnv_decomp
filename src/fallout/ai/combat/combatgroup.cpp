@@ -5433,7 +5433,7 @@ FUN_00985f90::~FUN_00985f90()
     for (unsigned int i = 0; i < count; i++)
     {
         void* actor = CombatGroup_GetTarget(i);
-        g_011f1958->CombatManager_NotifyCombatGroupRemovedTarget(this, actor);
+        g_011f1958->SwapAndDispatch(this, actor);
     }
     unsigned int targetCount = CombatGroup_GetMemberCount();
     for (unsigned int j = 0; j < targetCount; j++)

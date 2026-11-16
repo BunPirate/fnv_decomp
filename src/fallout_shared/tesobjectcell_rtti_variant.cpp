@@ -318,7 +318,7 @@ TESObjectREFR* __cdecl TESObjectCELL_PickRandomTeleportDoorInSpace(TESForm* apDo
                 !FUN_00477ba0(reference))
             {
                 TESObjectDOOR* door = dynamic_cast<TESObjectDOOR*>(BGSSaveFormBuffer_GetForm(reference));
-                if (door && door->IsRandomDoor() && door->TESObjectDOOR_RandomlyTeleportsTo(apTargetSpace) && !FUN_00568e50(reference))
+                if (door && door->IsRandomDoor() && door->RandomlyTeleportsTo(apTargetSpace) && !FUN_00568e50(reference))
                 {
                     candidatesVal.Append(reference);
                     ++countB;

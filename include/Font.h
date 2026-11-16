@@ -133,8 +133,8 @@ public:
     void Font_CreateText(TextString&, int*, int*, int, int, int, int,
                       const Color4*, TextNode**, TextNode**);
     PageMeshes::Shape* MakeIconsTriShape();
-    PageMeshes::Shape* Font_MakeTriShape(int, const PageMeshes::Color*, bool);
-    void Font_AddIcon(int, PageMeshes::Shape*, NiPoint3&);
+    PageMeshes::Shape* MakeTriShape(int, const PageMeshes::Color*, bool);
+    void AddIcon(int, PageMeshes::Shape*, NiPoint3&);
     void BuildGlyphQuad(PageMeshes::Letter*, int, PageMeshes::Shape*, NiPoint3&,
                         const PageMeshes::Color*);
 
@@ -147,7 +147,7 @@ public:
     float GetHeight() const;
     void SetHeight(float value);
     unsigned int GetIconCount();
-    void Font_AddTextIcon(const char*);
+    void AddTextIcon(const char*);
     float Height();
 };
 

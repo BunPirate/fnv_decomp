@@ -566,6 +566,7 @@ inline float PoseVelocity_safeAcos(float input)
         return input > 0.0f ? 0.0f : 3.14159265358979f;
     return (float)acos(input);
 }
+// src: XBOX_DEBUG_PDB 0x00c74c20
 inline float PoseVelocity_MyQuaternion::hkQuaternion_getAngle()
 {
     float value = (float)fabs(reinterpret_cast<const float*>(&m_vec)[3]);

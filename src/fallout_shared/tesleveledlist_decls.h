@@ -11,7 +11,7 @@ class ContainerItemExtra
     unsigned int pOwnerForm[3]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ContainerItemExtra();
     void ContainerItemExtra_AdjustHealthPercent(float);
-    void ContainerItemExtra_InitItem(TESForm*);
+    void InitItem(TESForm*);
 };
 class LeveledObject;
 

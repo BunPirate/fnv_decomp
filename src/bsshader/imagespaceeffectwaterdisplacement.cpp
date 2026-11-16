@@ -291,7 +291,7 @@ void GameObject::ImageSpaceEffectWaterDisplacement_Render(void* apGeometry, void
                     widget = ::new NiScreenElements(spScreenData);
 
                     NiScreenElementsData* localData0 = (NiScreenElementsData*)widget->m_spModelData.m_pObject;
-                    localData0->NiScreenElementsData_Insert(4, 0, 0);
+                    localData0->Insert(4, 0, 0);
                     NiScreenElementsData* localData1 = (NiScreenElementsData*)widget->m_spModelData.m_pObject;
                     localData1->SetRectangle(0, 0.0f, DAT_01013ea4, 1.0f, DAT_010542a4);
                     ((NiScreenElementsData*)widget->m_spModelData.m_pObject)->NiScreenElementsData_UpdateBound();

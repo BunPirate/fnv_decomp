@@ -28,7 +28,7 @@ public:
     virtual void SaveForm();
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* apCopy);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
     virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual void SaveGameLegacy(unsigned int aiFlags);
     virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);

@@ -20,13 +20,13 @@ public:
     virtual int GetClass();
     virtual bool HandleMenuInput(int aiButton, float afValue);  // 0x007556b0
 
-    void CompanionWheelMenu_SetButtonAsHighlighted(int aiID, bool bForceRefresh);  // 0x007557d0
+    void SelectTile(int aiID, bool bForceRefresh);  // 0x007557d0
     void SetButtonAsHighlighted(float fInputStickAngle);           // selects the tile under the stick angle
     void SetTileText(const char* apText);       // 0x00755d90
     void Do_ToggleNearFar();      // 0x007560c0
     void Do_ToggleRangedMelee();                  // 0x007562b0
     void Do_ToggleStayFollow();                  // 0x007563a0
-    void CompanionWheelMenu_Do_ToggleAggressivePassive();                    // 0x007561b0
+    void Do_ToggleAggressivePassive();                    // 0x007561b0
     void HealCompanion();                       // 0x00756490
     void CompanionWheelMenu_Do_OpenInventory();
     void Do_Backup();                        // opens the companion's dialogue and closes the wheel

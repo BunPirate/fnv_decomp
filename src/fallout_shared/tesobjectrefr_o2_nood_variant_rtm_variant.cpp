@@ -1427,7 +1427,7 @@ void RigidMotionDAD::bhkRigidBodyT_SetPosRot(const hkVector4& arPos, const hkQua
     worldPosition.setAdd4(newPosition, arPos);
     __declspec(align(16)) hkQuaternion newRotation;
     newRotation.setMul(arRot, m_localRotation);
-    newRotation.hkQuaternion_normalize();
+    newRotation.normalize_005611c0();
     SetPosRot(worldPosition, newRotation);
 }
 #pragma strict_gs_check(pop)

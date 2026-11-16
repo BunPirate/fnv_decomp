@@ -361,7 +361,7 @@ int InventoryStackRecord::ItemChange_GetExtraTotalCount(bool abWornIgnore)
     while (pkCurrentObject && *pkCurrentObject->_ref_006815c0())
     {
         ExtraDataList* pExtra = *pkCurrentObject->_ref_006815c0();
-        if (!pExtra->ExtraDataList_IsExtraDefaultforContainer(0) && (abWornIgnore || !pExtra->ExtraDataList_GetWorn(0)))
+        if (!pExtra->IsExtraDefaultforContainer(0) && (abWornIgnore || !pExtra->ExtraDataList_GetWorn(0)))
             icount += pExtra->ExtraDataList_GetCount();
         pkCurrentObject = pkCurrentObject->_ref_00726070();
     }
@@ -387,7 +387,7 @@ int InventoryStackRecord::ItemChange_GetExtraTotalDefaultCount()
     while (pkCurrentObject && *_ref_006815c0(pkCurrentObject))
     {
         ExtraDataList* pExtra = *_ref_006815c0(pkCurrentObject);
-        if (pExtra->ExtraDataList_IsExtraDefaultforContainer(0))
+        if (pExtra->IsExtraDefaultforContainer(0))
             icount += pExtra->ExtraDataList_GetCount();
         pkCurrentObject = _ref_00726070(pkCurrentObject);
         if (pExtra->IsEmpty())
@@ -419,7 +419,7 @@ int InventoryStackRecord::CountAndPruneEntries()
     {
         ExtraDataList* pExtra = *pkCurrentObject->_ref_006815c0();
         short sValue = pExtra->ExtraDataList_GetCount();
-        if (!pExtra->ExtraDataList_IsExtraDefaultforContainer(0) && sValue > 0)
+        if (!pExtra->IsExtraDefaultforContainer(0) && sValue > 0)
         {
             icount = icount + 1;
         }
@@ -486,11 +486,11 @@ bool InventoryStackRecord::SetEquipmentState(unsigned char eEffect)
         if (pextra)
         {
             InventoryWeapon* pweap = ((InventoryWeapon**)this)[2];
-            if (pextra->ExtraDataList_GetWeaponModSlotActive(1) && pweap->GetModEffectForSlot(1) == eEffect)
+            if (pextra->GetWeaponModSlotActive(1) && pweap->GetModEffectForSlot(1) == eEffect)
                 return true;
-            if (pextra->ExtraDataList_GetWeaponModSlotActive(2) && pweap->GetModEffectForSlot(2) == eEffect)
+            if (pextra->GetWeaponModSlotActive(2) && pweap->GetModEffectForSlot(2) == eEffect)
                 return true;
-            if (pextra->ExtraDataList_GetWeaponModSlotActive(4) && pweap->GetModEffectForSlot(4) == eEffect)
+            if (pextra->GetWeaponModSlotActive(4) && pweap->GetModEffectForSlot(4) == eEffect)
                 return true;
         }
     }
@@ -2423,19 +2423,19 @@ bool InventoryStackRecord::SetEquipmentState(unsigned char type, float& pfResult
         if (extra)
         {
             InventoryStackRecord* slot = *(InventoryStackRecord**)((char*)this + 8);
-            if (extra->ExtraDataList_GetWeaponModSlotActive(1) &&
+            if (extra->GetWeaponModSlotActive(1) &&
                 (int)((InventoryWeapon*)slot)->GetModEffectForSlot(1) == type)
             {
                 pfResult = ((InventoryWeapon*)slot)->GetModValueForSlot(1, 0);
                 return true;
             }
-            if (extra->ExtraDataList_GetWeaponModSlotActive(2) &&
+            if (extra->GetWeaponModSlotActive(2) &&
                 (int)((InventoryWeapon*)slot)->GetModEffectForSlot(2) == type)
             {
                 pfResult = ((InventoryWeapon*)slot)->GetModValueForSlot(2, 0);
                 return true;
             }
-            if (extra->ExtraDataList_GetWeaponModSlotActive(4) &&
+            if (extra->GetWeaponModSlotActive(4) &&
                 (int)((InventoryWeapon*)slot)->GetModEffectForSlot(4) == type)
             {
                 pfResult = ((InventoryWeapon*)slot)->GetModValueForSlot(4, 0);

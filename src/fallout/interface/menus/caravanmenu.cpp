@@ -313,7 +313,7 @@ void __cdecl CaravanMenu_QuantityMenuCallback(int aiAmount)
         BSMAX_00647b70(MinInt((*(int*)((char*)DAT_011d917c + 0xadc)), iMax) - (*(int*)((char*)DAT_011d917c + 0xae0)), 0);
     ((CaravanMenu*)DAT_011d917c)->CaravanMenu_UpdateCaravanFlags();
     ((CaravanMenu*)DAT_011d917c)->UpdateTileAlpha(-1);
-    ((CaravanMenu*)DAT_011d917c)->CaravanMenu_UpdateBettingUI(iMax, iDelta);
+    ((CaravanMenu*)DAT_011d917c)->UpdateBettingUI(iMax, iDelta);
 }
 
 struct TGF
@@ -3272,11 +3272,11 @@ Node* BSUtilities_GetObjectByName(Node*, const char*);
 bool InterfaceManager_Has360Controller();
 int Tile_TextToTrait(const char*);
 // @fnv 0x0073d850
+}
+
 // src: XBOX_RETAIL_PDB 0x0073d850
 // pdb: CaravanMenu::PrepareDeckMenu | CaravanMenu.obj | retail, unique string literal, high
 // pdb locals: pTableAnimController, tchar, i, pavobj, deckfaces
-}
-
 void CaravanMenu::PrepareDeckMenu()
 {
     using namespace CaravanSetup;
@@ -16190,7 +16190,7 @@ extern Actor* DAT_011dea3c;
 
 // Loads currency NIFs, resets state, computes bet totals, updates UI labels and controls, and places bills and coins.
 // @fnv 0x0073d020
-// src: XBOX_RETAIL_PDB 0x0073d020
+// src: XBOX_RETAIL_PDB 0x0073d020 (was COMMUNITY)
 // pdb: CaravanMenu::PrepareAnteMenu | CaravanMenu.obj | retail, unique string literal, high
 // pdb locals: filename, maxraise, i, pBetTile, pushmeoverthisfar
 }  // namespace fnv_0073d020
@@ -16275,7 +16275,7 @@ void CaravanMenu::PrepareAnteMenu()
         amount = (int)((*reinterpret_cast<int*>((reinterpret_cast<char*>(DAT_011d917c) + 0x110))) * (*reinterpret_cast<float*>((reinterpret_cast<char*>(DAT_011d917c) + 0x10c))) +
                        (*reinterpret_cast<int*>((reinterpret_cast<char*>(DAT_011d917c) + 0x110))) * (*reinterpret_cast<float*>((reinterpret_cast<char*>(DAT_011d917c) + 0x10c))) *
                            (DAT_011dea3c->GetActorValueFloatByIndex(32) / 100.0));
-        CaravanMenu_UpdateBettingUI(amount, (*reinterpret_cast<int*>((reinterpret_cast<char*>(this) + 0xae0))));
+        UpdateBettingUI(amount, (*reinterpret_cast<int*>((reinterpret_cast<char*>(this) + 0xae0))));
     }
 }
 
@@ -19055,8 +19055,8 @@ void CaravanMenu::PrepareGameMenu()
     }
 
     SetFlag(0x800, 1);
-    CaravanMenu_UpdateGameHandTextures(1, 1);
-    CaravanMenu_UpdateGameHandTextures(0, 1);
+    UpdateGameHandTextures(1, 1);
+    UpdateGameHandTextures(0, 1);
     (*reinterpret_cast<int*>((reinterpret_cast<char*>(this) + 0xe48))) = 0;
     (*reinterpret_cast<int*>((reinterpret_cast<char*>(this) + 0xe4c))) = 0;
     (*reinterpret_cast<int*>((reinterpret_cast<char*>(this) + 0xe50))) = 0;

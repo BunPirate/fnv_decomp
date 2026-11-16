@@ -17,7 +17,7 @@ class VATS
 {
   public:
     class LightTarget* VATS_GetVATSLight();
-    void VATS_SetVATSLight(NiPointLight*, bool);
+    void SetVATSLight(NiPointLight*, bool);
     void SetCurrentTarget(class TESObjectREFR*);
 };
 class LightTarget

@@ -10,5 +10,5 @@ public:
 
     CombatProcedureEvade(int);
 
-    void LoadGame(BGSLoadFormBuffer* apBuffer) override;
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer) override;
 };

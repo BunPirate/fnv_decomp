@@ -5433,7 +5433,7 @@ extern "C" {
 ::LocalM128 _mm_unpacklo_ps(::LocalM128,::LocalM128);::LocalM128 _mm_movelh_ps(::LocalM128,::LocalM128);
 }
 // src: XBOX_DEBUG_PDB 0x005611c0 (was COMMUNITY)
-__declspec(noinline) void hkQuaternion::hkQuaternion_normalize(){const ::LocalM128 half=_mm_set_ps1(0.5f),three=_mm_set_ps1(3.0f),zero=_mm_setzero_ps();
+__declspec(noinline) void hkQuaternion::normalize_005611c0(){const ::LocalM128 half=_mm_set_ps1(0.5f),three=_mm_set_ps1(3.0f),zero=_mm_setzero_ps();
 
  const ::LocalM128 input=QuaternionQuad(*this);
  const ::LocalM128 x=_mm_shuffle_ps(input,input,0);
@@ -5793,7 +5793,7 @@ IkVector4 secondTwist;
                     IkVector4 firstToTarget; firstToTarget.m_vComponents = _mm_sub_ps(ptr.m_vComponents, endPosMS);
 
                     hkQuaternion firstPos;CopyIkRotation(firstPos,poseInOut.getBoneModelSpace(setup.m_sSecondJointIndex).m_rotation);
-                    firstPos.hkQuaternion_normalize();
+                    firstPos.normalize_005611c0();
                     const ::LocalM128 hingeAxis = HingeRotation(QuaternionQuad(firstPos),setup.m_vHingeAxisLS.m_vComponents);
 
                     
@@ -5834,7 +5834,7 @@ const ::LocalM128 sy=_mm_shuffle_ps(squaredOffset,squaredOffset,0x55);
                     hkQuaternion s2eN;
                     s2eN.hkQuaternion_setAxisAngle(pForm, firstMS);
                     secondRot.m_rotation.setMul(s2eN, fromDir);
-                    secondRot.m_rotation.hkQuaternion_normalize();
+                    secondRot.m_rotation.normalize_005611c0();
                 }
             }
 
@@ -5870,7 +5870,7 @@ kIter.UpdateState_00cdb910(setup.m_fThirdIkParameter, jointMS, desired); }
                 hkQsTransform& firstTwist = poseInOut.accessBoneModelSpace(setup.m_sFirstJointIndex, 1);
                 const hkQuaternion d2 = firstTwist.m_rotation;
                 firstTwist.m_rotation.setMul(kIter, d2);
-                firstTwist.m_rotation.hkQuaternion_normalize();
+                firstTwist.m_rotation.normalize_005611c0();
             }
             }
 

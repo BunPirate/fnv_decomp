@@ -4339,11 +4339,11 @@ extern SettingT_GameSettingCollection_ DAT_011d6ef0;
 bool NavMeshMath_Find2DIntersectionStable(const NiPoint3&, const NiPoint3&, const NiPoint3&, const NiPoint3&, NiPoint3&);
 
 // @fnv 0x006b2060
+#define output (&outputRef)
 // src: XBOX_RETAIL_PDB 0x006b2060
 // pdb: PathSmootherPOVSearch::CheckSegmentAgainstNavMesh | PathSmootherPOV.obj | retail, call graph (shared callers), high
 // pdb params: aStartLocation, aEndLocation, apReturnLocation, afRetPercentPreferred
 // pdb locals: icount, delta, start, end, currentStart, ipreferredCount, currentEdge, newEdge, fretz, otherEdge, bfoundMatchingEdge, thisEdge, pextra, otherEdgeVerts, center, verts, intersection
-#define output (&outputRef)
 bool PathSmootherPOVSearch::CheckSegmentAgainstNavMesh(const NavMeshEdgePoint& aStartLocation, const NiPoint3& aEndLocation, NavMeshEdgePoint& outputRef,
                                   float& afRetPercentPreferred)
 {

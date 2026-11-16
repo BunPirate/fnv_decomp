@@ -22,7 +22,7 @@ void NiAccumulator::SetSortingCamera(const NiCamera* camera)
 // @fnv 0x00a81c20
 // src: XBOX_RETAIL_PDB 0x00a81c20
 // pdb: NiSkinPartition::Partition::GetStripLengthSum | NiSkinPartition.obj | retail, call graph, high
-unsigned int NiSkinPartition::Partition::NiSkinPartition_Partition_GetStripLengthSum()
+unsigned int NiSkinPartition::Partition::GetStripLengthSum()
 {
     unsigned int sum = 0;
     for (unsigned int i = 0; i < m_usStrips; ++i)
@@ -737,7 +737,7 @@ bool PartitionCompare::NiSkinPartition_Partition_IsEqual(const PartitionCompare*
     {
         if (!EqualBuffers(kPartition->m_pusStripLengths, m_pusStripLengths, m_usStrips * sizeof(unsigned short)))
             return false;
-        if (!EqualBuffers(kPartition->m_pusTriList, m_pusTriList, NiSkinPartition_Partition_GetStripLengthSum() * sizeof(unsigned short)))
+        if (!EqualBuffers(kPartition->m_pusTriList, m_pusTriList, GetStripLengthSum() * sizeof(unsigned short)))
             return false;
     }
     if ((m_pucBonePalette == 0) != (kPartition->m_pucBonePalette == 0))
@@ -1275,7 +1275,7 @@ void PartitionSave::WriteToStream(NiStream& kStream)
     else
     {
         SerializeValue(kStream, m_pusStripLengths, m_usStrips);
-        uiTriListLength = NiSkinPartition_Partition_GetStripLengthSum();
+        uiTriListLength = GetStripLengthSum();
     }
 
     bool bHasTriList = m_pusTriList != 0;
@@ -1524,7 +1524,7 @@ void PartitionLoader::NiSkinPartition_Partition_LoadBinary(NiStream& kStream)
     {
         m_pusStripLengths = (unsigned short*)NiMalloc(sizeof(unsigned short) * m_usStrips);
         ReadBinaryValue(kStream, m_pusStripLengths, m_usStrips);
-        uiTriListLength = NiSkinPartition_Partition_GetStripLengthSum();
+        uiTriListLength = GetStripLengthSum();
     }
 
     bool uiNumWeights;

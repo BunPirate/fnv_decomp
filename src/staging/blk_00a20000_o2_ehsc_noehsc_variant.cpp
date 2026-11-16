@@ -2663,7 +2663,7 @@ struct LoadKey48 {
 // pdb: NiEulerRotKey::CreateFromStream | NiEulerRotKey.obj | retail, object-file gap fill, high
 // pdb params: stream, uiNumKeys
 // pdb locals: pkEulerRotKeys, ui
-LoadKey48* __cdecl NiEulerRotKey_CreateFromStream(A29F00Stream& stream, unsigned int uiNumKeys) { // src: XBOX_RETAIL_PDB 0x00a2a070
+LoadKey48* __cdecl NiEulerRotKey_CreateFromStream(A29F00Stream& stream, unsigned int uiNumKeys) {
     LoadKey48* pkKeys = new LoadKey48[uiNumKeys];
     for (unsigned int i = 0; i < uiNumKeys; i++)
         pkKeys[i].NiEulerRotKey_RegisterSupportedFunctions(stream);

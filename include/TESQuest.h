@@ -80,7 +80,7 @@ public:
     bool HasFlag40();
     bool HasFlag20();
     bool HasFlag0x10();
-    void TESQuest_SetDisplayedInHUD(bool abVal);
+    void SetDisplayedInHUD(bool abVal);
     void WriteToBuffer(BGSSaveFormBuffer* apSaveGameBuffer);
     void SaveIfChanged(BGSSaveFormBuffer* buffer);
     void LoadQuestData(unsigned int aiFlags, unsigned int aiCurrentFlags);

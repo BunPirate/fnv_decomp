@@ -14,7 +14,7 @@ public:
 
     BSFaceGenModelMap();
     bool GetModel(void* key, SolPtr* result);
-    void BSFaceGenModelMap_SetMaxDataSize(int aDataType, char* auiSize);
+    void SetMaxDataSize(int aDataType, char* auiSize);
     void SetModel(void* key, Sol* model);
     bool HasModels();
     void PurgeUnusedModels(bool);

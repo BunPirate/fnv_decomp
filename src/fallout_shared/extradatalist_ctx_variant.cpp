@@ -167,7 +167,7 @@ struct MapMarkerData
 {
     int LocationName, unk04, unk08, cFlags, pReputation; // src: XBOX_RETAIL_PDB LocationName +0x0 (old: unk00); cFlags +0xc (old: unk0C); pReputation +0x10 (old: unk10)
     MapMarkerData();
-    void MapMarkerData_Copy(MapMarkerData* apCopy);
+    void Copy(MapMarkerData* apCopy);
 };
 
 struct MediaLocation
@@ -362,7 +362,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         SetOwnership((TESForm*)((ExtraOwnership*)apCopy)->pOwner);
         break;
     case 0x22:
-        ExtraDataList_SetGlobal(((ExtraGlobal*)apCopy)->pGlobalForm);
+        SetGlobal(((ExtraGlobal*)apCopy)->pGlobalForm);
         break;
     case 0x23:
         SetRank(((ExtraRank*)apCopy)->m_iRank);
@@ -372,7 +372,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     case 0x6E: {
         ExtraAmmo* pAmmo = (ExtraAmmo*)apCopy;
-        ExtraDataList_SetAmmoExtra(reinterpret_cast<TESForm*>(pAmmo->pAmmo), pAmmo->iCount);
+        SetAmmoExtra(reinterpret_cast<TESForm*>(pAmmo->pAmmo), pAmmo->iCount);
         break;
     }
     case 0x16:
@@ -389,7 +389,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     case 0x2F:
         SetLeveledItem(((ExtraLeveledItem*)apCopy)->iIndex);
-        ExtraDataList_SetLevelItemExtraFlag(((ExtraLeveledItem*)apCopy)->m_bIsLeveledItem);
+        SetLevelItemExtraFlag(((ExtraLeveledItem*)apCopy)->m_bIsLeveledItem);
         break;
     case 0x25:
         SetHealth((((ExtraHealth*)apCopy)->fHealthPercent));
@@ -430,7 +430,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
     }
     case 0x2C: {
         MapMarkerData* pTeleportMarker = new MapMarkerData;
-        pTeleportMarker->MapMarkerData_Copy(((ExtraMapMarker*)apCopy)->data);
+        pTeleportMarker->Copy(((ExtraMapMarker*)apCopy)->data);
         SetMapMarkerPtr(pTeleportMarker);
         break;
     }
@@ -479,7 +479,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         SetCell3D(((ExtraCell3D*)apCopy)->spCellNode);
         break;
     case 0x03:
-        ExtraDataList_SetWaterType(((ExtraWaterType*)apCopy)->m_pWaterForm);
+        SetWaterType(((ExtraWaterType*)apCopy)->m_pWaterForm);
         break;
     case 0x07:
         SetMusicType(((ExtraMusicType*)apCopy)->pMusic);
@@ -499,7 +499,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         SetClimate(((ExtraClimate*)apCopy)->pClimateData);
         break;
     case 0x59:
-        ExtraDataList_SetImageSpace(((ExtraImageSpace*)apCopy)->m_pImageSpace);
+        SetImageSpace(((ExtraImageSpace*)apCopy)->m_pImageSpace);
         break;
     case 0x8C: {
         ImpactSwap* pSwap = new ImpactSwap;
@@ -534,11 +534,11 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         }
         break;
     case 0x20:
-        ExtraDataList_SetOriginalReferenceExtra(((ExtraOriginalReference*)apCopy)->m_pWorldReferenceInfo);
+        SetOriginalReferenceExtra(((ExtraOriginalReference*)apCopy)->m_pWorldReferenceInfo);
         break;
     case 0x37:
         SetEnableStateParentRef(((ExtraEnableStateParent*)apCopy)->pParent);
-        ExtraDataList_SetEnableStateParentFlags(((ExtraEnableStateParent*)apCopy)->cFlags);
+        SetEnableStateParentFlags(((ExtraEnableStateParent*)apCopy)->cFlags);
         break;
     case 0x3B:
         SetRandomTeleportMarker(((ExtraRandomTeleportMarker*)apCopy)->pTeleportMarker);
@@ -665,7 +665,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     }
     case 0x5A:
-        ExtraDataList_SetNavMeshPortal(apCopy);
+        SetNavMeshPortal(apCopy);
         break;
     case 0x6B: {
         BGSPrimitive* pSrcPrimitive = ((ExtraPrimitive*)apCopy)->m_pPrimitive;
@@ -686,7 +686,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     }
     case 0x71:
-        ExtraDataList_SetOcclusionPlane(((ExtraOcclusionShape*)apCopy)->pShape);
+        SetOcclusionPlane(((ExtraOcclusionShape*)apCopy)->pShape);
         break;
     case 0x76: {
         PatrolReferenceData* pPlaneData = new PatrolReferenceData;
@@ -740,7 +740,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         SetIgnoredBySandbox(true);
         break;
     case 0x8B: {
-        ExtraFollowerSwimBreadcrumbs* pDstBreadcrumbs = ExtraDataList_GetOrCreateExtraFollowerSwimBreadcrumbs();
+        ExtraFollowerSwimBreadcrumbs* pDstBreadcrumbs = GetOrCreateExtraFollowerSwimBreadcrumbs();
         ExtraFollowerSwimBreadcrumbs* pSrcBreadcrumbs = (ExtraFollowerSwimBreadcrumbs*)apCopy;
         pDstBreadcrumbs->LeaderLocation = pSrcBreadcrumbs->LeaderLocation;
         pDstBreadcrumbs->LeaderNavMeshID = pSrcBreadcrumbs->LeaderNavMeshID;

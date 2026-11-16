@@ -27,7 +27,7 @@ public:
     void IncRefCount();
     unsigned int DecRefCount();
     unsigned short GetCount();
-    void ActorCause_InitLoadGame(int apLoadGameBuffer);
+    void InitLoadGame(int apLoadGameBuffer);
     unsigned short GetRefCount_0047d3d0();
     ActorCause* UpdateState_0066e010(Actor* actor);
 

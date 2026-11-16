@@ -7,7 +7,7 @@
 // src: XBOX_RETAIL_PDB 0x0066f260
 // pdb: ActorValue::RegisterActorValues | ActorValue.obj | retail, unique string literal, high
 // pdb locals: pinfo, i
-void ActorValue::ActorValue_RegisterActorValues()
+void ActorValue::RegisterActorValues()
 {
     if (DAT_011d6154)
         return;
@@ -287,7 +287,7 @@ const char* ActorValue::GetActorValueName(Index aiIndex)
 // pdb: ActorValue::GetDerivedActorValue | ActorValue.obj | retail, call graph (shared callers), high
 // pdb params: apActor, aiWhich, afValue
 // pdb locals: pinfo, bresult
-bool ActorValue::ActorValue_GetDerivedActorValue(ActorValueOwner* apActor, Index aiWhich, float& afValue)
+bool ActorValue::GetDerivedActorValue(ActorValueOwner* apActor, Index aiWhich, float& afValue)
 {
     ActorValueInfo* info;
     bool result = false;

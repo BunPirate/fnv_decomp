@@ -27,7 +27,7 @@ public:
     bool TESObjectTREE_IsLargeEnoughForDistantLOD();
     void UpdateRustleSpeed(const float speed);
     virtual void InitItem();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (TESObjectTREE vftable 0x0102bc94 slot 8 = 0x0051bbc0)
     bool LoadForm(TESFile* apFile);
 

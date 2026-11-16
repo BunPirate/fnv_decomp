@@ -477,7 +477,7 @@ void BGSNote::SaveNote()
     TESFullName::Save_00487010();
     TESModel::WriteToBuffer(0x4c444f4d, 0x54444f4d);
     TESTexture::Save(0x4e4f4349);
-    BGSPickupPutdownSounds::BGSPickupPutdownSounds_Save();
+    BGSPickupPutdownSounds::Save();
     SaveByteChunk(0x41544144, cType);
     BSSimpleList<TESQuest*>* pNode = GetOwnerQuests();
     while (pNode && !pNode->IsEmpty())

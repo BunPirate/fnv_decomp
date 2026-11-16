@@ -33,7 +33,7 @@ public:
     static unsigned int* __cdecl GetUnsignedIntegerPointer(unsigned int* value);
     int GetReputationRank(int type);
     const char* GetReputationName();
-    const char* TESReputation_GetReputationDesc();
+    const char* GetReputationDesc();
     const char* GetReputationTitle();
     const char* TESReputation_GetThresholdIcon();
     void DisplayReputationTitleChange();

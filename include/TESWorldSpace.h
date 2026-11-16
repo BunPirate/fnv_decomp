@@ -43,7 +43,7 @@ public:
     virtual void vf78();
     virtual void vf79();
 
-    void TESWorldSpace_EnumReferencesCloseToPoint(const NiPoint3&, float, const NiPoint3&, float,
+    void EnumReferencesCloseToPoint(const NiPoint3&, float, const NiPoint3&, float,
                              bool (__cdecl*)(TESObjectREFR*, long), long);
     bool HasCell(TESObjectCELL*);
     TESObjectCELL* GetCellAtGridPosition(int, int);
@@ -58,7 +58,7 @@ public:
     static int GetKeyForWorldCoord(const NiPoint3& point);
     TESObjectCELL* GetCellFromKey(unsigned int);
     TESObjectCELL* LookupCellByEditorID(const char* editorID);
-    void TESWorldSpace_AdjustMapMarkerCoord(NiPoint3&, bool);
+    void AdjustMapMarkerCoord(NiPoint3&, bool);
     BGSEncounterZone* FindEncounterZone() const;
     BGSTerrainManager* GetWorldTerrainManager();
     bool GetSmallWorld();
@@ -138,7 +138,7 @@ public:
     void ClearData_00583180();
     void ClearCellMap();
     void FreeOffsetData();
-    void TESWorldSpace_ClearPersistentRefData();
+    void ClearPersistentRefData();
     void ClearMultiBoundRefs();
     void RemovePersistentRef(TESObjectREFR*);
     bool AddCell(TESObjectCELL*);

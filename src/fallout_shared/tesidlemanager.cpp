@@ -35,7 +35,7 @@ NiFormArray* TESIdleManager::GetIdleArray(TESForm* apForm)
     if (apForm)
     {
         GetIdleDirName(TESModel::GetModelFilePath((TESObject*)apForm), buffer);
-        result = TESIdleManager_GetLooseIdleArray(buffer);
+        result = GetLooseIdleArray(buffer);
     }
     return result;
 }
@@ -141,7 +141,7 @@ TESIdleForm* TESIdleManager::FindIdleFormForObject(TESObjectREFR* action, TESObj
         {
             GetIdleDirName(action->GetModelFilePath(), buffer);
             AnimData* anim = action->GetAnimData();
-            idles = TESIdleManager_GetRootIdleArray(buffer);
+            idles = GetRootIdleArray(buffer);
             if (idles)
             {
                 unsigned int count = idles->GetSize();
@@ -217,7 +217,7 @@ IdleAnimationDirectoryEntry* TESIdleManager::AddRootIdleArray(const char* apIdle
             IdleAnimationDirectoryEntry* supplied;
             if ((!DAT_011cb71c || abForceList) && apIdleDir && apIdleDir[0])
             {
-                result = (IdleAnimationDirectoryEntry*)TESIdleManager_GetRootIdleArray(apIdleDir);
+                result = (IdleAnimationDirectoryEntry*)GetRootIdleArray(apIdleDir);
                 if (!result)
                 {
                     if (apList)
@@ -431,7 +431,7 @@ NiFormArray* FUN_006005c0_shell::_TESIdleManager_GetIdleAnimRoot(const char* apF
     {
         char directory[260];
         TESIdleManager::GetIdleDirName(TESModel::GetModelFilePath((TESObject*)apForm), directory);
-        result = TESIdleManager_GetRootIdleArray(directory);
+        result = GetRootIdleArray(directory);
     }
     return result;
 }

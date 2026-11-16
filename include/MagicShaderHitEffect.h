@@ -57,7 +57,7 @@ class MagicShaderHitEffect : public MagicHitEffect
     void InitHitEffect(ActiveEffect*, TESObjectREFR*, void*);
     ShaderHitTarget* GetHitTarget();
     float GetTimeLeft();
-    void MagicShaderHitEffect_ResetAlphaTimer();
+    void ResetAlphaTimer();
 
     bool m_bUseActorParticleEffects;
     unsigned char unk29[3];

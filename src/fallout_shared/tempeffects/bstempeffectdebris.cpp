@@ -640,7 +640,7 @@ extern DebrisCounter g_011c3ea4;
 struct TaskQueueInterface
 {
     static TaskQueueInterface* GetInstance();
-    void TaskQueueInterface_QueueHavokRemove(NiAVObject* ap3D);
+    void QueueHavokRemove(NiAVObject* ap3D);
 };
 
 void bhkWorld_Activate(NiAVObject* apObject, bool abActivate, bool abRecurse, int c);
@@ -675,7 +675,7 @@ FUN_00682f40::~FUN_00682f40()
     }
     else
     {
-        TaskQueueInterface::GetInstance()->TaskQueueInterface_QueueHavokRemove(m_pSceneObject);
+        TaskQueueInterface::GetInstance()->QueueHavokRemove(m_pSceneObject);
     }
     if (m_bForegroundEffect)
         RemoveMenuEntry((B83330Item*)this);

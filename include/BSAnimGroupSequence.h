@@ -32,7 +32,7 @@ class BSAnimGroupSequence : public NiControllerSequence
     void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, float afTime);
     void LoadGameBGS_004efd10(BGSLoadFormBuffer* apLoadGameBuffer, float afTime);
 
-    static bool BSAnimGroupSequence_PlaySounds(NiControllerSequence*, TESObjectREFR*);
+    static bool PlaySounds(NiControllerSequence*, TESObjectREFR*);
     static bool __cdecl PlayAnimSounds(NiControllerSequenceX*, TESObjectREFR*);
     static const NiRTTI ms_kRTTI;
 

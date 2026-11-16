@@ -26,7 +26,7 @@ class BSTempEffectParticle : public BSTempEffect
     virtual ~BSTempEffectParticle();
     virtual const NiRTTI* GetRTTI() const;
     virtual void Detach();
-    virtual bool Update(float afTime);
+    virtual bool Update(float afTimeDelta);
 #ifndef PROCESSLISTS_PRIVATE_BSTEMPEFFECT_H
     virtual bool IsSaveable();
     virtual unsigned short GetSaveSize();
@@ -49,7 +49,7 @@ class BSTempEffectParticle : public BSTempEffect
     bool LoadFromSave();
 
     void StopSounds();
-    void BSTempEffectParticle_StartSounds();
+    void StartSounds();
     void PlayImpactDataSounds(void* pValue);
     void BSTempEffectParticle_ResetGravity(void* searchArg);
     void AttachModel(NiNode* parent, NiMatrix3 rotation, NiPoint3 position, float scale, unsigned int flags);

@@ -27,7 +27,7 @@ class NiParticleSystem : public NiParticles
     virtual void PostLinkObject(NiStream& stream);
     virtual void SetSelectiveUpdateFlags(bool& selectiveUpdate, bool transforms, bool& rigid);
     virtual void UpdateDownwardPass(NiUpdateData& data, unsigned int flags);
-    virtual void UpdateSelectedDownwardPass(NiUpdateData& data, unsigned int flags);
+    virtual void UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
     virtual void UpdateRigidDownwardPass(NiUpdateData& data, unsigned int flags);
     virtual void UpdateWorldData(NiUpdateData& UpdateData);
     virtual void UpdateWorldBound();

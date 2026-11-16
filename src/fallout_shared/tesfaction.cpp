@@ -171,7 +171,7 @@ FUN_005fc900::~FUN_005fc900()
 // pdb params: pFaction
 int FactionAccess::TESFaction_GetFactionReaction(TESFaction* pFaction)
 {
-    return TESReactionForm::TESReactionForm_GetReaction(pFaction);
+    return TESReactionForm::GetReaction(pFaction);
 }
 
 // Forwards f and r to the object at this+0x24 via FUN_0048c220, then calls v12(4).

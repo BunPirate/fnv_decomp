@@ -36,7 +36,7 @@ public:
     bool FaderManager_IsFaderActive(bool); // exe 0x007014a0
     static void PrintDebugMessage(BGSLoadGameBuffer*); // exe 0x0040fbe0
 
-    static void Interface_SetGunScopeVisible(bool); // exe 0x00709c40
+    static void SetGunScopeVisible(bool); // exe 0x00709c40
     static void ClearGunScope(); // exe 0x00709ca0
     static void InitGunScope(TESModel*);
     static bool ShowMessage(const char*, int, const char*, const char*, float, bool); // exe 0x007052f0

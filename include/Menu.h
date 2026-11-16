@@ -102,5 +102,5 @@ public:
     static void SetMenuRootTile(int, Tile*);
     static void SetVisible(int, bool);
     static bool IsMenuVisible(Interface::enumMenus);
-    static bool Menu_RemoveFromXMLArchive(const char*, Menu*);
+    static bool RemoveFromXMLArchive(const char*, Menu*);
 };

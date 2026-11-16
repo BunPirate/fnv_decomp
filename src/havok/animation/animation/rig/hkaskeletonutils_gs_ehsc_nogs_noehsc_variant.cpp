@@ -485,7 +485,7 @@ void __cdecl hkQsTransform_UpdateFields_00cde740(const hkQsTransform* a, const h
     }
     else
     {
-        out->m_rotation.hkQuaternion_normalize();
+        out->m_rotation.normalize_005611c0();
     }
 }
 

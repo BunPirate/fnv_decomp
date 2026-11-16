@@ -40,9 +40,9 @@ public:
     virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     int InitializeFaction();
     BSSimpleList<FactionRankPresentation*>* GetRankDataList();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool GetPCAnEnemy() const;
-    FIGHT_REACTION TESFaction_GetFactionReaction(TESFaction* faction);
+    FIGHT_REACTION GetFactionReaction(TESFaction* faction);
     void SetFactionFightReaction(TESFaction* apFaction, _FightReaction::Type aiFightReaction);
     bool IsHiddenFlagSet();
     unsigned int GetFormID();

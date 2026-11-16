@@ -25,7 +25,7 @@ public:
     void bhkCharacterProxy_SetLinearVelocity(void*);
     float bhkCharacterController_GetFallStartHeight();
     void bhkCharacterController_QHitDamage();
-    void bhkCharacterController_ClearManifold();
+    void ClearManifold();
     float& GetVectorElement(int index);
     CollisionFilter bhkCharacterController_GetCollisionFilter();
     void bhkRigidBody_SetAngularVelocity(const NiPoint3& arVel);

@@ -656,12 +656,12 @@ struct Sdedf10_Collector
     virtual float GetHitDistance(const Sdedf10_TreeNode* leaf) = 0;
 };
 
-struct ClosestPointCollector : Sdedf10_Collector // src: EXE 0x010cd684 (vtable; old: Sdedf10_ClosestPointCollector)
+struct hkAabbTreeQueryUtils_ClosestPointCollector : Sdedf10_Collector // src: EXE 0x010cd684 (vtable; old: Sdedf10_ClosestPointCollector)
 {
-    __forceinline ClosestPointCollector(const hkVector4& point, float initDistanceSquared)
+    __forceinline hkAabbTreeQueryUtils_ClosestPointCollector(const hkVector4& point, float initDistanceSquared)
         : m_kPoint(point), m_fValue(initDistanceSquared)
     {}
-    virtual ~ClosestPointCollector()
+    virtual ~hkAabbTreeQueryUtils_ClosestPointCollector()
     {}
     virtual float GetHitDistance(const Sdedf10_TreeNode* leaf) = 0;
 
@@ -669,12 +669,12 @@ struct ClosestPointCollector : Sdedf10_Collector // src: EXE 0x010cd684 (vtable;
     float m_fValue;
 };
 
-struct NearestFeaturePolicy : ClosestPointCollector // src: EXE 0x010d9fd0 (vtable; old: Sdedf10_NearestFeaturePolicy)
+struct hkGeometryProcessingInternals_NearestFeaturePolicy : hkAabbTreeQueryUtils_ClosestPointCollector // src: EXE 0x010d9fd0 (vtable; old: Sdedf10_NearestFeaturePolicy)
 {
-    __forceinline NearestFeaturePolicy(const hkVector4& point, float maxDistance)
-        : ClosestPointCollector(point, maxDistance), m_nearest(0)
+    __forceinline hkGeometryProcessingInternals_NearestFeaturePolicy(const hkVector4& point, float maxDistance)
+        : hkAabbTreeQueryUtils_ClosestPointCollector(point, maxDistance), m_nearest(0)
     {}
-    virtual ~NearestFeaturePolicy()
+    virtual ~hkGeometryProcessingInternals_NearestFeaturePolicy()
     {}
     virtual float GetHitDistance(const Sdedf10_TreeNode* leaf);
 
@@ -752,7 +752,7 @@ bool __cdecl hkVector4_ProcessEntries_00dedf10(const Sdedf10_Geometry& geometry,
             }
             for (int j = 0; j < samples.GetLogicalSize(); ++j)
             {
-                NearestFeaturePolicy policy(samples[j], 3.40282e38f);
+                hkGeometryProcessingInternals_NearestFeaturePolicy policy(samples[j], 3.40282e38f);
                 Sdedf10_queryClosestPoint(&tree, samples[j], &policy);
                 if (policy.m_nearest)
                 {

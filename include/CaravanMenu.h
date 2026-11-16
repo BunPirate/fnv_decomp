@@ -787,7 +787,7 @@ public:
     void CaravanMenu_DoIdle();
     void PrepareResultsMenu();
 
-    void CaravanMenu_UpdateBettingUI(int maxraise, int raise);
+    void UpdateBettingUI(int maxraise, int raise);
     void PlaceRandomItem(int index);
     void PlayCardPlacement(int index);
     void TransferBarterItems(bool playerReceives);
@@ -797,7 +797,7 @@ public:
     void UpdateDeckTextures(int player);
     void UpdateDeckCardNodes(bool player, int unused);
     void UpdateDeckCardNodes(bool player, bool flag);
-    void CaravanMenu_UpdateGameHandTextures(int abPlayer, int bStartup);
+    void UpdateGameHandTextures(int abPlayer, int bStartup);
     void SwapDeckBuildingTextures(int aiTarget, bool abFastScrolling);
     void UpdateCardTexture();
     void UpdateSelection(bool skip);

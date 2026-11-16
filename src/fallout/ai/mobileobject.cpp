@@ -5091,7 +5091,7 @@ bool FUN_009c45d0_t::Projectile_ChangeProcessLevel()
         {
             if (bLoadedTmp)
             {
-                g_BGSSaveLoadGame->BGSSaveLoadGame_UnloadForm(this, 0);
+                g_BGSSaveLoadGame->UnloadForm(this, 0);
             }
             ((MobileVtbl*)this)->MarkForDeletion(true);
             result2 = false;

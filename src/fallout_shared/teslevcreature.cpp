@@ -36,7 +36,7 @@ bool TESLevCreature::Load(TESFile* apFile)
                 if (apFile->IsEndianConversionRequired())
                     leveledEntry.LEVELED_OBJECT_FILE_Endian();
                 DAT_011c8eec =
-                    (LeveledEntry*)TESLeveledList_AddLeveledObject(leveledEntry.level, leveledEntry.count, leveledEntry.form, 0);
+                    (LeveledEntry*)AddLeveledObject(leveledEntry.level, leveledEntry.count, leveledEntry.form, 0);
                 break;
             }
             case 0x44454f43:

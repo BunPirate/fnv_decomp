@@ -980,7 +980,7 @@ void FUN_008d6f50_Class::HighActorCuller_Run(int apCamera)
         ((MagicCaster*)((char*)this + 8))->SetSelectedMagicItem(apCamera);
         ((S694a0*)((char*)this + 8))->NiCullingProcess_SetFrustum((void*)&((NiCamera*)apCamera)->GetViewFrustum());
     }
-    DAT_011e0e80.ProcessLists_IterateMobs(this);
+    DAT_011e0e80.IterateMobs(this);
 }
 
 extern "C" void __cdecl _delete(void* p, unsigned int size);

@@ -65,7 +65,7 @@ void List::EffectItemList_Load(File* apFile, const char* apSpellName)
                 FUN_00405d20(actorValue);
             else
             {
-                Warning_005b5e40(&DAT_010125c0, static_cast<const char*>(effect->EffectSetting_GetEffectName()), apSpellName == 0 ? &DAT_010120d8 : apSpellName);
+                Warning_005b5e40(&DAT_010125c0, static_cast<const char*>(effect->GetEffectName()), apSpellName == 0 ? &DAT_010120d8 : apSpellName);
                 delete actorValue;
                 actorValue = 0;
             }

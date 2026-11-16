@@ -15,7 +15,7 @@
 // src: XBOX_RETAIL_PDB 0x00e98b40
 // pdb: NiPick::Results::SortResults | NiPick.obj | retail, call graph, high
 // pdb locals: i, pRecord0, j, pRecord1
-void NiPick::Results::NiPick_Results_SortResults()
+void NiPick::Results::SortResults()
 {
     for (unsigned int i = 0; i < m_uiValidCount; ++i)
     {
@@ -46,9 +46,9 @@ bool NiPick::PerformPick(const NiPoint3& origin, const NiPoint3& direction, bool
     if (m_eSortType != NO_SORT && m_eIntersectType != BOUND_INTERSECT && resultGrow > 1)
     {
         if (m_ePickType == FIND_ALL)
-            reinterpret_cast<Results*>(&m_pickResults)->NiPick_Results_SortResults();
+            reinterpret_cast<Results*>(&m_pickResults)->SortResults();
         else
-            reinterpret_cast<Results*>(&m_pickResults)->NiPick_Results_FindClosest();
+            reinterpret_cast<Results*>(&m_pickResults)->FindClosest();
     }
     return true;
 }
@@ -341,7 +341,7 @@ void __cdecl NiCollisionSDM_Shutdown()
 // src: XBOX_RETAIL_PDB 0x00e98be0
 // pdb: NiPick::Results::FindClosest | NiPick.obj | retail, call graph, high
 // pdb locals: pRecordClosest, uiClosest, i, pRecordTest, bTestIsCloser
-void NiPick::Results::NiPick_Results_FindClosest()
+void NiPick::Results::FindClosest()
 {
     if (m_uiValidCount)
     {

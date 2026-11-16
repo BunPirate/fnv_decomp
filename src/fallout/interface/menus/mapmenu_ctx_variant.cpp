@@ -64,7 +64,7 @@ TESWorldSpace* MapMenu::CalculatePlayerMarkerSpace(NiPoint3 aWorldPos)
         {
             continue;
         }
-        ws4->TESWorldSpace_AdjustMapMarkerCoord(ptCopy3, true);
+        ws4->AdjustMapMarkerCoord(ptCopy3, true);
         loc4 = PathingLocation(&ptCopy3, ws4);
         if (loc4.FUN_006de250() && this->pRootMapSpace && ws4)
         {

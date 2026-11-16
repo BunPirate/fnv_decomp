@@ -2888,7 +2888,7 @@ struct FUN_00d7efc0_cls {
 
 // Allocates a new PoolEntry from the pool, copies src->data into it, and prepends it to the m_pFirstNode list.
 // @fnv 0x00d7efc0
-// src: XBOX_RETAIL_PDB 0x00d7efc0
+// src: XBOX_RETAIL_PDB 0x00d7efc0 (was HAVOK_LIB)
 // pdb: hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Triangle,hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpConvexHull::Vertex,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::Item,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Triangle,32,hkContainerHeapAllocator> >::allocate | hkgpConvexHull.obj | retail, object-file gap fill, high
 // pdb params: value
 PoolEntry* FUN_00d7efc0_cls::hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Triangle_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Triangle_32_hkContainerHeapAllocator_allocate(const PoolEntry* value)

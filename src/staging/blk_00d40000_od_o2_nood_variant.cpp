@@ -211,7 +211,7 @@ FUN_00d56470_cls* FUN_00d56470_cls::hkpExtendedMeshShape_ShapesSubpart_ShapesSub
     if (flag)
     {
         const int iTranslated = !equals3(m_vTranslation, DAT_01267e30, DAT_01017d00);
-        const int iRotated = (m_rotation.hkQuaternion_getAngle() < DAT_01017d00) ? 0 : 2;
+        const int iRotated = (m_rotation.getAngle() < DAT_01017d00) ? 0 : 2;
         reinterpret_cast<int*>(&m_vTranslation)[3] = iRotated | iTranslated | 0x3f000000;
     }
     return this;
@@ -242,7 +242,7 @@ void __cdecl hkBoxBoxAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher)
 {
     hkpCollisionDispatcher::Agent3FunctionTable kFuncs;
     hkBoxBoxAgent3_initAgentFunc(&kFuncs);
-    dispatcher->hkpCollisionDispatcher_registerAgent3(&kFuncs, 4, 4);
+    dispatcher->registerAgent3(&kFuncs, 4, 4);
 }
 
 struct Handle_d49550

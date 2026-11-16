@@ -13,7 +13,7 @@ class TESHair : public TESForm, public TESFullName, public TESModel, public TEST
 public:
     TESHair();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1049b9c slot 8 = 0x5fdcb0)
     bool LoadForm(TESFile* apFile);
     bool IsValidForNPC(TESNPC* npc);

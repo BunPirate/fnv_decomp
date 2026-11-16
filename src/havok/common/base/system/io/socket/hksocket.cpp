@@ -224,22 +224,22 @@ extern "C" InitFuncD2B DAT_011b3de8;
 
 class FUN_00d2b850;
 
-class ReaderAdapter : public hkReferencedObject // src: EXE 0x010ce5fc (vtable; old: PartAD2B)
+class hkSocket_ReaderAdapter : public hkReferencedObject // src: EXE 0x010ce5fc (vtable; old: PartAD2B)
 {
   public:
-    ReaderAdapter() throw() : m_pOwnerObject(0)
+    hkSocket_ReaderAdapter() throw() : m_pOwnerObject(0)
     {}
-    virtual ~ReaderAdapter() throw();
+    virtual ~hkSocket_ReaderAdapter() throw();
 
     FUN_00d2b850* m_pOwnerObject;
 };
 
-class WriterAdapter : public hkReferencedObject // src: EXE 0x010ce630 (vtable; old: PartBD2B)
+class hkSocket_WriterAdapter : public hkReferencedObject // src: EXE 0x010ce630 (vtable; old: PartBD2B)
 {
   public:
-    WriterAdapter() throw() : m_pOwnerObject(0)
+    hkSocket_WriterAdapter() throw() : m_pOwnerObject(0)
     {}
-    virtual ~WriterAdapter() throw();
+    virtual ~hkSocket_WriterAdapter() throw();
 
     FUN_00d2b850* m_pOwnerObject;
 };
@@ -250,8 +250,8 @@ class FUN_00d2b850 : public hkReferencedObject
     FUN_00d2b850() throw();
     virtual ~FUN_00d2b850() throw();
 
-    ReaderAdapter m_partA;
-    WriterAdapter m_partB;
+    hkSocket_ReaderAdapter m_partA;
+    hkSocket_WriterAdapter m_partB;
 };
 
 // @fnv 0x00d2b850

@@ -291,7 +291,7 @@ int PathBuilder::AppendPathNodeLocations(int index, BSSimpleArray<PathingLocatio
             if (previous->VirtualPathingNode_HasActualLocation())
             {
                 PathingLocation entry;
-                if (PathBuilder_FindEntryPoint(previous, node, entry))
+                if (FindEntryPoint(previous, node, entry))
                 {
                     output->Add(entry);
                     return 1;
@@ -301,7 +301,7 @@ int PathBuilder::AppendPathNodeLocations(int index, BSSimpleArray<PathingLocatio
         else if (!node->VirtualPathingNode_HasActualLocation())
         {
             PathingLocation entry;
-            if (PathBuilder_FindEntryPoint(previous, node, entry))
+            if (FindEntryPoint(previous, node, entry))
             {
                 output->Add(entry);
                 return 1;

@@ -282,7 +282,7 @@ bool BGSSaveLoadGlobalData::LoadGlobalData(unsigned int apFile, BGSLoadGameBuffe
         LoadGameData(aiCount);
         return true;
     case 2:
-        g_TES->TES_LoadGame(aiCount);
+        g_TES->LoadGame(aiCount);
         return true;
     case 3:
         BGSSaveLoadGlobalData_LoadGlobals(aiCount);
@@ -291,7 +291,7 @@ bool BGSSaveLoadGlobalData::LoadGlobalData(unsigned int apFile, BGSLoadGameBuffe
         ((FalloutRadio*)&g_011e0e80)->LoadGame(aiCount);
         return true;
     case 5:
-        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->CombatManager_LoadGame(aiCount);
+        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->LoadGame(aiCount);
         return true;
     case 6:
         BgssaveloadglobaldataInterfaceView::Interface_LoadGame(aiCount);
@@ -913,7 +913,7 @@ bool __cdecl BGSSaveLoadGlobalData_SaveGlobalData(unsigned int aiGlobalDataType,
         SavePlayerLocation(apSaveGameBuffer);
         return true;
     case 2:
-        g_TES->TES_SaveGame(apSaveGameBuffer);
+        g_TES->SaveGame(apSaveGameBuffer);
         return true;
     case 3:
         BGSSaveLoadGlobalData_SaveGlobals(apSaveGameBuffer);

@@ -6,7 +6,7 @@
 class PathingRequestSafeStraightLine : public PathingRequestClosePoint
 {
 public:
-    PathingRequestSafeStraightLine(int ai);
+    PathingRequestSafeStraightLine(int aRequest);
     virtual ~PathingRequestSafeStraightLine();
     virtual void CopyTo(PathingRequest*);
     virtual void SaveGame(BGSSaveFormBuffer*);

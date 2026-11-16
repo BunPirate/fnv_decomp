@@ -18,7 +18,7 @@ public:
     void Save();
     void InitItem(TESForm* apOwner);
     void Initialize(unsigned int flags);
-    static TESRace* GetFormRace(TESForm* form);
+    static TESRace* GetFormRace(TESForm* apForm);
     TESRace* GetFormRace();
     TESRace* GetFormRace() const;
     static char* GetFormRaceEditorID(TESForm* form);

@@ -53,7 +53,7 @@ public:
     void UseNewFonts(bool);
     NiPoint3 GetFontManager(char*, int, float, int);
     float GetFontPadding(int);
-    bool FontManager_CreateText(TextString, TextParams*, TextNode*);
+    bool CreateText(TextString, TextParams*, TextNode*);
     NiPoint3 GetStringDimensions(const char*, int, float, int);
     void SetByteAtOffset20();
     void VATSEffect_SetBodyPartEnabled(PageTable*, int, unsigned char);

@@ -37,13 +37,13 @@ public:
     virtual void InitializeComponent();
     virtual bool LoadForm(TESFile* file);
     virtual void SaveForm();
-    virtual void SaveGame(BGSSaveFormBuffer* buffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual void SaveGameLegacy(unsigned int changedFlags);
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void LoadGameLegacy(unsigned int changedFlags, unsigned int currentFlags);
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
     TESObjectBOOK& operator=(const TESObjectBOOK& other);
 

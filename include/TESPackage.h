@@ -114,7 +114,7 @@ public:
 
     Script* GetNextScript();
     TESObjectREFR* ComputeInitialTarget(MobileObject* apMob);
-    void TESPackage_SetWaiting(bool abVal);
+    void SetWaiting(bool abVal);
     float GetPackageLocationRadius(MobileObject* apMobileObject, bool abSecondLoc);
     float GetActorMovementSpeed(MobileObject* actor, bool arg);
     void AssignTargetReference(TESObjectREFR* reference, bool arg);

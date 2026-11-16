@@ -76,7 +76,7 @@ public:
     bool Unk_27();
     bool AdvanceController(float time);
     void SetControllerActive(bool active);
-    void SetComputeScaledTime(bool computeScaledTime);
+    void SetComputeScaledTime(bool bComputeScaledTime);
     bool GetManagerControlled() const;
     NiTimeController* GetNext() const;
     void bhkBlendController_ClearKeys();

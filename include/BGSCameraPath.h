@@ -32,7 +32,7 @@ public:
     virtual TESForm* CreateForm(void* arg0, void* mapToAddTo);
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
     bool Load(TESFile* apFile);
     bool InitParents();

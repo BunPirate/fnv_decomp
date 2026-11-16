@@ -876,7 +876,7 @@ void __cdecl hkpCollectionAgent3_registerAgent3(hkpCollisionDispatcher* dispatch
 {
     __declspec(align(16)) hkpCollisionDispatcher::Agent3FunctionTable kFuncs;
     hkpCollectionAgent3_initAgentFunc(kFuncs);
-    dispatcher->hkpCollisionDispatcher_registerAgent3(&kFuncs, 0x12, 7);
+    dispatcher->registerAgent3(&kFuncs, 0x12, 7);
 }
 
 class hkpCdBody;
@@ -1105,7 +1105,7 @@ void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* disp
     kFuncs.m_pAgentFunction5 = InsertIntoSlotArray;
     kFuncs.m_pCreateZombieFunc = nullsub_15;
     kFuncs.m_pAgent3DestroyFuncs = Runtime_ReleaseHandles_Thunk;
-    dispatcher->hkpCollisionDispatcher_registerAgent3(&kFuncs, 5, 3);
+    dispatcher->registerAgent3(&kFuncs, 5, 3);
 }
 
 namespace fnv_00d3f500 {

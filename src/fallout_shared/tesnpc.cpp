@@ -251,7 +251,7 @@ class BipedAnim
 {
   public:
     BipedAnim(TESObjectREFR*, bool);
-    void BipedAnim_SetBipedWeapon(TESObjectWEAP*, unsigned char);
+    void SetBipedWeapon(TESObjectWEAP*, unsigned char);
     unsigned char root[0x2b4]; // src: XBOX_RETAIL_PDB +0x0 (old: bipedData)
     NiNode* GetBoneNode(BIPED_BONE);
     BIPED_OBJECT_DATA* BipedAnim_QBufferedObjects();
@@ -1055,16 +1055,9 @@ void TESNPC::UpdateModel3D(TESObjectREFR* apRef, bool armor, bool weapon, bool u
 }
 
 // @fnv 0x006055f0
-// src: XBOX_RETAIL_PDB 0x006055f0
-// pdb: TESNPC::CreateBipedAnim | TESNPC.obj | retail, unique string literal, high
-// pdb params: apRef
-// pdb locals: pBipedAnim, tempMemContext
 
 
 // @fnv 0x006061b0
-// pdb: TESNPC::InitWornObject | TESNPC.obj | retail, string-set bridge, high
-// pdb params: apRef, apBipedAnim, apObject
-// pdb locals: pformList, pbipedModel, tempAutoEvent, bresult, pweap, plist, plistItem
 
 
 // @fnv 0x006062e0
@@ -1162,11 +1155,11 @@ void TESNPC::RebuildHeadModel(TESObjectREFR* apRef, BipedAnim* apBipedAnim, bool
         {
             bool intact = true;
             ExtraDismemberedLimbs* limbs = pActorRefr->GetExtraData()->GetDismemberedLimbs();
-            if (limbs && limbs->parts.GetSize() && limbs->ExtraDismemberedLimbs_GetDismemberedLimb(0))
+            if (limbs && limbs->parts.GetSize() && limbs->GetDismemberedLimb(0))
             {
                 for (unsigned int i = 0; i < limbs->parts.GetSize(); ++i)
                 {
-                    DismembermentPart* part = limbs->ExtraDismemberedLimbs_GetDismemberedLimb(i);
+                    DismembermentPart* part = limbs->GetDismemberedLimb(i);
                     if (!part->bIsBody && part->bDismembered)
                         intact = false;
                 }
@@ -1229,10 +1222,6 @@ void TESNPC::InitHead(BSFaceGenNiNode*& headBiped, BSFaceGenNiNode*& headSkinned
 }
 
 // @fnv 0x00607420
-// src: XBOX_RETAIL_PDB 0x00607420
-// pdb: TESNPC::AttachHead | TESNPC.obj | retail, string-set bridge, high
-// pdb params: apRef, apBipedAnim, apOutNodeBiped, apOutNodeSkinned
-// pdb locals: ppal, pobjTemp, panimdata, pHeadNode, matrot, pnodeBase, ptmpPal, UpdateData, pactor, fMin, fxyMax, fzMax
 
 
 // @fnv 0x00607950
@@ -1565,7 +1554,7 @@ bool TESNPC::InitWornObject(TESObjectREFR* apRef, BipedAnim* apBipedAnim, TESBou
     if (apObject->GetFormType() == 0x28)
     {
         TESObjectWEAP* pweap = reinterpret_cast<TESObjectWEAP*>(apObject);
-        apBipedAnim->BipedAnim_SetBipedWeapon(pweap, 0);
+        apBipedAnim->SetBipedWeapon(pweap, 0);
     }
     else if (pbipedModel)
     {

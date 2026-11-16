@@ -36,7 +36,7 @@ bool __fastcall GrenadeProjectile_ProcessBounce(GrenadeProjectile* projectile)
         if (!DAT_011de45c->FUN_0047c850())
         {
             bhkWorld_UpdatePosition(node1, true, false);
-            node1->NiAVObject_SetTranslate(impact->position + impact->normal * node1->NiAVObject_GetWorldBoundRadius());
+            node1->NiAVObject_SetTranslate(impact->position + impact->normal * node1->GetWorldBoundRadius());
             NiUpdateData update0(0.0f, false, false);
             node1->Update(update0);
             NiPoint3 velocity6 = NiPoint3::ZERO;

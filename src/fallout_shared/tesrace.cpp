@@ -854,7 +854,7 @@ void SaveRaceAccess::SaveRace()
     BeginFormRecord();
     TESFullName::Save_00487010();
     TESDescription::Save_00482cb0();
-    TESSpellList::TESSpellList_Save();
+    TESSpellList::TESSpellList_SaveSubRecord();
     TESReactionForm::Save();
     if (TESForm_QEndianSwapOnSave())
         Data.SwapEndian();

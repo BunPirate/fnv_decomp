@@ -39,7 +39,7 @@ public:
 
     PathingSearchRayCast();
     bool FUN_006c4000();
-    bool PathingSearchRayCast_InitRayCasts();
+    bool InitRayCasts();
     bool UpdateAndCheck(const NiPoint3& p1, const NiPoint3& p2);
     bool CheckPathClear(const NiPoint3& p1, const NiPoint3& p2);
     void ComputeBounds(BSSimpleArrayExt<RayCastItem, 1024>& arr);

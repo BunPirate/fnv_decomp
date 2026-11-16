@@ -5092,7 +5092,7 @@ SoundOps* TESCreature::PickCreatureSound(int a)
     {
         CreatureSounds* psounds = GetCreatureSounds();
         if (psounds)
-            return psounds->CreatureSounds_PickCreatureSound(a);
+            return psounds->PickCreatureSound(a);
     }
     else
     {
@@ -21249,7 +21249,7 @@ unsigned short ExtraDataSaveSizer::ExtraDataList_GetSaveSize(unsigned int aiFlag
             {
                 ExtraScript* pScript = (ExtraScript*)FUN_00ec43fb(p_gslscu, 0, &DAT_01183b2c, &DAT_01184514, 0);
                 size += 4;
-                size += pScript->m_pLocals->ScriptLocals_GetSaveSize();
+                size += pScript->m_pLocals->GetSaveSize();
             }
             break;
         case 0x2f:

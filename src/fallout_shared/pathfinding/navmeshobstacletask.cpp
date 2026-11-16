@@ -108,7 +108,7 @@ void ObstacleTaskData::Process()
             case OBSTACLE_TASK_TYPE_OBSTACLE_TASK_TYPE_ADD_OBSTACLE:
             case OBSTACLE_TASK_TYPE_OBSTACLE_TASK_TYPE_ADD_OBSTACLE_FOR_UPDATE:
                 if (NAVMESH_FROM(m_spWorkingNavMesh)
-                        ->NavMesh_GetObstaclePOVsForTriangle(OPERATION_AT(Operations, i).m_spRegisteredObstacle, m_kParentChildLinks))
+                        ->GetObstaclePOVsForTriangle(OPERATION_AT(Operations, i).m_spRegisteredObstacle, m_kParentChildLinks))
                     OPERATION_AT(Operations, i).m_kResult = 0;
                 else
                     OPERATION_AT(Operations, i).m_kResult = 1;

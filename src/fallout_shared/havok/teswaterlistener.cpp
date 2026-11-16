@@ -1466,7 +1466,7 @@ bool WaterOwner::TESWaterListener_contactPointAddedCallback(WaterRequest* CPoint
     else
     {
         TESWaterSystem* h = ((TESWaterAccess*)g_TES)->DetailedActorPathHandler_GetCurrentNodeIndex();
-        h->TESWaterSystem_AddTESObjectToWaterGroup(b, d, 0.0f);
+        h->AddTESObjectToWaterGroup(b, d, 0.0f);
     }
     TESWaterListener_HandleQueuedRemovals(d, 0, 1);
     return true;

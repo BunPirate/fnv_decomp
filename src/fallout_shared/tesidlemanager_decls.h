@@ -46,10 +46,10 @@ class TESIdleManager : public NiTMap<const char*, IdleAnimationDirectoryEntry*> 
     unsigned char bInitialized; // src: XBOX_RETAIL_PDB +0x14 (old: loadedIdles)
     unsigned char padLoadedIdles[3];
     NiTArray<BGSCameraPath*, NiTMallocInterface<BGSCameraPath*> > LoadedIdleArray; // src: XBOX_RETAIL_PDB +0x18 (old: idleForms)
-    NiFormArray* TESIdleManager_GetLooseIdleArray(const char* directory);
+    NiFormArray* GetLooseIdleArray(const char* directory);
     NiFormArray* GetIdleArray(TESForm* apForm);
     void InitializeIdleAnimations();
-    NiFormArray* TESIdleManager_GetRootIdleArray(const char*);
+    NiFormArray* GetRootIdleArray(const char*);
     TESIdleForm* FindIdleFormForObject(TESObjectREFR*, TESObjectREFR*);
     IdleAnimationDirectoryEntry* AddRootIdleArray(const char*, BSSimpleList<const char*>*, bool);
     void InsertOrUpdate(const char*, IdleAnimationDirectoryEntry*);

@@ -16,7 +16,7 @@ class CombatProcedureAttackGrenade : public CombatProcedure
 {
 public:
     CombatProcedureAttackGrenade();
-    CombatProcedureAttackGrenade(const NiPoint3* src, unsigned char flag);
+    CombatProcedureAttackGrenade(const NiPoint3* aTargetLocation, unsigned char abHighArc);
 
     virtual ~CombatProcedureAttackGrenade();
     virtual void Unk04();
@@ -25,8 +25,8 @@ public:
     virtual void d06();
     virtual void d08();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void vf16();
 
     void Shutdown_009cafc0();

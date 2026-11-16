@@ -647,7 +647,7 @@ void hkStatisticsCollector::addArray(const char* pcName, const hkArray<T, Alloca
 void hkpSimpleConstraintContactMgr::calcContentStatistics_00cfd5e0(hkStatisticsCollector* collector, const hkClass* cls) const throw()
 {
     collector->beginObject("hkpSimpleConstraintContactMgr");
-    collector->hkStatisticsCollector_addNormalChunk("ContactAtom", m_kSimpleContactConstraintData.m_atom, m_kSimpleContactConstraintData.m_atom->m_sizeOfAllAtoms, 0);
+    collector->addNormalChunk("ContactAtom", m_kSimpleContactConstraintData.m_atom, m_kSimpleContactConstraintData.m_atom->m_sizeOfAllAtoms, 0);
     collector->addArray("ContactIds", m_kSimpleContactConstraintData.m_idMgrA);
     collector->endObject();
 }

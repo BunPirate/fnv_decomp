@@ -1051,7 +1051,7 @@ void RagInstance::hkaRagdollInstance_setPoseWorldSpace(const hkQsTransform* pose
         {
             hkQsTransform rbWorld;
             rbWorld.SetProduct(worldFromModel, *pose);
-            rbWorld.m_rotation.hkQuaternion_normalize();
+            rbWorld.m_rotation.normalize_005611c0();
             rb->hkpRigidBody_setPositionAndRotation(&rbWorld.m_vTranslation, &rbWorld.m_rotation);
 
             const float* zero = &DAT_01267e30;

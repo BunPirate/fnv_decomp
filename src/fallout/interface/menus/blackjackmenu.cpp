@@ -3066,13 +3066,13 @@ Tile* BlackJackMenu_Create(SetMgr* casino, int minimum, int maximum, int require
         ((BlackJackMenu*)DAT_011d9050)->message->SetTraitFloat((int)DAT_011d9048, 1.0f);
         ((BlackJackMenu*)DAT_011d9050)->message->FUN_00700320((int)DAT_011d9048, DAT_011d9054->amount);
         Tile_GetTileByName(((BlackJackMenu*)DAT_011d9050)->message, DAT_01070ba8)->FUN_00700320(0xfa3, 0);
-        ((BlackJackMenu*)DAT_011d9050)->BlackJackMenu_UpdateEarningsString();
+        ((BlackJackMenu*)DAT_011d9050)->UpdateEarningsString();
         ((BlackJackMenu*)DAT_011d9050)->tile40->SetTraitFloat(0xfc4, 1.0f);
         ((BlackJackMenu*)DAT_011d9050)->tile40->Tile_Set_00a01350(0xfc4, DAT_011d4c84.FUN_00403df0(), true);
-        if (!((BlackJackMenu*)DAT_011d9050)->BlackJackMenu_InitCasinoData())
+        if (!((BlackJackMenu*)DAT_011d9050)->InitCasinoData())
             return 0;
         BlackJackMenu_SetBetTiles(true);
-        ((BlackJackMenu*)DAT_011d9050)->BlackJackMenu_Prepare3DElements();
+        ((BlackJackMenu*)DAT_011d9050)->Prepare3DElements();
         ((BlackJackMenu*)DAT_011d9050)->FUN_00a1dc20(0);
         ((BlackJackMenu*)DAT_011d9050)->tile40->FUN_00700320(0xfa3, 0);
         ((BlackJackMenu*)DAT_011d9050)->ClearField();

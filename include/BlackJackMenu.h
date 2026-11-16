@@ -161,11 +161,11 @@ public:
     void* __thiscall DestroyIfFlagged(unsigned int flags);
     char __thiscall BlackJackMenu_HasTiles();
     int GetAdjustedValue(int value);
-    bool BlackJackMenu_InitCasinoData();
-    void BlackJackMenu_Prepare3DElements();
+    bool InitCasinoData();
+    void Prepare3DElements();
     void HandleAction(int action, void* tile);
     void UpdateButtonState(int button);
-    void BlackJackMenu_UpdateEarningsString();
+    void UpdateEarningsString();
     void DealInitialCards();
     int DrawCard(void* hand, bool useSkill, bool split);
     int DrawCard(CardHand* hand, bool useSkill, bool split);

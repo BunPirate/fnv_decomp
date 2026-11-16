@@ -439,7 +439,7 @@ bool InterfaceInterfaceView::Interface_ContainerIsBarter()
 void InterfaceInterfaceView::Interface_SetCrosshairTargetType(TESObjectREFR* apObject)
 {
     if (g_thePlayer && g_thePlayer->GetNiNode())
-        HUDMainMenu::HUDMainMenu_SetTargetType(apObject, false);
+        HUDMainMenu::SetTargetType(apObject, false);
 }
 
 // @fnv 0x0059f3a0
@@ -557,7 +557,7 @@ void Tile::SetName(const char* name)
 // @fnv 0x00707970
 bool InterfaceInterfaceView::PlayNifSounds(NiControllerSequence* sequence)
 {
-    return BSAnimGroupSequence::BSAnimGroupSequence_PlaySounds(sequence, 0);
+    return BSAnimGroupSequence::PlaySounds(sequence, 0);
 }
 
 // @fnv 0x00707990
@@ -572,7 +572,7 @@ Menu* InterfaceInterfaceView::GetMenuById(int menuClass)
 // pdb params: abVisibleFlag
 void InterfaceInterfaceView::Interface_SetGunScopeVisible(bool abVisibleFlag)
 {
-    HUDMainMenu::HUDMainMenu_SetGunScopeVisible(abVisibleFlag);
+    HUDMainMenu::SetGunScopeVisible(abVisibleFlag);
 }
 
 struct FUN_00424940_shell : public InterfaceManager
@@ -1135,7 +1135,7 @@ void* Interface_CreateDialogMenu(void* apSpeaker, void* apGreetTopic, void* apSp
     g_timeGlobal.SetGlobalTimeMultiplier(1.0f, true);
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
     {
-        r = DialogMenu::DialogMenu_Create(apSpeaker, apGreetTopic, apSpeakeras);
+        r = DialogMenu::Create(apSpeaker, apGreetTopic, apSpeakeras);
         return r;
     }
     return 0;

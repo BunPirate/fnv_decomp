@@ -4730,6 +4730,7 @@ struct PivotGeometry
     __declspec(noinline) int NiGeometryData_VertexCompare(unsigned short v0, unsigned short v1, unsigned char mask);
     int NiGeometryData_ChoosePivot(unsigned short* pusIndex, unsigned char mask, int l, int r);
 };
+// src: XBOX_RETAIL_PDB 0x00a66db0
 __declspec(noinline) int PivotGeometry::NiGeometryData_VertexCompare(unsigned short v0, unsigned short v1, unsigned char mask)
 {
     int result;

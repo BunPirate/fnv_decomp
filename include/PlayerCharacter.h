@@ -171,7 +171,7 @@ public:
     void SetUnderAIControl(bool enabled);
     void UpdateCameraMode();
     void Show1stPerson(bool abFirstPerson);
-    bool PlayerCharacter_IsPlayerFollower(Actor* actor);
+    bool IsPlayerFollower(Actor* actor);
     int GetCharacterLevel();
     Animation* GetAnimation(bool firstPerson);
     Animation* GetAnimation(bool firstPerson) const;
@@ -184,7 +184,7 @@ public:
     MagicShaderHitEffect* GetField6A4();
     int GetField230();
     MusicMarkerReference* GetMusicMarkerReference();
-    void PlayerCharacter_ExportProgressData(int aeEvent);
+    void ExportProgressData(int aeEvent);
     void UpdatePlayerState();
     float GetScale();
     bool Actor_GetKnockedDownMovementDelta(NiPoint3& aMovementDelta);
@@ -214,7 +214,7 @@ public:
     BaseProcess* GetCurrentAIProcess();
     BaseProcess* GetCurrentAIProcess() const;
     void UpdatePlayerControls();
-    void FocusOnActor(MobileObject* actor, float value, bool enabled);
+    void FocusOnActor(MobileObject* apActor, float afZoomPercent, bool abOnlyZoom);
     void SetAimingWeapon(bool abIronSights, bool abPostAnim, bool abCheckAnimBlendOut);
     void UpdatePlayerInventory();
     void UpdateCamera(bool first, const bool second);
@@ -261,7 +261,7 @@ public:
     void PlayerCharacter_SetAIControlledPackage(bool);   // 0x005cc7a0: stores the flag at +0x79b
     int GetBiped(bool abFirstPerson);
     void* PlayerCharacter_Get3D_00950bb0(int i);
-    void PlayerCharacter_ApplyAutoAimActor(int apProjectile, void* apReleaseObj, float* apHeading, float* apLooking, int apOrigin,
+    void ApplyAutoAimActor(int apProjectile, void* apReleaseObj, float* apHeading, float* apLooking, int apOrigin,
                    float afStartHeading, float afStartLooking);
     int PlayerCharacter_GetAutoAimActor();
     bool Actor_LineOfSight(int abRunFormula, Actor* pTarget, int abUseEyeLevel, int aeInView, int abfull360);
@@ -302,7 +302,7 @@ public:
     bool PlayerCharacter_AddTopic(BSAudio* topic, unsigned int sort, unsigned int flags);
     bool PlayerCharacter_AddTopic(int value, unsigned char sort, int flags);
     void PlayerCharacter_SetSelectedSpell(BaseB* node);
-    void PlayerCharacter_SetSelectedScroll(ArgObj* apScroll);
+    void SetSelectedScroll(ArgObj* apScroll);
     void __thiscall ClearHelper();
     void RestorePlayerLocation(bool travel);
     bool IsPlayerTargeted(Ref* actor, bool mode);

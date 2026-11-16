@@ -88,7 +88,7 @@ void BSTempEffectParticle::Detach_006896c0()
 void __thiscall BSTempEffectParticle::PlayImpactDataSounds(void* pValue)
 {
     m_58 = pValue;
-    BSTempEffectParticle_StartSounds();
+    StartSounds();
 }
 
 // pdb: class Model, size 0x10 (here 0x1), 4 members

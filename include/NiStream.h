@@ -156,8 +156,8 @@ public:
     void ReadStreamString(char*& string);
     void WriteStreamString(const char* pcString);
     void AppendValue(const unsigned int& value);
-    int NiStream_GetObjectCount();
-    NiAVObject* NiStream_GetObjectAt(unsigned int i);
+    int GetObjectCount();
+    NiAVObject* GetObjectAt(unsigned int i);
     void ResetStreamState();
     int FindIndex(int* pVal);
     void LoadObjectGroups();

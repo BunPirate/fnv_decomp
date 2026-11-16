@@ -909,7 +909,7 @@ template <> inline NiNode* NiPointer<NiNode>::operator->() const
 // src: XBOX_RETAIL_PDB 0x00a20980
 // pdb: Tile3D::UpdateNIF | Tile3D.obj | retail, call graph, high
 // pdb locals: bfromModelLoader, pfilename, pnif
-void Tile3D::Tile3D_UpdateNIF()
+void Tile3D::UpdateNIF()
 {
     using namespace fnv_00a20980;
     const char* pszName = GetString(0xfcc);
@@ -929,10 +929,10 @@ void Tile3D::Tile3D_UpdateNIF()
     SetModelLoaded(this, flag);
     if (m_kModelObjectsItem->GetParent())
         m_kModelObjectsItem = Interface_CopyOrDeepCopyNode(m_kModelObjectsItem);
-    Tile3D_FindManagerNode(m_kModelObjectsItem);
+    FindManagerNode(m_kModelObjectsItem);
     ((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&spModel->m_kChildren)->RemoveAll();
-    Tile3D_RemoveProperties(m_kModelObjectsItem);
-    Tile3D_SetupShaderPropertiesRecurse(m_kModelObjectsItem);
+    RemoveProperties(m_kModelObjectsItem);
+    SetupShaderPropertiesRecurse(m_kModelObjectsItem);
     spModel->AttachChildInAvailableSlot(m_kModelObjectsItem, true);
     Set(0xfa8, 1.0f, true);
     spModel->SetAppCulled(!IsTraitNonZero(0xfa3));

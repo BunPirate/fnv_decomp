@@ -3043,7 +3043,7 @@ __forceinline void hkQsTransform::setInterpolate4(const hkQsTransform& a, const 
     *reinterpret_cast<hkQuadReal*>(&out) = _mm_add_ps(
         _mm_mul_ps(scalarValue(oneMinusT).broadcast(), a.m_rotation.getImag().m_vComponents),
         _mm_mul_ps(scalarValue(signedT).broadcast(), b.m_rotation.getImag().m_vComponents));
-    out.hkQuaternion_normalize();
+    out.normalize_005611c0();
     m_rotation = out;
 }
 

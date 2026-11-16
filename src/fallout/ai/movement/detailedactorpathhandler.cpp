@@ -78,7 +78,7 @@ class Animation
 {
 public:
     bool IsGroupQueued(unsigned short);
-    bool Animation_ShouldBeMoving();
+    bool IsHighestPriority();
 };
 #include "../../../../include/BGSLoadFormBuffer.h"
 #include "../../../../include/BGSSaveFormBuffer.h"
@@ -5362,7 +5362,7 @@ bool MotionTarget::UpdateMotion(float afDeltaT)
         timer = 0.0f;
         return true;
     }
-    if (timer > 1.5 && actor->GetAnimation() && actor->GetAnimation()->Animation_ShouldBeMoving())
+    if (timer > 1.5 && actor->GetAnimation() && actor->GetAnimation()->IsHighestPriority())
         movementBlocked = true;
     if (movementBlocked)
     {

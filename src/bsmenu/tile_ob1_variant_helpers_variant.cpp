@@ -1100,17 +1100,17 @@ template <> inline BSStringT<char>::BSStringT()
     SetLength(0);
     SetMaxLength(0);
 }
-template <> inline bool BSStringT<char>::Set(const char* text, unsigned int length)
+template <> inline bool BSStringT<char>::Set(const char* apString, unsigned int aiMaxLen)
 {
-    unsigned int srcLen = text ? BSstrlen(text) : 0;
-    unsigned int newLen = BSMAX(srcLen, length);
+    unsigned int srcLen = apString ? BSstrlen(apString) : 0;
+    unsigned int newLen = BSMAX(srcLen, aiMaxLen);
     unsigned int maxLen = MaxLength();
     if (newLen > maxLen) {
         char* oldString = pString;
         char* newString = (char*)FormHeap_Allocate(newLen + 1);
         pString = newString;
-        if (text)
-            FUN_00401460(pString, text, srcLen + 1);
+        if (apString)
+            FUN_00401460(pString, apString, srcLen + 1);
         else
             *pString = 0;
         if (oldString) {
@@ -1119,8 +1119,8 @@ template <> inline bool BSStringT<char>::Set(const char* text, unsigned int leng
         }
         SetMaxLength(newLen);
     } else if (newLen) {
-        if (text)
-            FUN_00401460(pString, text, srcLen + 1);
+        if (apString)
+            FUN_00401460(pString, apString, srcLen + 1);
         else
             *pString = 0;
     } else {

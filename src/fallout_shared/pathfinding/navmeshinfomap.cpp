@@ -683,7 +683,7 @@ bool NavMeshInfoMap::ProcessBeforeSave()
         NavMeshPtr mesh8;
         if (((NavMeshInfo*)valueVal)->AcquireNavMesh(mesh8) && mesh8.Modelloader_GetReferencedThis()->FUN_00460340() &&
             !mesh8.Modelloader_GetReferencedThis()->FUN_00440d80())
-            mesh8.Modelloader_GetReferencedThis()->NavMesh_UpdateNavMeshInfo();
+            mesh8.Modelloader_GetReferencedThis()->UpdateNavMeshInfo();
     }
     CheckMap();
     return true;
@@ -1337,7 +1337,7 @@ void NavMeshInfoMap::CheckMap()
                                     }
                                 }
                                 if (corrupt)
-                                    meshInfo->NavMeshInfo_CreateFromNavMesh(meshPtr.GetPtr());
+                                    meshInfo->CreateFromNavMesh(meshPtr.GetPtr());
                             }
                         }
                     }

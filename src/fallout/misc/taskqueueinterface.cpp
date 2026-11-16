@@ -772,7 +772,7 @@ void TaskQueueInterface::TaskUnpackFunc(const BSPackedTask& arTask)
         ActiveEffect* pEffect = static_cast<ActiveEffect*>(arTask.m_akPackedTaskVariantData[1].pData);
         if (pEffect)
             reinterpret_cast<Script*>(pEffect)->SetOwnerQuest(
-                reinterpret_cast<TESQuest*>(MagicHitEffect::MagicHitEffect_InstantiateHitEffects(pEffect)));
+                reinterpret_cast<TESQuest*>(MagicHitEffect::InstantiateHitEffects(pEffect)));
         break;
     }
     case 19: {
@@ -838,7 +838,7 @@ void TaskQueueInterface::TaskUnpackFunc(const BSPackedTask& arTask)
         TESObjectREFR* ref = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[1].pData);
         TESObjectREFR* pWaterReference = static_cast<TESObjectREFR*>(arTask.m_akPackedTaskVariantData[2].pData);
         float fRate = arTask.m_akPackedTaskVariantData[3].fData;
-        g_TES->GetActorScale()->TESWaterSystem_AddTESObjectToWaterGroup(ref, pWaterReference, fRate);
+        g_TES->GetActorScale()->AddTESObjectToWaterGroup(ref, pWaterReference, fRate);
         break;
     }
     case 26: {
@@ -966,7 +966,7 @@ void TaskQueueInterface::TaskUnpackFunc(const BSPackedTask& arTask)
             pController->bhkCharacterProxy_SetLinearVelocity(hkVector4_getZero());
             pController->bhkCharacterController_GetFallStartHeight();
             pController->bhkCharacterController_QHitDamage();
-            pController->bhkCharacterController_ClearManifold();
+            pController->ClearManifold();
         }
         break;
     }

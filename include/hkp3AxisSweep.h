@@ -56,7 +56,7 @@ public:
     };
 
     hkp3AxisSweep();
-    hkp3AxisSweep(const int* low, const int* high, int count);
+    hkp3AxisSweep(const int* worldMin, const int* worldMax, int numMarkers);
     virtual ~hkp3AxisSweep() throw();
     virtual void calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const;
     virtual BroadPhaseType getType() const;

@@ -17,7 +17,7 @@ class FalloutAudioMedia
   public:
     static void PlayMedia(BGSMusicType*);
     static void EndMediaUpdate();
-    static void FalloutAudioMedia_Update();
+    static void Update();
 };
 extern bool ExtractArgs(const ScriptParameter*, const char*, unsigned int*, TESObjectREFR*, TESObjectREFR*, Script*,
                         ScriptLocals*, ...);

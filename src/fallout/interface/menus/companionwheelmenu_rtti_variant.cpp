@@ -1097,7 +1097,7 @@ void CompanionWheelMenu::SetButtonAsHighlighted(float fInputStickAngle)
             high = radialTile->GetValueFloat(0x1007);
             if (fInputStickAngle >= a && fInputStickAngle < high)
             {
-                CompanionWheelMenu_SetButtonAsHighlighted(k, false);
+                SelectTile(k, false);
                 break;
             }
         }

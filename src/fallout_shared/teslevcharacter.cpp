@@ -64,7 +64,7 @@ bool TESLevCharacter::LoadForm(TESFile* apFile)
                 apFile->GetChunkData(&levelEntry, 12);
                 if (apFile->IsEndianConversionRequired())
                     ((LeveledObject*)&levelEntry)->LEVELED_OBJECT_FILE_Endian();
-                DAT_011c8e64 = TESLeveledList_AddLeveledObject(levelEntry.level, levelEntry.count, levelEntry.form, 0);
+                DAT_011c8e64 = AddLeveledObject(levelEntry.level, levelEntry.count, levelEntry.form, 0);
                 break;
             }
             case 0x44454f43:

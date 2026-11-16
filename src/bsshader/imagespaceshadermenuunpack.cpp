@@ -526,7 +526,7 @@ void HudInner::ImageSpaceShaderMenuUnpack_Render(int apGeometry, SurfaceOwner* a
                 unsigned h = apRenderer->GetHeight();
                 float aspect = (float)w / (float)h;
                 aspect = aspect / 1.3333333730697632;
-                static_cast<NiScreenElementsData*>(pScreenElements->m_spModelData.m_pObject)->NiScreenElementsData_Insert(4, 0, 0);
+                static_cast<NiScreenElementsData*>(pScreenElements->m_spModelData.m_pObject)->Insert(4, 0, 0);
                 RecEntry* pRecEntry = DAT_011ae5dc[i];
                 double fScale = aspect * 1280.0;
                 float qx = pRecEntry->f10 / fScale;

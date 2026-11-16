@@ -33,7 +33,7 @@ public:
     void addPhantomOverlapListener_00d07de0(hkpPhantomOverlapListener* el);
     void removePhantomOverlapListener_00d07c80(hkpPhantomOverlapListener* listener) throw();
 
-    void addPhantomOverlapListener(hkpPhantomOverlapListener* listener);
+    void addPhantomOverlapListener(hkpPhantomOverlapListener* el);
     void removePhantomOverlapListener(hkpPhantomOverlapListener* listener) throw();
     void firePhantomRemoved();
 

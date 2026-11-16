@@ -243,9 +243,9 @@ __forceinline void hkVector4::setFlipSign(const hkVector4& vector, const hkSimdR
     m_vComponents = _mm_xor_ps(_mm_and_ps(sign.broadcast(), DAT_010c44d0), vector.m_vComponents);
 }
 
-__forceinline void hkVector4::mul4(const hkSimdReal& scalar)
+__forceinline void hkVector4::mul4(const hkSimdReal& s)
 {
-    m_vComponents = _mm_mul_ps(m_vComponents, scalar.broadcast());
+    m_vComponents = _mm_mul_ps(m_vComponents, s.broadcast());
 }
 
 __forceinline void hkVector4::normalize3()

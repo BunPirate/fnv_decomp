@@ -729,7 +729,7 @@ bool MissileProjectile::AddImpact_009b8900(int apCollidee, int aContactPoint, in
         (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x150) != 3 || h == 1 || h == 2 || h == 9 || h == 17 || h == 13 || h == 20) &&
         reinterpret_cast<bool(__thiscall*)(void*, int, int, int, Collider890*, int, int)>(MissileLocal::ProcessHit)(this, apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial))
     {
-        MissileProjectile_DetermineImpactResult();
+        DetermineImpactResult();
         return true;
     }
     return false;

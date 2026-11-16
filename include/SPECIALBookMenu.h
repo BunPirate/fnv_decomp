@@ -140,6 +140,6 @@ public:
     bool TurnPage(bool bForward);
     void InitBook();
     void LoadButtonAndTextImages();
-    void SPECIALBookMenu_RefreshPage();
+    void RefreshPage();
     void HandleKey(unsigned int aiID, int apTarget);
 };

@@ -25,7 +25,7 @@ public:
 
     virtual ~DialoguePackage();
     virtual void SaveGame(BGSSaveFormBuffer* arg);
-    virtual void LoadGame(BGSLoadFormBuffer* arg);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void Unk_19(void* arg);
     virtual void CopyFrom(const TESForm* form);
     virtual unsigned short GetSaveSize();

@@ -10,7 +10,7 @@ public:
     virtual void Run();
     virtual void Finish();
     virtual void Cancel(BS_TASK_STATE state, void* parent);
-    virtual bool GetDescription(char* description, unsigned int bufferSize);
+    virtual bool GetDescription(char* apDescription, unsigned int aiBufferSize);
     virtual void ProcessLoadedAnimIdle();
     virtual void GenerateKey();
     virtual void ChangePriority(IO_TASK_PRIORITY priority);

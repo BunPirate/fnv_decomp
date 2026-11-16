@@ -75,7 +75,7 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
             if (!reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight())
             {
                 NiPointLight* pPointLight = new NiPointLight;
-                reinterpret_cast<VATS*>(&g_011f2250)->VATS_SetVATSLight(pPointLight, true);
+                reinterpret_cast<VATS*>(&g_011f2250)->SetVATSLight(pPointLight, true);
             }
             break;
         case 2:
@@ -85,7 +85,7 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
             if (!reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight())
             {
                 NiPointLight* pPointLight = new NiPointLight;
-                reinterpret_cast<VATS*>(&g_011f2250)->VATS_SetVATSLight(pPointLight, true);
+                reinterpret_cast<VATS*>(&g_011f2250)->SetVATSLight(pPointLight, true);
             }
             break;
         case 4:
@@ -180,7 +180,7 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
             reinterpret_cast<ExtraDataList*>(FUN_00450b80(0))
                 ->Set3DObject(reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight()->ShadowSceneLight_GetLight());
             static_cast<NiNode*>(FUN_00450b80(0))->RemoveObject(reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight()->ShadowSceneLight_GetLight());
-            reinterpret_cast<VATS*>(&g_011f2250)->VATS_SetVATSLight(0, true);
+            reinterpret_cast<VATS*>(&g_011f2250)->SetVATSLight(0, true);
         }
         break;
     }

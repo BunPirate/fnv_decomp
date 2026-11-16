@@ -2637,7 +2637,7 @@ void* MemoryManager::Game_DoHeapAlloc(unsigned int size)
         }
         if (!result2)
         {
-            attempt2 = MemoryManager_ProcessMemoryProblem(threadHeapB ? threadHeapB : mainHeap, attempt2, &retry2);
+            attempt2 = ProcessMemoryProblem(threadHeapB ? threadHeapB : mainHeap, attempt2, &retry2);
             if (retry2)
             {
                 result2 = DoSystemAllocation(size, false);

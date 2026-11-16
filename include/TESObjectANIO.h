@@ -12,7 +12,7 @@ public:
     virtual bool LoadForm(TESFile* apFile);
     virtual void InitItem();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     TESObjectANIO* pIdleAnim; // src: XBOX_RETAIL_PDB +0x38 (old: pObject)
 };

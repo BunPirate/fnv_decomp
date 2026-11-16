@@ -135,7 +135,7 @@ class TaskQueueInterface
 {
   public:
     static TaskQueueInterface* GetSingleton();
-    void TaskQueueInterface_QueueNodeAttach(NiAVObject*, NiNode*, bool, bool);
+    void QueueTaskWithTwoObjects(NiAVObject*, NiNode*, bool, bool);
 };
 bool IsConditionMet();
 float BSMAX_00404010(float, float);
@@ -332,7 +332,7 @@ bool MagicShaderHitEffect::Init()
                             CloningProcess cloneProcess(1.0f);
                             NiAVObject* clone = static_cast<NiAVObject*>(model->GetControllers()->CloneObject(cloneProcess));
                             if (IsConditionMet())
-                                TaskQueueInterface::GetSingleton()->TaskQueueInterface_QueueNodeAttach(
+                                TaskQueueInterface::GetSingleton()->QueueTaskWithTwoObjects(
                                     clone, object->IsSceneNode(), true, false);
                             else
                                 object->IsSceneNode()->AttachChildInAvailableSlot(clone, true);
@@ -1493,12 +1493,12 @@ FUN_0081f770::~FUN_0081f770()
         if (m_pForm->GetFieldAt158()->GetTextureResourceName())
         {
             sprintf_s(acPath, 0x104, "%s\\%s", "Textures", m_pForm->GetFieldAt158()->GetTextureResourceName());
-            g_TES->TES_RemoveTextureImage(static_cast<const char*>(acPath), 0);
+            g_TES->RemoveTextureImage(static_cast<const char*>(acPath), 0);
         }
         if (m_pForm->GetFieldAt14C()->GetTextureNameLength() > 0)
         {
             sprintf_s(acPath, 0x104, "%s\\%s", "Textures", m_pForm->GetFieldAt14C()->GetTextureResourceName());
-            g_TES->TES_RemoveTextureImage(static_cast<const char*>(acPath), 0);
+            g_TES->RemoveTextureImage(static_cast<const char*>(acPath), 0);
         }
         if (m_pForm && m_pForm->GetAddonModels())
         {

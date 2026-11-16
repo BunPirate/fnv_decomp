@@ -264,7 +264,7 @@ void CharacterProgression::CharacterProgression_FinishLevelUp()
         }
         if (g_011e0a30.GetBoolValue())
         {
-            _g_thePlayer->PlayerCharacter_ExportProgressData(0);
+            _g_thePlayer->ExportProgressData(0);
         }
     }
 }

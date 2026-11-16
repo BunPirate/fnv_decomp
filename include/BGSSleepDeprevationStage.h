@@ -19,7 +19,7 @@ public:
     virtual bool LoadForm(TESFile* modInfo);
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
     void ResetFormData();
     bool Load(TESFile* apFile);

@@ -5002,15 +5002,15 @@ struct FUN_00aca270
     FUN_00aca270(void* p);
 };
 
-struct failure : FUN_00aca270 // src: EXE 0x010a3070 (vtable; old: FUN_00aca390)
+struct ios_base_failure : FUN_00aca270 // src: EXE 0x010a3070 (vtable; old: FUN_00aca390)
 {
-    failure(void* p);
-    virtual ~failure();
+    ios_base_failure(void* p);
+    virtual ~ios_base_failure();
 };
 
 // Constructs the FUN_00aca270 base with p; the body only declares an unused 84-byte local.
 // @fnv 0x00aca390
-failure::failure(void* p) : FUN_00aca270(p)
+ios_base_failure::ios_base_failure(void* p) : FUN_00aca270(p)
 {
     char pad[84];
 }

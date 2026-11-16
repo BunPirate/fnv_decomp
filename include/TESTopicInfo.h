@@ -52,7 +52,7 @@ public:
 
     void __vslot_10();
     void Save();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Copy(TESForm* apCopy);
     void ResetFormData();
     bool CopyTopicData(FormRecordHeader* header);

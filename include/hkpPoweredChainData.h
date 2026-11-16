@@ -24,7 +24,7 @@ public:
     };
 
     hkpPoweredChainData() throw();
-    hkpPoweredChainData(FinishingFlag flag);
+    hkpPoweredChainData(FinishingFlag f);
     virtual ~hkpPoweredChainData() throw();
     virtual void v03();
     virtual void v04();
@@ -51,10 +51,10 @@ public:
     void addConstraintInfoInBodySpace(const __m128* pivotInA, const __m128* pivotInB,
                     const __m128* aTc, Motor* xMotor, Motor* yMotor,
                     Motor* zMotor);
-    void addConstraintInfoInBodySpace(void* frameA, void* frameB, void* frameC,
-                    int motorA, int motorB, int motorC);
-    void addConstraintInfoInBodySpace(const V4* frameA, const V4* frameB, const V4* frameC,
-                    Body* motorA, Body* motorB, Body* motorC);
+    void addConstraintInfoInBodySpace(void* pivotInA, void* pivotInB, void* aTc,
+                    int xMotor, int yMotor, int zMotor);
+    void addConstraintInfoInBodySpace(const V4* pivotInA, const V4* pivotInB, const V4* aTc,
+                    Body* xMotor, Body* yMotor, Body* zMotor);
 
     hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0xc (old: m_kBridgeAtoms)
     hkArray<hkpPoweredChainDataConstraintInfo> m_infos; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintInfo)

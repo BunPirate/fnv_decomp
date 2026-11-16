@@ -38,6 +38,6 @@ public:
     void ApplyRecordToTiles(void* apTile);
     void UpdatePrevNext();
 
-    static void TutorialMenu_Create(unsigned int, unsigned int);
+    static void Create(unsigned int, unsigned int);
 };
 

@@ -1115,7 +1115,7 @@ unsigned short TESQuest::GetSaveSize_0060dba0(unsigned int aiFlags)
     }
     if (aiFlags & 0x40000000)
     {
-        size7 += m_pScriptLocals->ScriptLocals_GetSaveSize();
+        size7 += m_pScriptLocals->GetSaveSize();
     }
     if (bDebugSaveGameSize.Bool()[0])
     {
@@ -1777,5 +1777,5 @@ void TESQuest::ProcessEntries_0060d720()
     FUN_0060c9c0(HasFlag0x10());
     SetCompleted(false);
     SetFailed(false);
-    TESQuest_SetDisplayedInHUD(false);
+    SetDisplayedInHUD(false);
 }

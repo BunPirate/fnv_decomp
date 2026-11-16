@@ -969,7 +969,7 @@ void Explosion::InitLoadGame_009b25b0(void* apLoadGameBuffer)
         reinterpret_cast<CasterData*>(pCaster)->pRef20 =
             reinterpret_cast<CasterData*>(pCaster)->pRef20 ? dynamic_cast<TESObjectREFR*>(GetFormByID((unsigned int)reinterpret_cast<CasterData*>(pCaster)->pRef20)) : 0;
     }
-    if (Explosion_IsDistant())
+    if (IsDistant())
         Initialize();
 }
 
@@ -1379,7 +1379,7 @@ class B17A0Node
 // pdb locals: update
 void Explosion::Update3D(int iUnused)
 {
-    if (Explosion_IsDistant() && GetNiNode())
+    if (IsDistant() && GetNiNode())
     {
         B17A0UpdateData kData(g_fB17A0CurrentTime, true, false);
         reinterpret_cast<B17A0Node*>(GetNiNode())->Update(kData);

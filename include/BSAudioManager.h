@@ -76,13 +76,13 @@ public:
     void UnPauseAllOfType(unsigned int, bool);
     void SetAudioSettingValue(unsigned int, unsigned int, unsigned int);
     void SetListenerPosition(NiPoint3);
-    void BSAudioManager_Update(bool);
+    void Update(bool);
     void StartAudioThreads();
     void StopAudioThreads();
     bool IsPlaying(unsigned int);
     void SetPlaybackTime(unsigned int, unsigned int, unsigned int);
     bool SetPlaybackFrequency(unsigned int, float);
-    bool BSAudioManager_IsValid(unsigned int);
+    bool IsValid(unsigned int);
     BSSoundHandle FindSoundHandleByPath(const char* path, unsigned int flags, void* sound);
     BSSoundHandle GetSoundHandleByFilePath(const char* path, unsigned int flags, void* sound);
     void SendSoundMessage(SOUND_MSG, unsigned int, int, void*, NiPointer<NiAVObject>, NiPoint3);
@@ -114,7 +114,7 @@ public:
 
     void InitAudioVolumes();
     void InitUISounds(bool);
-    void BSAudioManager_SetAudioCacheSizeInK(int);
+    void SetAudioCacheSizeInK(int);
     void ProcessAudioQueue();
     void BSAudioManager_Initialize();
     void BSAudioManager_Shutdown();
@@ -141,7 +141,7 @@ public:
     bool BSAudioManager_SetPosition(unsigned int, float, float, float);
     bool BSAudioManager_SetPosition(int, float, float, float);
     bool BSAudioManager_SetBeamEnd(unsigned int, float, float, float);
-    void BSAudioManager_SetMinMax(unsigned int, float, float);
+    void SetMinMax(unsigned int, float, float);
     void BSAudioManager_SetMinMaxDistance(int, float, float);
     void BSAudioManager_SetReverbAttenuation(int, int);
     void BSAudioManager_SetReverbAttenuation(int, unsigned short);

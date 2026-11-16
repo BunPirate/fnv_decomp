@@ -602,8 +602,8 @@ void __cdecl RegisterAgent3Entries(hkpCollisionDispatcher* pkDispatcher)
 {
     __declspec(align(16)) hkpCollisionDispatcher::Agent3FunctionTable kFuncs;
     hkConvexListAgent3_initAgentFunc(kFuncs);
-    pkDispatcher->hkpCollisionDispatcher_registerAgent3(&kFuncs, 0x12, 0x16);
-    pkDispatcher->hkpCollisionDispatcher_registerAgent3(&kFuncs, 0x16, 0x16);
+    pkDispatcher->registerAgent3(&kFuncs, 0x12, 0x16);
+    pkDispatcher->registerAgent3(&kFuncs, 0x16, 0x16);
 }
 
 #include <xmmintrin.h>

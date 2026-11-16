@@ -454,7 +454,7 @@ void __cdecl CleanupAgent(FourByteState*entry,hkpAgentData*agentData,const hkpCd
 void __cdecl AddStat(FourByteState*entry,hkpAgentData*agentData,const CollisionAgentContext&input,hkStatisticsCollector*collector);
 void __cdecl RemovePoint(FourByteState*entry,hkpAgentData*agentData,const CollisionAgentContext&input);
 void __cdecl WarpTime(FourByteState*entry,hkpAgentData*agentData,hkTime oldTime,hkTime newTime,const CollisionAgentContext&input);
-int __cdecl hkBvTreeAgent3_calcAabbAndQueryTree(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const hkTransform&bTa,
+int __cdecl calcAabbAndQueryTree(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const hkTransform&bTa,
 const hkVector4&linearTimInfo,const GskAgentInput&input,
 hkAabb*cachedAabb,hkpShapeKey_S*hitListOut,int hitListCapacity);
 const hkpShapeContainer*__cdecl GetContainerFromBody(const hkpCdBody*body,hkpShapeBuffer&buffer);
@@ -776,7 +776,7 @@ if(treatAasCollection)
 {
 ;
 hkTransform bTa;bTa.SetConjugate(input.m_kTransform);
-numHitsFirst=hkBvTreeAgent3::hkBvTreeAgent3_calcAabbAndQueryTree(*input.m_pBodyA,*input.m_pBodyB,bTa,input.m_vSubtypePosition,*input.m_pRayCastInput,0,hitList,HK_MAX_NUM_HITS_PER_AABB_QUERY);
+numHitsFirst=hkBvTreeAgent3::calcAabbAndQueryTree(*input.m_pBodyA,*input.m_pBodyB,bTa,input.m_vSubtypePosition,*input.m_pRayCastInput,0,hitList,HK_MAX_NUM_HITS_PER_AABB_QUERY);
 firstCdBody=input.m_pBodyB;
 firstContainer=shapeContainerB;
 secondBody=input.m_pBodyA;
@@ -786,7 +786,7 @@ else
 {
 ;
 hkVector4 negLinearTimInfo;negLinearTimInfo.setNeg3(input.m_vSubtypePosition);
-numHitsFirst=hkBvTreeAgent3::hkBvTreeAgent3_calcAabbAndQueryTree(*input.m_pBodyB,*input.m_pBodyA,input.m_kTransform,negLinearTimInfo,*input.m_pRayCastInput,0,hitList,HK_MAX_NUM_HITS_PER_AABB_QUERY);
+numHitsFirst=hkBvTreeAgent3::calcAabbAndQueryTree(*input.m_pBodyB,*input.m_pBodyA,input.m_kTransform,negLinearTimInfo,*input.m_pRayCastInput,0,hitList,HK_MAX_NUM_HITS_PER_AABB_QUERY);
 firstCdBody=input.m_pBodyA;
 firstContainer=shapeContainerA;
 secondBody=input.m_pBodyB;

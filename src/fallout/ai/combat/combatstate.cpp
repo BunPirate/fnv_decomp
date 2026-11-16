@@ -9671,7 +9671,7 @@ bool CombatState::FindCombatLocation_0099ac20(int aiLocation)
             bFound = CombatState_FindBestCoverLocation((*(CombatController**)((char*)this + 0x1c4))->GetCurrentWeapon(), ((char*)this + 0xec), (::CombatSearch*)pSearch, (::CombatSpot*)pFinalSpot, aiLocation);
             break;
         case 3:
-            bFound = CombatState_FindBestDodgeLocation((::CombatSpot*)pFinalSpot, 3, 0xf, 128.0f, 128.0f);
+            bFound = FindBestDodgeLocation((::CombatSpot*)pFinalSpot, 3, 0xf, 128.0f, 128.0f);
             break;
         case 6:
             if ((*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4)) && !(*(CombatFind::CombatTargetInfo**)((char*)this + 0xc4))->bInvalid)

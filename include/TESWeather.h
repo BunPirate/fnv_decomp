@@ -34,7 +34,7 @@ public:
 
     void ResetFormData();
     void MakeDefault();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     TESTexture1024* GetCloudTexture(int);
     float GetCloudLayerSpeed(int, float, float);
     bool IsRainy();

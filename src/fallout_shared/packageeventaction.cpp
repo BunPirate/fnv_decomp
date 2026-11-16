@@ -26,7 +26,7 @@ public:
     void Save(int aeChunk);
     void* GetScript();
     void InitItem(TESForm* apOwner);
-    void InitItem(int item);
+    void InitItem(int apOwner);
     void Load(TESFile* apFile);
 };
 #include "../../include/BSSimpleList.h"

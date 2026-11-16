@@ -6,7 +6,7 @@
 #pragma optimize("", off)
 #pragma optimize("", on)
 
-extern unsigned int* NiPoint3_ms_pSqrtTable;
+extern unsigned int* NiPoint3_ms_pSqrtTable; // src: XBOX_RETAIL_PDB 0x011f4aa8 (old: DAT_011f4aa8)
 // @fnv 0x00525340
 // src: XBOX_PDB 0x00525340
 // pdb: NiPoint3::UnitizeVector | TESObjectWEAP.obj | debug, upstream name already matches, high

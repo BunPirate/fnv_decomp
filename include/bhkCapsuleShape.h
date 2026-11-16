@@ -16,7 +16,7 @@ class bhkCapsuleShape : public bhkConvexShape
 {
 public:
     bhkCapsuleShape();
-    bhkCapsuleShape(const NiPoint3& point1, const NiPoint3& point2, float radius);
+    bhkCapsuleShape(const NiPoint3& arVA, const NiPoint3& arVB, float afRad);
     virtual ~bhkCapsuleShape();
 
     virtual const NiRTTI* GetRTTI() const;

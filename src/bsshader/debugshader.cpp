@@ -530,7 +530,7 @@ struct QuadUpdate
 
 inline bool InsertScreenElement(NiScreenElements* geometry, int a, int b, int c)
 {
-    return geometry->GetData()->NiScreenElementsData_Insert(a, b, c);
+    return geometry->GetData()->Insert(a, b, c);
 }
 
 inline bool SetScreenElementRectangle(NiScreenElements* geometry, int a, float b, float c, float d, float e)

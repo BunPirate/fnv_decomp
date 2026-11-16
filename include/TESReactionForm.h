@@ -30,7 +30,7 @@ public:
     int GetLowestReaction(TESForm**, int*, long);
     int GetHighestReaction(TESForm**, int*, long);
     void SetReactionValue(TESForm*, int);
-    int TESReactionForm_GetReaction(TESForm*);
+    int GetReaction(TESForm*);
     void ModReaction(TESForm*, int);
     int GetFactionCombatRelation(TESForm*);
     void SetFightReaction(TESForm*, int);

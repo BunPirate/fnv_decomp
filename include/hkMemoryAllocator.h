@@ -36,7 +36,7 @@ public:
     virtual void* bufRealloc(void* pPold, int iOldNumBytes, int& kReqNumBytesInOut);
   public:  // batches and capacity queries (slots 6-9)
     virtual void blockAllocBatch(void** pPtrsOut, int iNumPtrs, int iBlockSize);
-    virtual void blockFreeBatch(void** pPtrsIn, int iNumPtrs, int iBlockSize);
+    virtual void blockFreeBatch(void** ptrsIn, int numPtrs, int blockSize);
     virtual bool canAllocSingleBlock(int iNumBytes);
     virtual bool canAllocTotal(int iNumBytes);
   public:  // statistics (slots 10-12)

@@ -1257,7 +1257,7 @@ void SPECIALBookMenu::HandleKey(unsigned int aiID, int apTarget)
                 turned = TurnPage(true);
             else
                 turned = TurnPage(false);
-            SPECIALBookMenu_RefreshPage();
+            RefreshPage();
         }
         break;
     case 2:
@@ -1299,7 +1299,7 @@ void SPECIALBookMenu::HandleKey(unsigned int aiID, int apTarget)
             sound = reinterpret_cast<const BSSoundHandle&>(BSAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName("OBJBookSpecialNumber", 0x121));
             sound.Play(false);
         }
-        SPECIALBookMenu_RefreshPage();
+        RefreshPage();
         break;
     }
     case 5:
@@ -1341,7 +1341,7 @@ void SPECIALBookMenu::HandleKey(unsigned int aiID, int apTarget)
             selectedStat--;
             reinterpret_cast<BSSoundHandle&>(BSAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName("OBJBookSpecialFocus", 0x121)).Play(false);
         }
-        SPECIALBookMenu_RefreshPage();
+        RefreshPage();
         break;
     case 7:
         if (pageIndex == 8 && selectedStat < 7)
@@ -1349,7 +1349,7 @@ void SPECIALBookMenu::HandleKey(unsigned int aiID, int apTarget)
             selectedStat++;
             reinterpret_cast<BSSoundHandle&>(BSAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName("OBJBookSpecialFocus", 0x121)).Play(false);
         }
-        SPECIALBookMenu_RefreshPage();
+        RefreshPage();
         break;
     }
 }

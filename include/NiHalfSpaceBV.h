@@ -26,7 +26,7 @@ public:
     };
     NiPoint3 m_kCenter;
 
-    NiHalfSpaceBV(const NiPoint3& akPoint, const NiPoint3& kNormal);
+    NiHalfSpaceBV(const NiPoint3& kPoint, const NiPoint3& kNormal);
 
     virtual void LoadBinary(NiStream& kStream);
     virtual void __thiscall SaveBinary(NiStream& kStream);

@@ -514,12 +514,12 @@ void bhkWorld::SetWorldActive(bool arg)
             if (arg)
                 FlushEntries();
             else
-                bhkWorld_RemoveBatchedEntities();
+                RemoveBatchedEntities();
         }
     }
     else if (iEntityRemoveBatchCount > 0u && !arg)
     {
-        bhkWorld_RemoveBatchedEntities();
+        RemoveBatchedEntities();
     }
 }
 #pragma optimize("", off)
@@ -5454,7 +5454,7 @@ bool EffectSelectionMethods::ProcessLists_FlareHitEffect(int apEffectTarget, int
         if (pBest2)
         {
             pBest2->Init();
-            pBest2->MagicShaderHitEffect_ResetAlphaTimer();
+            pBest2->ResetAlphaTimer();
             return true;
         }
     }

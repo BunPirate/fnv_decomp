@@ -178,7 +178,7 @@ bool __thiscall VATSMenu::HandleKey(int aiKey)
     if (aiKey == 0x42 || aiKey == 0x62)
     {
         if (((VatsmenuOffset08View*)&DAT_011f2250)->GetFlags() == 2 && bHeadingReached)
-            VATSMenu_UpdateQueuedActionList(0, 0, 0);
+            UpdateQueuedActionList(0, 0, 0);
         return true;
     }
     return false;
@@ -1370,8 +1370,8 @@ struct VATS
     int GetFlags();
     QueueX* _ref_006815c0();
     void FUN_009c6c30(int aiMode, bool abArg);
-    bool VATS_IsMeleeCommand(VATSMenu::TargetCommand* apCommand);
-    void VATS_QueueAction(VATSMenu::TargetCommand* apCmd);
+    bool IsMeleeCommand(VATSMenu::TargetCommand* apCommand);
+    void QueueAction(VATSMenu::TargetCommand* apCmd);
     VATSMenu::TargetCommand* VATS_GetLastAction();
 };
 
@@ -1506,7 +1506,7 @@ void VATSMenu::Update()
     }
     if (FindListEntryForTarget(xDAT_011f21cc)->GetItem()->kLimbs.GetItem()->iHitCount == 0)
     {
-        VATSMenu_BuildMetersForTarget(FindListEntryForTarget(xDAT_011f21cc));
+        BuildMetersForTarget(FindListEntryForTarget(xDAT_011f21cc));
     }
     if (!xDAT_011a0b68)
     {
@@ -1665,7 +1665,7 @@ void VATSMenu::Update()
         {
             if (xDAT_011f2250.GetFlags() == 2 && bHeadingReached)
             {
-                VATSMenu_UpdateQueuedActionList(0, 0, 0);
+                UpdateQueuedActionList(0, 0, 0);
                 xDAT_011db0d4->fProbableEnemyDamage = xDAT_011db0d4->CalculateProbableEnemyHealth();
             }
             SetMeterChance();
@@ -1939,7 +1939,7 @@ void VATSMenu::Update()
                             {
                                 pCommandA55->m_bSecondActionFlag = 1;
                             }
-                            if (xDAT_011f2250.VATS_IsMeleeCommand(pCommandA55) && xDAT_011f21cc->IsActor() && !bLimbSetNum)
+                            if (xDAT_011f2250.IsMeleeCommand(pCommandA55) && xDAT_011f21cc->IsActor() && !bLimbSetNum)
                             {
                                 RaceX* pRaceB70 = xDAT_011f21cc->GetActorBase()->GetRace();
                                 void* pElement = pRaceB70->FUN_005e5130(0x19);
@@ -1969,7 +1969,7 @@ void VATSMenu::Update()
                                     }
                                 }
                             }
-                            xDAT_011f2250.VATS_QueueAction(pCommandA55);
+                            xDAT_011f2250.QueueAction(pCommandA55);
                             BSSimpleList<ChanceX*>* pLimbNodeRes38 = FindEntryForRef();
                             float fLimbChanceZ = pLimbNodeRes38 ? FindEntryForRef()->GetItem()->fHitChance : 0.0f;
                             if (bConcentratedFirePerk)
@@ -1985,11 +1985,11 @@ void VATSMenu::Update()
                                 pWeaponOld->GetFlaggedValue(0) != pWeaponOld->GetAmmoPerShot() &&
                                 fQueuedTotalAmmo + fQueuedClipAmmo > 0)
                             {
-                                VATSMenu_UpdateQueuedActionList(pCommandA55, 1, iModeNum76 != 1);
+                                UpdateQueuedActionList(pCommandA55, 1, iModeNum76 != 1);
                             }
                             else
                             {
-                                VATSMenu_UpdateQueuedActionList(pCommandA55, 0, iModeNum76 != 1);
+                                UpdateQueuedActionList(pCommandA55, 0, iModeNum76 != 1);
                             }
                             if (fActionPoints < fCostX)
                             {
@@ -4821,7 +4821,7 @@ void VATSMenu::SetMeterChance()
                 {
                     if (((Tile*)pOtherItem->iHitCount) == 0)
                     {
-                        this->VATSMenu_BuildMetersForTarget(this->FindListEntryForTarget(xDAT_011f21cc));
+                        this->BuildMetersForTarget(this->FindListEntryForTarget(xDAT_011f21cc));
                     }
                     if (pOtherItem != pItem)
                     {
@@ -4885,7 +4885,7 @@ void VATSMenu::SetMeterChance()
 
         if (((Tile*)pItem->iHitCount) == 0)
         {
-            this->VATSMenu_BuildMetersForTarget(this->FindListEntryForTarget(xDAT_011f21cc));
+            this->BuildMetersForTarget(this->FindListEntryForTarget(xDAT_011f21cc));
         }
         ((Tile*)pItem->iHitCount)->Set(0xfc4, buffer3, true);
         node_ = node_->GetNext();

@@ -66,8 +66,8 @@ public:
             m_pBase[index] = record;
         }
         Record* ProcessArray_GetItem(unsigned int);
-        void NiPick_Results_SortResults();
-        void NiPick_Results_FindClosest();
+        void SortResults();
+        void FindClosest();
         void Clear() throw();
     };
 

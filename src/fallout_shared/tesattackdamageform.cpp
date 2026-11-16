@@ -128,7 +128,7 @@ void TESCreature::CopyFromTemplateForm(TESActorBase* apForceTemplate)
             if (templateSelection.creature->GetCreatureSounds())
             {
                 CreatureSounds* sounds = CreateCreatureSounds();
-                sounds->CreatureSounds_Copy(templateSelection.creature->GetCreatureSounds());
+                sounds->Copy(templateSelection.creature->GetCreatureSounds());
             }
             else
             {
@@ -141,7 +141,7 @@ void TESCreature::CopyFromTemplateForm(TESActorBase* apForceTemplate)
             if (templateSelection.creature->GetCreatureSounds())
             {
                 CreatureSounds* sounds = CreateCreatureSounds();
-                sounds->CreatureSounds_Copy(templateSelection.creature->GetCreatureSounds());
+                sounds->Copy(templateSelection.creature->GetCreatureSounds());
             }
             else
             {

@@ -4965,7 +4965,7 @@ unsigned int PathingSearchRayCast::BuildPath(RayCastParam* aRequest, PathingSolu
         this->BoundsMin.z = minZ2;
         this->BoundsMax.z = maxZ7;
 
-        if (!this->PathingSearchRayCast_InitRayCasts())
+        if (!this->InitRayCasts())
         {
             aRetPath->status = 2;
             return 2;
@@ -5009,7 +5009,7 @@ unsigned int PathingSearchRayCast::BuildPath(RayCastParam* aRequest, PathingSolu
     }
     }
 
-    if (!this->PathingSearchRayCast_InitRayCasts())
+    if (!this->InitRayCasts())
     {
         return 2;
     }

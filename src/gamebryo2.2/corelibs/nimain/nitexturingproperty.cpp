@@ -436,18 +436,18 @@ const char* const* NiDynamicEffect_GetRTTI()
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
-struct Map // src: EXE 0x0109c4c4 (vtable; old: FUN_00a69e00)
+struct NiTexturingProperty_Map // src: EXE 0x0109c4c4 (vtable; old: FUN_00a69e00)
 {
     unsigned short m_usFlags;
     void* m_spTexture;
     void* m_pkXform;
-    Map(void* tex, unsigned short a, short b, unsigned short c, void* xf);
+    NiTexturingProperty_Map(void* tex, unsigned short a, short b, unsigned short c, void* xf);
     virtual void Dummy();
 };
 // @fnv 0x00a69e00
 // pdb: NiTexturingProperty::Map::Map | NiTexturingProperty.obj | debug, object-file run extension, low
 // pdb params: pkTexture, uiIndex, eClampMode, eFilterMode, pkTextureTransform
-Map::Map(void* apTexture, unsigned short ausLowFlags, short asMidFlags, unsigned short ausHighFlags,
+NiTexturingProperty_Map::NiTexturingProperty_Map(void* apTexture, unsigned short ausLowFlags, short asMidFlags, unsigned short ausHighFlags,
                            void* apXform)
 {
     m_usFlags = 0;

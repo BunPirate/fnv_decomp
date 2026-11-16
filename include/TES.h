@@ -253,9 +253,9 @@ public:
     static void SetCollisionDisableFlag(bool);
     void ToggleCollision();
     unsigned short GetSaveSize();
-    void TES_SaveGame(BGSSaveGameBuffer*);
+    void SaveGame(BGSSaveGameBuffer*);
     void SaveGame();
-    void TES_LoadGame(BGSLoadGameBuffer*);
+    void LoadGame(BGSLoadGameBuffer*);
     void LoadGame();
     void FinishLoad();
     void ClearPersistentRef3DInLoadedCells();
@@ -324,12 +324,12 @@ public:
     void HideFarLandNormalMaps();
     void SetHideLandBlendPassForGridCell(int, int, bool);
     void SetHideLandNormalMapForGridCell(int, int, bool);
-    bool TES_RemoveTextureImage(const char*, unsigned int);
+    bool RemoveTextureImage(const char*, unsigned int);
     int FindCellAtPosition(const NiPoint3*, bool);
     void InitFromMatrix();
     void InitSoundGrid();
     void RefreshWorldState(int, int, int);
-    void TES_GridArrayLoad();
+    void GridArrayLoad();
     static void RefreshWorldSpace();
     void ClearField88();
     void SetDawnSound(TESSound*);

@@ -36,7 +36,7 @@ public:
     void SetSound1(TESSound* sound);
     void SetSound2(TESSound* sound);
     void CopyDecalDataFromTextureSet();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     BGSTextureSet* GetDecalTextureSet() const;
 
     void Copy_0058dd10(int apCopy);

@@ -170,7 +170,7 @@ struct ThunkDerived : ThunkPrimaryBase, ThunkSecondaryBase
 {
     ThunkDerived();
 // @fnv 0x0050e6a0
-    virtual void* FUN_0050e6a0(unsigned int aiFlags);
+    virtual void* FUN_0050e6a0(unsigned int flags);
 };
 
 ThunkDerived::ThunkDerived()

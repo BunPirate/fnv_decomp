@@ -68,7 +68,7 @@ void BSTreeManager::ClearCanopyShadow()
     {
         ((NiPointer<NiNode>*)((char*)BSTreeManager_GetInstance(true) + 4))->operator=(0);
         SetGlobalValue(false);
-        g_TES->TES_RemoveTextureImage("Data\\Textures\\Trees\\CanopyShadow.dds", 0);
+        g_TES->RemoveTextureImage("Data\\Textures\\Trees\\CanopyShadow.dds", 0);
     }
 }
 

@@ -18,5 +18,5 @@ public:
     void InitItem(TESForm* apOwner);
     void SetPickupSound(TESSound* sound);
     void SetPutdownSound(TESSound* sound);
-    void BGSPickupPutdownSounds_Save();
+    void Save();
 };

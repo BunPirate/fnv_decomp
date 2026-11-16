@@ -13169,7 +13169,7 @@ class ShaderPropertyBD9
 };
 
 // @fnv 0x00bd9da0
-// src: XBOX_RETAIL_PDB 0x00bd9da0
+// src: XBOX_RETAIL_PDB 0x00bd9da0 (was COMMUNITY)
 // pdb: BSShaderPPLightingProperty::AddRenderNormalsPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
 // pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned, abRefractionFire
 // pdb locals: ppass

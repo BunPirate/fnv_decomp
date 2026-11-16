@@ -66,7 +66,7 @@ bool TESCreature::Compare_005f9b90(TESForm* apCompare)
         {
             if (!otherSounds5)
                 return true;
-            if (sounds->CreatureSounds_Compare(otherSounds5))
+            if (sounds->Compare(otherSounds5))
                 return true;
         }
         else if (otherSounds5)

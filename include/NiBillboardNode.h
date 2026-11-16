@@ -16,13 +16,13 @@ class NiBillboardNode : public NiNode
 
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& process);
-    virtual void LoadBinary(NiStream& stream);
-    virtual void SaveBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void SaveBinary(NiStream& kStream);
     virtual bool IsEqual(NiObject* object) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
-    virtual void UpdateDownwardPass(NiUpdateData& data, unsigned int flags);
-    virtual void UpdateSelectedDownwardPass(NiUpdateData& data, unsigned int flags);
-    virtual void UpdateRigidDownwardPass(NiUpdateData& data, unsigned int flags);
+    virtual void UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    virtual void UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    virtual void UpdateRigidDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
     virtual void UpdateWorldBound();
     virtual void OnVisible(NiCullingProcess& culler);
 

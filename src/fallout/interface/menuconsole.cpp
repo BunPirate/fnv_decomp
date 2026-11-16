@@ -188,7 +188,7 @@ bool ConsoleManager::Idle(int aiKey)
                 else if (!_mbsnbicmp_(text, "reload strings", 14))
                 {
                     delete manager->GetAVEffect();
-                    Menu::Menu_RemoveFromXMLArchive("Data\\Menus\\globals.xml", 0);
+                    Menu::RemoveFromXMLArchive("Data\\Menus\\globals.xml", 0);
                     Tile* tile = manager->CombatController_GetCombatState()->ReadFile("Data\\Menus\\globals.xml");
                     tile->SetParent(0, 0);
                     manager->BGSTerminal_SetPassword(tile);

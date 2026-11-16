@@ -506,7 +506,7 @@ void HighProcess::LoadGame(BGSLoadFormBuffer* buffer)
         if (greetingPresent)
         {
             pGreetTopic = new DialogueItem;
-            pGreetTopic->DialogueItem_LoadGame(buffer);
+            pGreetTopic->LoadGame(buffer);
         }
         {
             unsigned int areaCount = buffer->ReadElementCount();
@@ -2247,7 +2247,7 @@ void HighProcess::RefreshActorState(Actor* actor)
                     if (BSShaderManager_IsRefractionEnabled() && actor->IsRefractive())
                     {
                         ExtraDataList* data = actor->GetExtraData();
-                        actor->Unk_E1(true, data->ExtraDataList_GetRefractionPropertyExtra()->fRefractionPower);
+                        actor->Unk_E1(true, data->GetRefractionPropertyExtra()->fRefractionPower);
                     }
                     else
                         actor->UpdateActorPresentation();
@@ -2830,7 +2830,7 @@ void HighProcess::RunDetection(Actor* apActor, float fnumber)
                                                                                                                                                              ->IsCellInterior();
                                                                                                                                                 playerVisible =
                                                                                                                                                     apActor
-                                                                                                                                                        ->Actor_LineOfSight(
+                                                                                                                                                        ->LineOfSight(
                                                                                                                                                             *(NiPoint3*)&playerEvent
                                                                                                                                                                 ->Location,
                                                                                                                                                             1,
@@ -2839,7 +2839,7 @@ void HighProcess::RunDetection(Actor* apActor, float fnumber)
                                                                                                                                                     false;
                                                                                                                                                 if (playerVisible &&
                                                                                                                                                     apActor
-                                                                                                                                                        ->Actor_IsPointInViewCone(
+                                                                                                                                                        ->IsPointInViewCone(
                                                                                                                                                             *(NiPoint3*)&playerEvent
                                                                                                                                                                 ->Location,
                                                                                                                                                             *originalRuntimeFloatSetting103
@@ -3131,7 +3131,7 @@ void HighProcess::RunDetection(Actor* apActor, float fnumber)
                                                                                                                                                                      ->IsCellInterior();
                                                                                                                                                         loopVisible =
                                                                                                                                                             apActor
-                                                                                                                                                                ->Actor_LineOfSight(
+                                                                                                                                                                ->LineOfSight(
                                                                                                                                                                     *(NiPoint3*)&loopEvent
                                                                                                                                                                         ->Location,
                                                                                                                                                                     1,
@@ -3140,7 +3140,7 @@ void HighProcess::RunDetection(Actor* apActor, float fnumber)
                                                                                                                                                             false;
                                                                                                                                                         if (loopVisible &&
                                                                                                                                                             apActor
-                                                                                                                                                                ->Actor_IsPointInViewCone(
+                                                                                                                                                                ->IsPointInViewCone(
                                                                                                                                                                     *(NiPoint3*)&loopEvent
                                                                                                                                                                         ->Location,
                                                                                                                                                                     *originalRuntimeFloatSetting103
@@ -6575,7 +6575,7 @@ bool FUN_008ffdc0_Class::IsTargetDetectable(Actor* apActor, Actor* apTarget)
         return false;
 
     if (buseConeCheck &&
-        !apActor->Actor_IsPointInViewCone(
+        !apActor->IsPointInViewCone(
             *reinterpret_cast<const NiPoint3*>(reinterpret_cast<TESTopicInfo*>(apTarget)->GetAddTopicList()),
             1.5707964f))
         return false;
@@ -13864,7 +13864,7 @@ void HighProcess::ProcessCannibal(Actor* apActor)
     {
         this->StartIdleAnimation(apActor, 0, (ANIM_IDLE_PLAY_TYPE)2, true, true, true);
         if (package)
-            package->Actor_SetHasBeenEaten(true);
+            package->SetHasBeenEaten(true);
         this->SetAnimationComplete(true);
     }
     else if (pOldPackage->IsSequenceActive())
@@ -15683,12 +15683,12 @@ bool HighProcess::ShouldWaitForEscortTarget(Actor* apActor, Actor* apEscortedAct
         else
         {
             (*(QueryPtr65*)&spMeToGoalRequest).FUN_0066b0d0(new PathingRequest);
-            (*(QueryPtr65*)&spMeToGoalRequest).Modelloader_GetReferencedThis()->PathingRequest_SetOrigin((Actor*)apActor);
+            (*(QueryPtr65*)&spMeToGoalRequest).Modelloader_GetReferencedThis()->InitFromActor((Actor*)apActor);
             (*(QueryPtr65*)&spMeToGoalRequest).Modelloader_GetReferencedThis()->FUN_006d1bc0((PathingLocation*)((Location65*)goalLoc));
             (*(QueuePtr65*)&spMeToGoalMessageQueue).AssignObject(new Queue65);
             GetPathManager()->FUN_006eb9d0((*(QueryPtr65*)&spMeToGoalRequest), (*(QueuePtr65*)&spMeToGoalMessageQueue), 1);
             (*(QueryPtr65*)&spEscortedToGoalRequest).FUN_0066b0d0(new PathingRequest);
-            (*(QueryPtr65*)&spEscortedToGoalRequest).Modelloader_GetReferencedThis()->PathingRequest_SetOrigin((Actor*)apEscortedActor);
+            (*(QueryPtr65*)&spEscortedToGoalRequest).Modelloader_GetReferencedThis()->InitFromActor((Actor*)apEscortedActor);
             (*(QueryPtr65*)&spEscortedToGoalRequest).Modelloader_GetReferencedThis()->FUN_006d1bc0((PathingLocation*)((Location65*)goalLoc));
             (*(QueuePtr65*)&spEscortedToGoalMessageQueue).AssignObject(new Queue65);
             GetPathManager()->FUN_006eb9d0((*(QueryPtr65*)&spEscortedToGoalRequest), (*(QueuePtr65*)&spEscortedToGoalMessageQueue), 1);
@@ -17865,7 +17865,7 @@ void Host::ProcessActorsForReference(RefrEx* pRefr, void* pData, Param3Helper* p
             ->FUN_0046f280(pRefr->FUN_008d6f30(), (NiPoint3*)((const TESObjectREFR*)pRefr)->GetPos(), (float)*g_011cdbec.Int(), (NiPoint3*)((const TESObjectREFR*)pRefr)->GetPos(),
                            (float)*g_011cdbec.Int(), CheckAndQueueRadioRef, pParamHelper);
     }
-    i = g_processLists.ProcessLists_SendActorsYellAlarm(pParamHelper, &g_011e025c);
+    i = g_processLists.SendActorsYellAlarm(pParamHelper, &g_011e025c);
     ((ActorList*)&g_011e025c)->RemoveAll();
     for (p = i; p && p->GetItem();)
     {
@@ -18847,10 +18847,10 @@ bool HighProcess::ProcessFollowOneHour(Actor* apActor, float afTimeDelta, bool a
 
     if (pPackage2 && pPackage2->HasEssentialStatus())
     {
-        if (!g_pAIPlayer->PlayerCharacter_IsPlayerFollower(apActor))
+        if (!g_pAIPlayer->IsPlayerFollower(apActor))
         {
             if (g_pAIPlayer->GetCharacterLevel() < *g_kCombatSetting.Int())
-                pPackage2->TESPackage_SetWaiting(false);
+                pPackage2->SetWaiting(false);
             else
                 return false;
         }
@@ -19401,7 +19401,7 @@ void HighProcess::Update_008f4020(Actor* ref, float time)
                     break;
                 }
                 case 1: {
-                    HighProcess_ProcessWanderOneHour(actor18, time);
+                    ProcessWanderOneHour(actor18, time);
                     again11 = false;
                     break;
                 }
@@ -19410,7 +19410,7 @@ void HighProcess::Update_008f4020(Actor* ref, float time)
                     break;
                 }
                 case 5: {
-                    again11 = HighProcess_ProcessEatOneHour(actor18, time);
+                    again11 = ProcessEatOneHour(actor18, time);
                     break;
                 }
                 case 6: {
@@ -28199,7 +28199,7 @@ void HighProcess::ProcessGuard(Actor* apActor)
     switch (pProcB->FUN_00726070())
     {
     case 0:
-        HighProcess_ProcessGuardInit(apActor, pProcB);
+        ProcessGuardInit(apActor, pProcB);
         break;
     case 1:
         SelectMoveTarget(apActor, pProcB, bOk4);

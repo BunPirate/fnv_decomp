@@ -82,14 +82,13 @@ struct FUN_00c93860_stub
 
 struct FUN_00d662c0_stub
 {
-    void hkpPhantomDisplayViewer_addWorld(void* world);
+    void AttachToIsland(void* world);
 };
 
 // @fnv 0x00d662c0
-// src: XBOX_RETAIL_PDB 0x00d662c0
 // pdb: hkpPhantomDisplayViewer::addWorld | hkpPhantomDisplayViewer.obj | retail, object-file gap fill, high
 // pdb params: world
-void FUN_00d662c0_stub::hkpPhantomDisplayViewer_addWorld(void* world)
+void FUN_00d662c0_stub::AttachToIsland(void* world)
 {
     char* pSelf = (char*)this;
     void* p1;
@@ -196,7 +195,7 @@ void FnvCpu_FUN_00d66370_CpuOwner::ProcessState_00d66370()
 // add ecx,-0x20; jmp AttachToIsland : override in Derived forwards to the primary base's virtual.
 struct PrimaryBase
 {
-    virtual void hkpPhantomDisplayViewer_addWorld();
+    virtual void AttachToIsland();
     int unk04;
     int unk08;
     int unk0C;
@@ -225,7 +224,7 @@ Derived::Derived()
 // src: GUESS 0x00d66380 (confidence: medium)
 void Derived::AttachToIsland_Thunk()
 {
-    this->PrimaryBase::hkpPhantomDisplayViewer_addWorld();
+    this->PrimaryBase::AttachToIsland();
 }
 
 extern int DAT_01268ff0;
@@ -259,7 +258,7 @@ void FUN_00d66330_StandIn::ProcessEntries_00d66330()
         for (int i = 0; i < m_pShapeCollection->m_numWorlds; ++i)
         {
             reinterpret_cast<FUN_00d662c0_stub*>(reinterpret_cast<char*>(this) - 8)
-                ->hkpPhantomDisplayViewer_addWorld(m_pShapeCollection->m_ppWorlds[i]);
+                ->AttachToIsland(m_pShapeCollection->m_ppWorlds[i]);
         }
     }
 }

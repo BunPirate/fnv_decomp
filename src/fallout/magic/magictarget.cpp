@@ -491,7 +491,7 @@ void MagicTarget::UpdateActiveEffects(float afSecondsElapsed)
                             TESImageSpaceModifier* modifier = dynamic_cast<TESImageSpaceModifier*>(
                                 BGSDefaultObjectManager::GetDefaultObjectByIndex(20));
                             if (modifier)
-                                ImageSpaceModifierInstanceForm::ImageSpaceModifierInstanceForm_TriggerIfNotActive(modifier, 1.0f, 0);
+                                ImageSpaceModifierInstanceForm::TriggerIfNotActive(modifier, 1.0f, 0);
                         }
                     }
                 }

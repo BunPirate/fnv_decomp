@@ -24,7 +24,7 @@ class MagicHitEffect : public BSTempEffect
     virtual void InitLoadGame(ActiveEffect* apEffect, TESObjectREFR* apTarget);
     virtual void FinishLoadGameTES(ActiveEffect* apEffect, TESObjectREFR* apTarget, void* apData);
 
-    static BSSimpleList<MagicHitEffect*>* MagicHitEffect_InstantiateHitEffects(ActiveEffect* apEffect);
+    static BSSimpleList<MagicHitEffect*>* InstantiateHitEffects(ActiveEffect* apEffect);
     char* GetData();
     void SetByteAt24(unsigned int value);
     void FUN_00984f60(unsigned int);

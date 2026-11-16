@@ -35,7 +35,7 @@ void Precipitation::Load(const char* apFilename)
                     m_pShaderGeometry ? NiObject_DynamicCast(&DAT_012024e0, m_pShaderGeometry->NiNode_GetAtChecked(false)) : 0;
                 if (!pShaderProperty)
                     continue;
-                NiAVObject* precipParticle = Precipitation_CreateShaderGeometry(pShaderProperty, pParent->NiAVObject_GetWorldRotate(bIsSnow));
+                NiAVObject* precipParticle = CreateShaderGeometry(pShaderProperty, pParent->NiAVObject_GetWorldRotate(bIsSnow));
                 if (precipParticle)
                     static_cast<NiNode*>(spCurrentPrecipRoot)->AttachChildInAvailableSlot(precipParticle, true);
             }

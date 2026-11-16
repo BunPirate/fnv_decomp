@@ -179,7 +179,7 @@ void __cdecl UpdateOrRemoveItems(int iArg)
         {
             if (pkItem->GetCount() > 0)
             {
-                pkItem->ActorCause_InitLoadGame(iArg);
+                pkItem->InitLoadGame(iArg);
             }
             else
             {

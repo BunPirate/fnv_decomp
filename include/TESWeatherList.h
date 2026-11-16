@@ -17,7 +17,7 @@ public:
 
     void FlushList();
     void CopyWeatherList(const TESWeatherList*, bool);
-    bool TESWeatherList_CompareComponent(TESWeatherList*);
-    void TESWeatherList_Save(unsigned int);
+    bool CompareComponent(TESWeatherList*);
+    void Save(unsigned int);
     static void LoadWeatherListChunk(TESWeatherList* apWeatherList, TESFile* apFile, TESForm* pForm);
 };

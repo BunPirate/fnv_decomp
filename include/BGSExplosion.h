@@ -26,7 +26,7 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1024a94 slot 8 = 0x4fb0d0)
     bool LoadForm(TESFile* apFile);
     float __thiscall GetScaledValue();

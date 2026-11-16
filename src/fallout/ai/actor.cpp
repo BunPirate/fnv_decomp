@@ -4441,7 +4441,7 @@ struct BipedAnim
     void QueueBipedObjectLoads(unsigned int, int, QueuedFile*);
     void LoadBipedObject(::TESNPC*, int, int, QueuedFile*);
     BipedAnimObject* QBufferedObjects();
-    void BipedAnim_SetBipedWeapon(::TESObjectWEAP*, unsigned char);
+    void SetBipedWeapon(::TESObjectWEAP*, unsigned char);
     void UpdateBipedWeapon(::TESObjectWEAP*, unsigned char);
     void RemoveBipedWeapon();
     ::TESObjectWEAP* GetBipedWeapon();
@@ -32224,7 +32224,7 @@ void TargetCls::TESObjectREFR_RemoveItemType(int aeType, bool abStealing, int ai
     if (container)
     {
         ::InventoryChanges* inventory = ::InventoryChanges::CreateForReference((TESObjectREFR*)this);
-        inventory->InventoryChanges_RemoveItemType(aeType, abStealing, aiNumber);
+        inventory->RemoveItemType(aeType, abStealing, aiNumber);
     }
 }
 
@@ -38902,7 +38902,7 @@ void FUN_00567050_shell::TESObjectREFR_UpdateAnimation()
                         ::NiControllerSequence* pForwardSequence = pManager->GetSequenceAt_00495d20(i);
                         if (pForwardSequence && ((Idle_008b2010*)pForwardSequence)->GetState())
                         {
-                            if (::BSAnimGroupSequence::BSAnimGroupSequence_PlaySounds(pForwardSequence, reinterpret_cast< ::Actor*>(this)))
+                            if (::BSAnimGroupSequence::PlaySounds(pForwardSequence, reinterpret_cast< ::Actor*>(this)))
                             {
                                 TESObjectREFR_EndSequence(reinterpret_cast<NiControllerSequenceX*>(pForwardSequence));
                                 pManager->StopSequence(pForwardSequence, 0.0f);
@@ -138672,7 +138672,7 @@ void __thiscall MoveSelf454::Actor_MoveActorAndFollowers(int aLocation, float af
                                                 ->FUN_00439e90(((MovePoint454*)&direction)->ApplyScaled(distance));
                                         ::PathingSolution pathDataC;  // Navigation solution.
                                         ::PathingRequest pathDataB;   // Navigation request.
-                                        pathDataB.PathingRequest_SetOrigin(reinterpret_cast< ::MoveActor454*>(this));
+                                        pathDataB.InitFromActor(reinterpret_cast< ::MoveActor454*>(this));
                                         pathDataB.SetCantOpenDoors(true);
                                         pathDataB.FUN_006d1bc0(&::PathingLocation(
                                             reinterpret_cast<const ::NiPoint3&>(pathDataD),
@@ -144684,7 +144684,7 @@ void __thiscall Actor_8b6ae0::Actor_CreateDismemberedLimbs()
             unsigned int size = pLimbs->GetCount();
             for (unsigned int i = 0; i < size; ++i)
             {
-                DismembermentPart* pkPart = reinterpret_cast<DismembermentPart*>(pLimbs->ExtraDismemberedLimbs_GetDismemberedLimb(i));
+                DismembermentPart* pkPart = reinterpret_cast<DismembermentPart*>(pLimbs->GetDismemberedLimb(i));
                 unsigned int limbID = pkPart->limbIndex;
                 ::BGSBodyPart* pBody = m_pBodyPartDataCur->GetPart(limbID);
                 if (pBody)

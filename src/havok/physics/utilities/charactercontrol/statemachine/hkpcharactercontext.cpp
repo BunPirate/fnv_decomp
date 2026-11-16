@@ -187,9 +187,9 @@ inline void hkVector4::setSub4(const hkVector4& a, const hkVector4& b)
     m_vComponents = _mm_sub_ps(a.m_vComponents, b.m_vComponents);
 }
 
-inline void hkVector4::mul4(hkSimdRealParameter r)
+inline void hkVector4::mul4(hkSimdRealParameter s)
 {
-    m_vComponents = _mm_mul_ps(_mm_shuffle_ps(r.m_vValue, r.m_vValue, 0), m_vComponents);
+    m_vComponents = _mm_mul_ps(_mm_shuffle_ps(s.m_vValue, s.m_vValue, 0), m_vComponents);
 }
 
 inline void hkVector4::addMul4(hkSimdRealParameter r, const hkVector4& a)

@@ -16,7 +16,7 @@ class ImageSpaceModifierInstanceForm : public ImageSpaceModifierInstance
 
     static void __cdecl Stop(TESImageSpaceModifier*);
     static ImageSpaceModifierInstanceForm* __cdecl Trigger(TESImageSpaceModifier*, float, NiAVObject*);
-    static ImageSpaceModifierInstanceForm* ImageSpaceModifierInstanceForm_TriggerIfNotActive(TESImageSpaceModifier*, float, NiAVObject*);
+    static ImageSpaceModifierInstanceForm* TriggerIfNotActive(TESImageSpaceModifier*, float, NiAVObject*);
 
     TESImageSpaceModifier* GetImageSpaceMod();
     bool IsExpired();

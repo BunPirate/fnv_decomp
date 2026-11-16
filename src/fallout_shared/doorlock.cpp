@@ -301,11 +301,11 @@ bool DoorAccessData::CanUnlockDoor(const PathingActorData* apActorLockData, TESO
         else if (m_pTeleportData->IsLocked())
         {
             if (m_pTeleportData->pKey != 0 && apActorLockData->m_pInventoryChangesValue != 0 &&
-                apActorLockData->m_pInventoryChangesValue->InventoryChanges_ContainerHasObjects(m_pTeleportData->pKey, 0, 1, kSearch.iCount,
+                apActorLockData->m_pInventoryChangesValue->ContainerHasObjects(m_pTeleportData->pKey, 0, 1, kSearch.iCount,
                                                                           0, 0))
                 bCanUnlock = true;
             else if (m_pTeleportData->GetLockLevel(apDoorRef) != 5 && apActorLockData->m_pInventoryChangesValue != 0 &&
-                     apActorLockData->m_pInventoryChangesValue->InventoryChanges_ContainerHasObjects(g_pLockpickItem, 0, 1, kSearch.iCount, 0,
+                     apActorLockData->m_pInventoryChangesValue->ContainerHasObjects(g_pLockpickItem, 0, 1, kSearch.iCount, 0,
                                                                                0))
             {
                 bCanUnlock = true;

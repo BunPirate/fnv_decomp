@@ -541,9 +541,9 @@ void LowProcess::Update(MobileObject* mobile)
                     SetProcessTarget(update.actor, 1);
                 else if (package->HasEssentialStatus())
                 {
-                    if (!g_thePlayer->PlayerCharacter_IsPlayerFollower(update.actor) &&
+                    if (!g_thePlayer->IsPlayerFollower(update.actor) &&
                         g_thePlayer->GetCharacterLevel() < DAT_011cdad0.Int()->i)
-                        GetCurrentPackage()->TESPackage_SetWaiting(false);
+                        GetCurrentPackage()->SetWaiting(false);
                 }
                 else if (package->GetPackType() != 28 && !package->HasEssentialStatus())
                 {
@@ -1568,7 +1568,7 @@ void LowProcess::ProcessGuard(Actor* apActor)
     if (static_cast<BaseProcess*>(this)->GetTarget() != state.pGuardTarget)
     {
         SetTarget(state.pGuardTarget);
-        state.pGuardTarget->GetExtraData()->ExtraDataList_AddGuard(apActor);
+        state.pGuardTarget->GetExtraData()->AddGuard(apActor);
         state.pGuardTarget->MarkAsModified(0x80000000);
     }
     if (!ClearProcessStateFlags() && (apActor->GetSitSleepState() == 4 || apActor->GetSitSleepState() == 9))
@@ -1610,10 +1610,10 @@ void LowProcess::UpdateActorPackage(Actor* actor, bool flag, unsigned int value,
 {
     if (GetCurrentPackage() && GetCurrentPackage()->HasEssentialStatus())
     {
-        if (!g_thePlayer->PlayerCharacter_IsPlayerFollower(actor))
+        if (!g_thePlayer->IsPlayerFollower(actor))
         {
             if (g_thePlayer->GetCharacterLevel() < DAT_011cdad0.Int()->i)
-                GetCurrentPackage()->TESPackage_SetWaiting(false);
+                GetCurrentPackage()->SetWaiting(false);
             else
                 return;
         }

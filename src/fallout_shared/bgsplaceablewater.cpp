@@ -24,7 +24,7 @@ void BGSPlaceableWater::ResetFormData()
     BGSPlaceableWater_SetReflectsLODLand(true);
     BGSPlaceableWater_SetReflectsSky(true);
     BGSPlaceableWater_SetRefractionEnabled(true);
-    BGSPlaceableWater_SetRefractsLand(true);
+    SetRefractsLand(true);
     BGSPlaceableWater_SetAutomaticWater(false);
     BGSPlaceableWater_SetObjectTexCoordsEnabled(false);
     BGSPlaceableWater_SetDepthEnabled(true);
@@ -98,7 +98,7 @@ bool BGSPlaceableWater::LoadForm(TESFile* apFile)
             BGSPlaceableWater_SetReflectsLODLand(true);
             BGSPlaceableWater_SetReflectsSky(true);
             BGSPlaceableWater_SetRefractionEnabled(true);
-            BGSPlaceableWater_SetRefractsLand(true);
+            SetRefractsLand(true);
             BGSPlaceableWater_SetAutomaticWater(false);
             break;
         }

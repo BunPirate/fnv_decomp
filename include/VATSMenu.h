@@ -114,11 +114,11 @@ public:
 
     BSSimpleList<TargetX*>* FindListEntryForTarget(ActorX* apTarget);
     TargetListM* FindListEntryForTarget(ActorM* apTarget);
-    void VATSMenu_BuildMetersForTarget(BSSimpleList<TargetX*>* apTarget);
+    void BuildMetersForTarget(BSSimpleList<TargetX*>* apTarget);
     BSSimpleList<ChanceX*>* FindEntryForRef();
     LimbListM* FindListEntryByValue(int aiLimb);
     void UpdateLimbHighlight();
-    void VATSMenu_UpdateQueuedActionList(TargetCommand* apCommand, bool abForcedReload, bool bSpecialAttack);
+    void UpdateQueuedActionList(TargetCommand* apCommand, bool abForcedReload, bool bSpecialAttack);
     float CalculateProbableEnemyHealth();
     void SetMeterChance();
     bool UpdateVatsTargeting();

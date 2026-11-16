@@ -29,7 +29,7 @@ public:
 
     QueuedFile& operator=(const QueuedFile& other);
     void SetParent(QueuedFile* apParent);
-    void AddAdditionalParent(QueuedFile* apParent);
+    void AddAdditionalParent(QueuedFile* apAdditionalParent);
     unsigned int GetChildCount();
     unsigned int GetChildCountFinished();
     bool GetAllChildrenFinished();

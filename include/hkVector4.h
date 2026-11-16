@@ -147,7 +147,7 @@ class hkVector4
 #ifndef FNV64_HKVECTOR4_OWN_MUL4_consthkSimdReal
     __forceinline void mul4(const hkSimdReal& s) { m_vComponents = _mm_mul_ps(s.broadcast(), m_vComponents); }
 #else
-    __forceinline void mul4(const hkSimdReal& scalar);
+    __forceinline void mul4(const hkSimdReal& s);
 #endif
 #ifndef FNV64_HKVECTOR4_OWN_ADDMUL4_consthkVector4_consthkVector4
     __forceinline void addMul4(const hkVector4& a, const hkVector4& b) { m_vComponents = _mm_add_ps(m_vComponents, _mm_mul_ps(a.m_vComponents, b.m_vComponents)); }

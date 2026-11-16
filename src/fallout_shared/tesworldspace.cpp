@@ -1892,7 +1892,7 @@ TESWorldSpace::~TESWorldSpace()
 {
     if (DAT_011c3f44 == this)
         DAT_011c3f44 = 0;
-    TESWorldSpace_ClearPersistentRefData();
+    ClearPersistentRefData();
     ClearMultiBoundRefs();
     if (terrain)
     {

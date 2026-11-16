@@ -36,7 +36,7 @@ public:
     }
     const hkVector4& getImag() const;
     float getReal() const;
-    float hkQuaternion_getAngle();
+    float getAngle();
     void normalize();
     void set(const hkRotation& rotation);
     void setInverseMul(const hkQuaternion& q0, const hkQuaternion& q1);
@@ -44,7 +44,7 @@ public:
     void SetProduct(const hkQuaternion& q0, const hkQuaternion& q1);
 
     void setMul(const hkQuaternion& q0, const hkQuaternion& q1);
-    __declspec(noalias) void hkQuaternion_normalize();
+    __declspec(noalias) void normalize_005611c0();
     void hkQuaternion_setAxisAngle(const hkVector4& axis, float angle);
     void hkQuaternion_setAxisAngle(const IkVector4& axis, float angle);
     void hkQuaternion_setAxisAngle(void* axis, float angle);

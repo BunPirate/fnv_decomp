@@ -264,7 +264,7 @@ void TESReputation::DisplayReputationTitleChange(void)
 {
     char buffer[0x200];
 
-    _sprintf_s(buffer, 0x200, "%s\n%s", GetReputationTitle(), TESReputation_GetReputationDesc());
+    _sprintf_s(buffer, 0x200, "%s\n%s", GetReputationTitle(), GetReputationDesc());
 
     reinterpret_cast<TutorialState*>(reinterpret_cast<unsigned char*>(_FUN_004b7210()) + 0x4d4)
         ->ShowMessage(0x27, 0, 0x1f4);

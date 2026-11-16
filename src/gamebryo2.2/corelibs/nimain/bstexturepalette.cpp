@@ -222,6 +222,7 @@ struct TexMap
 extern unsigned char DAT_011f4461;
 extern int DAT_011a95fc;
 bool __cdecl BSTexturePalette_GetFirstPos(TexMapIter& arIterator);
+// src: XBOX_RETAIL_PDB 0x00a619b0
 __declspec(noinline) bool TexMap::BSTexMap_GetNext(TexMapIter& arIterator, TexPtr& arValue)
 {
     if (arIterator.pItem)

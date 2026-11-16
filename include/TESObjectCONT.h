@@ -35,7 +35,7 @@ public:
     bool IsFormInitialized() const;
     void ReadTypedData(TESFile* apFile, void* apData, unsigned short asSize);
     void SetImpactDataSet_004fb0b0(unsigned int);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     // Overrides of primary slots 8 and 34; all 96 slots are inherited.
     virtual bool LoadForm(TESFile* apFile);

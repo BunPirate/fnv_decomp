@@ -64,7 +64,7 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
     float CalcTotalLength();
     float GetAccumulatedValue();
     float NiPathInterpolator_PathLength(int iI0, int iI1, float fTime);
-    float NiPathInterpolator_PathSpeed(int iI0, int iI1, float fTime);
+    float PathSpeed(int iI0, int iI1, float fTime);
     void GetPercentLoc(float fPercent, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime);
     void FindKeyPair(float fTime, unsigned int& i1, unsigned int& i2, float& fNormTime);
     void FindKeyPair(float fTime, int& i1, int& i2, float& fNormTime);

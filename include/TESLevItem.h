@@ -13,7 +13,7 @@ public:
     virtual void InitItem();
 
     int GetMaxLevelDifference();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1028a64 slot 8 = 0x50b560)
     bool LoadForm(TESFile* apFile);
     virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);

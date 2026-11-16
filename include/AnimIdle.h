@@ -30,7 +30,7 @@ class AnimIdle : public NiRefObject
     int GetSection();
     unsigned int GetFlags();
     BSAnimGroupSequence* GetControllerSequence();
-    void AnimIdle_Loaded(KFModel*);
+    void Loaded(KFModel*);
     void SetTranslate(const NiPoint3& kTranslate);
     void SetRotate(const void* pvRotate);
 };

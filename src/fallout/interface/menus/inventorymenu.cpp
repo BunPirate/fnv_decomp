@@ -177,8 +177,8 @@ void InventoryMenu::UpdateDialog()
         {
             m_pTiles[20]->Set(0xfa3, 1);
             m_pTiles[22]->Set(0xfa3, 1);
-            InterfaceManager::InterfaceManager_UpdatePipBoyInventoryEffects(0, 0, m_pTiles[20], ms_pActionPointSource, true);
-            InterfaceManager::InterfaceManager_UpdatePipBoyInventoryEffects(0, 0, m_pTiles[22], ms_pActionPointSource, true);
+            InterfaceManager::UpdatePipBoyInventoryEffects(0, 0, m_pTiles[20], ms_pActionPointSource, true);
+            InterfaceManager::UpdatePipBoyInventoryEffects(0, 0, m_pTiles[22], ms_pActionPointSource, true);
         }
     }
     else
@@ -225,11 +225,11 @@ void InventoryMenu::UpdateDialog()
     iPage = ms_pInventoryMenu->m_iCurrentTab + 24;
     if (iPage == 24)
     {
-        InterfaceManager::InterfaceManager_UpdatePipBoyInventoryEffects(m_pTiles[14], m_pTiles[15], m_pTiles[16], ms_pActionPointSource, false);
+        InterfaceManager::UpdatePipBoyInventoryEffects(m_pTiles[14], m_pTiles[15], m_pTiles[16], ms_pActionPointSource, false);
     }
     else if (iPage == 25)
     {
-        InterfaceManager::InterfaceManager_UpdatePipBoyInventoryEffects(
+        InterfaceManager::UpdatePipBoyInventoryEffects(
             ms_pActionPointSource &&
                     static_cast<TESObjectARMO*>(ms_pActionPointSource->FUN_0044ddc0())->GetArmorRating() != 0.0
                 ? m_pTiles[17]
@@ -241,7 +241,7 @@ void InventoryMenu::UpdateDialog()
             0, ms_pActionPointSource, false);
     }
     m_pTiles[2]->Set(0xfa9, 0.0f, true);
-    InterfaceManager::InterfaceManager_UpdatePipBoyInventoryEffects(g_thePlayer->GetCurrentActorValue(static_cast<ActorValue::Index>(18)) != 0.0 ? m_pTiles[2] : 0,
+    InterfaceManager::UpdatePipBoyInventoryEffects(g_thePlayer->GetCurrentActorValue(static_cast<ActorValue::Index>(18)) != 0.0 ? m_pTiles[2] : 0,
                                           m_pTiles[21], 0, ms_pActionPointSource, false);
 }
 
@@ -258,7 +258,7 @@ Tile* InventoryMenu::Create()
         delete oldMenu;
     Tile* pTile = pMenuInterfaceManager->CombatController_GetCombatState()->ReadFile("Data\\Menus\\Main\\inventory_menu.xml");
     ms_pInventoryMenu = static_cast<InventoryMenu*>(pTile->GetMenu());
-    Menu::Menu_RemoveFromXMLArchive("Data\\Menus\\Main\\inventory_menu.xml", ms_pInventoryMenu);
+    Menu::RemoveFromXMLArchive("Data\\Menus\\Main\\inventory_menu.xml", ms_pInventoryMenu);
     if (ms_pInventoryMenu && ms_pInventoryMenu->GetClass() == GetClassStatic())
     {
         ms_pInventoryMenu->SetTileMenu(reinterpret_cast<TileMenu*>(pTile), false);
@@ -370,7 +370,7 @@ void __thiscall FUN_00781620_shell::InventoryMenu_DoLeave(int aiID, Tile* apTarg
     if (aiID == 0x1D || aiID == 0x1E)
     {
         if (!_FUN_004b71d0() || Interface_GetTopMenuID() != 0x3F8)
-            InventoryMenu_ClearCurrentItem();
+            ClearCurrentItem();
         this->FUN_00726070()->Set(InventoryMenu::ms_iEquippableItemTileID, 0);
     }
 }
@@ -885,7 +885,7 @@ void InventoryMenu::UpdateItemDisplay(int aiID, Tile* apTarget)
     }
     else if (aiID == 30)
     {
-        InventoryMenu_ClearCurrentItem();
+        ClearCurrentItem();
         m_pTiles[11]->Tile_Set_00a01350(0xfcc, InventorySelection::DAT_01073aac, 1);
         if (!m_kMenuData.GetVisible())
             m_pTiles[11]->FUN_00700320(0xfa3, 1);
@@ -1663,7 +1663,7 @@ void InventoryMenu::Select(int aiID, int apTarget)
             int iOldMode = m_iCurrentTab;
             if (FUN_00726070()->IsTraitNonZero(DAT_011d9eb8))
                 FUN_00726070()->FUN_00700320(DAT_011d9eb8, 0);
-            InventoryMenu_ClearCurrentItem();
+            ClearCurrentItem();
             InventoryMenu_SavePageState();
             m_iCurrentTab = aiID - 0x18;
             m_pTiles[13]->FUN_00700320(DAT_011d9eac, m_iCurrentTab);
@@ -1774,7 +1774,7 @@ void InventoryMenu::Select(int aiID, int apTarget)
             FUN_00726070()->FUN_00700320(DAT_011d9eb8, 1);
             m_kItemList.ApplyFilter(fnv_00780140::IsNotFormType2E);
             m_kItemList.ListBox_ItemChange_Traverse(InventoryMenu_SetVisibleFunc, -1, 0x7fffffff);
-            InventoryMenu_ClearCurrentItem();
+            ClearCurrentItem();
             fnv_00780140::InventoryMenu_LoadPageState();
         }
         else

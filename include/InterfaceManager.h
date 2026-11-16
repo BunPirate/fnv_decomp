@@ -401,7 +401,7 @@ public:
     void UncullPipboyMenus();
     static void UnregisterListBox(ListBoxBase*);
     void UpdateAllTimers();
-    static void InterfaceManager_UpdatePipBoyInventoryEffects(Tile*, Tile*, Tile*, InventoryStackRecord*, bool);
+    static void UpdatePipBoyInventoryEffects(Tile*, Tile*, Tile*, InventoryStackRecord*, bool);
     static float UpdateInterfaceState();
     void UpdateInventoryPageNumber(char);
     void UpdateMagicPageNumber(char);

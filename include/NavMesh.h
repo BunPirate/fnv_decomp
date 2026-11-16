@@ -78,7 +78,7 @@ public:
     bool AddDoorObstacle(unsigned int, ObstacleData*);
     NavMeshClosedDoorInfo* GetClosedDoorInfo(unsigned short);
     bool FindHeightOnTriangle(unsigned short, const NiPoint3&, float&, float, float);
-    bool NavMesh_GetObstaclePOVsForTriangle(const NiPointer<ObstacleData>&, ParentChildLinks&);
+    bool GetObstaclePOVsForTriangle(const NiPointer<ObstacleData>&, ParentChildLinks&);
     bool RemoveObstacleAndUpdateLinks(const NiPointer<ObstacleData>&, ParentChildLinks&);
     bool RemoveDoorObstacle(unsigned int);
     NavMeshEdgeExtra* GetEdge(unsigned short);
@@ -155,7 +155,7 @@ public:
     void FindAdjacentEdge(unsigned short, int, NavMesh*&, unsigned short&, int&);
     bool FUN_00460340();
     bool FUN_00440d80();
-    void NavMesh_UpdateNavMeshInfo();
+    void UpdateNavMeshInfo();
     void PathingRequestCoveredMove_SetCombatCoverLocation(NavMeshInfo*);
     void PathingRequestCoveredMove_SetCombatCoverLocation(b9_big*);
     void ForwardToStub(int);
@@ -164,7 +164,7 @@ public:
     int GetUndoDataIndexForObstacle(int, unsigned int*);
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     NavMesh* NavMeshPtr_NavMeshPtr_00464ff0(int);
-    bool NavMesh_GetObstacleForTriangle(unsigned short);
+    bool GetObstacleForTriangle(unsigned short);
 
     TESObjectCELL* pParentCell; // 0x24 // src: XBOX_RETAIL_PDB +0x24 (old: m_pOwningCell)
     BSSimpleArray<NavMeshVertex, 1024> Vertices; // 0x28

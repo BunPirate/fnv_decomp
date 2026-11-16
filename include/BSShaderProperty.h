@@ -36,12 +36,12 @@ class BSShaderProperty : public NiShadeProperty
     static NiObject* CreateObject();
     void* QRenderPasses();
     void CheckCreateRenderPassArray(int aiNumPasses);
-    void CheckCreateDepthMapRenderPassArray(int count);
-    void CheckCreateLocalMapRenderPassArray(int count);
+    void CheckCreateDepthMapRenderPassArray(int aiNumPasses);
+    void CheckCreateLocalMapRenderPassArray(int aiNumPasses);
     void CheckCreateSIBlockRenderPassArray(int count);
-    void CheckCreateConstAlphaRenderPassArray(int count);
-    void CheckCreateWaterFogRenderPassArray(int count);
-    void CheckSilhouetteRenderPassArray(int count);
+    void CheckCreateConstAlphaRenderPassArray(int aiNumPasses);
+    void CheckCreateWaterFogRenderPassArray(int aiNumPasses);
+    void CheckSilhouetteRenderPassArray(int aiNumPasses);
     void SetLastRenderPassState(int state);
     bool CompareFlags(BSShaderProperty* property);
     bool GetFlag(unsigned int flag);
@@ -67,7 +67,7 @@ class BSShaderProperty : public NiShadeProperty
     void SetDepthBias(float bias);
     static void ResetDebugStats();
     static void GetDebugStats(unsigned int* stats);
-    void SetMotionBlurred(bool enabled);
+    void SetMotionBlurred(bool abIsMotionBlurred);
     float GetCameraDistance();
     static void ClearRenderPassGarbage();
 

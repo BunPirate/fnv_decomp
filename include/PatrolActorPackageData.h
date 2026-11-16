@@ -26,8 +26,8 @@ public:
     virtual void SetReferenceTarget(TESObjectREFR* apDeletedObj);
     virtual PTYPE GetPackageType();
     virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
-    virtual void InitLoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    virtual void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     bool Init(Actor* apActor, TESPackage* apPackage);
     bool SetNextReferenceForPatrol(bool abWaitForOccupiedPoints);
