@@ -11,7 +11,7 @@ class TESFile;
 enum PACK_EVENT_ACTION_TYPE;
 
 // pdb: class PackageEventAction, size 0x10, 4 members
-class PackageEventAction // src: XBOX_RETAIL_PDB 0x0067dad0 (first of 5 high-tier links to its methods; old: PackageEventActionData_packageeventaction)
+class PackageEventAction // src: XBOX_RETAIL_PDB 0x0067dad0 (first retail link of 5 high-tier links to its methods; old: PackageEventActionData_packageeventaction)
 {
 public:
     TESIdleForm* pIdle; // src: XBOX_RETAIL_PDB +0x0 (old: m_pIdleForm)

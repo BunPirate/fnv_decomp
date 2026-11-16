@@ -2389,7 +2389,7 @@ struct FontTextManager
 };
 
 // pdb: structure CharData, size 0x14 (here 0x38), 5 members
-struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first of 2 high-tier links to its methods; old: FontTextParams)
+struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first debug link of 2 high-tier links to its methods; old: FontTextParams)
 {
     int m_iType;
     bool bFlag;

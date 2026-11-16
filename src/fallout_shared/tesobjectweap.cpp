@@ -1802,7 +1802,7 @@ struct GlobalObject_0045cfe0 { int* Int(); };
 extern GlobalObject_0045cfe0 g_011cd3b4;
 extern GlobalObject_0045cfe0 g_011cd538;
 extern GlobalObject_0045cfe0 g_011cdde0;
-struct FUN_00525620_shell { int GetStateValue(bool aiValue, bool aiUnsatisfiedValue); };
+struct FUN_00525620_shell { int GetStateValue(bool a, bool b); };
 // Reads a state value from offset 0x364, overridden to 2 or 1 by the flags, and returns the int from the matching global.
 // @fnv 0x00525620
 // pdb: CombatWorldStateArray::GetStateValue | CombatPlan.obj | debug, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied

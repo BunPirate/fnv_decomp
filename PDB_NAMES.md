@@ -57,7 +57,7 @@ Naming rules:
   declaration, the marker names each. 54 of the 77 class names come from the PC executable's own RTTI (the vtable
   `main` already named), so they are tagged `EXE` with the vtable's address. The other 23 come from high-tier links to
   their own methods here (not counting name-only links). They carry the build most of those links come from, retail on
-  a tie (17 `XBOX_RETAIL_PDB`, 6 `XBOX_DEBUG_PDB`), and the address of the first such link.
+  a tie (17 `XBOX_RETAIL_PDB`, 6 `XBOX_DEBUG_PDB`), and the address of the first such link from that build.
   Renamed parameters have no marker; they are in the mapping (see the end of this file).
 - A link made only because `main` already used the PDB name (link method "upstream name already matches") renames no
   function or class: the name is the evidence, so its spelling stays. Its parameter names are applied when `main`

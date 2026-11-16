@@ -1643,7 +1643,7 @@ StartMenu::~StartMenu()
 }
 
 
-struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first of 1 high-tier links to its methods; old: StartMenu_Option)
+struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first retail link of 1 high-tier links to its methods; old: StartMenu_Option)
 {
     void InitPointer();
     void* FUN_007ce660(unsigned int flags);

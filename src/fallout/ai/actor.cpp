@@ -9486,7 +9486,7 @@ struct VBase
     virtual void v2();
     virtual float v3(int);
 };
-void __fastcall SetEndurance(CombatLOS* acValue, float f);
+void __fastcall SetEndurance(CombatLOS* p, float f);
 // @fnv 0x008b9ff0
 // src: COMMUNITY 0x008b9ff0
 // pdb: Actor::CalculateCachedEndurance | Actor.obj | retail, vtable slot, high

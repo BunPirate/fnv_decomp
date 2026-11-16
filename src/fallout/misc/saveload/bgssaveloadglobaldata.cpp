@@ -87,7 +87,7 @@ extern TESWorldSpace* BGSSaveLoadGlobalDataWorldspacePtr;
 
 
 // pdb: class BGSSaveLoadGlobalData, size 0x1, 0 members
-class BGSSaveLoadGlobalData // src: XBOX_RETAIL_PDB 0x0084be40 (first of 6 high-tier links to its methods; old: SaveGameLoader)
+class BGSSaveLoadGlobalData // src: XBOX_RETAIL_PDB 0x0084be40 (first retail link of 6 high-tier links to its methods; old: SaveGameLoader)
 {
   public:
     static void LoadGameData(BGSLoadGameBuffer*);

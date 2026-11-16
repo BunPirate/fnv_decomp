@@ -1260,7 +1260,7 @@ unsigned int FUN_0098f7b0_Class::BSSimpleArray_CombatTarget_1024_AddUninitialize
     return m_08 - 1;
 }
 
-extern "C" int __cdecl CreateCombatGroupStrategy(int aeCombatGroupStrategy);
+extern "C" int __cdecl CreateCombatGroupStrategy(int a);
 extern int DAT_011f18b4[4];
 // Calls CreateCombatGroupStrategy for each index 0..3 and stores the results into DAT_011f18b4.
 // @fnv 0x00990070

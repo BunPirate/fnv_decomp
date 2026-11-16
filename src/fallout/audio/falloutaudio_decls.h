@@ -48,7 +48,7 @@ class TaskQueueInterface
 };
 
 // pdb: class FalloutAudio, size 0x1, 0 members
-class FalloutAudio // src: XBOX_RETAIL_PDB 0x0082d280 (first of 7 high-tier links to its methods; old: SoundPlaybackManager)
+class FalloutAudio // src: XBOX_RETAIL_PDB 0x0082d280 (first retail link of 6 high-tier links to its methods; old: SoundPlaybackManager)
 {
   public:
     static void UpdateRegionSounds();
