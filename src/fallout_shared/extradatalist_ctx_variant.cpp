@@ -379,7 +379,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         SetEquippedState(true, false);
         break;
     case 0x4A:
-        ExtraDataList_SetHotKey(((ExtraHotkey*)apCopy)->cKey);
+        SetHotKey(((ExtraHotkey*)apCopy)->cKey);
         break;
     case 0x17:
         SetEquippedState(true, true);
@@ -395,7 +395,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         SetHealth((((ExtraHealth*)apCopy)->fHealthPercent));
         break;
     case 0x7A:
-        ExtraDataList_SetHealthPerc((((ExtraHealthPerc*)apCopy)->m_fHealthPercentage));
+        SetHealthPerc((((ExtraHealthPerc*)apCopy)->m_fHealthPercentage));
         break;
     case 0x26:
         SetUses(((ExtraUses*)apCopy)->m_ucUses);
@@ -420,7 +420,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     }
     case 0x68:
-        ExtraDataList_SetRadioData((int*)((ExtraRadioData*)apCopy)->unk0C);
+        SetRadioData((int*)((ExtraRadioData*)apCopy)->unk0C);
         break;
     case 0x2B: {
         TeleportableReference* pTeleport = new TeleportableReference;
@@ -496,7 +496,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     }
     case 0x08:
-        ExtraDataList_SetClimate(((ExtraClimate*)apCopy)->pClimateData);
+        SetClimate(((ExtraClimate*)apCopy)->pClimateData);
         break;
     case 0x59:
         ExtraDataList_SetImageSpace(((ExtraImageSpace*)apCopy)->m_pImageSpace);
@@ -617,7 +617,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         SetEncounterZone(*(BGSEncounterZone**)((char*)(ExtraEncounterZone*)apCopy + sizeof(BSExtraData)));
         break;
     case 0x67:
-        ExtraDataList_SetEmittanceSource(((ExtraEmittanceSource*)apCopy)->pSource);
+        SetEmittanceSource(((ExtraEmittanceSource*)apCopy)->pSource);
         break;
     case 0x63:
         SetMultiBoundRef(((ExtraMultiBoundRef*)apCopy)->m_pReference);
@@ -649,7 +649,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     // ExtraRadiation likewise stores its float in the shared class's tail padding.
     case 0x5D:
-        ExtraDataList_SetRadiation(*(float*)((char*)(ExtraRadiation*)apCopy + sizeof(BSExtraData)));
+        SetRadiation(*(float*)((char*)(ExtraRadiation*)apCopy + sizeof(BSExtraData)));
         break;
     case 0x5E: {
         UpdateExtraDataListExtension();
@@ -682,7 +682,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
     case 0x6F: {
         PatrolRefData* pPatrol = new PatrolRefData;
         pPatrol->Copy(((ExtraPatrolRefData*)apCopy)->pPatrolData);
-        ExtraDataList_SetPatrolRefData(pPatrol);
+        SetPatrolRefData(pPatrol);
         break;
     }
     case 0x71:
@@ -737,7 +737,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
         break;
     }
     case 0x80:
-        ExtraDataList_SetIgnoredBySandbox(true);
+        SetIgnoredBySandbox(true);
         break;
     case 0x8B: {
         ExtraFollowerSwimBreadcrumbs* pDstBreadcrumbs = ExtraDataList_GetOrCreateExtraFollowerSwimBreadcrumbs();

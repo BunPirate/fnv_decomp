@@ -359,7 +359,7 @@ void FUN_0092e9f0_shell::MiddleLowProcess_Revert(unsigned int aiFlags, class Mob
 
 struct Inner096a970
 {
-    void NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(MobileObject*, int);
+    void InsertAt(MobileObject*, int);
 };
 struct Host096d450
 {
@@ -374,7 +374,7 @@ struct Host096d450
 void Host096d450::ProcessLists_AddReference(MobileObject* apActor, int aWhichList, bool aiWhere, bool abinsert,
                                MobileObject* apInsertActor)
 {
-    inner.NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(apActor, aWhichList);
+    inner.InsertAt(apActor, aWhichList);
 }
 
 namespace fnv_0092cd90 {

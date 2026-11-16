@@ -1653,7 +1653,7 @@ struct FUN_00c47660
     static void operator delete(void* p);
 };
 // pdb: class BSPortalSharedNode, size 0xf0 (here 0xc4), bases: NiNode, 3 members
-struct BSPortalSharedNode : FUN_00a5ecb0 // src: EXE (old: C4F460_Node)
+struct BSPortalSharedNode : FUN_00a5ecb0 // src: EXE 0x010c21fc (vtable; old: C4F460_Node)
 {
     FUN_00c47660* m_pChildAtom;
     FUN_00c3a220 m_kMemberDescriptor;

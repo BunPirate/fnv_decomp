@@ -9486,7 +9486,7 @@ struct VBase
     virtual void v2();
     virtual float v3(int);
 };
-void __fastcall TESAttributes_SetEndurance(CombatLOS* acValue, float f);
+void __fastcall SetEndurance(CombatLOS* acValue, float f);
 // @fnv 0x008b9ff0
 // src: COMMUNITY 0x008b9ff0
 // pdb: Actor::CalculateCachedEndurance | Actor.obj | retail, vtable slot, high
@@ -9498,7 +9498,7 @@ float __fastcall Actor_CalculateCachedFatigueReturnRate(char* self)
     {
         if ((*(CombatLOS**)(self - 0x40))->BaseProcess_HasCachedValues())
         {
-            TESAttributes_SetEndurance(*(CombatLOS**)(self - 0x40), r);
+            SetEndurance(*(CombatLOS**)(self - 0x40), r);
         }
     }
     return r;
@@ -9517,15 +9517,14 @@ struct BaseProcessCall
 {
     char pad[0x2c];
     CachedValuesCall* m_pCachedValues;
-    void TESAttributes_SetEndurance(float acValue);
+    void SetEndurance(float acValue);
 };
 
 // Stores afEndurance into the cached values object and calls its FUN_008848c0 with 0x80 when that object is present.
 // @fnv 0x008ba050
-// src: XBOX_DEBUG_PDB 0x008ba050
-// pdb: TESAttributes::SetEndurance | TESActorBase.obj | debug, upstream name already matches, high
+// pdb: TESAttributes::SetEndurance | TESActorBase.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: acValue
-void BaseProcessCall::TESAttributes_SetEndurance(float acValue)
+void BaseProcessCall::SetEndurance(float acValue)
 {
     if (m_pCachedValues)
     {
@@ -37234,14 +37233,13 @@ struct FUN_008adc20_Holder
 {
     char _pad[0x94];
     NiPoint3 _v94;
-    void CombatLocation_SetPoint(NiPoint3 a);
+    void SetPoint(NiPoint3 a);
 };
 // Stores the given NiPoint3 into the holder's point field at offset 0x94.
 // @fnv 0x008adc20
-// src: XBOX_DEBUG_PDB 0x008adc20
-// pdb: CombatLocation::SetPoint | CombatState.obj | debug, upstream name already matches, high
+// pdb: CombatLocation::SetPoint | CombatState.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: arPoint, apSpace
-void FUN_008adc20_Holder::CombatLocation_SetPoint(NiPoint3 aPoint)
+void FUN_008adc20_Holder::SetPoint(NiPoint3 aPoint)
 {
     _v94 = aPoint;
 }
@@ -49678,7 +49676,7 @@ struct Loading
 extern Loading* g_TESSaveLoadGame;
 struct Manager
 {
-    void NiD3DShaderConstantMap_RemoveEntry(unsigned int);
+    void RemoveEntry(unsigned int);
 };
 Manager* BSShaderManager_GetAccumulator();
 struct Cal
@@ -49756,7 +49754,7 @@ bool AgentActor::ResetAIProcess()
         process->ClearNode();
         Manager* manager = BSShaderManager_GetAccumulator();
         if (manager)
-            manager->NiD3DShaderConstantMap_RemoveEntry(GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            manager->RemoveEntry(GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
     if (GetCurrentAIProcess())
     {
@@ -49885,7 +49883,7 @@ struct TransitionManager
 };
 struct TransitionAudio
 {
-    void NiD3DShaderConstantMap_RemoveEntry(unsigned int);
+    void RemoveEntry(unsigned int);
 };
 TransitionAudio* __cdecl BSShaderManager_GetAccumulator();
 extern TransitionManager DAT_011e0e80;
@@ -51081,7 +51079,7 @@ bool TransitionActor::UpdateTransition()
         FUN_00881d10();
         TransitionAudio* audio3 = BSShaderManager_GetAccumulator();
         if (audio3)
-            audio3->NiD3DShaderConstantMap_RemoveEntry(GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            audio3->RemoveEntry(GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
     if (FUN_008d8520())
     {
@@ -70540,7 +70538,7 @@ struct FUN_009f66b0 : ::TESForm
     void SetPackageTarget(PackageTargetObjApi*);
     void FUN_00984f60(unsigned int);
     PackageTargetObjApi* FUN_00671d10();
-    void CombatLocation_SetPoint(NiPoint3);
+    void SetPoint(NiPoint3);
 };
 struct PackageProcess_008ad970
 {
@@ -70946,7 +70944,7 @@ void ActorPackage_008ad970::Actor_InitiateSearchForAttacker(::TESForm* apAttacke
     ((PackageProcess_008ad970*)GetProcess())->v0dc();
     ((ActorPackageDispatch_008ad970*)this)->v2f4(p, true, true);
     if (((PointCompare_008ad970*)&apLocation)->FUN_00439090(NiPoint3_ZERO))
-        p->CombatLocation_SetPoint(apLocation);
+        p->SetPoint(apLocation);
     if (abAttacked)
         ((PackageProcess_008ad970*)GetProcess())->v288(this, true);
 }
@@ -79159,7 +79157,7 @@ struct TaskOwner
 {
     void* GetContext();
     void Queue(Task*, int);
-    void Explosion_ProcessTargets();
+    void ProcessTargets();
 };
 List* __fastcall GetList(void*);
 RefHandle* __cdecl Resolve(void*);
@@ -79167,10 +79165,9 @@ Target* __cdecl FindTarget(void*);
 float __cdecl Magnitude(float, float);
 void __cdecl InitTask(Task*, Target*, TaskOwner*, float, Entry*);
 // @fnv 0x008b8f90
-// src: XBOX_RETAIL_PDB 0x008b8f90
-// pdb: Explosion::ProcessTargets | Explosion.obj | retail, upstream name already matches, high
+// pdb: Explosion::ProcessTargets | Explosion.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: plist, ptarget, fimagespacepower, fdistance, fpower, fimagespaceradius, pactor, pmodifier, pbase, fdamage, penchantment, data, kduration, kintensity, kfrequency, UpdateData, apObject
-void TaskOwner::Explosion_ProcessTargets()
+void TaskOwner::ProcessTargets()
 {
     if (GetContext())
     {
@@ -106445,7 +106442,7 @@ class FUN_009eb500_Alarm
     int unk34;
     int unk38;
     FUN_009eb500_Alarm(int aeCrime, AlarmActorView* apTarget, TESObjectREFR* apActor, int apObject, int ainumb, int apownership);
-    void ProcessArray_AddActor(AlarmActorView* pkWitness);
+    void AddActor(AlarmActorView* pkWitness);
     int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     int GetRaceListSize();
 };
@@ -106831,7 +106828,7 @@ void AlarmActorView::Actor_MurderAlarm(TESObjectREFR* apRef)
     g_thePlayer->AddToField(4, 1);
     BSFile_GetDevice()->AddOrCreateExtraItem(pkAlarm, DAT_011de7b8.FUN_00867da0());
     DAT_011e0e80.AddObjectToList(pkAlarm);
-    pkAlarm->ProcessArray_AddActor(this);
+    pkAlarm->AddActor(this);
     Actor_SetFactionsThatCareAboutCrime(this, pkAlarm);
 
     BSSimpleList<Actor*>* pkList = DAT_011e0e80.ProcessLists_SendCrimetoHighList(pkAlarm);
@@ -106843,14 +106840,14 @@ void AlarmActorView::Actor_MurderAlarm(TESObjectREFR* apRef)
             AlarmActorView* pkWitness = (AlarmActorView*)pkList->GetItem();
             if (!pkWitness->IsDisabled(false) && !pkWitness->IsUnconscious())
             {
-                pkAlarm->ProcessArray_AddActor(this);
+                pkAlarm->AddActor(this);
                 if (pkWitness->Actor_SetFactionsThatCareAboutCrime(this, pkAlarm))
                 {
                     SetTlsInt(BGSSaveFormBuffer_GetForm());
                     pkWitness->EffectSetting_SetLight(pkAlarm->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                     int iTopic = GetTopicSubTypeName(2, 0xe);
                     pkWitness->FUN_008d8520()->StartConversation(pkWitness, iTopic, 0, 0, true, 0);
-                    pkAlarm->ProcessArray_AddActor(pkWitness);
+                    pkAlarm->AddActor(pkWitness);
                     if (pkWitness->Actor_GetShouldHelp(this) && !pkWitness->Actor_IsInCombat())
                         pkWitness->ReactToCrime(pkAlarm->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), 0, 0, 0, 0, 0, true, 0);
                     SetTlsInt(0);
@@ -108142,7 +108139,7 @@ class AHHighProcess : public AHProcess
 
 struct AHAnimNode
 {
-    void NiD3DShaderConstantMap_RemoveEntry(void* pszKey);
+    void RemoveEntry(void* pszKey);
 };
 struct AHCombatGroup
 {
@@ -108514,7 +108511,7 @@ bool AHActor::Actor_MoveToLow()
         m_pkProcess->ClearNode();
         AHAnimNode* pkAnim = BSShaderManager_GetAccumulator();
         if (pkAnim)
-            pkAnim->NiD3DShaderConstantMap_RemoveEntry(GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            pkAnim->RemoveEntry(GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
     m_iUnk1ac = 0;
     if (FUN_008d8520())
@@ -119522,7 +119519,7 @@ struct AlarmList
 };
 struct AlarmEventBase
 {
-    void ProcessArray_AddActor(AlarmHost*);
+    void AddActor(AlarmHost*);
     void* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     AlarmHost* FUN_0044ddc0();
     int GetRaceListSize();
@@ -120017,7 +120014,7 @@ void AlarmHost::Actor_AttackAlarm(TESObjectREFR* apRef, bool abMinor, int bModdi
     AlarmList* kSound = DAT_011e0e80.ProcessLists_SendCrimetoHighList(extra);
     AlarmList* flags = kSound;
     BSFile_GetDevice()->AddOrCreateExtraItem(extra, DAT_011de7b8.FUN_00867da0());
-    extra->ProcessArray_AddActor(this);
+    extra->AddActor(this);
     DAT_011e0e80.AddObjectToList(extra);
     if (kSound)
     {
@@ -120032,7 +120029,7 @@ void AlarmHost::Actor_AttackAlarm(TESObjectREFR* apRef, bool abMinor, int bModdi
                     witness->EffectSetting_SetLight(extra->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                     void* topic = GetTopicSubTypeName(2, 13);
                     witness->FUN_008d8520()->Respond(witness, topic, 0, 0, 1, 0);
-                    extra->ProcessArray_AddActor(witness);
+                    extra->AddActor(witness);
                     SetTlsInt(0);
                 }
                 else
@@ -124355,7 +124352,7 @@ extern "C" bool __cdecl Script_SetActionFlag(void*, HExtra*, unsigned int);
 extern "C" int __cdecl BSsprintf(char*, unsigned int, const char*, ...);
 extern "C" bool __cdecl DispatchMessageToSink(const char*, int, const char*, const char*, float, bool);
 extern "C" bool __cdecl CombatController_GetShowVerboseMessages();
-extern "C" const char* __cdecl ActorValue_GetActorValueName(int);
+extern "C" const char* __cdecl FUN_0066e950(int);
 extern "C" void __cdecl Interface_PrintLine(const char*, ...);
 extern "C" void __cdecl FUN_007038b0(HActor*);
 extern "C" int __cdecl BSMAX_00647b70(int, int);
@@ -124541,10 +124538,10 @@ void HActor::Actor_HitMe(HHit* apData, signed char cMeleeEffect)
         {
             if (damage > 0.0)
                 Interface_PrintLine(DAT_01084c68, apData->attacker->TESObjectREFR_GetFullName(), TESObjectREFR_GetFullName(), damage, avo.vf0c(0x10),
-                             ActorValue_GetActorValueName(0x10));
+                             FUN_0066e950(0x10));
             if (limbDamage > 0.0)
                 Interface_PrintLine(DAT_01084c68, apData->attacker->TESObjectREFR_GetFullName(), TESObjectREFR_GetFullName(), limbDamage, avo.vf0c(0x16),
-                             ActorValue_GetActorValueName(0x16));
+                             FUN_0066e950(0x16));
         }
         if (apData->attacker == DAT_011dea3c)
             FUN_007038b0(this);
@@ -130665,7 +130662,7 @@ struct CombatObjectAccess
 };
 struct ActorEventState
 {
-    ActorAux* ExtraDataList_GetMerchantContainer();
+    ActorAux* FUN_00421400();
     void ExtraDataList_RemoveInfoGeneral();
     void RemoveRunOnceItems(unsigned char);
 };
@@ -131171,7 +131168,7 @@ void UpdateActor::Actor_Process(float afDelta)
                 int state = DAT_011de7b8.FUN_00867ef0();
                 if (state == *DAT_011d058c.Setting_Int() || state == *DAT_011d0c3c.Setting_Int())
                 {
-                    ActorAux* listener = BSFile_GetDevice()->ExtraDataList_GetMerchantContainer();
+                    ActorAux* listener = BSFile_GetDevice()->FUN_00421400();
                     if (listener)
                         ((ActorAuxFn)(*(void***)listener)[0x208 / 4])(listener, !listener->TESObjectREFR_GetRespawn());
                 }

@@ -36,7 +36,7 @@ public:
     unsigned int GetModelLength() const;
     void InitializeComponent();
     void BaseFormRecord(BaseFormComponent* apCopyFC);
-    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int chunk, unsigned int texChunk);
+    void WriteToBuffer(unsigned int chunk, unsigned int texChunk);
     void WriteToStream();
     void UnpackTextureSwapChunkData(void* buffer, unsigned int size, unsigned int version);
     unsigned int TESModel_GetSkinFlags();

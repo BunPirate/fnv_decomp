@@ -59,8 +59,8 @@ struct ShapeData
     int m_iThirdValue;
     int m_iFourthElementInteger;
     void _SharedShapeData_recursivelyParseShapeReferences(int);
-    void removeSingleReferencedShapeData();
-    ShapeData* SharedShapeData_ctor(ShapeRefArray* rigidBodies);
+    void _SharedShapeData_removeSingleReferencedShapeData();
+    ShapeData* _SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies);
 };
 struct FUN_00d74980_Class
 {
@@ -80,7 +80,7 @@ struct FUN_00d74420_Context
     int m_kPointB;  // +0x04
     int m_iThirdValue;  // +0x08, initialized to 0x80000000
     void _SharedShapeData_recursivelyParseShapeReferences(int shape);
-    void removeSingleReferencedShapeData();
+    void _SharedShapeData_removeSingleReferencedShapeData();
     void SharedShapeData_dtor();
 };
 int hkpShape_ProcessEntries_00d739f0(int a1, int a2, FUN_00d74420_Context* ctx, int a3);

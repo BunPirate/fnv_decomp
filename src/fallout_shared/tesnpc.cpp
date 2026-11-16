@@ -2521,7 +2521,7 @@ TESForm* FUN_006046a0_shell::GetHeadPartForm()
 struct SaveField
 {
     void Save_00487010();
-    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int, unsigned int);
+    void WriteToBuffer(unsigned int, unsigned int);
     void DestroySoundHandles();
     void TESRaceForm_Save();
     void TESSpellList_Save();
@@ -2582,7 +2582,7 @@ void NPCSerializer::WriteToStream()
     unsigned int count;
     BeginFormRecord();
     ((SaveField*)((char*)this + 0xd0))->Save_00487010();
-    ((SaveField*)((char*)this + 0xdc))->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    ((SaveField*)((char*)this + 0xdc))->WriteToBuffer(0x4c444f4d, 0x54444f4d);
     ((SaveField*)((char*)this + 0x30))->DestroySoundHandles();
     ((SaveField*)((char*)this + 0x10c))->TESRaceForm_Save();
     ((SaveField*)((char*)this + 0x7c))->TESSpellList_Save();

@@ -7083,7 +7083,7 @@ void AddonOwner::TES_PreloadAddonNodes()
         return;
     AutoMemContext count(7, true, DAT_01017874, 7054);
     queuedFile.AssignTaskReference(new QueuedFile(5));
-    unsigned int context = g_dataHandler->D3DArrayTexture_GetArraySize();
+    unsigned int context = g_dataHandler->GetAddonNodeCount();
     for (unsigned int i = 0; i < context; ++i)
     {
         BGSAddonNode* addon = g_dataHandler->GetAddonNodeByIndex(i);

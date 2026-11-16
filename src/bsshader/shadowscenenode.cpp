@@ -749,11 +749,10 @@ namespace fnv_00b9dda0 { void __fastcall ShadowSceneLight_SetLight(ShadowSceneLi
 extern NiColor DAT_011f4998;
 
 // @fnv 0x00b5aac0
-// src: XBOX_RETAIL_PDB 0x00b5aac0
-// pdb: ShadowSceneNode::SetSunLight | ShadowSceneNode.obj | retail, upstream name already matches, high
+// pdb: ShadowSceneNode::SetSunLight | ShadowSceneNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apLight
 // pdb locals: pdefaultsun
-void __fastcall ShadowSceneNode_SetSunLight(ShadowSceneNode* self, int, NiDirectionalLight* apLight)
+void __fastcall SetSunLight(ShadowSceneNode* self, int, NiDirectionalLight* apLight)
 {
     if (self->pSunLight)
     {
@@ -4744,11 +4743,10 @@ struct MyShadowList
 
 // Reorders shadow lights by fade state, moving nodes before the active or fading-in fence.
 // @fnv 0x00b5cde0
-// src: XBOX_RETAIL_PDB 0x00b5cde0
-// pdb: ShadowSceneNode::SortShadowLights | ShadowSceneNode.obj | retail, upstream name already matches, high
+// pdb: ShadowSceneNode::SortShadowLights | ShadowSceneNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apPlayerShadow
 // pdb locals: pscenelight, ilightIter, icurLightIter
-void __fastcall ShadowSceneNode_SortShadowLights(ShadowSceneNode* self, int, ShadowSceneLight* apLight)
+void __fastcall SortShadowLights(ShadowSceneNode* self, int, ShadowSceneLight* apLight)
 {
     MyShadowList* pShadowList = reinterpret_cast<MyShadowList*>(&self->lShadowLightList);
 

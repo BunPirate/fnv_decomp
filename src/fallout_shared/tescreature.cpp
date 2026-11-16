@@ -1077,7 +1077,7 @@ void TESCreature::SaveForm()
 {
     BeginFormRecord();
     TESFullName::Save_00487010();
-    TESModel::BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    TESModel::WriteToBuffer(0x4c444f4d, 0x54444f4d);
     TESSpellList::TESSpellList_Save();
     ((Sub70_5f7c20*)((char*)this + 0x70))->FUN_0047bd70();
     TESModelList::CopyModelListToBuffer(0x5a46494e, 0x5446494e);
@@ -1953,7 +1953,7 @@ void TESCreature::CopyFrom(const TESForm* apCopy)
     {
         SetSoundCreature(src2->GetSoundCreature());
     }
-    *(unsigned int*)((char*)this + 0x154) = src2->BGSSaveLoadFile_GetFilePosition();
+    *(unsigned int*)((char*)this + 0x154) = src2->FUN_009c0070();
     SetImpactDataSet(src2->GetImpactDataSet());
     FUN_005f8bd0(src2->GetField158());
     SetCombatStyle(((const TESCreature*)src2)->GetCombatStyle());

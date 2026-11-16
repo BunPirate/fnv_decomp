@@ -559,16 +559,15 @@ struct FUN_004891d0_cls
     int unk08;
     FUN_004891d0_hash m_kObjectMap;
     unsigned int FUN_0048cee0();
-    void BSSendSceneGraphCommand_WriteToBuffer(char* pcBuffer, void* pkOut);
+    void WriteToBuffer(char* pcBuffer, void* pkOut);
 };
 
 // When FUN_0048cee0() is nonzero, copies GetPath() to pcBuffer and passes pkOut and GetPath() to m_kObjectMap.FUN_008d0600.
 // @fnv 0x004891d0
-// src: XBOX_DEBUG_PDB 0x004891d0
-// pdb: BSSendSceneGraphCommand::WriteToBuffer | BSSendSceneGraphCommand.obj | debug, upstream name already matches, high
+// pdb: BSSendSceneGraphCommand::WriteToBuffer | BSSendSceneGraphCommand.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apSrc, apDest, aiWrite, apiAvailable
 // pdb locals: pcurrentPos, iwritten
-void FUN_004891d0_cls::BSSendSceneGraphCommand_WriteToBuffer(char* pcBuffer, void* pkOut)
+void FUN_004891d0_cls::WriteToBuffer(char* pcBuffer, void* pkOut)
 {
     if (FUN_0048cee0())
     {

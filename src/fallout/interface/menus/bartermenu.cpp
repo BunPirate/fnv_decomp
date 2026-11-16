@@ -1514,7 +1514,7 @@ extern PlayerCharacter* g_player_011dea3c;
 
 struct TESQuestStageList
 {
-    TESObjectREFR* ExtraDataList_GetMerchantContainer();
+    TESObjectREFR* FUN_00421400();
 };
 
 struct ItemTransferManager
@@ -1546,7 +1546,7 @@ typedef bool (BSSoundHandle::*BarterSoundPlay)();
 void BarterMenu::CompleteTransaction()
 {
     TESObjectREFR* pTarget3 =
-        reinterpret_cast<fnv_0072fd10::TESQuestStageList*>(m_merchant->BSFile_GetDevice())->ExtraDataList_GetMerchantContainer() ? reinterpret_cast<fnv_0072fd10::TESQuestStageList*>(m_merchant->BSFile_GetDevice())->ExtraDataList_GetMerchantContainer() : m_merchant;
+        reinterpret_cast<fnv_0072fd10::TESQuestStageList*>(m_merchant->BSFile_GetDevice())->FUN_00421400() ? reinterpret_cast<fnv_0072fd10::TESQuestStageList*>(m_merchant->BSFile_GetDevice())->FUN_00421400() : m_merchant;
     InventoryStackRecord* pWeapon3 = fnv_0072fd10::g_player_011dea3c->GetProcess()->GetCurrentAmmo();
 
     for (BSSimpleList<InventoryStackRecord*>* pNode6 = &m_kMerchantItems; pNode6 && pNode6->GetItem(); pNode6 = pNode6->GetNext())

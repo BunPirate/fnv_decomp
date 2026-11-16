@@ -246,7 +246,7 @@ struct StatisticsResult
     float rate;
     void LogStatistics();
 };
-__declspec(noinline) void hkaTrackAnalysis_calcDynamicStatsQsTransform(const unsigned short* mask, unsigned int numTracks, StatisticsResult* out)
+__declspec(noinline) void hkaTrackAnalysis_calcDynamicStatsQsTransform(const unsigned short* mask, unsigned int numTracks, StatisticsResult* out) // src: XBOX_RETAIL_PDB 0x00e4e570
 {
     out->field7 = 0;
     out->field8 = 0;

@@ -665,7 +665,7 @@ inline void DestroyPointerMap(NiTPointerMap<TKEY, TVAL>& map, void* derivedVtabl
 // pdb locals: kPos, pkSet, uiIndex, pkChip, i
 // The cleanup body keeps the original member-call convention without a local
 // copy of the group.  The shared base destructor completes its destruction.
-void __fastcall NiDynamicGeometryGroup_dtor(NiDynamicGeometryGroup* group, void*)
+void __fastcall NiDynamicGeometryGroup_dtor(NiDynamicGeometryGroup* group, void*) // src: XBOX_RETAIL_PDB 0x00e95880
 {
     *reinterpret_cast<void**>(group) = &DAT_010f10c4;
     unsigned int key;

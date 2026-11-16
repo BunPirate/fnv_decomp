@@ -433,7 +433,7 @@ struct FUN_0083ec30_topic : MenuTopic
 };
 struct FUN_0083ec30_mgr : TopicMenuController
 {
-    void MenuTopicManager_PopTopicList();
+    void PopTopicList();
     void MenuTopicManager_ClearTopicList(BSSimpleList<MenuTopic*>*, bool);
 };
 
@@ -448,7 +448,7 @@ void FUN_0083ec30_shell::MenuTopicManager_LoadNextTopicList()
         pMenuTopicEntry->GetTopicInfo()->AddTopicList();
     if (m_bControllerFlag && pMenuTopicEntry && !pMenuTopicEntry->IsChoice())
     {
-        ((FUN_0083ec30_mgr*)this)->MenuTopicManager_PopTopicList();
+        ((FUN_0083ec30_mgr*)this)->PopTopicList();
         m_bControllerFlag = false;
     }
     else if (pMenuTopicEntry && !pMenuTopicEntry->m_bIsRemappedRumor)
@@ -490,14 +490,13 @@ int TESTopic_GetPriority_GetUnk28_CompareTopicPrioritiesDescending(FUN_0083f110_
 struct FUN_0083f1d0_t : TopicMenuController
 {
     void MenuTopicManager_ClearTopicList(BSSimpleList<MenuTopic*>*, bool);
-    BSSimpleList<MenuTopic*>* MenuTopicManager_PopTopicList();
+    BSSimpleList<MenuTopic*>* PopTopicList();
 };
 
 // @fnv 0x0083f1d0
-// src: XBOX_RETAIL_PDB 0x0083f1d0
-// pdb: MenuTopicManager::PopTopicList | MenuTopic.obj | retail, upstream name already matches, high
+// pdb: MenuTopicManager::PopTopicList | MenuTopic.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: pkilllist
-BSSimpleList<MenuTopic*>* FUN_0083f1d0_t::MenuTopicManager_PopTopicList()
+BSSimpleList<MenuTopic*>* FUN_0083f1d0_t::PopTopicList()
 {
     if (m_kTopicListStack.GetNext())
     {
@@ -1476,7 +1475,7 @@ void ResponseFillOwner::MenuTopic_FillResponseList_0083df80(TESQuest* apQuest, T
     i = 0;
     while (presponse)
     {
-        if (presponse->AngleSinCosArc_GetLength() && (!m_bIsRemappedRumor || i == 0))
+        if (presponse->GetLength() && (!m_bIsRemappedRumor || i == 0))
         {
             ::DialogueResponse* pMenuResponse = reinterpret_cast< ::DialogueResponse*>(
                 new DialogueResponse(apQuest, apTopic, apInfo, apSpeaker, presponse));

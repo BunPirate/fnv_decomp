@@ -1229,7 +1229,7 @@ void FUN_004d5c60(int);
 int BSStringT_char_SPrintF(StrMem*, const char*, ...);
 namespace ActorValue {
 bool IsSkill(Index);
-const char* ActorValue_GetActorValueName(Index);
+const char* GetActorValueName(Index);
 }
 struct SkillBookEffect552
 {
@@ -1262,7 +1262,7 @@ bool SkillBookEffect552::TESObjectBOOK_Read(TESObjectREFR* apActionRef)
             ApplyPerkModifiers(11, g_thePlayer, &amount5);
             g_thePlayer->ForceActorValue(skill2, amount5, 0);
             FUN_004d5c60(15);
-            BSStringT_char_SPrintF(&message, g_011d49c0.FUN_00403df0(), ActorValue::ActorValue_GetActorValueName(skill2),
+            BSStringT_char_SPrintF(&message, g_011d49c0.FUN_00403df0(), ActorValue::GetActorValueName(skill2),
                          static_cast<int>(amount5));
             QueueUIMessage(message.Modelloader_GetReferencedThis(), 1, 0, 0, DAT_010162c0, false);
             applied = true;

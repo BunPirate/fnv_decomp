@@ -362,7 +362,7 @@ void WeatherSave::TESWeather_Save()
                                    0x4d414e45, 0x4d414e47, 0x4d414e4a, 0x4d414e4b};
     for (int i = 0; i < iNumCloudLayers; ++i)
         cloudTexture[i].Save(auiChunkIds[i]);
-    precipNIF.BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    precipNIF.WriteToBuffer(0x4c444f4d, 0x54444f4d);
     TESForm_AddChunk_00485910(0x4d414e4c, iNumCloudLayers);
     TESForm_AddChunkArray(0x4d414e4f, ucCloudLayerSpeed, 4);
     TESForm_AddChunkArray_00485710(0x4d414e50, &uiCloudColorData[0][0], 24);

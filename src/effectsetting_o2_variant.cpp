@@ -61,7 +61,7 @@ class BEB3890Base
 };
 
 // pdb: class NiBoxCapsuleIntersector, size 0x50, bases: NiIntersector, 4 members
-class NiBoxCapsuleIntersector : public BEB3890Base // src: EXE (old: FUN_00eb3890_cls)
+class NiBoxCapsuleIntersector : public BEB3890Base // src: EXE 0x010f1af4 (vtable; old: FUN_00eb3890_cls)
 {
   public:
     NiBoxCapsuleIntersector(BEB3890Body* kBox, BEB3890Body* kCapsule, float fMaxTime, float fDerivativeTimeStep, float fPseudodistanceThreshold, int iMaxIterations);

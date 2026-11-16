@@ -1260,7 +1260,7 @@ unsigned int FUN_0098f7b0_Class::BSSimpleArray_CombatTarget_1024_AddUninitialize
     return m_08 - 1;
 }
 
-extern "C" int __cdecl CombatGroupStrategy_CreateCombatGroupStrategy(int aeCombatGroupStrategy);
+extern "C" int __cdecl CreateCombatGroupStrategy(int aeCombatGroupStrategy);
 extern int DAT_011f18b4[4];
 // Calls CreateCombatGroupStrategy for each index 0..3 and stores the results into DAT_011f18b4.
 // @fnv 0x00990070
@@ -1271,7 +1271,7 @@ void __cdecl CombatGroupStrategy_InitGroupStrategies()
 {
     for (unsigned int i = 0; i < 4; ++i)
     {
-        int v = CombatGroupStrategy_CreateCombatGroupStrategy(i);
+        int v = CreateCombatGroupStrategy(i);
         DAT_011f18b4[i] = v;
     }
 }
@@ -4884,10 +4884,9 @@ struct CombatGroupStrategy1 : CombatGroupStrategy
 
 // Creates and returns a combat group strategy object for the given type, warning and returning 0 for unknown types.
 // @fnv 0x0098fdf0
-// src: XBOX_DEBUG_PDB 0x0098fdf0
-// pdb: CombatGroupStrategy::CreateCombatGroupStrategy | CombatGroupStrategy.obj | debug, upstream name already matches, high
+// pdb: CombatGroupStrategy::CreateCombatGroupStrategy | CombatGroupStrategy.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: aeCombatGroupStrategy
-int __cdecl CombatGroupStrategy_CreateCombatGroupStrategy(unsigned int aeCombatGroupStrategy)
+int __cdecl CreateCombatGroupStrategy(unsigned int aeCombatGroupStrategy)
 {
     switch (aeCombatGroupStrategy)
     {

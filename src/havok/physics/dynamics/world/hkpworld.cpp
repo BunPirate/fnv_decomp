@@ -1095,7 +1095,7 @@ int CpuObject::GetValue()
 }  // namespace fnv_00c91110
 
 struct PendingOperations {
-    void __thiscall hkpWorldOperationQueue_queueOperation();
+    void __thiscall FUN_00cf7690();
 };
 
 struct WorldWithPending : hkpWorld {
@@ -1106,7 +1106,7 @@ struct WorldWithPending : hkpWorld {
 // src: XBOX_PDB 0x00c91160
 void __thiscall WorldWithPending::hkpWorld_queueOperation()
 {
-    ((PendingOperations*)m_pendingOperations)->hkpWorldOperationQueue_queueOperation();
+    ((PendingOperations*)m_pendingOperations)->FUN_00cf7690();
 }
 
 struct Target

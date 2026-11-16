@@ -14,7 +14,7 @@ class ScriptLocals;
 #include "Stack.h"
 
 // pdb: class CExpression, size 0x710 (here 0x70c), 5 members
-class CExpression // src: XBOX_RETAIL_PDB (old: ExpressionEvaluator)
+class CExpression // src: XBOX_RETAIL_PDB 0x00593500 (first of 5 linked methods; old: ExpressionEvaluator)
 {
 public:
     EXPRESSION_ERROR m_eExpressionError;

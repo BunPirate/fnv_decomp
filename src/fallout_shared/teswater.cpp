@@ -267,9 +267,9 @@ int TES::FindCellAtPosition(const NiPoint3* apPos, bool abAllowPartialRemovals)
     InitFromMatrix();
     InitSoundGrid();
     DAT_011c9618->PostProcessCompletedTasks();
-    int iQueued = DAT_011c9618->TryCancelTasks();
+    int iQueued = DAT_011c9618->ExteriorCellLoader_TryCancelTasks();
     if (iQueued)
-        DAT_011c9618->WaitForTasks();
+        DAT_011c9618->ExteriorCellLoader_WaitForTasks();
     if (!IsCellInterior() || bIsLoading)
     {
         if (*DAT_011c3d40.Bool() && GetInteriorBufferCount(true))

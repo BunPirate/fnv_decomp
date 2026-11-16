@@ -6981,7 +6981,7 @@ struct H
     void UpdateState_008153b0();
     void FUN_0092ec40();
     void* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    void NiD3DShaderConstantMap_RemoveEntry(void*);
+    void RemoveEntry(void*);
     int FUN_0045cd60();
     void Actor_UnloadPermanentMagic();
     void Actor_CheckSummonedActor();
@@ -7184,7 +7184,7 @@ FUN_0087dcb0::~FUN_0087dcb0()
                         void* p = BSShaderManager_GetAccumulator();
                         if (p)
                         {
-                            ((H*)p)->NiD3DShaderConstantMap_RemoveEntry(((H*)this)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                            ((H*)p)->RemoveEntry(((H*)this)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                         }
                         ((H*)this)->Actor_UnloadPermanentMagic();
                     }

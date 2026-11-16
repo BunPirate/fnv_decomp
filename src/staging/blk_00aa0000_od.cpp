@@ -567,15 +567,14 @@ struct FUN_00abbf00_Class
 {
     int m0;
     int m4;
-    char TESRegionPointList_ScaleResult_Matches(FUN_00abbf00_Class* other);
+    char Matches(FUN_00abbf00_Class* other);
 };
 
 // Calls FUN_00ec7c56 unless m0 is nonzero and equal to other's m0, then returns whether m4 equals other's m4.
 // @fnv 0x00abbf00
-// src: XBOX_RETAIL_PDB 0x00abbf00
-// pdb: TESRegionPointList::ScaleResult::Matches | TESRegionPointList.obj | retail, upstream name already matches, high
+// pdb: TESRegionPointList::ScaleResult::Matches | TESRegionPointList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apPoint, afDistance
-char FUN_00abbf00_Class::TESRegionPointList_ScaleResult_Matches(FUN_00abbf00_Class* other)
+char FUN_00abbf00_Class::Matches(FUN_00abbf00_Class* other)
 {
     if (!static_cast<bool>(static_cast<int>(this->m0 != 0)) ||
         !static_cast<bool>(static_cast<int>(this->m0 == other->m0)))

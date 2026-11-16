@@ -483,14 +483,13 @@ struct S7010
 };
 struct FUN_0083e0a0_Class
 {
-    unsigned int AngleSinCosArc_GetLength();
+    unsigned int GetLength();
 };
 // @fnv 0x0083e0a0
-// src: XBOX_RETAIL_PDB 0x0083e0a0
-// pdb: AngleSinCosArc::GetLength | NavMeshPOVSearch.obj | retail, upstream name already matches, high
+// pdb: AngleSinCosArc::GetLength | NavMeshPOVSearch.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: afRadius
 // pdb locals: fdeltaAngle, deltaAngle
-unsigned int FUN_0083e0a0_Class::AngleSinCosArc_GetLength()
+unsigned int FUN_0083e0a0_Class::GetLength()
 {
     return ((S7010*)((char*)this + 0x18))->Length();
 }
@@ -3717,7 +3716,7 @@ class FUN_0081dd00 : public PrimaryBase8229, public SecondaryBase8229
 };
 
 // pdb: class MagicSprayProjectile, size 0xa8 (here 0x1c), bases: MagicProjectile, 0 members
-class MagicSprayProjectile : public FUN_0081dd00 // src: EXE (old: FUN_00822920)
+class MagicSprayProjectile : public FUN_0081dd00 // src: EXE 0x0107b8b8 (vtable; old: FUN_00822920)
 {
   public:
     MagicSprayProjectile(int apCaster, int apSpell, int apDominantEffect, int apAVEffect, NiPoint3 aOrigin, NiPoint3 aRotation);

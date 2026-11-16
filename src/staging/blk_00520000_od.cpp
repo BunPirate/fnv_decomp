@@ -1051,10 +1051,10 @@ struct Obj20_cls
 extern IOManager* DAT_01202d98;
 
 // @fnv 0x005282d0
-// src: XBOX_RETAIL_PDB 0x005282d0 (was COMMUNITY)
-// pdb: ExteriorCellLoader::WaitForTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// src: COMMUNITY 0x005282d0
+// pdb: ExteriorCellLoader::WaitForTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: iterator, ikey, sptask
-void ExteriorCellLoader::WaitForTasks()
+void ExteriorCellLoader::ExteriorCellLoader_WaitForTasks()
 {
     Local_cls a;
     while (!a.LockFreeMap_char_const_Model_LockFreeMapIterator_GetFinished())
@@ -1905,10 +1905,10 @@ struct Head175
     void* Modelloader_GetReferencedThis();
 };
 // @fnv 0x005281f0
-// src: XBOX_RETAIL_PDB 0x005281f0 (was COMMUNITY)
-// pdb: ExteriorCellLoader::TryCancelTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// src: COMMUNITY 0x005281f0
+// pdb: ExteriorCellLoader::TryCancelTasks | ExteriorCellLoader.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: iterator, iuncanceledTasks, ikey, sptask
-int ExteriorCellLoader::TryCancelTasks()
+int ExteriorCellLoader::ExteriorCellLoader_TryCancelTasks()
 {
     int count = 0;
     QueryState175 query;

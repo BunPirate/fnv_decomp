@@ -330,7 +330,7 @@ struct FUN_00485e00_shell
 extern "C" unsigned char __cdecl TESForm_QEndianSwapOnSave();
 struct FUN_004891d0_shell
 {
-    void __thiscall BSSendSceneGraphCommand_WriteToBuffer(unsigned int a, unsigned int b);
+    void __thiscall WriteToBuffer(unsigned int a, unsigned int b);
 };
 struct FUN_0050a1d0_shell
 {
@@ -342,7 +342,7 @@ struct FUN_0050a1d0_shell
 void FUN_0050a1d0_shell::TESGrass_Save()
 {
     ((FUN_004855a0*)this)->M();
-    ((FUN_004891d0_shell*)((char*)this + 0x30))->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    ((FUN_004891d0_shell*)((char*)this + 0x30))->WriteToBuffer(0x4c444f4d, 0x54444f4d);
     if (TESForm_QEndianSwapOnSave())
         ((TESGrass__GRASS_DATA*)((char*)this + 0x48))->TESGrass_GRASS_DATA_Endian();
     ((FUN_00485e00_shell*)this)->TESForm___SaveData((int)((char*)this + 0x48), 0x20);

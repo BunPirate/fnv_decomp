@@ -151,7 +151,7 @@ struct ByteVec
     int i8;
     char* pFirst;
     char* pLast;
-    unsigned char& D3DXShader_CFragmentRegisterAllocator_GetElement(unsigned szName);
+    unsigned char& FUN_00b15170(unsigned szName);
 };
 struct Parser
 {
@@ -251,10 +251,10 @@ BranchQ* SIdvBranchInfo_Parse(Parser* cFile)
             pBranch->afF[4] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x177f:
-            pBranch->bA = cFile->kData.D3DXShader_CFragmentRegisterAllocator_GetElement(cFile->uiPos++) != 0;
+            pBranch->bA = cFile->kData.FUN_00b15170(cFile->uiPos++) != 0;
             break;
         case 0x1780:
-            pBranch->bB = cFile->kData.D3DXShader_CFragmentRegisterAllocator_GetElement(cFile->uiPos++) != 0;
+            pBranch->bB = cFile->kData.FUN_00b15170(cFile->uiPos++) != 0;
             break;
         default:
             throw FUN_00b09480("malformed general branch information", false);

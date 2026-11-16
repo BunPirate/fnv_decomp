@@ -425,7 +425,7 @@ struct FUN_00474a00_shell
 {
     void* p;
     void* q;
-    void* BGSAmmoForm_GetAmmoForm();
+    void* GetAmmoForm();
 };
 struct QueueObj
 {

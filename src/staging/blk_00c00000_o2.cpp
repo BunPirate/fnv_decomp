@@ -4364,15 +4364,14 @@ class C1A3B0Object
     int unkC4;
     C1A3B0Bound m_kWorldBound;
 
-    void NiAVObject_SetWorldBound(C1A3B0Bound kBound);
+    void SetWorldBound(C1A3B0Bound kBound);
 };
 
 // Stores kBound as the world bound, lazily allocates m_pkBound if null, then copies kBound's center and radius into m_pkBound.
 // @fnv 0x00c1a3b0
-// src: XBOX_DEBUG_PDB 0x00c1a3b0
-// pdb: NiAVObject::SetWorldBound | NiPSysBoundUpdateModifier.obj | debug, upstream name already matches, high
+// pdb: NiAVObject::SetWorldBound | NiPSysBoundUpdateModifier.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: kBound
-void C1A3B0Object::NiAVObject_SetWorldBound(C1A3B0Bound kBound)
+void C1A3B0Object::SetWorldBound(C1A3B0Bound kBound)
 {
     m_kWorldBound = kBound;
     if (!m_pkBound)
@@ -5820,7 +5819,7 @@ struct RenderManager
 extern RenderManager* DAT_011f91ac;
 void __cdecl BSRenderedTexture_Start(unsigned int, int);
 void __cdecl BSRenderedTexture_StartOffscreen(unsigned int, NiRenderTargetGroup*);
-NiRenderTargetGroup* __cdecl Conversation_GetCurrentItem();
+NiRenderTargetGroup* __cdecl GetCurrentItem();
 void __cdecl FUN_00b6b790();
 struct FUN_00ba8cd0
 {
@@ -5880,7 +5879,7 @@ void RenderSecondary::RenderSecondaryGeometry(RenderGeometry* geometry, int unus
     if (texture.m_pObject && restore)
     {
         NiRenderTargetGroup* group = DAT_011f4748->GetCurrentGroup();
-        if (Conversation_GetCurrentItem() != group)
+        if (GetCurrentItem() != group)
             FUN_00b6b790();
     }
     if (settings->flags & 1)

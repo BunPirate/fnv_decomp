@@ -375,7 +375,7 @@ struct EntrySet
     void Add(ShaderEntry* const& p);
 };
 
-struct NiGPUProgramDesc : NiRefObject // src: EXE (old: ShaderGroup)
+struct NiGPUProgramDesc : NiRefObject // src: EXE 0x010f0134 (vtable; old: ShaderGroup)
 {
     ShaderPtr m_pGeometryShader;
     EntrySet m_kEntries;

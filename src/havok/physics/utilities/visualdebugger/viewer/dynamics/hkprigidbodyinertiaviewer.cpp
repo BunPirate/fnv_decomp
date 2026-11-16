@@ -369,7 +369,7 @@ public:
 };
 
 // pdb: class hkpRigidBodyInertiaViewer, size 0x48, bases: hkpWorldViewerBase, hkpEntityListener, hkpWorldPostSimulationListener, 2 members
-class hkpRigidBodyInertiaViewer : public D671F0Base, public D671F0ListenerA, public D671F0ListenerB { // src: EXE (old: FUN_00d671f0)
+class hkpRigidBodyInertiaViewer : public D671F0Base, public D671F0ListenerA, public D671F0ListenerB { // src: EXE 0x010d1d24 (vtable; old: FUN_00d671f0)
 public:
     hkpRigidBodyInertiaViewer(void* contexts);
 

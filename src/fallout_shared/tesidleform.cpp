@@ -625,7 +625,7 @@ struct FUN_00485680
 
 struct FUN_004891d0_obj
 {
-    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int, unsigned int);
+    void WriteToBuffer(unsigned int, unsigned int);
 };
 
 struct Idle_008b2010
@@ -660,7 +660,7 @@ void FUN_005fea50_shell::TESIdleForm_Save()
 {
     reinterpret_cast<FUN_004855a0*>(this)->M();
 
-    reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<char*>(this) + 0x18)->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<char*>(this) + 0x18)->WriteToBuffer(0x4c444f4d, 0x54444f4d);
 
     reinterpret_cast<TESConditionSave_tesidleform*>(reinterpret_cast<TESTopicInfo*>(this)->GetAddTopicList())->Save();
 

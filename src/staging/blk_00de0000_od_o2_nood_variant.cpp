@@ -2107,7 +2107,7 @@ const void* __cdecl getVtablehkpVehicleInstance()
     return *reinterpret_cast<const void**>(&kObject);
 }
 
-class __declspec(align(16)) hkaBoneAttachment // src: EXE (old: S00dfe5e0_Object)
+class __declspec(align(16)) hkaBoneAttachment // src: EXE 0x010e587c (vtable; old: S00dfe5e0_Object)
 {
   public:
     hkaBoneAttachment(FinishingFlag flag)

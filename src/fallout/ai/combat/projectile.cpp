@@ -3011,18 +3011,18 @@ extern float DAT_0108e2b0;
 struct FUN_009a52f0_shell
 {
     void AddOrUpdateItem(ProjectileCalls*, float, float, float, float);
-    void UpdateExplosion(ProjectileCalls*);
+    void CombatThreatMap_AddThreat(ProjectileCalls*);
 };
 // Checks the projectile's explosion source and, when its radius and length pass the settings thresholds, computes elapsed/duration and calls AddOrUpdateItem.
 // @fnv 0x009a52f0
-// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x009a54a0
-// pdb params (of the disputed candidate, unverified): apProjectile
-// pdb locals (of the disputed candidate, unverified): pexplosion, pprojectileBase, fdamage, fradius, fendTime, fstartTime
-void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* projectile)
+// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | retail, object-file run extension, high; the overload AddThreat(Projectile*) at 0x82718118 (the link's own address, 0x82717810, is the 5-argument overload next to it); 0x009a54a0 is AddThreat(TESObjectREFR*, BGSExplosion*, float)
+// pdb params: apProjectile
+// pdb locals: pexplosion, pprojectileBase, fdamage, fradius, fendTime, fstartTime
+void FUN_009a52f0_shell::CombatThreatMap_AddThreat(ProjectileCalls* apProjectile) // src: XBOX_RETAIL_PDB 0x009a52f0
 {
-    if (projectile->Projectile_IsFlagSet(1))
+    if (apProjectile->Projectile_IsFlagSet(1))
         return;
-    ProjectileBaseCalls* base = projectile->FUN_004181e0();
+    ProjectileBaseCalls* base = apProjectile->FUN_004181e0();
     ExplosionSource* source = base->BGSProjectile_GetExplosion();
     if (base->GetHasExplosion() && source)
     {
@@ -3037,9 +3037,9 @@ void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* projectile)
                 float duration = DAT_0108e2b0;
                 if (base->FUN_00975300())
                 {
-                    if (projectile->GetFieldE4Float() != 3.4028234663852886e+38)
+                    if (apProjectile->GetFieldE4Float() != 3.4028234663852886e+38)
                     {
-                        duration = projectile->GetFieldE4Float() + 1.0;
+                        duration = apProjectile->GetFieldE4Float() + 1.0;
                         if (duration > *setting11ceabc.Float())
                             elapsed = duration - *setting11ceabc.Float();
                     }
@@ -3047,7 +3047,7 @@ void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* projectile)
                         duration = *setting11cf764.Float();
                 }
                 if (duration > 0.0)
-                    AddOrUpdateItem(projectile, length, elapsed, duration, radius);
+                    AddOrUpdateItem(apProjectile, length, elapsed, duration, radius);
             }
         }
     }
@@ -4016,7 +4016,7 @@ struct P062Queue
 extern P062Queue* DAT_011f1958;
 struct P062Queued
 {
-    void UpdateExplosion();
+    void CombatThreatMap_AddThreat();
 };
 
 // @fnv 0x009bca60
@@ -4152,7 +4152,7 @@ P062Object* __cdecl Projectile_Launch(P062Ammo* apProjectileBase, P062Object* ap
         DAT_011dea10->FUN_00458e20(geometry, *DAT_011f210c.Setting_Float_00403e20());
     }
     if (projectile)
-        ((P062Queued*)DAT_011f1958->FUN_00825c00(projectile))->UpdateExplosion();
+        ((P062Queued*)DAT_011f1958->FUN_00825c00(projectile))->CombatThreatMap_AddThreat();
     return projectile;
 }
 
@@ -5182,7 +5182,7 @@ extern Setting DAT_011ced88;
 struct UIController
 {
     UIController* FUN_00825c00(GameScreen*);
-    void UpdateExplosion();
+    void CombatThreatMap_AddThreat();
 };
 extern UIController* DAT_011f1958;
 int __cdecl GetTopicSubTypeName(int, int);
@@ -5204,7 +5204,7 @@ void GameScreen::Projectile_UpdateInInventory()
                 if (!Projectile_IsFlagSet(0x800))
                 {
                     Projectile_SetFlag(0x800, 1);
-                    DAT_011f1958->FUN_00825c00(this)->UpdateExplosion();
+                    DAT_011f1958->FUN_00825c00(this)->CombatThreatMap_AddThreat();
                     if (Projectile_GetDesiredTarget())
                     {
                         if (Projectile_GetDesiredTarget()->CanShow())
@@ -5864,7 +5864,7 @@ struct ProjectileHit
     NiPoint3 position;
     bool Projectile_IsFlagSet(int);
     RefPair* MiddleHighProcess_GetCurrentFurniture();
-    int BGSSaveLoadFile_GetFilePosition();
+    int FUN_009c0070();
     void SetField(int);
     float FUN_00885bd0();
     Creature* Sky_GetMode();
@@ -5969,7 +5969,7 @@ bool ProjectileHit::ProcessHit(Obj* apCollidee, NiPoint3 const& aContactPoint, N
         ProjectileHit* projectile = this;
         if (projectile)
         {
-            int count = projectile->BGSSaveLoadFile_GetFilePosition();
+            int count = projectile->FUN_009c0070();
             if (FUN_00885bd0() > count / Sky_GetMode()->TESObjectWEAP_GetShotsPerSecond())
             {
                 Obj* actor = Projectile_GetShooter();

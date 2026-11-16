@@ -854,7 +854,7 @@ struct ConstraintCAB : BaseCAB0, BaseCAB1, BaseCAB2
     ConstraintCAB(int info);
 };
 // pdb: class ahkpCharacterProxy, size 0xd0, bases: hkpCharacterProxy, 1 members
-struct ahkpCharacterProxy : ConstraintCAB // src: EXE (old: FUN_00cabec0)
+struct ahkpCharacterProxy : ConstraintCAB // src: EXE 0x010c83b4 (vtable; old: FUN_00cabec0)
 {
     __m128 m_40;
     int m_50, m_54, m_58, m_5c, m_60, m_64, m_68, m_6c, m_70, m_74, m_78, m_7c;

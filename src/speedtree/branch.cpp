@@ -198,15 +198,14 @@ struct FUN_00b15170
     char m_00[0xc];
     char* m_0c;
     char* m_10;
-    char* D3DXShader_CFragmentRegisterAllocator_GetElement(unsigned int szName);
+    char* GetElement(unsigned int szName);
 };
 
 // Returns a pointer to the element at index a in the buffer from m_0c to m_10, calling FUN_00ec7c56 if a is out of range.
 // @fnv 0x00b15170
-// src: XBOX_RETAIL_PDB 0x00b15170
-// pdb: D3DXShader::CFragmentRegisterAllocator::GetElement | cassembler.obj | retail, upstream name already matches, high
+// pdb: D3DXShader::CFragmentRegisterAllocator::GetElement | cassembler.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: szName
-char* FUN_00b15170::D3DXShader_CFragmentRegisterAllocator_GetElement(unsigned int szName)
+char* FUN_00b15170::GetElement(unsigned int szName)
 {
     if (szName >= (unsigned int)(m_10 - m_0c))
         FUN_00ec7c56();

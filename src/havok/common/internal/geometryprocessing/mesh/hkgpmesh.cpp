@@ -8911,7 +8911,7 @@ struct E1D960Pair {
 struct QueryBase {
     virtual ~QueryBase() throw() {}
 };
-struct TreeTreeNodePairCollector : QueryBase { // src: EXE (old: QueryCtx)
+struct TreeTreeNodePairCollector : QueryBase { // src: EXE 0x010cd690 (vtable; old: QueryCtx)
     E1D960ArrayLocalForm<E1D960Pair>* arr;
     TreeTreeNodePairCollector(E1D960ArrayLocalForm<E1D960Pair>* a) throw() : arr(a) {}
 };
@@ -13815,7 +13815,7 @@ struct S_e1ce10_Tree {
     void UpdateState_00d9be30() throw();
     void UpdateState_00d9d110(const S_e1ce10_Aabb& aabb, S_e1ce10_Vertex* item) throw(); // insert
 };
-struct WeldingPolicy { // src: EXE (old: S_e1ce10_Collector)
+struct WeldingPolicy { // src: EXE 0x010ead18 (vtable; old: S_e1ce10_Collector)
     virtual void v00() throw();
     S_e1ce10_Vec4 m_vContactPosition;
     float m_radiusSquared;

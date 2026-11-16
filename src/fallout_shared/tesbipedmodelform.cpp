@@ -190,15 +190,14 @@ struct FUN_00481150_shell
 {
     unsigned char layoutPadding0c[0xc];
     TESModelTextureSwap bipedModel[2];
-    TESModelTextureSwap* TESBipedModelForm_GetBipedModel(SEX aeSex);
+    TESModelTextureSwap* GetBipedModel(SEX aeSex);
 };
 
 // Returns the biped model for the given sex, falling back to the first model when the requested one is empty and the sex is 1.
 // @fnv 0x00481150
-// src: XBOX_DEBUG_PDB 0x00481150
-// pdb: TESBipedModelForm::GetBipedModel | TESBipedModelForm.obj | debug, upstream name already matches, high
+// pdb: TESBipedModelForm::GetBipedModel | TESBipedModelForm.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: aeSex
-TESModelTextureSwap* FUN_00481150_shell::TESBipedModelForm_GetBipedModel(SEX aeSex)
+TESModelTextureSwap* FUN_00481150_shell::GetBipedModel(SEX aeSex)
 {
     if (bipedModel[aeSex].GetModelLength() == 0 && aeSex == 1)
     {
@@ -250,7 +249,7 @@ struct FUN_0047a240_shell
 
 struct FUN_004891d0_obj
 {
-    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int, unsigned int);
+    void WriteToBuffer(unsigned int, unsigned int);
 };
 
 struct FUN_00489240_Class
@@ -318,7 +317,7 @@ void FUN_00480610_shell::TESBipedModelForm_Save()
     reinterpret_cast<FUN_0048e370_obj*>(reinterpret_cast<char*>(this) + 0x98)->TESTexture_Save(0x324f4349);
     reinterpret_cast<FUN_0047a240_shell*>(reinterpret_cast<char*>(this) + 0xb4)->FUN_0047a240(0x3243494d);
 
-    reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<char*>(this) + 0xc4)->BSSendSceneGraphCommand_WriteToBuffer(0x54434d42, 0);
+    reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<char*>(this) + 0xc4)->WriteToBuffer(0x54434d42, 0);
 }
 
 struct FUN_00480570_cls : public TESBipedModelForm

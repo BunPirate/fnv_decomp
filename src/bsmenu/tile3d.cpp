@@ -456,7 +456,7 @@ struct Tile3DCalc
     void SetValue(int, float, bool);
     bool GetBool(int);
     void UpdateValue(int);
-    void Tile3D_UpdateNIF()
+    void Tile3D_UpdateNIF() // src: XBOX_RETAIL_PDB 0x00a20980
     {
         const char* name = GetString(0xfcc);
         if (!name)

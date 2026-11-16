@@ -497,7 +497,7 @@ void __cdecl Deallocate(void*);
 // pdb locals: pdata, idatasize
 void TESModelTextureSwap::ProcessAndFreeData(unsigned int aeModelID, unsigned int aeTextureID, unsigned int aeSwapID)
 {
-    BSSendSceneGraphCommand_WriteToBuffer(aeModelID, aeTextureID);
+    WriteToBuffer(aeModelID, aeTextureID);
     unsigned int pdata = 0;
     unsigned int idatasize = 0;
     if (SerializeList(reinterpret_cast<char**>(&pdata), &idatasize))

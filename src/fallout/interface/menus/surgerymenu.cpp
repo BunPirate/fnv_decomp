@@ -1971,7 +1971,7 @@ struct LimbWoundData
 };
 #include "../../../../include/ActorValue.h"
 namespace ActorValue {
-const char* ActorValue_GetActorValueName(Index aiIndex);
+const char* GetActorValueName(Index aiIndex);
 }
 int Tile_TextToTrait(const char* name);
 extern const double _gModifierZero;
@@ -2045,7 +2045,7 @@ float SurgeryLimbMenu::SurgeryMenu_GetLimbPercentFromSequences()
     if (!wound_)
     {
         tile70->Set(Tile_TextToTrait("_Value"), 1.0f, true);
-        tile4C->Set(0xfc4, ActorValue::ActorValue_GetActorValueName(avC0), true);
+        tile4C->Set(0xfc4, ActorValue::GetActorValueName(avC0), true);
         return 0;
     }
     LimbListNode* node3 = wound_->list;
@@ -3291,7 +3291,7 @@ void EventMenu::OnButtonClick(int aiID, int apTarget)
                             amount = ScaleLimbWoundPercent(((EventPlayer*)_g_thePlayer)->values.Damage(limb));
                             gauge->Tile_Set(Tile_TextToTrait("_Value"),
                                                 ((EventPlayer*)_g_thePlayer)->values.Damage(limb) / 100.0, true);
-                            label->Tile_Set_00a01350(0xfc4, ActorValue::ActorValue_GetActorValueName((ActorValue::Index)limb), true);
+                            label->Tile_Set_00a01350(0xfc4, ActorValue::GetActorValueName((ActorValue::Index)limb), true);
                             SurgeryMenu_SwitchSkinGeometry(iOldLimb, limb);
                             SurgeryMenu_PrepareSequences(((EventMenu*)DAT_011dada4)->nodes[GetIndex(limb)].Modelloader_GetReferencedThis());
                             break;
@@ -3323,7 +3323,7 @@ void EventMenu::OnButtonClick(int aiID, int apTarget)
                             amount = ScaleLimbWoundPercent(((EventPlayer*)_g_thePlayer)->values.Damage(limb));
                             gauge->Tile_Set(Tile_TextToTrait("_Value"),
                                                 ((EventPlayer*)_g_thePlayer)->values.Damage(limb) / 100.0, true);
-                            label->Tile_Set_00a01350(0xfc4, ActorValue::ActorValue_GetActorValueName((ActorValue::Index)limb), true);
+                            label->Tile_Set_00a01350(0xfc4, ActorValue::GetActorValueName((ActorValue::Index)limb), true);
                             SurgeryMenu_SwitchSkinGeometry(old2, limb);
                             SurgeryMenu_PrepareSequences(((EventMenu*)DAT_011dada4)->nodes[GetIndex(limb)].Modelloader_GetReferencedThis());
                             break;
@@ -3758,7 +3758,7 @@ int LimbPercentageMenu::GetLimbPercentage()
     }
     int result2 = (int)percentage;
     tile70->Set(Tile_TextToTrait("_Value"), result2 / 100.0, true);
-    tile4C->Set(0xfc4, ActorValue::ActorValue_GetActorValueName(avC0), true);
+    tile4C->Set(0xfc4, ActorValue::GetActorValueName(avC0), true);
     return result2;
 }
 

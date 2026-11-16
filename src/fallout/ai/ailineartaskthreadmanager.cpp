@@ -30,7 +30,7 @@ typedef void(__cdecl* AIThreadFunction)();
 
 
 // pdb: class AILinearTaskThreadManager, size 0x3c (here 0x8c), 3 members
-class AILinearTaskThreadManager // src: XBOX_RETAIL_PDB (old: AIThreadManager)
+class AILinearTaskThreadManager // src: XBOX_RETAIL_PDB 0x008c71d0 (first of 16 linked methods; old: AIThreadManager)
 {
   public:
     enum AI_THREAD_INDEX
@@ -427,14 +427,13 @@ struct FUN_008c7d80_shell
     void* m_pObjectPointers[3];
     int aiCurrent[2];
     char pad[0x74];
-    void BSRangeNode_SetCurrent(int aiIndex, int aiValue);
+    void SetCurrent(int aiIndex, int aiValue);
 };
 // @fnv 0x008c7d80
-// src: XBOX_RETAIL_PDB 0x008c7d80
-// pdb: BSRangeNode::SetCurrent | BSRangeNode.obj | retail, upstream name already matches, high
+// pdb: BSRangeNode::SetCurrent | BSRangeNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: acVal
 // pdb locals: boldEnabled, bEnabled
-void FUN_008c7d80_shell::BSRangeNode_SetCurrent(int aiIndex, int aiValue)
+void FUN_008c7d80_shell::SetCurrent(int aiIndex, int aiValue)
 {
     aiCurrent[aiIndex] = aiValue;
 }
@@ -556,7 +555,7 @@ struct FUN_008c79e0_shell
 
 struct FUN_008c7d80_shell
 {
-    void BSRangeNode_SetCurrent(int);
+    void SetCurrent(int);
 };
 
 struct FUN_0087a6b0_shell
@@ -661,7 +660,7 @@ void __cdecl AILinearTaskThreadManager_AIThreadCombined()
 
     reinterpret_cast<Zt5TES*>(g_TES)->TES_UpdateCellAnimations(Main_QFrameAnimTime());
 
-    reinterpret_cast<FUN_008c7d80_shell*>(AILinearTaskThreadManager_GetSingleton(1))->BSRangeNode_SetCurrent(6);
+    reinterpret_cast<FUN_008c7d80_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SetCurrent(6);
     AILinearTaskThreadManager_WaitMainRendering();
 
     if (*reinterpret_cast<unsigned char*>(g_011d73e4.Bool()))
@@ -671,8 +670,8 @@ void __cdecl AILinearTaskThreadManager_AIThreadCombined()
     Script_ClearOptimizations();
     ScriptLocals_ClearOptimizations();
 
-    reinterpret_cast<FUN_008c7d80_shell*>(AILinearTaskThreadManager_GetSingleton(0))->BSRangeNode_SetCurrent(11);
-    reinterpret_cast<FUN_008c7d80_shell*>(AILinearTaskThreadManager_GetSingleton(1))->BSRangeNode_SetCurrent(7);
+    reinterpret_cast<FUN_008c7d80_shell*>(AILinearTaskThreadManager_GetSingleton(0))->SetCurrent(11);
+    reinterpret_cast<FUN_008c7d80_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SetCurrent(7);
 }
 }  // namespace fnv_008c7bd0
 

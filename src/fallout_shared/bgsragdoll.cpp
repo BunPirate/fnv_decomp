@@ -109,7 +109,7 @@ struct GrabIKOperations : GrabIK_DATA
     bool Differs(const GrabIK_DATA&);
 };
 // pdb: structure PoseMatching_DATA, size 0x24, 3 members
-struct PoseMatching_DATA : RagdollFeedbackProfile // src: XBOX_RETAIL_PDB (old: RagdollFeedbackOperations)
+struct PoseMatching_DATA : RagdollFeedbackProfile // src: XBOX_RETAIL_PDB 0x005ed5f0 (first of 3 linked methods; old: RagdollFeedbackOperations)
 {
     void Copy(const RagdollFeedbackProfile&);
     bool Compare(const RagdollFeedbackProfile&);
@@ -911,7 +911,7 @@ void __fastcall SaveRagdoll(BGSRagdoll* ragdoll)
     reinterpret_cast<TESForm*>(ragdoll)->BeginFormRecord();
 
     reinterpret_cast<TESModel*>(reinterpret_cast<unsigned char*>(ragdoll) + 0x18)
-        ->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+        ->WriteToBuffer(0x4c444f4d, 0x54444f4d);
 
     _FUN_00485910(0x5245564e, 1);
 

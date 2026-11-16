@@ -253,7 +253,7 @@ public:
 void BGSCameraShotRecordWriter::SaveForm()
 {
     TESForm::BeginFormRecord();
-    ((TESModel*)((char*)this + 0x18))->BSSendSceneGraphCommand_WriteToBuffer(0x4C444F4D, 0x54444F4D);
+    ((TESModel*)((char*)this + 0x18))->WriteToBuffer(0x4C444F4D, 0x54444F4D);
     if (TESForm_QEndianSwapOnSave())
         Data.BGSCameraShot_CAMERA_SHOT_DATA_Endian();
     ((FUN_00485e00_shell*)this)->TESForm___SaveData((int)((char*)this + 0x38), 0x28);

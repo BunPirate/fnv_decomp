@@ -1823,7 +1823,7 @@ void __cdecl hkSerializeUtil_detectFormat(void* reader, Hk48fc0_Format* details)
 void* __cdecl hkDataObjectUtil_toObjectWithRegistry(void* pData, void* classReg, void* typeReg);
 int __cdecl Hkserializeutil_UpdateState_00d48950(void* pObj, void* pArg1, void* pArg2, void* pArg3);
 void __cdecl hkBinaryTagfileReader_load(void* pArg1, void* pArg2, void* pArg3);
-__declspec(noinline) static int anonymous_namespace_loadBinaryTagfileIntoWorld(Hk48fc0_Data* streamIn, void* world, void* errorOut, void* classReg)
+__declspec(noinline) static int anonymous_namespace_loadBinaryTagfileIntoWorld(Hk48fc0_Data* streamIn, void* world, void* errorOut, void* classReg) // src: XBOX_RETAIL_PDB 0x00d48a90
 {
     Hk48fc0_Contents kBuf;
     hkBinaryTagfileReader_load(&kBuf, &errorOut, streamIn);

@@ -3027,7 +3027,7 @@ struct S_9a54a0_Class
 };
 // @fnv 0x009a54a0
 // src: COMMUNITY 0x009a54a0
-// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | debug, object-file gap fill, medium; the name is also claimed by the retail build's object-file run extension link to 0x009a52f0, which is marked disputed there
+// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | debug, object-file gap fill, medium; the overload AddThreat(TESObjectREFR*, BGSExplosion*, float); 0x009a52f0 is AddThreat(Projectile*)
 // pdb params: apRef, apExplosion, afTime
 // pdb locals: fdamage, fradius
 void S_9a54a0_Class::CombatThreatMap_AddThreat(int a1, S_9a54a0_Actor* pActor, float a3)
@@ -3707,7 +3707,7 @@ struct S_009b13a0_A
 };
 struct S_009b13a0_B
 {
-    void ExtraDataList_SetRadiation(float f);
+    void SetRadiation(float f);
 };
 extern float DAT_01013ea4;
 struct S_009b13a0_Cls
@@ -3749,7 +3749,7 @@ void S_009b13a0_Cls::Explosion_UpdateRadiation()
         a = (1.0f - FUN_0051b8e0() / b5) * a;
         if (a <= 0.0)
             a = DAT_01013ea4;
-        BSFile_GetDevice()->ExtraDataList_SetRadiation(a);
+        BSFile_GetDevice()->SetRadiation(a);
         vfn_48(0x40000000);
     }
 }

@@ -280,15 +280,14 @@ struct FUN_00dc03d0_cls
     Element** m_ppArray;
     int m_iArrayLength;
     unsigned int m_uCapacity;
-    void NiPick_Results_ClearArray();
+    void ClearArray();
 };
 
 // @fnv 0x00dc03d0
-// src: XBOX_RETAIL_PDB 0x00dc03d0
-// pdb: NiPick::Results::ClearArray | NiPick.obj | retail, upstream name already matches, high
+// pdb: NiPick::Results::ClearArray | NiPick.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: bDeallocateRecords
 // pdb locals: i
-void FUN_00dc03d0_cls::NiPick_Results_ClearArray()
+void FUN_00dc03d0_cls::ClearArray()
 {
     for (int i = 0; i < m_iArrayLength; i++)
     {
@@ -365,7 +364,7 @@ struct MemberB
 };
 struct MemberC
 {
-    void NiPick_Results_ClearArray();
+    void ClearArray();
 };
 
 struct BaseObj
@@ -391,7 +390,7 @@ struct Obj : BaseObj
 // pdb: Writer::~Writer | hkBinaryTagfileWriter.obj | retail, object-file run extension, low
 void Obj::ProcessState_00dc0460()
 {
-    m58.NiPick_Results_ClearArray();
+    m58.ClearArray();
     m4c.clearAndDeallocate();
     m40.clearAndDeallocate();
     m34.AllocBufferIfNotFlagged(&audio()->heap());
@@ -692,16 +691,15 @@ struct DBED30Writer
 
     void WriteSigned64BitInteger(__int64 i);
     void WriteByteArray(const void* buf, int nbytes);
-    void NiD3DUtility_WriteString(const char* s);
+    void WriteString(const char* s);
 };
 
 // Writes a string to the stream: emits its length and bytes if new, otherwise emits the negated existing index; null writes -1.
 // @fnv 0x00dbed30
-// src: XBOX_DEBUG_PDB 0x00dbed30
-// pdb: NiD3DUtility::WriteString | NiD3DUtility.obj | debug, upstream name already matches, high
+// pdb: NiD3DUtility::WriteString | NiD3DUtility.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: kStream, pcString
 // pdb locals: uiLen
-void DBED30Writer::NiD3DUtility_WriteString(const char* pcString)
+void DBED30Writer::WriteString(const char* pcString)
 {
     if (pcString)
     {
@@ -1097,7 +1095,7 @@ struct S_dbf1a0_Writer
     S_dbf1a0_Map m_map;
 
     void __thiscall WriteVarint(__int64 val) throw();
-    void __thiscall NiD3DUtility_WriteString(const char* str) throw();
+    void __thiscall WriteString(const char* str) throw();
     int WriteHandle(const S_dbf1a0_Handle& h) throw();
 };
 
@@ -1134,7 +1132,7 @@ int S_dbf1a0_Writer::WriteHandle(const S_dbf1a0_Handle& ahHandle) throw()
     ahHandle.DispatchRecords(&arr);
 
     WriteVarint(2);
-    NiD3DUtility_WriteString(ahHandle.hkDataClass_getName());
+    WriteString(ahHandle.hkDataClass_getName());
     WriteVarint(ahHandle.ForwardCall_00dba690());
     WriteVarint(parentId);
     WriteVarint(count);
@@ -1142,7 +1140,7 @@ int S_dbf1a0_Writer::WriteHandle(const S_dbf1a0_Handle& ahHandle) throw()
     for (int i = 0; i < count; ++i)
     {
         S_dbf1a0_Elem* elem = &arr.m_data[i];
-        NiD3DUtility_WriteString(elem->name);
+        WriteString(elem->name);
         WriteVarint(elem->flags);
         if (elem->flags & 0x20)
         {
@@ -1153,7 +1151,7 @@ int S_dbf1a0_Writer::WriteHandle(const S_dbf1a0_Handle& ahHandle) throw()
         {
             if (elem->sub)
             {
-                NiD3DUtility_WriteString(S_dbf1a0_Handle(elem->sub).hkDataClass_getName());
+                WriteString(S_dbf1a0_Handle(elem->sub).hkDataClass_getName());
             }
             else
             {
@@ -1327,7 +1325,7 @@ struct Host
     __declspec(nothrow) void HashUInt(float f);
     __declspec(nothrow) void WriteFloatArray(void* p, int v);
     __declspec(nothrow) void ProcessEntries_00dc00b0(const StringHandle& v);
-    __declspec(nothrow) void NiD3DUtility_WriteString(int v);
+    __declspec(nothrow) void WriteString(int v);
     __declspec(nothrow) void hkOArchive_writeRaw(void* p, int n);
     __declspec(nothrow) int IsTruthy(Pair* p);
 };
@@ -1491,7 +1489,7 @@ void Host::WriteArray(const Wrap& arg0, int count)
     case 10: {
         for (i = 0; i < count; i++)
         {
-            NiD3DUtility_WriteString(arg0.CreateResultPair(i).ForwardCall_00dbac70());
+            WriteString(arg0.CreateResultPair(i).ForwardCall_00dbac70());
         }
     }
     break;
@@ -1559,7 +1557,7 @@ struct S_00dbfef0_Visitor
     void HashUInt(float v);
     void WriteFloatArray(int p, int n);
     void WriteVarint(__int64 v);
-    void NiD3DUtility_WriteString(int v);
+    void WriteString(int v);
     void WriteArray(S_00dbfef0_A* a, int n);
     void ProcessEntries_00dc00b0(int v);
     void WriteNode(S_00dbfef0_Node* node, S_00dbfef0_B b);
@@ -1622,7 +1620,7 @@ void S_00dbfef0_Visitor::WriteNode(S_00dbfef0_Node* node, S_00dbfef0_B b)
         b.ReleaseStorage_00dba7f0();
         break;
     case 10:
-        NiD3DUtility_WriteString(node->hkDataObject_Value_asString());
+        WriteString(node->hkDataObject_Value_asString());
         break;
     }
 }

@@ -3372,15 +3372,14 @@ class B8C690Shader
     int unk1FC;
     NiPointer<B8C690Texture> m_spTexture3;
 
-    void NiXenonRenderer_ClearTextures();
+    void ClearTextures();
 };
 
 // Clears all four texture smart pointers (m_spTexture0 through m_spTexture3) to null.
 // @fnv 0x00b8c690
-// src: XBOX_RETAIL_PDB 0x00b8c690
-// pdb: NiXenonRenderer::ClearTextures | NiXenonRenderer.obj | retail, upstream name already matches, high
+// pdb: NiXenonRenderer::ClearTextures | NiXenonRenderer.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: ui
-void B8C690Shader::NiXenonRenderer_ClearTextures()
+void B8C690Shader::ClearTextures()
 {
     m_spTexture0 = 0;
     m_spTexture1 = 0;
@@ -16366,7 +16365,7 @@ struct FUN_00b97690
     int unk314;
     unsigned int m_textureId;
     void ShutdownAllEffects();
-    void NiXenonRenderer_ClearTextures();
+    void ClearTextures();
     ~FUN_00b97690();
 };
 // If active, calls ShutdownAllEffects, ClearTextures and FUN_00b8a7e0, clears active, and passes m_textureId to DAT_011f91a8->FUN_00b6da10.
@@ -16377,7 +16376,7 @@ FUN_00b97690::~FUN_00b97690()
     if (active)
     {
         ShutdownAllEffects();
-        NiXenonRenderer_ClearTextures();
+        ClearTextures();
         ClearConstantGroups(&DAT_01202410);
         active = false;
         DAT_011f91a8->BSTextureManager_ReturnRenderedTexture(m_textureId);

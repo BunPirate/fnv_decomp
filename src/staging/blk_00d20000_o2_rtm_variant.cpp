@@ -123,7 +123,7 @@ struct D28030FixedArray {
 struct D28030UnionFind {
     D28030FixedArray& m_pParentArray;
 
-    __forceinline int hkUnionFind__findRootOfNode(int i)
+    __forceinline int _findRootOfNode(int i)
     {
         int root = i;
         while (m_pParentArray[root] >= 0)

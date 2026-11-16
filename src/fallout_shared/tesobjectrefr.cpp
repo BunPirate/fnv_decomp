@@ -10078,7 +10078,7 @@ struct XActor
 };
 struct FUN_00421400_Class
 {
-    void* ExtraDataList_GetMerchantContainer();
+    void* FUN_00421400();
 };
 struct FUN_0056a990_Class
 {
@@ -10089,7 +10089,7 @@ struct FUN_0056a990_Class
 // pdb: TESObjectREFR::GetMerchantContainer | TESObjectREFR.obj | debug, upstream name already matches, high
 void* FUN_0056a990_Class::TESObjectREFR_GetMerchantContainer()
 {
-    return ((FUN_00421400_Class*)((XActor*)this)->GetExtra())->ExtraDataList_GetMerchantContainer();
+    return ((FUN_00421400_Class*)((XActor*)this)->GetExtra())->FUN_00421400();
 }
 }  // namespace fnv_0056a990
 
@@ -30254,7 +30254,7 @@ struct RefrUpdater
     float unk04;
     float unk08;
     void ApplyPosition();
-    void TESObjectREFR_SetStartingPosition();
+    void ApplyAngle();
 };
 
 // GetPos uses TESObjectREFR slot 0x7D and GetAngleOnReference calls 0x00430830; inherit their shared declarations.
@@ -30280,7 +30280,7 @@ void ReferenceTransformExtension::TESObjectREFR_SetStartingPosition(NiPoint3 pos
     {
         MakeUpdater(this, *reinterpret_cast<const NiPoint3*>(static_cast<const TESObjectREFR*>(this)->GetPos())).ApplyPosition();
     }
-    MakeUpdater(this, reinterpret_cast<const NiPoint3&>(GetAngleOnReference())).TESObjectREFR_SetStartingPosition();
+    MakeUpdater(this, reinterpret_cast<const NiPoint3&>(GetAngleOnReference())).ApplyAngle();
 }
 }  // namespace fnv_00572b60
 
@@ -37437,7 +37437,7 @@ struct Ref
     bool TESForm_GetDestructible();
     void* BGSSaveFormBuffer_GetForm();
     void TESObjectREFR_UpdateAddonNodeSounds(bool);
-    void TESObjectREFR_ResetAnimation();
+    void ResetAnimation();
     void TESObjectREFR_ResetInventory(bool);
     bool TESObjectREFR_GetAction_00572d30(int);
     void TESObjectREFR_RestoreRagDollData(void*);
@@ -37464,7 +37464,7 @@ void Ref::TESObjectREFR_Revert_005629a0(LoadBuffer* apLoadGameBuffer)
         BGSDestructibleObjectForm_GetDestructionForm(BGSSaveFormBuffer_GetForm())->BGSDestructibleObjectForm_UpdateCurrentDamageStage(this, true))
         TESObjectREFR_UpdateAddonNodeSounds(false);
     if (apLoadGameBuffer->BGSLoadFormBuffer_GetOldChangeFlags().FUN_004280f0(0x10000000) && !IsActor())
-        TESObjectREFR_ResetAnimation();
+        ResetAnimation();
     BSFile_GetDevice()->ExtraDataList_RevertUnsavedExtra(apLoadGameBuffer);
     if (apLoadGameBuffer->BGSLoadFormBuffer_GetOldChangeFlags().FUN_004280f0(0x8000020))
     {
@@ -37650,7 +37650,7 @@ struct Ref
     M40* m40;
     NiAVObject* TESObjectREFR_Get3D();
     ExtraData* BSFile_GetDevice();
-    void TESObjectREFR_ResetAnimation();
+    void ResetAnimation();
 };
 
 using ::NiAVObject;
@@ -37693,10 +37693,9 @@ extern G11DEA10* DAT_011dea10;
 
 // Processes sequences on the reference's NiAVObject, applies updates, and adds the object to the shadow scene node when flagged.
 // @fnv 0x00563890
-// src: XBOX_RETAIL_PDB 0x00563890
-// pdb: TESObjectREFR::ResetAnimation | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb: TESObjectREFR::ResetAnimation | TESObjectREFR.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: pmanager, po, breload3D, pobj3D, plastFinishedSequence, punequipSeq, pnew3D, pfirstSeq, pdefaultSeq2, pdefaultSeq1, i, pseq, UpdateData
-void Ref::TESObjectREFR_ResetAnimation()
+void Ref::ResetAnimation()
 {
     NiAVObject* pObjA = TESObjectREFR_Get3D();
     Mgr* _mgr = 0;
@@ -42323,7 +42322,7 @@ int S::TESObjectREFR_RemoveItem(Item* apObject, void* apExtra, int aiNumber, boo
                     (*(S**)&DAT_011dea3c)->PlayerCharacter_ReturnRockItAmmo();
             }
             if (actor && actor->FUN_008d8520() && !actor->dead(0) && this != *(S**)&DAT_011dea3c && !Interface_ContainerIsBarter() &&
-                !Interface_ContainerIsRecipe())
+                !Interface_ContainerIsRecipe()) // src: XBOX_RETAIL_PDB 0x00705000
             {
                 actor->FUN_008d8520()->update(apObject, apExtra);
                 if (apObject->FUN_00401170() == 40 && !actor->Actor_IsInCombat())

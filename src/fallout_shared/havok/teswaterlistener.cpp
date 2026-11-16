@@ -598,7 +598,7 @@ struct SpawnedSub
 };
 
 // pdb: class WaterTargetEntry, size 0x60 (here 0x54), bases: TargetEntry, 1 members
-struct WaterTargetEntry : SpawnedBase // src: EXE (old: FUN_0062e590)
+struct WaterTargetEntry : SpawnedBase // src: EXE 0x0104e438 (vtable; old: FUN_0062e590)
 {
     WaterTargetEntry(int a1, int a2);
     unsigned int unk04;
@@ -1085,7 +1085,7 @@ class B631230Base
 };
 
 // pdb: class WaterZone, size 0x20, bases: ZoneEntry, 2 members
-class WaterZone : public B631230Base // src: EXE (old: FUN_00631230)
+class WaterZone : public B631230Base // src: EXE 0x0104e4b0 (vtable; old: FUN_00631230)
 {
   public:
     float fWaterHeight; // src: XBOX_RETAIL_PDB +0x18 (old: m_fStartValue)

@@ -378,13 +378,12 @@ struct FUN_008681c0_shell
 {
     int m_00;
     unsigned char m_04;
-    FUN_008681c0_shell* __thiscall bhkCollisionFilter_InitFlags(int, const char*);
+    FUN_008681c0_shell* __thiscall InitFlags(int, const char*);
 };
 // Stores a in m_00, locks the garbage collector with b, sets m_04 from the overlap of DAT_011de804 and a, then ORs a into DAT_011de804.
 // @fnv 0x008681c0
-// src: XBOX_RETAIL_PDB 0x008681c0
-// pdb: bhkCollisionFilter::InitFlags | bhkCollisionFilter.obj | retail, upstream name already matches, high
-FUN_008681c0_shell* __thiscall FUN_008681c0_shell::bhkCollisionFilter_InitFlags(int aiFlags, const char* apName)
+// pdb: bhkCollisionFilter::InitFlags | bhkCollisionFilter.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+FUN_008681c0_shell* __thiscall FUN_008681c0_shell::InitFlags(int aiFlags, const char* apName)
 {
     m_00 = aiFlags;
     LockGarbageCollector(apName, 0);

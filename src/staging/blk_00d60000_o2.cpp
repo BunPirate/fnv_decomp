@@ -512,7 +512,7 @@ void __cdecl ConstructHkDerived(void* pvObject, int iFinishFlag)
 
 // RTTI identifies vtable 0x010cad0c as hkMemoryBlockServer; hkReferencedObject uses 0x0102e388.
 // pdb: class hkMemoryBlockServer, size 0x8 (here 0x4), 1 members
-class hkMemoryBlockServer // src: EXE (old: MemoryBlockServerState)
+class hkMemoryBlockServer // src: EXE 0x010cad0c (vtable; old: MemoryBlockServerState)
 {
   public:
     hkMemoryBlockServer(FinishingFlag flag);

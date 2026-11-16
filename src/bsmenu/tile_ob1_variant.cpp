@@ -342,7 +342,7 @@ struct FUN_00a01350_Obj {
     FUN_00a01350_Value* GetOrCreateTraitValue(int);
 };
 struct FUN_00a01350_Value {
-    void Tile_Value_SetString(char*, bool);
+    void SetString(char*, bool);
 };
 
 // @fnv 0x00a01350
@@ -354,7 +354,7 @@ void FUN_00a01350_shell::Tile_Set_00a01350(int aiTrait, char* apString, bool abC
     FUN_00a01350_Value* pvalue = ((FUN_00a01350_Obj*)this)->GetOrCreateTraitValue(aiTrait);
     if (pvalue) {
         AutoTileLock __my_auto_tile_lock;
-        pvalue->Tile_Value_SetString(apString, abClearActions);
+        pvalue->SetString(apString, abClearActions);
     }
 }
 }  // namespace fnv_00a01350

@@ -141,7 +141,7 @@ TESRegionList* TESObjectCELL::GetRegionList(bool abCreateIfNotFound)
     if (!result && abCreateIfNotFound)
     {
         result = new TESRegionList(0);
-        reinterpret_cast<TESRegionPointList_CellExtraList*>(formData + 4)->ExtraDataList_SetRegionList(result);
+        reinterpret_cast<TESRegionPointList_CellExtraList*>(formData + 4)->SetRegionList(result);
     }
     return result;
 }
@@ -341,14 +341,13 @@ extern const double DAT_010241b0;
 BSSimpleList<RegionPoint*>* __fastcall FUN_00726070(BSSimpleList<RegionPoint*>*);
 struct FUN_004f8030_shell : RegionPointList
 {
-    float TESRegionPointList_GetMaxY();
+    float GetMaxY();
 };
 // Returns Maximums.y if it exceeds DAT_010241b0, otherwise scans the list for the largest GetY() value, defaulting to DAT_01015f5c.
 // @fnv 0x004f8030
-// src: XBOX_DEBUG_PDB 0x004f8030
-// pdb: TESRegionPointList::GetMaxY | TESRegionPointList.obj | debug, upstream name already matches, high
+// pdb: TESRegionPointList::GetMaxY | TESRegionPointList.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: pcurrent, fCurMaxY
-float FUN_004f8030_shell::TESRegionPointList_GetMaxY()
+float FUN_004f8030_shell::GetMaxY()
 {
     float fMaximum = DAT_01015f5c;
     BSSimpleList<RegionPoint*>* pkPoint = this;

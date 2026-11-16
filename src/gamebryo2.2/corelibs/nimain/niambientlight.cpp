@@ -82,7 +82,7 @@ class FUN_00a71f60
 };
 
 // pdb: class NiAmbientLight, size 0x120 (here 0xf0), bases: NiLight, 0 members
-class NiAmbientLight : public FUN_00a71f60 // src: EXE (old: CloneA9B3)
+class NiAmbientLight : public FUN_00a71f60 // src: EXE 0x010a12cc (vtable; old: CloneA9B3)
 {
   public:
     NiAmbientLight() throw()

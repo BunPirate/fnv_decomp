@@ -2911,14 +2911,13 @@ class B69BB90List
   public:
     unsigned int GetSize();
     B69BB90Entry* GetAt(unsigned int uiIndex);
-    unsigned int CPointerList_XAUDIO2_CX2EffectChain_EffectEntry_1_4294967295_0_FindIndex(B69BB90Handle nIndex);
+    unsigned int FindIndex(B69BB90Handle nIndex);
 };
 
 // @fnv 0x0069bb90
-// src: XBOX_DEBUG_PDB 0x0069bb90
-// pdb: CPointerList<XAUDIO2::CX2EffectChain::EffectEntry,1,4294967295,0>::FindIndex | x2effectchain.obj | debug, upstream name already matches, high
+// pdb: CPointerList<XAUDIO2::CX2EffectChain::EffectEntry,1,4294967295,0>::FindIndex | x2effectchain.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: nIndex
-unsigned int B69BB90List::CPointerList_XAUDIO2_CX2EffectChain_EffectEntry_1_4294967295_0_FindIndex(B69BB90Handle nIndex)
+unsigned int B69BB90List::FindIndex(B69BB90Handle nIndex)
 {
     for (unsigned int i = 0; i < GetSize(); i++)
     {

@@ -134,7 +134,7 @@ void TESCreature::CopyFromTemplateForm(TESActorBase* apForceTemplate)
             {
                 SetSoundCreature(templateSelection.creature->GetSoundCreature());
             }
-            eSoundLevel = templateSelection.creature->BGSSaveLoadFile_GetFilePosition();
+            eSoundLevel = templateSelection.creature->FUN_009c0070();
         }
         if (!m_pCreatureSounds)
         {

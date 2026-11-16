@@ -91,7 +91,7 @@ class D698B0Base : public D698B0BaseA, public D698B0BaseB, public D698B0BaseC
 };
 
 // pdb: class hkpConstraintViewer, size 0x38, bases: hkpWorldViewerBase, hkpWorldPostSimulationListener, 1 members
-class hkpConstraintViewer : public D698B0Base, public D698B0Listener // src: EXE (old: FUN_00d698b0)
+class hkpConstraintViewer : public D698B0Base, public D698B0Listener // src: EXE 0x010d2184 (vtable; old: FUN_00d698b0)
 {
   public:
     hkpConstraintViewer(void* contexts);

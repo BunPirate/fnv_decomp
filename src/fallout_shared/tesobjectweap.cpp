@@ -2016,7 +2016,7 @@ struct AmmoForm { char pad[0x8]; void Save(); };
 struct ClipRounds { char pad[0xc]; void BGSPickupPutdownSounds_Save(); };
 struct WeapData { char pad[0x24]; TESForm* pProjectile; char pad2[0xa4]; void Swap(); };
 struct CritData { char pad[0xc]; TESForm* pEffect; void Swap(); };
-struct Model { char pad[0x18]; void BSSendSceneGraphCommand_WriteToBuffer(UInt32 a, UInt32 b); };
+struct Model { char pad[0x18]; void Save(UInt32 a, UInt32 b); };
 struct ModModel { char pad[0x20]; void Save(UInt32 aeModelID, UInt32 aeTextureID, UInt32 aeSwapID); };
 struct VATSData { TESForm* pEffect; char pad[0x10]; void Swap(); };
 
@@ -2107,15 +2107,15 @@ void Weapon::Save()
     damage.Save();
     ammo.Save();
     clip.BGSPickupPutdownSounds_Save();
-    shellModel.BSSendSceneGraphCommand_WriteToBuffer(0x32444f4d, 0x54324f4d);
+    shellModel.Save(0x32444f4d, 0x54324f4d);
     if (HasScope()) {
-        scopeModel.BSSendSceneGraphCommand_WriteToBuffer(0x33444f4d, 0x54334f4d);
+        scopeModel.Save(0x33444f4d, 0x54334f4d);
         if (m_pWeaponEffectShader) {
             UInt32 a = m_pWeaponEffectShader->GetFormID();
             WriteChunkU32(0x44534645, a);
         }
     }
-    worldModel.BSSendSceneGraphCommand_WriteToBuffer(0x34444f4d, 0x54344f4d);
+    worldModel.Save(0x34444f4d, 0x54344f4d);
     mod1.Save(0x3144574d, 0x3154574d, 0x53444f4d);
     mod2.Save(0x3244574d, 0x3254574d, 0x53444f4d);
     mod3.Save(0x3444574d, 0x3454574d, 0x53444f4d);

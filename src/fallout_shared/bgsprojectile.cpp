@@ -812,7 +812,7 @@ void BGSProjectileMethods::WriteProjectileSave()
 {
     BeginFormRecord();
     TESFullName::Save_00487010();
-    TESModel::BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    TESModel::WriteToBuffer(0x4c444f4d, 0x54444f4d);
     BGSDestructibleObjectForm::Save();
     SaveRef* saved70 = reinterpret_cast<SaveRef*>(Data.apTargetLight);
     Data.apTargetLight = Data.apTargetLight ? reinterpret_cast<TESObjectLIGH*>(reinterpret_cast<SaveRef*>(Data.apTargetLight)->Resolve()) : 0;
@@ -846,7 +846,7 @@ void BGSProjectileMethods::WriteProjectileSave()
     }
     else
     {
-        m_kProjectileModel.BSSendSceneGraphCommand_WriteToBuffer(0x314d414e, 0x324d414e);
+        m_kProjectileModel.WriteToBuffer(0x314d414e, 0x324d414e);
     }
     WriteValue(0x4d414e56, m_eSoundLevel);
     FinishFormRecord();

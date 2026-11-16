@@ -6175,10 +6175,9 @@ void hkpSaveContactPointsEndianUtil_swapEndianType_00e06010(void*);
 void ProcessListBlocks(Context**, void*);
 // Dispatches input handling by input->type and reverse, selects a payload, then applies the operation from the context entry key to that payload.
 // @fnv 0x00e06070
-// src: XBOX_DEBUG_PDB 0x00e06070
-// pdb: XGRAPHICS::Compiler::ProcessInput | compilerinc.obj | debug, upstream name already matches, high
+// pdb: XGRAPHICS::Compiler::ProcessInput | compilerinc.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: buffer, name
-void XGRAPHICS_Compiler_ProcessInput(Context** context, Input* input, void* argument, bool reverse, int* type, bool* changed)
+void ProcessInput(Context** context, Input* input, void* argument, bool reverse, int* type, bool* changed)
 {
     *changed = false;
     Payload* payload;
@@ -6291,7 +6290,7 @@ struct ListE061
     int m_10;
 };
 
-void __cdecl XGRAPHICS_Compiler_ProcessInput(int a1, char* pos, ListEntryE061* cur, FlagE061 flag, int* consumed, bool* pbOut);
+void __cdecl ProcessInput(int a1, char* pos, ListEntryE061* cur, FlagE061 flag, int* consumed, bool* pbOut);
 
 // Iterates each block's payload, advancing a cursor entry and calling ProcessInput per chunk until the block end.
 // @fnv 0x00e061c0
@@ -6329,7 +6328,7 @@ void __cdecl ProcessListBlocks(int a1, ListE061* list)
                     else
                         cur = 0;
                 }
-                XGRAPHICS_Compiler_ProcessInput(a1, pos, cur, flag, &consumed, &bOut);
+                ProcessInput(a1, pos, cur, flag, &consumed, &bOut);
                 pos += consumed;
             }
         }

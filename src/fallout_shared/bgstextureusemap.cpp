@@ -13,7 +13,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // pdb: class BGSTextureUseMap, size 0x14 (here 0x1), 2 members
-struct BGSTextureUseMap // src: XBOX_RETAIL_PDB (old: FUN_004aa3d0_shell)
+struct BGSTextureUseMap // src: XBOX_RETAIL_PDB 0x004a8f50 (first of 9 linked methods; old: FUN_004aa3d0_shell)
 {
     void BGSTextureUseMap_CollectTexUseDataRecursive(int a, char b);
     void CollectTexUseData(int apNode, int apDefaultUser, char abCheckActors);
@@ -104,7 +104,7 @@ void* FUN_004aa650_shell::DestroyIfFlagged(unsigned int flags)
 
 struct FUN_004aa720_shell
 {
-    void NiD3DShaderConstantMap_AddEntry(int a, int b, int c);
+    void AddEntry(int a, int b, int c);
 };
 // If the pointer stored at c is non-null, calls AddEntry on it with a, b and the value at c+4.
 // @fnv 0x004aa6f0
@@ -116,7 +116,7 @@ void InvokeIfPresent(int aiArg1, int aiArg2, int apHolder)
     int pparam = apHolder;
     if (*(int*)pparam)
     {
-        ((FUN_004aa720_shell*)*(int*)pparam)->NiD3DShaderConstantMap_AddEntry(aiArg1, aiArg2, *(int*)(pparam + 4));
+        ((FUN_004aa720_shell*)*(int*)pparam)->AddEntry(aiArg1, aiArg2, *(int*)(pparam + 4));
     }
 }
 
@@ -199,11 +199,10 @@ struct GO_operator
 
 // Looks up or creates a FUN_004aa830 keyed by a in the map at this+4, sets its key and m4, then adds c to its list at offset 8 if absent.
 // @fnv 0x004aa720
-// src: XBOX_RETAIL_PDB 0x004aa720
-// pdb: NiD3DShaderConstantMap::AddEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb: NiD3DShaderConstantMap::AddEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pszKey, uiFlags, uiExtra, uiShaderRegister, uiRegisterCount, pszVariableName, uiDataSize, uiDataStride, pvDataSource, bCopyData
 // pdb locals: pkEntry
-void FUN_004aa720_shell::NiD3DShaderConstantMap_AddEntry(int aiKey, int aiValue, int aiItem)
+void FUN_004aa720_shell::AddEntry(int aiKey, int aiValue, int aiItem)
 {
     FUN_004aa830* p;
 

@@ -734,7 +734,7 @@ class PlayerMedia
     virtual void Unk089();
     virtual void Unk08a();
     virtual bool IsInCombat(bool);
-    MediaLocationController* PlayerCharacter_GetMediaLocationController();
+    MediaLocationController* GetMediaLocationController();
 };
 extern PlayerMedia* g_thePlayer;
 extern MediaLocationController* DAT_011dd374;
@@ -773,7 +773,7 @@ void FalloutAudioMedia_Update()
         if (DAT_011dd378)
             DAT_011dd378 = 0;
         if (g_thePlayer &&
-            (!g_thePlayer->PlayerCharacter_GetMediaLocationController() || !g_thePlayer->PlayerCharacter_GetMediaLocationController()->Update(combat)))
+            (!g_thePlayer->GetMediaLocationController() || !g_thePlayer->GetMediaLocationController()->Update(combat)))
         {
             DAT_011dd374 = 0;
             if (DAT_011dcfb4 && DAT_011dcfb4->FUN_006733e0())

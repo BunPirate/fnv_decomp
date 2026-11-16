@@ -828,7 +828,7 @@ struct A
     Cls* GetClass();
     void FUN_008bf4e0(int);
     bool TESObjectREFR_GetRefPersists_005653d0();
-    void ProcessArray_AddActor(A*);
+    void AddActor(A*);
     void Actor_InitiateAlarm(A*, int, bool, A*);
 };
 struct Extra
@@ -943,7 +943,7 @@ void A::Actor_InitiateAlarm(A* apCrime, int aiProcedureIndex, bool abSendAlarm, 
         GetCurrentProcess()->Notify(this);
         SetPackage(current, 0, 1);
         if (apCrime)
-            apCrime->ProcessArray_AddActor(this);
+            apCrime->AddActor(this);
         process->SetValue(aiProcedureIndex);
     }
     else if (apCrime && process->GetTarget() == apCrime->GetHavokWorldObjectCountInSceneGraph_0084e3a0() && !v->IsSpellInList(apCrime))

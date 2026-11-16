@@ -301,7 +301,7 @@ struct Map_a4d : MapMid_a4d
 };
 
 // pdb: class NiKeyframeManager, size 0x48, bases: NiTimeController, 1 members
-struct NiKeyframeManager : FUN_00a6d220 // src: EXE (old: FUN_00a4da20_cls)
+struct NiKeyframeManager : FUN_00a6d220 // src: EXE 0x01098f4c (vtable; old: FUN_00a4da20_cls)
 {
     NiKeyframeManager();
     virtual void v00();

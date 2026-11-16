@@ -18,7 +18,7 @@ BGSTerrainManager* LoadBGSTerrainManager(const char* path);
 #include "../../../include/BGSLoadFormBuffer.h"
 
 // @fnv 0x004d52d0
-// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | debug, call graph (shared callers), high; the name is also claimed by the retail build's object-file gap fill link to 0x004d5a90, which is marked disputed there
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | debug, call graph (shared callers), high; the retail build's gap fill also linked this name to 0x004d5a90, which is rejected there
 // pdb params: aFilename
 BGSTerrainManager* LoadBGSTerrainManager(const NiPointer<NiNode>& aFilename)
 {

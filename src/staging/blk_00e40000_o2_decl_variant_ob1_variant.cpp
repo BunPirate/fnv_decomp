@@ -571,7 +571,7 @@ extern const float DAT_010ec968;
 float __cdecl Object_GetDAT_010ec968_00e52f80();
 extern float DAT_0104da4c;
 float __cdecl Runtime_GetDAT0104da4c(void);
-void __cdecl D3DXShader_CCommentBlock_SwapBytes(void* arg);
+void __cdecl SwapBytes(void* arg);
 inline void SwapByte(unsigned char& left, unsigned char& right)
 {
     unsigned char temporary = left;

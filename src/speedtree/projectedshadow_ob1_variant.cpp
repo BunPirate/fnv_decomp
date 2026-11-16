@@ -371,7 +371,7 @@ std::string __cdecl IdvFormatString(const char*, ...);
 struct ChunkReader
 {
     int GetNextElement();
-    Vec3Ret BSSoundMessage_GetVector3();
+    Vec3Ret GetVector3();
     std::string CTreeFileAccess_ParseString();
 };
 
@@ -395,13 +395,13 @@ void FrondInfo::CProjectedShadow_Parse(ChunkReader* cFile)
         switch (token)
         {
         case 0x4652:
-            AssignPoint3(p0, cFile->BSSoundMessage_GetVector3());
+            AssignPoint3(p0, cFile->GetVector3());
             break;
         case 0x4653:
-            AssignPoint3(p1, cFile->BSSoundMessage_GetVector3());
+            AssignPoint3(p1, cFile->GetVector3());
             break;
         case 0x4654:
-            AssignPoint3(p2, cFile->BSSoundMessage_GetVector3());
+            AssignPoint3(p2, cFile->GetVector3());
             break;
         case 0x4655: {
             NarrowString text(cFile->CTreeFileAccess_ParseString());

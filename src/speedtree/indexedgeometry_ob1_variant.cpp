@@ -3774,7 +3774,7 @@ struct VertexIndexRow
     DataVector<U16*> indices;
 };
 // pdb: class CIndexedGeometry, size 0x118 (here 0x190), 29 members
-struct CIndexedGeometry // src: XBOX_RETAIL_PDB (old: GeometryProcessor)
+struct CIndexedGeometry // src: XBOX_RETAIL_PDB 0x00b2e680 (first of 34 linked methods; old: GeometryProcessor)
 {
     U32 unk00, unk04, unk08;
     unsigned char* processedVertices;
@@ -3799,7 +3799,7 @@ struct CIndexedGeometry // src: XBOX_RETAIL_PDB (old: GeometryProcessor)
     {
         return initialized;
     }
-    unsigned char ComputeWindEffect(U16 nLodLevel);
+    unsigned char CIndexedGeometry_ComputeWindEffect(U16 nLodLevel);
 };
 __forceinline Matrix4* Matrix(U16 pose)
 {
@@ -3813,11 +3813,11 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 #pragma intrinsic(memcpy)
 
 // @fnv 0x00b30800
-// src: XBOX_RETAIL_PDB 0x00b30800 (was COMMUNITY)
-// pdb: CIndexedGeometry::ComputeWindEffect | IndexedGeometry.obj | retail, upstream name already matches, high
+// src: COMMUNITY 0x00b30800
+// pdb: CIndexedGeometry::ComputeWindEffect | IndexedGeometry.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: nLodLevel
 // pdb locals: bGeometryUpdated, cInterpWindEffect, usVertexCount, cFullWindEffect, i, nStrip, nVertex, nIndex, fWeight, usWindGroup, pOrigCoord
-unsigned char CIndexedGeometry::ComputeWindEffect(U16 nLodLevel)
+unsigned char CIndexedGeometry::CIndexedGeometry_ComputeWindEffect(U16 nLodLevel)
 {
     unsigned char changed = 0;
     if (!GetInitialized())
@@ -4328,7 +4328,7 @@ struct Renderer
     int unk38, unk3c, unk40;
     int unk44, unk48, unk4c;
     Renderer(int);
-    void Compute(int, float, int, void*, float, float, const Matrix&, const Float3&, RenderObject*, void*, float,
+    void CIdvBranch_Compute(int, float, int, void*, float, float, const Matrix&, const Float3&, RenderObject*, void*, float,
                       int, float);
 };
 struct Target
@@ -4394,7 +4394,7 @@ void Target::CTreeEngine_Compute(float fLeafSizeIncreaseFactor)
     object->CIndexedGeometry_ResetStripCounter(0);
     SetRandomSeed(seed);
     {
-        renderer->Compute(seed, value, 0, &position, 0.0f, 0.0f,
+        renderer->CIdvBranch_Compute(seed, value, 0, &position, 0.0f, 0.0f,
                                Matrix(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f), Float3(0.0f, 0.0f, 1.0f),
                                object, &offset, 1.0f, seed, -1.0f);
     }

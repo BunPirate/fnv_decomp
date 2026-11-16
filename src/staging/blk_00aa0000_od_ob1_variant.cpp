@@ -332,7 +332,7 @@ struct FUN_00abbf00_Class
 {
     int m0;
     int m4;
-    char TESRegionPointList_ScaleResult_Matches(FUN_00abbf00_Class* other);
+    char Matches(FUN_00abbf00_Class* other);
 };
 struct FUN_00aa4760_Class : public FUN_00aa4710_Class
 {
@@ -8149,10 +8149,10 @@ struct FUN_00abbeb0
     void* position;
     FUN_00abbeb0(const void*, const void*);
 
-    bool TESRegionPointList_ScaleResult_Matches(const FUN_00abbeb0& other);
+    bool Matches(const FUN_00abbeb0& other);
     bool Equal(const FUN_00abbeb0& other)
     {
-        return TESRegionPointList_ScaleResult_Matches(other);
+        return Matches(other);
     }
     bool operator!=(const FUN_00abbeb0& other)
     {

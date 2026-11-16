@@ -418,7 +418,7 @@ struct ConstraintReference : ConstraintReferencedBase
     void InitializeFields_00d541b0(CVector*, CVector*);
     void SetConstraintPivotFrames(CVector*, CVector*, CVector*, CVector*);
     void FUN_00cb8da0(CVector*, CVector*, CVector*, CVector*, CVector*, CVector*);
-    void NiBSplineBasisData_SetBasis(CVector*, CVector*, CVector*);
+    void SetBasis(CVector*, CVector*, CVector*);
     void FUN_00d4fba0(CVector*, CVector*, CVector*, CVector*, CVector*, CVector*);
     void FUN_00cded30(CVector*, CVector*, CVector*, CVector*, CVector*, CVector*);
     void FUN_00d4e960(CVector*, CVector*, CVector*, CVector*, CVector*, CVector*);
@@ -517,7 +517,7 @@ void CInstance::ApplyTransformToWorldConstraint(Matrix4f* apTransform)
             CVector a = q->a.c3, b = q->position, axis = q->axes[q->axis];
             point(b, apTransform);
             rotate(axis, apTransform);
-            p->NiBSplineBasisData_SetBasis(&a, &b, &axis);
+            p->SetBasis(&a, &b, &axis);
             return;
         }
         case 6: {

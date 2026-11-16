@@ -109,7 +109,7 @@ struct Parser
     float CTreeFileAccess_ParseFloat();
     int AdvanceBlockAllocationCursor();
     unsigned char GetNextChar();
-    V3 BSSoundMessage_GetVector3();
+    V3 GetVector3();
 };
 inline void DeadEnd()
 {
@@ -162,7 +162,7 @@ LeafQ* CBillboardLeaf_Parse(Parser* cFile)
             pLeaf->b18 = cFile->GetNextChar();
             break;
         case 0x1b62:
-            pLeaf->kB = cFile->BSSoundMessage_GetVector3();
+            pLeaf->kB = cFile->GetVector3();
             break;
         case 0x1b63:
             pLeaf->b40 = cFile->GetNextChar();
@@ -174,7 +174,7 @@ LeafQ* CBillboardLeaf_Parse(Parser* cFile)
             pLeaf->i48 = cFile->GetNextElement();
             break;
         case 0x1b67:
-            pLeaf->SetA(cFile->BSSoundMessage_GetVector3());
+            pLeaf->SetA(cFile->GetVector3());
             break;
         case 0x1b68:
             cFile->CTreeFileAccess_ParseFloat();

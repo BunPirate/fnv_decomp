@@ -56,7 +56,7 @@ bool TESCreature::Compare_005f9b90(TESForm* apCompare)
     if (static_cast<const TESCreature*>(this)->GetBodyPartData() !=
         static_cast<const TESCreature*>(other)->GetBodyPartData())
         return true;
-    if (BGSSaveLoadFile_GetFilePosition() != other->BGSSaveLoadFile_GetFilePosition())
+    if (FUN_009c0070() != other->FUN_009c0070())
         return true;
     if (FUN_00461580(0x100))
     {

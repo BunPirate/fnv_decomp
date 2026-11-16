@@ -64,5 +64,5 @@ class TESResponse
     void SetResponseText(const char* text);                        // 0x0061eb40
     void SetEmotionValue(unsigned int value);                      // 0x006ecd40
     void GetListenerIdle(TESIdleForm* idle);                       // 0x007037c0
-    int AngleSinCosArc_GetLength();                                               // 0x0083e0a0
+    int GetLength();                                               // 0x0083e0a0
 };

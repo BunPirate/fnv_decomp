@@ -416,7 +416,7 @@ __declspec(noinline) static void WriteUIntArray(const unsigned int* data, int co
     }
 }
 
-__declspec(noinline) static int saveCstring(Ctx* dataIn, List* klassMemOffset, int dataOut, int fixups)
+__declspec(noinline) static int saveCstring(Ctx* dataIn, List* klassMemOffset, int dataOut, int fixups) // src: XBOX_RETAIL_PDB 0x00e03e20
 {
     objectCopierPadUp(dataIn->hkOArchive_getStreamWriter(), 2);
     VObj* target = dataIn->hkOArchive_getStreamWriter()->v20();

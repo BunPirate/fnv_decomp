@@ -49158,7 +49158,7 @@ struct ScriptObj
 };
 struct SubA4
 {
-    void* BGSAmmoForm_GetAmmoForm();
+    void* FUN_00474a00();
     ScriptObj* GetFormIfType55();
 };
 struct WeapObj
@@ -49274,7 +49274,7 @@ bool Cls::PlayerCharacter_CanEquipOrUseObject(ArgObj* apItem)
         }
         else
         {
-            formRes2 = kObj18->sub.BGSAmmoForm_GetAmmoForm();
+            formRes2 = kObj18->sub.FUN_00474a00();
             scriptRes = kObj18->sub.GetFormIfType55();
             if (formRes2 != obj1c9)
             {

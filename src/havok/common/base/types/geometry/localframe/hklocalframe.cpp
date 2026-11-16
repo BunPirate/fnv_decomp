@@ -334,7 +334,7 @@ struct FUN_00cb0c00_class
 };
 
 // pdb: class hkSimpleLocalFrame, size 0x70 (here 0x68), bases: hkLocalFrame, 5 members
-class hkSimpleLocalFrame : public hkReferencedObject // src: EXE (old: FUN_00df67d0)
+class hkSimpleLocalFrame : public hkReferencedObject // src: EXE 0x010d461c (vtable; old: FUN_00df67d0)
 {
   public:
     int unk08;

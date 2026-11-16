@@ -385,7 +385,7 @@ struct DoorPart30
 
 struct FUN_004891d0_obj
 {
-    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int, unsigned int);
+    void WriteToBuffer(unsigned int, unsigned int);
 };
 
 struct FUN_0047bd70_shell
@@ -436,7 +436,7 @@ void FUN_004fb3b0_shell::BGSExplosion_SaveAlt()
     reinterpret_cast<FUN_004855a0*>(this)->M();
     reinterpret_cast<DoorPart30*>(reinterpret_cast<unsigned char*>(this) + 0x30)->Save_00487010();
     reinterpret_cast<FUN_004891d0_obj*>(reinterpret_cast<unsigned char*>(this) + 0x3C)
-        ->BSSendSceneGraphCommand_WriteToBuffer(0x4C444F4D, 0x54444F4D);
+        ->WriteToBuffer(0x4C444F4D, 0x54444F4D);
     reinterpret_cast<FUN_0047bd70_shell*>(reinterpret_cast<unsigned char*>(this) + 0x54)->FUN_0047bd70();
     reinterpret_cast<FUN_00487450_shell*>(reinterpret_cast<unsigned char*>(this) + 0x68)->FUN_00487450();
 

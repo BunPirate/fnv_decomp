@@ -3734,14 +3734,13 @@ int __thiscall FUN_00558dd0_class::GetElementAddress16(unsigned int index)
 struct FUN_00558e80_Class
 {
     hkReferencedObject* m_pObject;
-    void NiTPool_NiD3DPass_NiTNewInterface_NiD3DPass_ReleaseObject();
+    void ReleaseObject();
 };
 // Removes a reference from m_pObject if set, then clears the pointer.
 // @fnv 0x00558e80
-// src: XBOX_RETAIL_PDB 0x00558e80
-// pdb: NiTPool<NiD3DPass,NiTNewInterface<NiD3DPass> >::ReleaseObject | NiD3DPass.obj | retail, upstream name already matches, high
+// pdb: NiTPool<NiD3DPass,NiTNewInterface<NiD3DPass> >::ReleaseObject | NiD3DPass.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pkObject
-void FUN_00558e80_Class::NiTPool_NiD3DPass_NiTNewInterface_NiD3DPass_ReleaseObject()
+void FUN_00558e80_Class::ReleaseObject()
 {
     if (m_pObject)
         m_pObject->removeReference();
@@ -12649,7 +12648,7 @@ struct Ref54;
 struct Changes54;
 struct Extra54 : ExtraDataList
 {
-    Ref54* ExtraDataList_GetMerchantContainer();
+    Ref54* FUN_00421400();
     void ExtraDataList_SetCount(short count);
     void ExtraDataList_DuplicateExtraListForContainer(Extra54* source);
     void ExtraDataList_SetOriginalReferenceExtra(Ref54* reference);
@@ -12713,7 +12712,7 @@ void TESObjectCELL::FillBarterContainer(Ref54* apActor, Destination54* apBarterC
 {
     if (!apBarterContainer || !apActor)
         return;
-    Ref54* container = apActor->BSFile_GetDevice()->ExtraDataList_GetMerchantContainer();
+    Ref54* container = apActor->BSFile_GetDevice()->FUN_00421400();
     CellRefLockEnter();
     Node54* node = (Node54*)GetRefList_009604f0();
     while (node && *node->_ref_006815c0())
@@ -21522,7 +21521,7 @@ struct ActiveRegistry
 struct RefList
 {
     void ExtraDataList_GetbhkWorld(SpatialNode*);
-    void ExtraDataList_SetCellMopp(void*);
+    void SetCellMopp(void*);
 };
 struct Shadow
 {
@@ -21602,7 +21601,7 @@ void CellProxy::TESObjectCELL_InitHavok()
         {
             AutoMemContext guard((MEM_CONTEXT)0x10, true, DAT_0102ed68, 0x3a91);
             pkShadow = new Shadow();
-            ((RefList*)&(*reinterpret_cast<ExtraDataList*>(reinterpret_cast<char*>(this) + 0x28)))->ExtraDataList_SetCellMopp(pkShadow);
+            ((RefList*)&(*reinterpret_cast<ExtraDataList*>(reinterpret_cast<char*>(this) + 0x28)))->SetCellMopp(pkShadow);
         }
     }
 }

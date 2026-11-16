@@ -1844,7 +1844,7 @@ struct PlayerSlot
 struct ExtraSlot
 {
     bool ExtraDataList_IsExtraDefaultforContainer(int);
-    void ExtraDataList_SetHotKey(unsigned char);
+    void SetHotKey(unsigned char);
     void ExtraDataList_SetCount(int);
 };
 struct EquipForm;
@@ -6876,7 +6876,7 @@ struct XExtra17
     bool FUN_004bca60();
     bool ExtraDataList_CompareListForContainer(XExtra17*, int, bool);
     short ExtraDataList_GetCount();
-    void ExtraDataList_SetHotKey(unsigned char);
+    void SetHotKey(unsigned char);
     XDism17* FUN_0042e8c0();
 };
 struct XChange17

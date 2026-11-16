@@ -916,7 +916,7 @@ void SaveRaceAccess::SaveRace()
         for (part2 = 0; part2 < 8; part2++)
         {
             TESForm_AddChunk_00485910(0x58444e49, part2);
-            m_kBodyPartModels[sex3][part2].BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+            m_kBodyPartModels[sex3][part2].WriteToBuffer(0x4c444f4d, 0x54444f4d);
             ((TESModelSaveAccess*)&m_kBodyPartModels[sex3][part2])->TESModel_SaveFlags(0x44444f4d);
             m_kBodyPartTextures[sex3][part2].Save(0x4e4f4349);
         }
@@ -932,11 +932,11 @@ void SaveRaceAccess::SaveRace()
         {
             TESForm_AddChunk_00485910(0x58444e49, part2);
             m_kHeadPartTextures[sex3][part2].Save(0x4e4f4349);
-            m_kHeadPartModels[sex3][part2].BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+            m_kHeadPartModels[sex3][part2].WriteToBuffer(0x4c444f4d, 0x54444f4d);
             ((TESModelSaveAccess*)&m_kHeadPartModels[sex3][part2])->TESModel_SaveFlags(0x44444f4d);
         }
         TESForm_AddChunk_00485910(0x58444e49, part2);
-        m_kFaceGenTextureModels[sex3].BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+        m_kFaceGenTextureModels[sex3].WriteToBuffer(0x4c444f4d, 0x54444f4d);
     }
     {
         SaveList611e50* hairlist7 = NiAVObject_GetWorldTranslate();

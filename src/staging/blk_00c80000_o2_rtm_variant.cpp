@@ -10174,7 +10174,7 @@ static __declspec(noinline) void enumerateAllEntitiesInWorld(void* p, void* sys)
     if (p)
         sink = 5;
 }
-static __declspec(noinline) void enumerateAllConstraintsInWorld(void* a, void* sys)
+static __declspec(noinline) void enumerateAllConstraintsInWorld(void* a, void* sys) // src: XBOX_RETAIL_PDB 0x00c92860
 {
     volatile int sink = 0;
     if (a)

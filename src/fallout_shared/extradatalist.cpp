@@ -4022,18 +4022,17 @@ float FUN_00422320_shell::ExtraDataList_GetRadius()
 
 struct FUN_00422350_shell : public ExtraDataList
 {
-    void ExtraDataList_SetRadiation(float);
+    void SetRadiation(float);
 };
 
 void* __cdecl operator new(unsigned int);
 
 // Sets the radiation extra data to afRadiation, removing it when zero, updating the existing extra, or allocating and adding a new one.
 // @fnv 0x00422350
-// src: XBOX_RETAIL_PDB 0x00422350
-// pdb: ExtraDataList::SetRadiation | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetRadiation | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: afRadiation
 // pdb locals: pextra
-void FUN_00422350_shell::ExtraDataList_SetRadiation(float afRadiation)
+void FUN_00422350_shell::SetRadiation(float afRadiation)
 {
     if (afRadiation == 0.0)
     {
@@ -5550,16 +5549,15 @@ struct RadioReferenceData
 typedef char _sizecheck_RADIO_DATA[sizeof(RadioReferenceData) == 16 ? 1 : -1];
 struct FUN_00418310_shell : public ExtraDataList
 {
-    void ExtraDataList_SetRadioData(RadioReferenceData*);
+    void SetRadioData(RadioReferenceData*);
 };
 
 // Stores apData into the extra data of type 0x68, creating and adding it if missing, or removes that extra when apData is null.
 // @fnv 0x00418310
-// src: XBOX_RETAIL_PDB 0x00418310
-// pdb: ExtraDataList::SetRadioData | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetRadioData | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apData
 // pdb locals: pextra
-void FUN_00418310_shell::ExtraDataList_SetRadioData(RadioReferenceData* apData)
+void FUN_00418310_shell::SetRadioData(RadioReferenceData* apData)
 {
     if (apData)
     {
@@ -5987,7 +5985,7 @@ void FUN_00419dc0_shell2::ExtraDataList_SetHeadTrackTargetExtra(TESObjectREFRHel
 
 struct FUN_0041b580_shell : public ExtraDataList
 {
-    void ExtraDataList_SetHealthPerc(float);
+    void SetHealthPerc(float);
 };
 
 struct ExtraListRemover
@@ -5997,11 +5995,10 @@ struct ExtraListRemover
 
 // Sets the ExtraHealthPerc extra data value to afPerc, creating it if missing, or removes it when afPerc equals 1.0.
 // @fnv 0x0041b580
-// src: XBOX_RETAIL_PDB 0x0041b580
-// pdb: ExtraDataList::SetHealthPerc | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetHealthPerc | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: afHealthPerc
 // pdb locals: pextra
-void FUN_0041b580_shell::ExtraDataList_SetHealthPerc(float afHealthPerc)
+void FUN_0041b580_shell::SetHealthPerc(float afHealthPerc)
 {
     ExtraHealthPerc* pextra = (ExtraHealthPerc*)((BaseExtraList*)this)->GetExtraData(0x7a);
     if (afHealthPerc != 1.0)
@@ -6064,16 +6061,15 @@ namespace fnv_0041ba60 {
 typedef char _sizecheck_NiMemObject[sizeof(NiMemObject) == 1 ? 1 : -1];
 struct FUN_0041ba60_shell : public ExtraDataList
 {
-    void ExtraDataList_SetCellMopp(CellMopp*);
+    void SetCellMopp(CellMopp*);
 };
 
 // Gets the ExtraHavok extra data, creates and adds it if a mopp is given and none exists, then stores the mopp in it.
 // @fnv 0x0041ba60
-// src: XBOX_RETAIL_PDB 0x0041ba60
-// pdb: ExtraDataList::SetCellMopp | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetCellMopp | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apMopp
 // pdb locals: pextra
-void FUN_0041ba60_shell::ExtraDataList_SetCellMopp(CellMopp* apMopp)
+void FUN_0041ba60_shell::SetCellMopp(CellMopp* apMopp)
 {
     ExtraHavok* pextra = (ExtraHavok*)((BaseExtraList*)this)->GetExtraData(1);
     if (apMopp && !pextra)
@@ -6224,7 +6220,7 @@ struct blob8
 typedef char _sizecheck_BaseFormComponent[sizeof(BaseFormComponent) == 4 ? 1 : -1];
 struct FUN_0041c190_shell : public ExtraDataList
 {
-    void ExtraDataList_SetClimate(TESClimate*);
+    void SetClimate(TESClimate*);
 };
 
 struct FUN_0040f070 : public LegacyExtraData
@@ -6240,11 +6236,10 @@ struct Dummy_00410020
 
 // Sets or clears the climate extra data on this list: removes it when apData is null, adds a new entry when absent, otherwise updates the stored pointer.
 // @fnv 0x0041c190
-// src: XBOX_RETAIL_PDB 0x0041c190
-// pdb: ExtraDataList::SetClimate | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetClimate | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apClimate
 // pdb locals: pExtra
-void FUN_0041c190_shell::ExtraDataList_SetClimate(TESClimate* apClimate)
+void FUN_0041c190_shell::SetClimate(TESClimate* apClimate)
 {
     BSExtraData* pExtra = ((BaseExtraList*)this)->GetExtraData(8);
     if (!apClimate)
@@ -6404,7 +6399,7 @@ struct PatrolRefData
 typedef char _sizecheck_PatrolRefData[sizeof(PatrolRefData) == 20 ? 1 : -1];
 struct FUN_0041fc10_shell : public ExtraDataList
 {
-    void ExtraDataList_SetPatrolRefData(PatrolRefData*);
+    void SetPatrolRefData(PatrolRefData*);
 };
 
 struct Dummy_00410020
@@ -6412,11 +6407,10 @@ struct Dummy_00410020
     void BaseExtraList_RemoveExtra(BSExtraData*, int);
 };
 // @fnv 0x0041fc10
-// src: XBOX_RETAIL_PDB 0x0041fc10
-// pdb: ExtraDataList::SetPatrolRefData | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetPatrolRefData | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apPatrolRefData
 // pdb locals: pextra
-void FUN_0041fc10_shell::ExtraDataList_SetPatrolRefData(PatrolRefData* apPatrolRefData)
+void FUN_0041fc10_shell::SetPatrolRefData(PatrolRefData* apPatrolRefData)
 {
     ExtraPatrolRefData* pextra = (ExtraPatrolRefData*)((BaseExtraList*)this)->GetExtraData(0x6f);
     if (pextra)
@@ -6603,16 +6597,15 @@ struct blob8
 typedef char _sizecheck_BaseFormComponent[sizeof(BaseFormComponent) == 4 ? 1 : -1];
 struct FUN_00421d50_shell : public ExtraDataList
 {
-    void ExtraDataList_SetEmittanceSource(TESForm*);
+    void SetEmittanceSource(TESForm*);
 };
 
 // Sets the ExtraEmittanceSource extra data's pSource to ap, creating and adding the extra if missing, or removing extra type 0x67 when ap is null.
 // @fnv 0x00421d50
-// src: XBOX_RETAIL_PDB 0x00421d50
-// pdb: ExtraDataList::SetEmittanceSource | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetEmittanceSource | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apSource
 // pdb locals: pextra
-void FUN_00421d50_shell::ExtraDataList_SetEmittanceSource(TESForm* apSource)
+void FUN_00421d50_shell::SetEmittanceSource(TESForm* apSource)
 {
     if (apSource)
     {
@@ -6720,7 +6713,7 @@ void FUN_0042ee00_shell::ExtraDataList_SetExtraSayToTopicOnExtra(TESTopic* apTop
 namespace fnv_0042f200 {
 struct FUN_0042f200_shell : public ExtraDataList
 {
-    void ExtraDataList_SetIgnoredBySandbox(bool);
+    void SetIgnoredBySandbox(bool);
 };
 
 struct ExtraListRemover
@@ -6729,11 +6722,10 @@ struct ExtraListRemover
 };
 
 // @fnv 0x0042f200
-// src: XBOX_RETAIL_PDB 0x0042f200
-// pdb: ExtraDataList::SetIgnoredBySandbox | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetIgnoredBySandbox | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: abVal
 // pdb locals: pextra
-void FUN_0042f200_shell::ExtraDataList_SetIgnoredBySandbox(bool abVal)
+void FUN_0042f200_shell::SetIgnoredBySandbox(bool abVal)
 {
     ExtraIgnoredBySandbox* pextra = (ExtraIgnoredBySandbox*)((BaseExtraList*)this)->GetExtraData(0x80);
     if (!pextra && abVal)
@@ -7610,7 +7602,7 @@ template <class T> class NiPointer_0069bb00
 };
 struct FUN_0069bb00_t
 {
-    int CPointerList_XAUDIO2_CX2EffectChain_EffectEntry_1_4294967295_0_FindIndex(NiPointer_0069bb00<NavMesh> nIndex);
+    int FindIndex(NiPointer_0069bb00<NavMesh> nIndex);
     void RemoveAndCollect(int iIndex);
     void NavMeshArray_RemoveNavMesh(NiPointer_0069bb00<NavMesh> apSearchNavMesh);
 };
@@ -7621,7 +7613,7 @@ struct FUN_0069bb00_t
 // pdb locals: inavIndex
 void FUN_0069bb00_t::NavMeshArray_RemoveNavMesh(NiPointer_0069bb00<NavMesh> apNavMesh)
 {
-    int iIndex = CPointerList_XAUDIO2_CX2EffectChain_EffectEntry_1_4294967295_0_FindIndex(apNavMesh);
+    int iIndex = FindIndex(apNavMesh);
     if (iIndex != -1)
         RemoveAndCollect(iIndex);
 }
@@ -8551,15 +8543,14 @@ namespace fnv_00421400 {
 
 struct FUN_00421400 : BaseExtraList
 {
-    void* ExtraDataList_GetMerchantContainer();
+    void* GetMerchantContainer();
 };
 
 // Returns the container pointer stored in the ExtraMerchantContainer extra data (type 0x3c), or null if absent.
 // @fnv 0x00421400
-// src: XBOX_RETAIL_PDB 0x00421400
-// pdb: ExtraDataList::GetMerchantContainer | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::GetMerchantContainer | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: pextra
-void* FUN_00421400::ExtraDataList_GetMerchantContainer()
+void* FUN_00421400::GetMerchantContainer()
 {
     ExtraMerchantContainer* extra = (ExtraMerchantContainer*)GetExtraData(0x3c);
     if (extra)
@@ -11252,16 +11243,15 @@ void FUN_00422590_cls::ExtraDataList_AddFriendHit()
 
 struct FUN_0042dde0_cls : BaseExtraList
 {
-    void ExtraDataList_SetHotKey(char acValue);
+    void SetHotKey(char acValue);
 };
 
 // Gets the extra data of type 0x4a; if absent, creates an ExtraHotKey with acValue and adds it, otherwise updates its stored value.
 // @fnv 0x0042dde0
-// src: XBOX_RETAIL_PDB 0x0042dde0
-// pdb: ExtraDataList::SetHotKey | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetHotKey | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: acValue
 // pdb locals: pextra
-void FUN_0042dde0_cls::ExtraDataList_SetHotKey(char acValue)
+void FUN_0042dde0_cls::SetHotKey(char acValue)
 {
     ExtraHotKey* pextra = (ExtraHotKey*)GetExtraData(0x4a);
     if (!pextra)
@@ -13356,16 +13346,15 @@ class B41B120ExtraList : public ExtraDataList
 {
   public:
     B41B120StartingPosition* GetOrCreateStartingPosition(TESObjectREFR* pkRef);
-    PodPoint3 TESObjectREFR_SetStartingPosition(TESObjectREFR* pkRef, PodPoint3 kPosition);
+    PodPoint3 SetStartingPosition(TESObjectREFR* pkRef, PodPoint3 kPosition);
 };
 
 // Stores kPosition into the extra data's position field, creating the extra data via GetOrCreateStartingPosition if absent, and returns kPosition.
 // @fnv 0x0041b120
-// src: XBOX_RETAIL_PDB 0x0041b120
-// pdb: TESObjectREFR::SetStartingPosition | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb: TESObjectREFR::SetStartingPosition | TESObjectREFR.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: aposition
 // pdb locals: tempMemContext
-PodPoint3 B41B120ExtraList::TESObjectREFR_SetStartingPosition(TESObjectREFR* pkRef, PodPoint3 kPosition)
+PodPoint3 B41B120ExtraList::SetStartingPosition(TESObjectREFR* pkRef, PodPoint3 kPosition)
 {
     B41B120StartingPosition* pkExtra = reinterpret_cast<B41B120StartingPosition*>(GetExtraData(0xF));
     if (!pkExtra)
@@ -13425,7 +13414,7 @@ struct FUN_0041c5e0_str_cls
 };
 
 // pdb: class ExtraEditorID, size 0x14 (here 0x10), bases: BSExtraData, 1 members
-struct ExtraEditorID : FUN_0041c5e0_base_cls // src: EXE (old: FUN_0041c5e0_cls)
+struct ExtraEditorID : FUN_0041c5e0_base_cls // src: EXE 0x0101519c (vtable; old: FUN_0041c5e0_cls)
 {
     FUN_0041c5e0_str_cls str;
     ExtraEditorID(const char* s);
@@ -16586,7 +16575,7 @@ struct List
     void ExtraDataList_SetGlobal(int);
     void FUN_004198a0(int);
     void FUN_00419970(float);
-    void ExtraDataList_SetHealthPerc(float);
+    void SetHealthPerc(float);
     void FUN_00419a20(unsigned char);
     void ExtraDataList_SetTimeLeft(float);
     void ExtraDataList_SetCount(unsigned short);
@@ -16595,7 +16584,7 @@ struct List
     void FUN_00419d10(int);
     void ExtraDataList_SetMusicType(int);
     void SetAcousticSpace(int);
-    void ExtraDataList_SetClimate(int);
+    void SetClimate(int);
     void ExtraDataList_SetImageSpace(int);
     void ExtraDataList_SetWaterType(int);
     void ExtraDataList_SetRandomTeleportMarker(int);
@@ -16603,16 +16592,16 @@ struct List
     void ExtraDataList_SetMerchantContainer(int);
     void ExtraDataList_SetXTarget(int);
     void ExtraDataList_SetEncounterZone(int);
-    void ExtraDataList_SetEmittanceSource(int);
+    void SetEmittanceSource(int);
     void ExtraDataList_SetMultiBoundRef(int);
     void ExtraDataList_SetLevCreaModifier(int);
     void ExtraDataList_SetRadius(float);
-    void ExtraDataList_SetRadiation(float);
-    void ExtraDataList_SetIgnoredBySandbox(bool);
+    void SetRadiation(float);
+    void SetIgnoredBySandbox(bool);
     Ammo* ExtraDataList_GetAmmoExtra();
     void* BaseExtraList_GetExtraData(unsigned char);
     void* BaseExtraList_AddExtra(void*);
-    void ExtraDataList_SetRadioData(Radio*);
+    void SetRadioData(Radio*);
     Teleport* ExtraDataList_GetTeleport();
     void ExtraDataList_SetTeleportPtr(Teleport*);
     Marker* ExtraDataList_GetMapMarkerData();
@@ -16622,7 +16611,7 @@ struct List
     AcousticMarker* GetEntryValue();
     void ExtraDataList_SetAudioBuoyMarkerPtr(AcousticMarker*);
     void ExtraDataList_SetSeedIndex(unsigned char);
-    void ExtraDataList_SetRegionList(RegionList*);
+    void SetRegionList(RegionList*);
     void ExtraDataList_SetPackageStartLocation(int, int, void*, float);
     void BaseExtraList_RemoveExtra(void*, bool);
     void ExtraDataList_SetDistantDataNormal(NiPoint3*);
@@ -16637,7 +16626,7 @@ struct List
     void AddOrRemoveRef(int, bool);
     void AddPrimitiveExtra(void*);
     void ExtraDataList_SetOcclusionPlane(Plane*);
-    void ExtraDataList_SetPatrolRefData(PatrolData*);
+    void SetPatrolRefData(PatrolData*);
     void ExtraDataList_SetOcclusionPlaneLinkedRefData(ActionData*);
     void ExtraDataList_SetPortalLinkedRefData(DroppedData*);
     void ExtraDataList_SetRoomLinkedRefData(RoomData*);
@@ -16688,7 +16677,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
     case 0x504c4858: {
         float value = 0.0f;
         apFile->ReadChunkInt(&value);
-        ExtraDataList_SetHealthPerc(value);
+        SetHealthPerc(value);
         break;
     }
     case 0x45535558: {
@@ -16756,7 +16745,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
         apFile->FUN_00472890(&data, 0x10);
         if (apFile->FUN_00401680())
             data.SCRIPT_HEADER_Endian();
-        ExtraDataList_SetRadioData(&data);
+        SetRadioData(&data);
         break;
     }
     case 0x4c455458: {
@@ -16833,7 +16822,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
             if (pRegion)
                 m_pRegions->AddRegion(pRegion);
         }
-        ExtraDataList_SetRegionList(m_pRegions);
+        SetRegionList(m_pRegions);
         delete[] pRegions;
         break;
     }
@@ -16863,7 +16852,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
     case 0x4d434358: {
         int value = 0;
         apFile->ReadChunkInt(&value);
-        ExtraDataList_SetClimate(value);
+        SetClimate(value);
         break;
     }
     case 0x4d494358: {
@@ -17049,7 +17038,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
     case 0x494d4558: {
         int value = 0;
         apFile->ReadChunkInt(&value);
-        ExtraDataList_SetEmittanceSource(value);
+        SetEmittanceSource(value);
         break;
     }
     case 0x52424d58: {
@@ -17101,7 +17090,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
     case 0x44415258: {
         float value = 0.0f;
         apFile->ReadChunkInt(&value);
-        ExtraDataList_SetRadiation(value);
+        SetRadiation(value);
         break;
     }
     case 0x52575058: {
@@ -17173,7 +17162,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
         if (apFile->FUN_00401680())
             value.QuestPerkEntryData_Endian();
         PatrolData* data = new PatrolData(&value);
-        ExtraDataList_SetPatrolRefData(data);
+        SetPatrolRefData(data);
         break;
     }
     case 0x44524f58: {
@@ -17224,7 +17213,7 @@ void loader::List::ExtraDataList_Load(File* apFile, void* apOwner)
         break;
     }
     case 0x53424958: {
-        ExtraDataList_SetIgnoredBySandbox(true);
+        SetIgnoredBySandbox(true);
         break;
     }
     case 0x46525358: {
@@ -17468,16 +17457,15 @@ struct RegionList
 
 struct FUN_0041bbd0_shell : ExtraDataList
 {
-    void ExtraDataList_SetRegionList(RegionList* apList);
+    void SetRegionList(RegionList* apList);
 };
 
 // Sets or clears the region list extra data: removes it when value is null, creates it when absent, otherwise replaces the stored regions pointer.
 // @fnv 0x0041bbd0
-// src: XBOX_RETAIL_PDB 0x0041bbd0
-// pdb: ExtraDataList::SetRegionList | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetRegionList | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apList
 // pdb locals: pExtra
-void FUN_0041bbd0_shell::ExtraDataList_SetRegionList(RegionList* apList)
+void FUN_0041bbd0_shell::SetRegionList(RegionList* apList)
 {
     ExtraRegionList* data = reinterpret_cast<ExtraRegionList*>(GetExtraData(4));
     if (apList == 0)
@@ -18185,7 +18173,7 @@ struct FixupTail
 };
 struct FixupItem
 {
-    void ProcessArray_AddActor(Actor*);
+    void AddActor(Actor*);
 };
 TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int);
 void* __cdecl GetMagicItemByNumericID(void*);
@@ -18448,7 +18436,7 @@ void FixupList::FixupReferences(FixupStream* stream, TESForm* base)
                     {
                         FixupItem* item = (FixupItem*)*pAnimationNode->FUN_006815c0();
                         if (item)
-                            item->ProcessArray_AddActor(actor);
+                            item->AddActor(actor);
                         pAnimationNode = pAnimationNode->FUN_00726070();
                     }
                 }
@@ -18822,7 +18810,7 @@ struct FUN_0043a160
     unsigned int unk04;
     unsigned int unk08;
     FUN_0043a160();
-    void LoadFields();
+    void DoorTeleportData_LoadGame();
     unsigned int unk0C;
     unsigned int unk10;
     unsigned int unk14;
@@ -18910,7 +18898,7 @@ struct Extras
     void ExtraDataList_SetItemDropper(unsigned int);
     void ExtraDataList_SetHeadTrackTargetExtra(unsigned int);
     void ExtraDataList_SetStartingWorldOrCell(TESForm*);
-    void ExtraDataList_SetHotKey(unsigned char);
+    void SetHotKey(unsigned char);
     void ExtraDataList_SetInfoGeneralTopic(FUN_0083da50*);
     void ExtraDataList_SetNoRumors(unsigned char);
     void ExtraDataList_RemoveScript();
@@ -19304,7 +19292,7 @@ void Extras::ExtraDataList_LoadGame(unsigned int aiFlags, unsigned int aiCurrent
             if (aiFlags & 0x20000)
             {
                 FUN_0043a160* data = new FUN_0043a160;
-                data->LoadFields();
+                data->DoorTeleportData_LoadGame();
                 ExtraDataList_SetTeleportPtr(data);
             }
             break;
@@ -19431,7 +19419,7 @@ void Extras::ExtraDataList_LoadGame(unsigned int aiFlags, unsigned int aiCurrent
             {
                 unsigned char value;
                 DAT_011de45c->TESSaveLoadGame_LoadGameDataOLD(&value, 1);
-                ExtraDataList_SetHotKey(value);
+                SetHotKey(value);
             }
             break;
         }

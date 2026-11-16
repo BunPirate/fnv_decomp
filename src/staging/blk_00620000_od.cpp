@@ -4012,7 +4012,7 @@ class ThisBase_62a190
 };
 
 // pdb: class SpecificItemCollector, size 0x80 (here 0x74), bases: hkpClosestRayHitCollector, 2 members
-class SpecificItemCollector : public ThisBase_62a190 // src: EXE (old: FUN_0062a190)
+class SpecificItemCollector : public ThisBase_62a190 // src: EXE 0x0104e1dc (vtable; old: FUN_0062a190)
 {
   public:
     ThisMember_62a190 m_70;

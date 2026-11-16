@@ -24,7 +24,7 @@ struct FUN_00b15170
     char m_00[0xc];
     char* m_0c;
     char* m_10;
-    char* D3DXShader_CFragmentRegisterAllocator_GetElement(unsigned int szName);
+    char* GetElement(unsigned int szName);
 };
 struct FUN_00b2a180
 {
@@ -587,7 +587,7 @@ struct BranchPoint
     }
 };
 // pdb: class CRotTransform, size 0x24, 1 members
-struct CRotTransform // src: XBOX_RETAIL_PDB (old: BranchMatrix)
+struct CRotTransform // src: XBOX_RETAIL_PDB 0x00b12940 (first of 6 linked methods; old: BranchMatrix)
 {
     float m_afData, m01, m02, m10, m11, m12, m20, m21, m22; // src: XBOX_RETAIL_PDB +0x0 (old: m00)
     CRotTransform()
@@ -821,7 +821,7 @@ inline BranchPoint* __cdecl VecInterpolate(BranchPoint* out, const BranchPoint* 
     return out;
 }
 // pdb: class CIdvBranch, size 0x40 (here 0x50), 10 members
-struct CIdvBranch // src: XBOX_RETAIL_PDB (old: FUN_00b10dc0)
+struct CIdvBranch // src: XBOX_RETAIL_PDB 0x00b11050 (first of 18 linked methods; old: FUN_00b10dc0)
 {
     int unk00;
     float time;
@@ -840,12 +840,12 @@ struct CIdvBranch // src: XBOX_RETAIL_PDB (old: FUN_00b10dc0)
     float UpdateState_00b14b10(float, float);
     void ProcessEntries_00b14450(FUN_00b130a0*, float, float, unsigned short, BranchMesh*, const BranchPoint&, float, unsigned int,
                       float, int);
-    void ComputeBranchNormals(BranchMesh*, unsigned short);
+    void CIdvBranch_ComputeBranchNormals(BranchMesh*, unsigned short);
     void FindSegment(BranchChild*, float);
     void CIdvBranch_ComputeBud(CIdvBranch*, float, int, BranchPoint*, float, const CRotTransform*, FUN_00b130a0*, void*, float,
                       unsigned int);
     void CIdvBranch_ComputeVolume();
-    void Compute(unsigned int, float, int, const BranchPoint&, float, float, const CRotTransform&,
+    void CIdvBranch_Compute(unsigned int, float, int, const BranchPoint&, float, float, const CRotTransform&,
                       const BranchPoint&, BranchMesh*, void*, float, unsigned int, float);
 };
 inline CRotTransform CRotTransform::Multiply(const CRotTransform& a)
@@ -917,11 +917,11 @@ inline void CRotTransform::RotateYZ(float fYangle, float fZangle)
     *this = rotation.Multiply(*this);
 }
 // @fnv 0x00b11050
-// src: XBOX_RETAIL_PDB 0x00b11050 (was COMMUNITY)
-// pdb: CIdvBranch::Compute | Branch.obj | retail, upstream name already matches, high
+// src: COMMUNITY 0x00b11050
+// pdb: CIdvBranch::Compute | Branch.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: nSeed, fSize, nLevel, cBasePos, fPercentOfParent, fCombinedPercentOfParent, cBaseTransform, cZAxis, pBranchGeometry, vLeaves, fWindWeight, nWindGroup, fParentRadius
 // pdb locals: cTile, bFrond, fFlexibility, sInfo, fLength, fSegmentLength, fGravity, fTileOffset, fAzimuth, fStartAngle, fRadius, fFirstRadius, pFirstVertex, cAdjustmentAxis, bChildrenAreBuds, fFacingFactor, cTransformAdjustment, fGravityAngle, fCrossSectionWeight, fRunningLength, nNumChildBranches, fGravityProfile, fAzimuthDisturbance, pLastVertex ...
-void CIdvBranch::Compute(unsigned int nSeed, float fSize, int nLevel, const BranchPoint& cBasePos, float fPercentOfParent,
+void CIdvBranch::CIdvBranch_Compute(unsigned int nSeed, float fSize, int nLevel, const BranchPoint& cBasePos, float fPercentOfParent,
                                 float fCombinedPercentOfParent, const CRotTransform& cBaseTransform, const BranchPoint& cZAxis,
                                 BranchMesh* pBranchGeometry, void* vLeaves, float fWindWeight, unsigned int nWindGroup, float fParentRadius)
 {
@@ -1095,7 +1095,7 @@ void CIdvBranch::Compute(unsigned int nSeed, float fSize, int nLevel, const Bran
         else
         {
             pBranchGeometry->SetVertices((unsigned short)firstVertex);
-            ComputeBranchNormals(pBranchGeometry, type);
+            CIdvBranch_ComputeBranchNormals(pBranchGeometry, type);
         }
         int qpTd = (int)(material->children / fSize * angle);
         nLevel++;
@@ -1149,7 +1149,7 @@ void CIdvBranch::Compute(unsigned int nSeed, float fSize, int nLevel, const Bran
                     float qpia = fCombinedPercentOfParent + (1.0f - fCombinedPercentOfParent) * qxWmVch;
                     if (nLevel <= 1)
                         qpia *= qpia;
-                    qHVMR.object->Compute(nSeed, fSize, nLevel, qJDuOZ, qxWmVch, qpia, entries[qHVMR.idx].matrix,
+                    qHVMR.object->CIdvBranch_Compute(nSeed, fSize, nLevel, qJDuOZ, qxWmVch, qpia, entries[qHVMR.idx].matrix,
                                                entries[qHVMR.idx].direction, pBranchGeometry, vLeaves, qQMZREG, nWindGroup, qZWI);
                     if (!DAT_011f8c00->GetByteAtOffset4C() || nLevel < DAT_011f8c00->CFrondEngine_GetLevel())
                         childList.AppendElementWithGrowth(qHVMR);
@@ -2907,11 +2907,11 @@ struct StripDataX
 };
 
 // @fnv 0x00b14ed0
-// src: XBOX_RETAIL_PDB 0x00b14ed0 (was COMMUNITY)
-// pdb: CIdvBranch::ComputeBranchNormals | Branch.obj | retail, upstream name already matches, high
+// src: COMMUNITY 0x00b14ed0
+// pdb: CIdvBranch::ComputeBranchNormals | Branch.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pBranchGeometry, usSegments
 // pdb locals: i, nBase, j, cHoriz, nHorizPrev, nVertNext, cVert, pHorizNext, nHorizNext, pHorizPrev, pVertPrev, nVertPrev, cNormal, pVertNext
-void CIdvBranch::ComputeBranchNormals(BranchMesh* pBranchGeometry, unsigned short usSegments)
+void CIdvBranch::CIdvBranch_ComputeBranchNormals(BranchMesh* pBranchGeometry, unsigned short usSegments)
 {
     for (int i = 0; i < entryCount; i++)
     {

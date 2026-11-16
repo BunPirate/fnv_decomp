@@ -23,7 +23,7 @@ template <class T> struct PoolAllocatorBase
     };
     static LinkedListEntry* ms_pFreeList;
 };
-// src: XBOX_RETAIL_PDB 0x00a8a200 (was COMMUNITY)
+// src: XBOX_RETAIL_PDB 0x00a8a200 (was COMMUNITY)
 void NiTAbstractPoolAllocator_unsigned_int__SDMShutdown()
 {
     void* p = DAT_011c5f54;

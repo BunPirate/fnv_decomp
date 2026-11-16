@@ -427,15 +427,14 @@ struct FUN_00e69b40_shell {
     unsigned int count;
     unsigned int pad24;
     unsigned int* entries;
-    unsigned int NiD3DShaderConstantMap_GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int pszKey);
 };
 
 // @fnv 0x00e69b40
-// src: XBOX_RETAIL_PDB 0x00e69b40
-// pdb: NiD3DShaderConstantMap::GetEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb: NiD3DShaderConstantMap::GetEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pszKey
 // pdb locals: bFound, pkEntry, uiSize, ui
-unsigned int FUN_00e69b40_shell::NiD3DShaderConstantMap_GetEntry(unsigned int pszKey)
+unsigned int FUN_00e69b40_shell::GetEntry(unsigned int pszKey)
 {
     if (pszKey < count)
         return entries[pszKey];

@@ -7,7 +7,7 @@
 
 
 // pdb: class hkOffsetOnlyStreamWriter, size 0x10, bases: hkStreamWriter, 2 members
-struct hkOffsetOnlyStreamWriter : hkReferencedObject // src: EXE (old: FUN_00e02ef0)
+struct hkOffsetOnlyStreamWriter : hkReferencedObject // src: EXE 0x010ea388 (vtable; old: FUN_00e02ef0)
 {
     int m_offset; // src: XBOX_RETAIL_PDB +0x8 (old: m_kPointA)
     int m_eofOffset; // src: XBOX_RETAIL_PDB +0xc (old: m_kPointB)

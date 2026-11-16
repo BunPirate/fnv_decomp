@@ -5534,7 +5534,7 @@ int PlayerActorValueMethods::GetPermanentActorValue(ActorValue::Index aiWhich)
 
 namespace fnv_0093ad60 {
 bool __cdecl ActorValue_IsSkill(int);
-float __cdecl GetSkillValue(void*, int, bool);
+float __cdecl AiFormulas_AVDeriveSkill(void*, int, bool);
 float __cdecl FUN_0066f190(int, float);
 
 }  // namespace fnv_0093ad60
@@ -5552,7 +5552,7 @@ float PlayerActorValueMethods::GetCurrentActorValue(ActorValue::Index aiWhich)
     float fResult = 0.0f;
     if (fnv_0093ad60::ActorValue_IsSkill(aiWhich))
     {
-        fResult = fnv_0093ad60::GetSkillValue(static_cast<ActorValueOwner*>(g_thePlayer), aiWhich, true) +
+        fResult = fnv_0093ad60::AiFormulas_AVDeriveSkill(static_cast<ActorValueOwner*>(g_thePlayer), aiWhich, true) +
                   reinterpret_cast<SkillBonusFunction>((*reinterpret_cast<void***>(this))[0x123])(this, aiWhich, &bFlag) + GetDamageActorValue((ActorValue::Index)aiWhich);
     }
     else

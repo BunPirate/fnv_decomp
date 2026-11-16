@@ -510,7 +510,7 @@ struct FUN_0043a9a0_class
     unsigned int x;
     unsigned int y;
     unsigned int z;
-    void __thiscall LoadFields();
+    void __thiscall DoorTeleportData_LoadGame();
 };
 struct S_0043b320
 {

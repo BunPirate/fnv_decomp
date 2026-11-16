@@ -117,7 +117,7 @@ struct __declspec(novtable) S_00d42790_Agent : S_00d42790_RefObj
 };
 
 // pdb: class hkpPhantomAgent, size 0x24, bases: hkpCollisionAgent, 6 members
-struct hkpPhantomAgent : S_00d42790_Agent // src: EXE (old: FUN_00d42790)
+struct hkpPhantomAgent : S_00d42790_Agent // src: EXE 0x010cf238 (vtable; old: FUN_00d42790)
 {
     const S_00d42790_CdBody* m_collidableA; // src: XBOX_RETAIL_PDB +0xc (old: m_pBodyA)
     const S_00d42790_CdBody* m_collidableB; // src: XBOX_RETAIL_PDB +0x10 (old: m_pBodyB)

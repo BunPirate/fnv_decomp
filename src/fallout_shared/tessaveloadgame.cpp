@@ -8154,7 +8154,7 @@ struct SaveHeaderReader
     unsigned int unknown94;
     unsigned char identifier[16];
     unsigned int identifierTail;
-    unsigned int TESSaveLoadGame_ReadFile(NiBinaryStream*, void*, unsigned int);
+    unsigned int ReadFromStream(NiBinaryStream*, void*, unsigned int);
     unsigned int TESSaveLoadGame_LoadHeader(NiBinaryStream* apFile, bool abFullLoad);
 };
 // Reads header data from the stream, may seek to 0xd000, and checks the loaded version fields.
@@ -8167,7 +8167,7 @@ unsigned int SaveHeaderReader::TESSaveLoadGame_LoadHeader(NiBinaryStream* apFile
 {
     char header[260];
     fileOffset = 0;
-    if (!TESSaveLoadGame_ReadFile(apFile, header, BSStringLength(DAT_011a2224)))
+    if (!ReadFromStream(apFile, header, BSStringLength(DAT_011a2224)))
         return 0;
     if (header[0])
     {
@@ -8175,7 +8175,7 @@ unsigned int SaveHeaderReader::TESSaveLoadGame_LoadHeader(NiBinaryStream* apFile
         {
             ((BSFile*)apFile)->Seek(0xd000, DAT_010a2480);
             fileOffset = 0xd000;
-            TESSaveLoadGame_ReadFile(apFile, header, BSStringLength(DAT_011a2224));
+            ReadFromStream(apFile, header, BSStringLength(DAT_011a2224));
         }
         if (FUN_00ec8a19(header, DAT_011a2224, BSStringLength(DAT_011a2224)) != 0)
             return 0;
@@ -8186,15 +8186,15 @@ unsigned int SaveHeaderReader::TESSaveLoadGame_LoadHeader(NiBinaryStream* apFile
     }
     {
         unsigned int result;
-        TESSaveLoadGame_ReadFile(apFile, &majorVersion, 1);
-        TESSaveLoadGame_ReadFile(apFile, &minorVersion, 1);
+        ReadFromStream(apFile, &majorVersion, 1);
+        ReadFromStream(apFile, &minorVersion, 1);
         CopyByteToOffset80(reinterpret_cast<char*>(this));
         if (reinterpret_cast<SaveLoadManager*>(::g_TESSaveLoadGame)->FUN_008df040() >= 0x52)
         {
             if (abFullLoad)
             {
-                TESSaveLoadGame_ReadFile(apFile, identifier, 16);
-                TESSaveLoadGame_ReadFile(apFile, &identifierTail, 4);
+                ReadFromStream(apFile, identifier, 16);
+                ReadFromStream(apFile, &identifierTail, 4);
             }
             else
             {
@@ -8206,7 +8206,7 @@ unsigned int SaveHeaderReader::TESSaveLoadGame_LoadHeader(NiBinaryStream* apFile
             ourMemset(identifier, 255, 16);
             identifierTail = -1;
         }
-        TESSaveLoadGame_ReadFile(apFile, &result, 4);
+        ReadFromStream(apFile, &result, 4);
         if (majorVersion || (abFullLoad && minorVersion != 125 && minorVersion < 19))
         {
             char messageBuffer[520];

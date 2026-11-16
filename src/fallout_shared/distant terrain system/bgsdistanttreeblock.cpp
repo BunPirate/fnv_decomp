@@ -92,7 +92,7 @@ FUN_006f8650::FUN_006f8650() : unk4(0)
 
 struct FUN_006b3140_shell
 {
-    void D3DXShader_CFragmentRegisterAllocator_AddElement(void*);
+    void AddElement(void*);
     void* FUN_006b3140();
 };
 extern FUN_006b3140_shell g_011d85d0;
@@ -103,7 +103,7 @@ void BuildNavMeshGeometry(void*);
 // pdb params: aType
 void BGSDistantTreeBlock_TreeTypes_Append(void* a1)
 {
-    g_011d85d0.D3DXShader_CFragmentRegisterAllocator_AddElement(a1);
+    g_011d85d0.AddElement(a1);
     BuildNavMeshGeometry(g_011d85d0.FUN_006b3140());
 }
 

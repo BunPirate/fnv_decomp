@@ -347,10 +347,9 @@ struct LoadBuffer
 };
 
 // @fnv 0x00a61120
-// src: XBOX_RETAIL_PDB 0x00a61120
-// pdb: NiXenonSourceCubeMapData::CreateCubeMap | NiXenonSourceCubeMapData.obj | retail, upstream name already matches, high
+// pdb: NiXenonSourceCubeMapData::CreateCubeMap | NiXenonSourceCubeMapData.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: pkD3DDevice9, ulsize, uimipSize, eD3DFmt, pkD3DCubeTex, eD3DRet, ioverhead, uibaseSize
-NiSourceCubeMap* __cdecl NiXenonSourceCubeMapData_CreateCubeMap(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, NiRenderer* pkRenderer,
+NiSourceCubeMap* __cdecl CreateCubeMap(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, NiRenderer* pkRenderer,
                                  int iUnused, const TextureFormatPreferences* pkPrefs)
 {
     NiSourceCubeMap* pkMap = new NiSourceCubeMap;

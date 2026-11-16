@@ -58,8 +58,7 @@ void Character::Revert(BGSLoadFormBuffer* buffer)
 }
 
 // @fnv 0x009698a0
-// src: XBOX_RETAIL_PDB 0x009698a0
-// pdb: PlayerCharacter::GetMediaLocationController | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb: PlayerCharacter::GetMediaLocationController | PlayerCharacter.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: pMarker
 void* Character::GetCurrentMusicMarker()
 {
@@ -322,14 +321,13 @@ struct MusicMarkerReference
 typedef char _sizecheck_AudioMarkerInfo[sizeof(MusicMarkerReference) == 8 ? 1 : -1];
 struct FUN_009698a0_shell : public PlayerCharacter
 {
-    MediaLocationController* PlayerCharacter_GetMediaLocationController();
+    MediaLocationController* GetMediaLocationController();
 };
 
 // @fnv 0x009698a0
-// src: XBOX_RETAIL_PDB 0x009698a0
-// pdb: PlayerCharacter::GetMediaLocationController | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb: PlayerCharacter::GetMediaLocationController | PlayerCharacter.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: pMarker
-MediaLocationController* FUN_009698a0_shell::PlayerCharacter_GetMediaLocationController()
+MediaLocationController* FUN_009698a0_shell::GetMediaLocationController()
 {
     if (*(MusicMarkerReference**)((char*)this + 0x7dc) && *(AudioMarkerDataCalls**)(*(char**)((char*)this + 0x7dc) + 4))
     {

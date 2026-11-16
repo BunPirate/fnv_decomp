@@ -2475,7 +2475,7 @@ public:
     FUN_00e95b60_cls* Reset();
 };
 struct S_00e97790_This {
-    void __thiscall NiD3DShaderConstantManager_ctor(void* pkD3DRenderer);
+    void __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(void* pkD3DRenderer);
 };
 struct FUN_00e984d0_Struct {
     int unk00;
@@ -3481,7 +3481,7 @@ struct C_00e8f010 {
     void FUN_00e8f010(int fvf);
 };
 struct FUN_00e69b40_shell {
-    unsigned int NiD3DShaderConstantMap_GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int pszKey);
 };
 struct Outer;
 extern "C" void* memmove(void* dst, const void* src, unsigned int n);
@@ -5012,7 +5012,7 @@ struct FUN_00e98910_Class {
     FUN_00e98910_Target* unk80;
     void* unk84;
 
-    FUN_00e98910_Class* __thiscall NiD3DShaderConstantManager_ctor(int* pkD3DRenderer);
+    FUN_00e98910_Class* __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* pkD3DRenderer);
 };
 extern "C" void __cdecl NiFree(void*);
 extern "C" void __cdecl NiMemObject_ReleaseStorage_00aa1490(void*, unsigned int);

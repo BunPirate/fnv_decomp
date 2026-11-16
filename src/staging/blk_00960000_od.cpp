@@ -1754,16 +1754,15 @@ struct FUN_0096a970_Class
     int GetShortAtOffsetA();
     void ResizeAndClear(int n);
     void ProcessArray_CheckNextUpdateBounds();
-    void NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(int uiIndex);
-    void NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(int uiIndex, int element);
+    void InsertAt(int uiIndex);
+    void InsertAt(int uiIndex, int element);
 };
 
 // @fnv 0x0096a970
-// src: XBOX_RETAIL_PDB 0x0096a970
-// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::InsertAt | NiNode.obj | retail, upstream name already matches, high
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::InsertAt | NiNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: uiIndex, element
 // pdb locals: isize, i, t
-void FUN_0096a970_Class::NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(int uiIndex, int element)
+void FUN_0096a970_Class::InsertAt(int uiIndex, int element)
 {
     if (element != -1)
     {
@@ -1772,7 +1771,7 @@ void FUN_0096a970_Class::NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer
         {
             if (m_20[element] + 1 > (unsigned int)m_10[iNextIndex])
             {
-                NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(*FUN_00877a30(m_10[iNextIndex], iNextIndex));
+                InsertAt(*FUN_00877a30(m_10[iNextIndex], iNextIndex));
                 m_10[iNextIndex] = m_20[element] + 1;
             }
         }

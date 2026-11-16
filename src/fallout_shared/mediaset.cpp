@@ -521,12 +521,12 @@ struct UnnamedStr
 // adapter; all storage and offsets come from MediaSetEntry.
 struct MediaSetEntryOperations
 {
-    MediaSetEntry* CopyConstruct(const MediaSetEntry& other);
+    MediaSetEntry* MediaSet_MediaLayer_ctor(const MediaSetEntry& other);
 };
 
 // @fnv 0x00599780
-// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x005977d0
-MediaSetEntry* MediaSetEntryOperations::CopyConstruct(const MediaSetEntry& other)
+// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | retail, object-file run extension, high; the copy constructor (??0MediaLayer@MediaSet@@QAA@ABU01@@Z); 0x005977d0 is the default constructor
+MediaSetEntry* MediaSetEntryOperations::MediaSet_MediaLayer_ctor(const MediaSetEntry& other) // src: XBOX_RETAIL_PDB 0x00599780
 {
     reinterpret_cast<UnnamedStr*>(this)->AssignFromString(*reinterpret_cast<const UnnamedStr*>(&other.Name));
     reinterpret_cast<MediaSetEntry*>(this)->Attenuation = other.Attenuation;

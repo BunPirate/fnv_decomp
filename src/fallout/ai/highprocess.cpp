@@ -6011,7 +6011,7 @@ struct FUN_0041cf00_shell
 };
 struct X421400
 {
-    TESObjectREFR* ExtraDataList_GetMerchantContainer();
+    TESObjectREFR* FUN_00421400();
 };
 struct XCont
 {
@@ -6070,8 +6070,8 @@ void HighProcess::ProcessTakeBackItem(Actor* apActor)
             if (pItem && (!((const GridArray*)pItem)->GetCenterX() || ((const GridArray*)pItem)->GetCenterX() == 1))
             {
                 TESObjectREFR* pOwner = (TESObjectREFR*)apActor;
-                if (((X421400*)apActor->GetExtraData())->ExtraDataList_GetMerchantContainer())
-                    pOwner = ((X421400*)apActor->GetExtraData())->ExtraDataList_GetMerchantContainer();
+                if (((X421400*)apActor->GetExtraData())->FUN_00421400())
+                    pOwner = ((X421400*)apActor->GetExtraData())->FUN_00421400();
                 else
                     pOwner = (TESObjectREFR*)apActor;
                 ((XExtraList*)((TESObjectREFR*)g_thePlayer)->GetExtraData())

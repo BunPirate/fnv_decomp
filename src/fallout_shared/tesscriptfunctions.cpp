@@ -3006,7 +3006,7 @@ extern __declspec(thread) TLS_Data g_tls;
 // pdb: Script::GetObjectiveDisplayedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival, iindex, pquest, pobjective
-bool Script_GetObjectiveDisplayedFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+bool Script_GetObjectiveDisplayedFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005d7ef0
     TESQuest* pquest;
     int iElementIndex;
     int ival;
@@ -8428,7 +8428,7 @@ struct PkgListStub {
 };
 typedef BSSimpleList<ContentMountRecord*> PkgList;
 
-struct FUN_00b008d0_StandIn { const wchar_t* DisplayName(); };
+struct FUN_00b008d0_StandIn { const wchar_t* BSContentPackage_DisplayName(); };
 struct FUN_00b008e0_class { const char* BSContentPackage_FileName(); };
 int _sprintf_s(char*, unsigned int, const char*, ...);
 int BSstricmp(const char*, const char*);
@@ -8456,9 +8456,9 @@ bool Script_IsDLCInstalledFunction(const ScriptParameter* apParameters, const ch
         ContentMountRecord* package = *((PkgListStub*)list)->_ref_006815c0();
         if (package)
         {
-            _sprintf_s(tmp, 200, "     Examining '%S' [%s]", ((FUN_00b008d0_StandIn*)package)->DisplayName(), ((FUN_00b008e0_class*)package)->BSContentPackage_FileName());
+            _sprintf_s(tmp, 200, "     Examining '%S' [%s]", ((FUN_00b008d0_StandIn*)package)->BSContentPackage_DisplayName(), ((FUN_00b008e0_class*)package)->BSContentPackage_FileName());
             unsigned int num = 0;
-            FUN_00ecad86(&num, tmp, 200, ((FUN_00b008d0_StandIn*)package)->DisplayName(), 200);
+            FUN_00ecad86(&num, tmp, 200, ((FUN_00b008d0_StandIn*)package)->BSContentPackage_DisplayName(), 200);
             if (BSstricmp(tmp, pName) == 0)
             {
                 *afReturnValue = 1;
@@ -13487,7 +13487,7 @@ extern const char DAT_01034044[];
 // pdb: FOScriptFunctions::GetVATSValueConditionFunction | FOScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apRefObject, apParam1, apParam2, afReturnValue
 // pdb locals: bresult, pvatsCommand, equery, plist, pweapon, pcheck, etype
-bool FOScriptFunctions_GetVATSValueConditionFunction(void* apRefObject,int apParam1,void* apParam2,double& afReturnValue) {
+bool FOScriptFunctions_GetVATSValueConditionFunction(void* apRefObject,int apParam1,void* apParam2,double& afReturnValue) { // src: XBOX_RETAIL_PDB 0x00594e40
  afReturnValue=0;
  bool h=true;
  h=false;
@@ -16496,7 +16496,7 @@ extern Service* __cdecl FUN_00652110();
 // pdb: Script::DumpModelMap | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pfileName, input, outfile
-bool __cdecl Script_DumpModelMap(void* apParameters,void* apCompiledParams,void* apRefObject,void* apContainer,void* apScript,void* apScriptLocals,void* afReturnValue,void* auiOffset) {
+bool __cdecl Script_DumpModelMap(void* apParameters,void* apCompiledParams,void* apRefObject,void* apContainer,void* apScript,void* apScriptLocals,void* afReturnValue,void* auiOffset) { // src: XBOX_RETAIL_PDB 0x005c6430
     char filename[260];
     char buffer[512];
     buffer[0] = 0;
@@ -16849,7 +16849,7 @@ bool __cdecl Script_GetDispositionConditionFunction(int a1, unsigned int apParam
 // pdb: Script::GetDisposition | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pactor
-bool __cdecl Script_GetDisposition(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset) {
+bool __cdecl Script_GetDisposition(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset) { // src: XBOX_RETAIL_PDB 0x005c8450
     unsigned int local = 0;
     if (Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &local) == 0) {
         return false;
@@ -18870,7 +18870,7 @@ bool __cdecl Script_ParseParameters(int aA, int aB, int aC, int aD, int aE, int 
 // pdb: Script::PreloadMagicEffect | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: peffectSetting, spmodel
-bool __cdecl Script_PreloadMagicEffect(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset) {
+bool __cdecl Script_PreloadMagicEffect(int apParameters, int apCompiledParams, int apRefObject, int apContainer, int apScript, int apScriptLocals, int afReturnValue, int auiOffset) { // src: XBOX_RETAIL_PDB 0x005d22d0
     ScriptOwner* obj = 0;
     if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &obj)) {
         return false;
@@ -20451,7 +20451,7 @@ struct ProbeResult { void FUN_0097fb80(); };
 // pdb: Script::DebugCombatPlanFunction | TESScriptFunctions.obj | retail, object-file gap fill, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pactor, pcombatController
-bool Script_DebugCombatPlanFunction(int a, int b, ProbeRef* ref) {
+bool Script_DebugCombatPlanFunction(int a, int b, ProbeRef* ref) { // src: XBOX_RETAIL_PDB 0x005d5720
     ProbeRef* obj = 0;
     if (ref->v64()) {
         obj = ref;
@@ -24320,7 +24320,7 @@ void __cdecl BSShaderPPLightingProperty_SetRefractionRecurse(void*,bool,float,bo
 // pdb: Script::SetTargetRefraction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: famount, pactor, benabled, pobj3D
-bool __cdecl Script_SetTargetRefraction(const ScriptParameter* apParameters,const char* apCompiledParams,TESObjectREFR* reference,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int& auiOffset) {
+bool __cdecl Script_SetTargetRefraction(const ScriptParameter* apParameters,const char* apCompiledParams,TESObjectREFR* reference,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005b9950
  if (BSShaderManager_IsRefractionEnabled()) {
   float enabled=0.0f;
   if (!Script_ParseParameters(apParameters,apCompiledParams,&auiOffset,reference,apContainer,apScript,apScriptLocals,&enabled)) return false;
@@ -26168,7 +26168,7 @@ SettingCollection* __cdecl FUN_0044f560();
 // pdb: Script::HelpFunction | TESScriptFunctions.obj | retail, unique string literal, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: unused, n, helpSearchString, iniArray, gsArray, i, pdesc
-bool __cdecl Script_HelpFunction(const ScriptParameter* apParameters,const char* apCompiledParams,TESObjectREFR* apRefObject,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int& auiOffset) {
+bool __cdecl Script_HelpFunction(const ScriptParameter* apParameters,const char* apCompiledParams,TESObjectREFR* apRefObject,TESObjectREFR* apContainer,Script* apScript,ScriptLocals* apScriptLocals,double& afReturnValue,unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005bc950
  char search[512]; search[0]=0;
  {
  int mode;
@@ -30142,7 +30142,7 @@ extern bool __cdecl Script_GetDispositionConditionFunction(TESObjectREFR*, void*
 // pdb: Script::ModDisposition | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ptarget, pactor, iValue
-bool __cdecl Script_ModDisposition(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+bool __cdecl Script_ModDisposition(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005c8510
     void* target = 0;
     int count = 0;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &target, &count)) return false;
@@ -35482,7 +35482,7 @@ struct FUN_005d4190_helper {
 // pdb: Script::RunCellTest | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ioptions
-bool __cdecl Script_RunCellTest(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+bool __cdecl Script_RunCellTest(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005d4190
     unsigned int uiForm = 0;
     if (!Script_ParseParameters(apParameters, apCompiledParams, auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &uiForm)) {
         return false;
@@ -36828,7 +36828,7 @@ extern void Interface_PrintLine(const char*, ...);
 // pdb: Script::ToggleDecalDebug | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iindex
-bool Script_ToggleDecalDebug(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+bool Script_ToggleDecalDebug(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005d7610
     int val = -1;
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, thisObj, apContainer, apScript, apScriptLocals, &val)) {
         return false;
@@ -36984,7 +36984,7 @@ struct QuestView {
 // pdb: Script::SetObjectiveCompletedFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: ival, iindex, pquest, pobjective
-bool Script_SetObjectiveCompletedFunction(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& afReturnValue, unsigned int& h) {
+bool Script_SetObjectiveCompletedFunction(const ScriptParameter* a, const char* b, TESObjectREFR* c, TESObjectREFR* d, Script* e, ScriptLocals* f, double& afReturnValue, unsigned int& h) { // src: XBOX_RETAIL_PDB 0x005d7c20
  QuestView* index; unsigned int show; int quest;
  if (!ExtractArgs(a,b,&h,c,d,e,f,&index,&show,&quest)) return false;
  if (index) {
@@ -41674,7 +41674,7 @@ bool Cmd_IsLimbGone_Execute(const ScriptParameter* scriptParameter,
             for (int index = start; index <= end; ++index)
             {
                 if (reinterpret_cast<TESObjectREFR*>(dismemberedObject)->
-                        GetDismembered(index))
+                        GetDismembered(index)) // src: XBOX_RETAIL_PDB 0x00573090
                 {
                     result = 1.0;
                     return true;
@@ -45413,7 +45413,7 @@ void DebugLog(const char*, ...);
 // pdb: Script::SetActorRefractionFunction | TESScriptFunctions.obj | retail, object-file run extension, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: famount, pactor, finvisibility, fchameleon, fpower
-bool Script_SetActorRefractionFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+bool Script_SetActorRefractionFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* thisObj, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005d3f10
     Actor* actor;
     float fRefraction;
     fRefraction = 0.0f;
@@ -47015,7 +47015,7 @@ void __cdecl DebugLog(const char*, ...);
 // pdb: Script::SetPackageDurationFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: pActor, fvalue
-bool Script_SetPackageDurationFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) {
+bool Script_SetPackageDurationFunction(const ScriptParameter* apParameters, const char* apCompiledParams, TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript, ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset) { // src: XBOX_RETAIL_PDB 0x005d1ab0
     float fDuration = 0.0f;
     Actor* pActor = dynamic_cast<Actor*>(apRefObject);
     if (!ExtractArgs(apParameters, apCompiledParams, &auiOffset, apRefObject, apContainer, apScript, apScriptLocals, &fDuration)) {

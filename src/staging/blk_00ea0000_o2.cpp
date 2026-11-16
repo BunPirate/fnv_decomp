@@ -590,7 +590,7 @@ struct S_00eb5e30_Base
     S_00eb5e30_Base(float a, float b, float c, int d);
 };
 // pdb: class NiSphereTriIntersector, size 0x6c, bases: NiIntersector, 5 members
-struct NiSphereTriIntersector : S_00eb5e30_Base // src: EXE (old: FUN_00eb5e30)
+struct NiSphereTriIntersector : S_00eb5e30_Base // src: EXE 0x010f1b2c (vtable; old: FUN_00eb5e30)
 {
     S_00eb5e30_Obj* m_kSphere; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
     NiPoint3 m_kTri; // src: XBOX_RETAIL_PDB +0x3c (old: unk3c)
@@ -4122,7 +4122,7 @@ class SpawnedBase
 };
 
 // pdb: class NiCapsuleTriIntersector, size 0x6c, bases: NiIntersector, 5 members
-class NiCapsuleTriIntersector : public SpawnedBase // src: EXE (old: FUN_00eb3750)
+class NiCapsuleTriIntersector : public SpawnedBase // src: EXE 0x010f1ad8 (vtable; old: FUN_00eb3750)
 {
   public:
     float* m_kCapsule; // src: XBOX_RETAIL_PDB +0x38 (old: m_38)

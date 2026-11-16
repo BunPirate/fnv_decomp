@@ -13,7 +13,7 @@ class GlobalObject_00869db0
 class FUN_0045a120_Owner
 {
   public:
-    unsigned int D3DArrayTexture_GetArraySize();
+    unsigned int GetArraySize();
 
   private:
     char unknown_000[0x1ec];
@@ -21,9 +21,8 @@ class FUN_0045a120_Owner
 };
 
 // @fnv 0x0045a120
-// src: XBOX_DEBUG_PDB 0x0045a120
-// pdb: D3DArrayTexture::GetArraySize | d3dx9tex.obj | debug, upstream name already matches, high
-unsigned int FUN_0045a120_Owner::D3DArrayTexture_GetArraySize()
+// pdb: D3DArrayTexture::GetArraySize | d3dx9tex.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+unsigned int FUN_0045a120_Owner::GetArraySize()
 {
     return array_1ec.GetSize();
 }

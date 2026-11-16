@@ -167,7 +167,7 @@ struct S00b3d1b0_Src
     }
     float CTreeFileAccess_ParseFloat();
     char ProcessAndTransformResult_00b06180();
-    LeafPoint BSSoundMessage_GetVector3();
+    LeafPoint GetVector3();
     S00b3d1b0_Str CTreeFileAccess_ParseString();
 };
 
@@ -275,7 +275,7 @@ void S00b3d1b0_Obj::SIdvLeafInfo_Parse(S00b3d1b0_Src* cFile)
                         leaf.m_iWordAt00 = cFile->ProcessAndTransformResult_00b06180();
                         break;
                     case 4001:
-                        leaf.m_iWordAt04 = cFile->BSSoundMessage_GetVector3();
+                        leaf.m_iWordAt04 = cFile->GetVector3();
                         break;
                     case 4002:
                         leaf.m_10 = cFile->CTreeFileAccess_ParseFloat();
@@ -285,13 +285,13 @@ void S00b3d1b0_Obj::SIdvLeafInfo_Parse(S00b3d1b0_Src* cFile)
                         leaf.m_14 = leaf.m_14.ProcessEntries_00b09f90();
                         break;
                     case 4004:
-                        leaf.m_30 = cFile->BSSoundMessage_GetVector3();
+                        leaf.m_30 = cFile->GetVector3();
                         break;
                     case 4005:
-                        leaf.m_3c = cFile->BSSoundMessage_GetVector3();
+                        leaf.m_3c = cFile->GetVector3();
                         break;
                     case 4006:
-                        leaf.m_48 = cFile->BSSoundMessage_GetVector3();
+                        leaf.m_48 = cFile->GetVector3();
                         break;
                     case 4007:
                         cFile->CTreeFileAccess_ParseFloat();

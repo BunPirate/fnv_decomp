@@ -154,7 +154,7 @@ void TESClimate::SaveForm()
     int i = 0;
     for (; i < 2; ++i)
         m_kSunTextures[i].Save(0x4d414e46 + i);
-    m_kStarsModel.BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    m_kStarsModel.WriteToBuffer(0x4c444f4d, 0x54444f4d);
     TESForm_AddChunkArray(0x4d414e54, m_ucTimeSettings, 6);
     TESForm::FinishFormRecord();
 }

@@ -2851,16 +2851,15 @@ extern "C" unsigned int __cdecl _FUN_009a3830(unsigned int, unsigned int);
 
 struct FUN_009e2660_Class
 {
-    bool NiSkinPartition_BoneSet_Contains(unsigned int kThat);
+    bool Contains(unsigned int kThat);
 };
 
 // Returns whether the container at offset 0x30 finds the given value, comparing against -1 to indicate presence.
 // @fnv 0x009e2660
-// src: XBOX_RETAIL_PDB 0x009e2660
-// pdb: NiSkinPartition::BoneSet::Contains | NiSkinPartition.obj | retail, upstream name already matches, high
+// pdb: NiSkinPartition::BoneSet::Contains | NiSkinPartition.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: kThat
 // pdb locals: uiThat, uiThis
-bool FUN_009e2660_Class::NiSkinPartition_BoneSet_Contains(unsigned int kThat)
+bool FUN_009e2660_Class::Contains(unsigned int kThat)
 {
     return ((LS3de0*)((char*)this + 0x30))->Find(kThat, 0, (bool(__cdecl*)(int const*, int const*))_FUN_009a3830) !=
            -1;
@@ -4828,7 +4827,7 @@ bool FUN_009e22d0_shell::DetailedActorPathHandler_IsDoorInPath(unsigned int aDoo
     }
     else
     {
-        if (!((FUN_009e2660_Class*)(PathingSolution*)pCurrentPathingSolution)->NiSkinPartition_BoneSet_Contains(aDoorID))
+        if (!((FUN_009e2660_Class*)(PathingSolution*)pCurrentPathingSolution)->Contains(aDoorID))
         {
             for (float aFT = 0.0f; GetObjectFlags((char*)(PathingSolution*)pCurrentPathingSolution) - 1.0 > aFT;
                  aFT += 0.5)

@@ -44,7 +44,7 @@ struct FormChangeArrayOperations : nitmapbase_FormMap
 {
     void Resize(int, int);
     unsigned int CallGetFlags();
-    void ExtraDataList_SetCount(unsigned int);
+    void SetCount(unsigned int);
     void Erase(unsigned int, int);
     ChangedFormRecord* GetElement(unsigned int);
 };
@@ -1040,8 +1040,8 @@ FUN_00844db0_shell* __thiscall FUN_00844db0_shell::NiTMapBase_DFALL_NiTMapItem_T
 // pdb params: aiSize
 void FormChangeMapOperations::BGSReconstructedForms_SetAllocSize(unsigned int auiValue)
 {
-    reinterpret_cast<FormChangeArrayOperations*>(&first)->ExtraDataList_SetCount(auiValue);
-    reinterpret_cast<FormChangeArrayOperations*>(&second)->ExtraDataList_SetCount(auiValue);
+    reinterpret_cast<FormChangeArrayOperations*>(&first)->SetCount(auiValue);
+    reinterpret_cast<FormChangeArrayOperations*>(&second)->SetCount(auiValue);
 }
 
 namespace fnv_00841e20 {
@@ -1117,16 +1117,15 @@ struct S5460
 };
 struct FUN_00844c20_shell
 {
-    void ExtraDataList_SetCount(unsigned int);
+    void SetCount(unsigned int);
 };
 
 // If idx differs from the stored count, shrinks the array to idx elements, calls FUN_006a2770 with idx and the new count, then stores idx as the count.
 // @fnv 0x00844c20
-// src: XBOX_RETAIL_PDB 0x00844c20
-// pdb: ExtraDataList::SetCount | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb: ExtraDataList::SetCount | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: aiCount
 // pdb locals: pcount
-void FUN_00844c20_shell::ExtraDataList_SetCount(unsigned int aiCount)
+void FUN_00844c20_shell::SetCount(unsigned int aiCount)
 {
     if (aiCount == *(unsigned int*)((char*)this + 0xc))
         return;

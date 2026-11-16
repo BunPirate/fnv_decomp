@@ -504,7 +504,7 @@ extern const float DAT_010ec968;
 float __cdecl Object_GetDAT_010ec968_00e52f80();
 extern float DAT_0104da4c;
 float __cdecl Runtime_GetDAT0104da4c(void);
-void __cdecl D3DXShader_CCommentBlock_SwapBytes(void* pData);
+void __cdecl SwapBytes(void* pData);
 inline void SwapByte(unsigned char& left, unsigned char& right)
 {
     unsigned char temporary = left;
@@ -2659,7 +2659,7 @@ struct S00e51a60_BlockDesc {
     unsigned int m_uiBlockOffset;
     unsigned int m_ucSecondQuantizationParameter;
 };
-unsigned int __cdecl NiTextureCodec_DecodeBlock(const unsigned char* encodedData, S00e51a60_BlockDesc& desc, unsigned char* rawData, unsigned int rawDataSizeBytes);
+unsigned int __cdecl DecodeBlock(const unsigned char* encodedData, S00e51a60_BlockDesc& desc, unsigned char* rawData, unsigned int rawDataSizeBytes);
 struct E5B130Object {
     int unk00;
     int unk04;

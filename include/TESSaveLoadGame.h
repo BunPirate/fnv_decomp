@@ -283,7 +283,7 @@ public:
     void ReadFile(BSFile*, unsigned int*, unsigned int);
     void ReadFile(BSFile*, unsigned long*, unsigned int);
     void ReadFile(BSFile*, unsigned short*, unsigned int);
-    unsigned int TESSaveLoadGame_ReadFile(BSFile*, void*, unsigned int);
+    unsigned int ReadFile(BSFile*, void*, unsigned int);
     void ReadFileEndian(BSFile*, void*, unsigned int, unsigned int);
     char* ReadFileName(char*);
     void ReadSaveGameMetadata(BSFile*, unsigned int*, char*, char*, _FILETIME*, char*);

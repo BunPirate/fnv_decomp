@@ -947,7 +947,7 @@ struct Audio
     static Audio* GetSingleton();
 };
 extern Setting g_011c8394, g_011d4810, originalRuntimeFloatSetting282;
-const char* ActorValue_GetActorValueName(int);
+const char* GetActorValueName(int);
 float Clamp(float, float);
 bool QueueUIMessage(const char*, int, const char*, const char*, float, bool);
 struct Values
@@ -1055,7 +1055,7 @@ bool TerminalActivationAccess::ActivateTerminal(Ref* apItemActivated, Ref* apAct
     else if (apActionRef == (Ref*)_g_thePlayer && _g_thePlayer->Check(apItemActivated) == 4)
     {
         BSStringT<char> message;
-        message.PrintfString( g_011c8394.GetString(), ActorValue_GetActorValueName(40), (int)Clamp(BGSTerminal_GetMinSkillRequiredToHack(apItemActivated), 1.0f));
+        message.PrintfString( g_011c8394.GetString(), GetActorValueName(40), (int)Clamp(BGSTerminal_GetMinSkillRequiredToHack(apItemActivated), 1.0f));
         QueueUIMessage(message, 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_angry.dds", 0, 2.0f, false);
         Audio::GetSingleton()->GetSoundHandleByEditorID("UIPopUpMessageGeneral", 0x121).Play(false);
     }

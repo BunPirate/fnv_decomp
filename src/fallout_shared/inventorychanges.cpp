@@ -5790,7 +5790,7 @@ struct PlayerSlot
 struct ExtraSlot
 {
     bool ExtraDataList_IsExtraDefaultforContainer(int);
-    void ExtraDataList_SetHotKey(unsigned char);
+    void SetHotKey(unsigned char);
     void ExtraDataList_SetCount(int);
 };
 struct ChangeSlot : InventoryStackRecord
@@ -5836,7 +5836,7 @@ void InventorySlot::InventoryChanges_SetHotKeyItem(RefSlot* apItem, ExtraDataLis
         if (!selected)
         {
             ExtraDataList* created = (ExtraDataList*)new ExtraDataList;
-            ((ExtraSlot*)created)->ExtraDataList_SetHotKey((unsigned char)aiKey);
+            ((ExtraSlot*)created)->SetHotKey((unsigned char)aiKey);
             ((ExtraSlot*)created)
                 ->ExtraDataList_SetCount(context->FUN_00726070() - context->ItemChange_GetExtraTotalCount(false) -
                                (context->ItemChange_GetWorn(false) ? 1 : 0));
@@ -5844,7 +5844,7 @@ void InventorySlot::InventoryChanges_SetHotKeyItem(RefSlot* apItem, ExtraDataLis
         }
         else
         {
-            ((ExtraSlot*)selected)->ExtraDataList_SetHotKey((unsigned char)aiKey);
+            ((ExtraSlot*)selected)->SetHotKey((unsigned char)aiKey);
         }
     }
     else
@@ -5852,7 +5852,7 @@ void InventorySlot::InventoryChanges_SetHotKeyItem(RefSlot* apItem, ExtraDataLis
         InventoryStackRecord* pNewChange = (InventoryStackRecord*)new FUN_004bc550(apItem->FUN_0044ddc0(), apItem->FUN_00726070());
         ExtraDataList* pNewExtra = (ExtraDataList*)new ExtraDataList;
         pNewChange->pExtraObjectList = new BSSimpleList<ExtraDataList*>;
-        ((ExtraSlot*)pNewExtra)->ExtraDataList_SetHotKey((unsigned char)aiKey);
+        ((ExtraSlot*)pNewExtra)->SetHotKey((unsigned char)aiKey);
         pNewChange->pExtraObjectList->AddHead(pNewExtra);
         pListofChanges->AddHead(pNewChange);
     }
@@ -15944,7 +15944,7 @@ struct XExtra17
     bool FUN_004bca60();
     bool ExtraDataList_CompareListForContainer(XExtra17*, int, bool);
     short ExtraDataList_GetCount();
-    void ExtraDataList_SetHotKey(unsigned char);
+    void SetHotKey(unsigned char);
     XDism17* FUN_0042e8c0();
 };
 struct XChange17
@@ -16767,7 +16767,7 @@ bool XHost17::InventoryChanges_RemoveWorn(bool* a0, unsigned int a1, int iCount,
                         DAT_011c6448 = extra1;
                         if (extra != 0 && (char)extra->GetExtraByteValue() >= 0)
                         {
-                            extra1->ExtraDataList_SetHotKey((unsigned char)extra->GetExtraByteValue());
+                            extra1->SetHotKey((unsigned char)extra->GetExtraByteValue());
                         }
                         if (extra1->FUN_004bca60())
                         {

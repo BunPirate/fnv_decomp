@@ -16,7 +16,7 @@ struct S00b408b0_Vec
 struct S00b408b0_Reader
 {
     int GetNextElement();
-    S00b408b0_Vec* BSSoundMessage_GetVector3(S00b408b0_Vec* out);
+    S00b408b0_Vec* GetVector3(S00b408b0_Vec* out);
     float CTreeFileAccess_ParseFloat();
     void ProcessAndTransformResult_00b06180();
 };
@@ -156,19 +156,19 @@ void S00b408b0_Obj::SIdvWindInfo_Parse(S00b408b0_Reader* cFile)
         switch (tok)
         {
         case 5000:
-            cFile->BSSoundMessage_GetVector3(&a);
+            cFile->GetVector3(&a);
             break;
         case 5001:
-            cFile->BSSoundMessage_GetVector3(&b);
+            cFile->GetVector3(&b);
             break;
         case 5002:
-            rot = *cFile->BSSoundMessage_GetVector3(&c);
+            rot = *cFile->GetVector3(&c);
             break;
         case 5003:
-            cFile->BSSoundMessage_GetVector3(&d);
+            cFile->GetVector3(&d);
             break;
         case 5004:
-            pos = *cFile->BSSoundMessage_GetVector3(&e);
+            pos = *cFile->GetVector3(&e);
             break;
         case 5005:
             scale = cFile->CTreeFileAccess_ParseFloat();

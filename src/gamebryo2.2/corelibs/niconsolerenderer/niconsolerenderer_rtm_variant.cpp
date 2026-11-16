@@ -218,7 +218,7 @@ struct FUN_00e69b40_shell {
     unsigned int count;
     unsigned int pad24;
     unsigned int* entries;
-    unsigned int NiD3DShaderConstantMap_GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int pszKey);
 };
 unsigned int GetValueForIndex(unsigned int uiIndex);
 extern NiPoint3 DAT_011f474c;
@@ -25136,7 +25136,7 @@ Buffer767* Shader767::NiDX9ShaderDeclaration_PackUntransformedVB(NiGeometryData*
         }
         if (!manager->NiDX9VertexBufferManager_AllocateBufferSpace(data, stream))
             return 0;
-        buffer = (Buffer767*)((FUN_00e69b40_shell*)data)->NiD3DShaderConstantMap_GetEntry(stream);
+        buffer = (Buffer767*)((FUN_00e69b40_shell*)data)->GetEntry(stream);
         mask = 0xfff;
 
     have_buffer:

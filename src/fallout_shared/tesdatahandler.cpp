@@ -6228,7 +6228,7 @@ struct FUN_004befb0
 struct ExtraInventoryView
 {
     FUN_004befb0* FUN_00418520();
-    TESObjectREFR* ExtraDataList_GetMerchantContainer();
+    TESObjectREFR* FUN_00421400();
 };
 struct ParentInventoryView
 {
@@ -6256,7 +6256,7 @@ void InventoryHandler::UpdateInventoryForReference(TESObjectREFR* apVendor)
     FUN_004befb0* pOtherInventory = ((ExtraInventoryView*)apVendor->GetExtraData())->FUN_00418520();
     if (pOtherInventory)
         pOtherInventory->InventoryChanges_CreateCopyofList(reinterpret_cast<FUN_004befb0*&>(pBarterContainer), apVendor, false);
-    TESObjectREFR* changes = ((ExtraInventoryView*)apVendor->GetExtraData())->ExtraDataList_GetMerchantContainer();
+    TESObjectREFR* changes = ((ExtraInventoryView*)apVendor->GetExtraData())->FUN_00421400();
     if (changes)
     {
         pOtherInventory = ((ExtraInventoryView*)changes->GetExtraData())->FUN_00418520();
@@ -6327,7 +6327,7 @@ namespace fnv_0046ddb0 {
 struct BipedView : TESBipedModelForm
 {
     TESModel* World(int);
-    TESModel* TESBipedModelForm_GetBipedModel(int);
+    TESModel* Biped(int);
 };
 struct ObjectView
 {
@@ -6910,11 +6910,11 @@ void ModelTest::TESDataHandler_CheckModels(bool abUpdateBounds)
                             label = "Female World ";
                             break;
                         case 3:
-                            model = ((BipedView*)bipedForm)->TESBipedModelForm_GetBipedModel(0);
+                            model = ((BipedView*)bipedForm)->Biped(0);
                             label = "Male Biped ";
                             break;
                         case 4:
-                            model = ((BipedView*)bipedForm)->TESBipedModelForm_GetBipedModel(1);
+                            model = ((BipedView*)bipedForm)->Biped(1);
                             label = "Female Biped ";
                             break;
                         }

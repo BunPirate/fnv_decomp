@@ -805,10 +805,9 @@ void FUN_00857350_obj::ForwardCall_00857350()
 
 
 // @fnv 0x00857ba0
-// src: XBOX_RETAIL_PDB 0x00857ba0
-// pdb: TESSaveLoadGame::ReadFile | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb: TESSaveLoadGame::ReadFile | TESSaveLoadGame.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apFile, apData, aiSize
-unsigned int TESSaveLoadGame::TESSaveLoadGame_ReadFile(BSFile* apFile, void* apData, unsigned int aiSize)
+unsigned int TESSaveLoadGame::ReadFile(BSFile* apFile, void* apData, unsigned int aiSize)
 {
     unsigned int result = static_cast<NiBinaryStream*>(apFile)->Read(apData, aiSize);
     return result;
@@ -4567,7 +4566,7 @@ struct RestoreAction
 {
     unsigned int x, y, z;
     void SetPositionExtraData();
-    void TESObjectREFR_SetStartingPosition();
+    void SetStartingPosition();
 };
 struct RestoredObject
 {
@@ -4802,7 +4801,7 @@ RestoredObject* ObjectRestorer::TESSaveLoadGame_CreateReferenceFromFile(unsigned
     else
     {
         object5->BSFile_GetDevice(object5, *object5->Position()).SetPositionExtraData();
-        object5->BSFile_GetDevice(object5, *object5->FUN_00430830()).TESObjectREFR_SetStartingPosition();
+        object5->BSFile_GetDevice(object5, *object5->FUN_00430830()).SetStartingPosition();
     }
     return object5;
 }

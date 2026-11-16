@@ -27,7 +27,7 @@ struct RefBase_cls
 };
 
 // pdb: class hkpSerializedDisplayMarkerList, size 0x14, bases: hkReferencedObject, 1 members
-class hkpSerializedDisplayMarkerList : public RefBase_cls // src: EXE (old: FUN_00dff010_cls)
+class hkpSerializedDisplayMarkerList : public RefBase_cls // src: EXE 0x010e66fc (vtable; old: FUN_00dff010_cls)
 {
   public:
     int m_i04;

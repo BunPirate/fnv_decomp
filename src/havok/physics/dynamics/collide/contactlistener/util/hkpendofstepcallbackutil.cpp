@@ -152,7 +152,7 @@ void FUN_00d9e450_class::hkpEndOfStepCallbackUtil_unregisterCollision(void* mgr,
 }
 
 // pdb: class hkpEndOfStepCallbackUtil, size 0x38, bases: hkReferencedObject, hkpWorldPostSimulationListener, 5 members
-struct hkpEndOfStepCallbackUtil : hkReferencedObject, hkpWorldPostSimulationListener // src: EXE (old: FUN_00d9e860)
+struct hkpEndOfStepCallbackUtil : hkReferencedObject, hkpWorldPostSimulationListener // src: EXE 0x010d40d0 (vtable; old: FUN_00d9e860)
 {
     volatile int m_sequenceNumber; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
     volatile unsigned char m_deterministicOrder; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)

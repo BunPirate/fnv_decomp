@@ -1464,7 +1464,7 @@ struct FUN_00e3ed80 : BaseE3EAA0
 struct E3F0F0Less
 {
 };
-void __cdecl D3DXShader_HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
+void __cdecl HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
 struct E3F0F0Owner
 {
     int unk00;

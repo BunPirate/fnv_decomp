@@ -70,7 +70,7 @@ public:
     float TESObjectWEAP_GetShotsPerSecond();
     float TESEffectShader_GetAddOnScaleStart();
     float GetFootWeight();
-    SOUND_LEVEL BGSSaveLoadFile_GetFilePosition();
+    SOUND_LEVEL FUN_009c0070();
     void TESBoundObject_CopyBoundData(TESCreature* other);
     unsigned char FUN_0059f3a0();
     void SetTypeAtOffset12C(unsigned char value);

@@ -1580,15 +1580,14 @@ struct FUN_00bd6980_class
     ISTex m_Texture2;
     char m_Texture[0x10];
 
-    void Main_UpdateTextures(int);
+    void UpdateTextures(int);
 };
 
 // @fnv 0x00bd6980
-// src: XBOX_RETAIL_PDB 0x00bd6980
-// pdb: Main::UpdateTextures | Main.obj | retail, upstream name already matches, high
+// pdb: Main::UpdateTextures | Main.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: afTime
 // pdb locals: bdone, tempAutoEvent, icurrentTraversedCount, bstopped, it, sptexture, epriority
-void FUN_00bd6980_class::Main_UpdateTextures(int)
+void FUN_00bd6980_class::UpdateTextures(int)
 {
     int value;
 

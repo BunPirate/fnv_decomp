@@ -713,7 +713,7 @@ extern NiPointer<NiTexture> DAT_011f9540, DAT_011f9534, DAT_011f9538;
 
 NiTexture* NiSourceTexture_Create(NiPixelData*, const char*, NiTexture::TextureFormatPreferences&);
 
-NiTexture* NiXenonSourceCubeMapData_CreateCubeMap(const char*, const char*, const char*, const char*, const char*, const char*, NiRenderer*,
+NiTexture* CreateCubeMap(const char*, const char*, const char*, const char*, const char*, const char*, NiRenderer*,
                         const NiFixedString&, NiTexture::TextureFormatPreferences&);
 
 int FUN_004dc060(int);
@@ -1252,7 +1252,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
 
     {
         NiFixedString name("EyeReflectionCubeMap");
-        DAT_011f9544 = NiXenonSourceCubeMapData_CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath,
+        DAT_011f9544 = CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath,
                                     DAT_011f9508, name, DAT_011a9598);
     }
 
@@ -1261,7 +1261,7 @@ void BSShaderManager_GenerateNormalizationCubeMap()
     {
         NiFixedString name("ArmorReflectionCubeMap");
         reinterpret_cast<NiPointer<NiTexture>&>(DAT_011f95d4) =
-            NiXenonSourceCubeMapData_CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath, DAT_011f9508,
+            CreateCubeMap(texturePath, texturePath, texturePath, texturePath, texturePath, texturePath, DAT_011f9508,
                          name, DAT_011a9598);
     }
 

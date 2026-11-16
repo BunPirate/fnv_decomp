@@ -49,30 +49,30 @@ struct ShapeRefArray
 };
 
 // pdb: class _SharedShapeData, size 0xc (here 0x10), 1 members
-struct _SharedShapeData // src: XBOX_RETAIL_PDB (old: ShapeData)
+struct _SharedShapeData // src: XBOX_RETAIL_PDB 0x00d738f0 (first of 5 linked methods; old: ShapeData)
 {
     int m_kPointA;
     int m_kPointB;
     int m_iThirdValue;
     int m_iFourthElementInteger;
     void _SharedShapeData_recursivelyParseShapeReferences(int);
-    void removeSingleReferencedShapeData();
-    _SharedShapeData* SharedShapeData_ctor(ShapeRefArray* rigidBodies);
+    void _SharedShapeData_removeSingleReferencedShapeData();
+    _SharedShapeData* _SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies);
 };
 
 // Resets the three fields, forwards each ref's value at offset 0x10 to FUN_00d738f0, then calls FUN_00d74a20 and returns this.
 // @fnv 0x00d74b20
-// src: XBOX_RETAIL_PDB 0x00d74b20 (was HAVOK_LIB)
-// pdb: _SharedShapeData::_SharedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high
+// src: HAVOK_LIB 0x00d74b20
+// pdb: _SharedShapeData::_SharedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: rigidBodies
-_SharedShapeData* _SharedShapeData::SharedShapeData_ctor(ShapeRefArray* rigidBodies)
+_SharedShapeData* _SharedShapeData::_SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies)
 {
     m_kPointA = 0;
     m_kPointB = 0;
     m_iThirdValue = 0x80000000;
     for (int i = 0; i < rigidBodies->count; ++i)
         _SharedShapeData_recursivelyParseShapeReferences(*(int*)(rigidBodies->refs[i] + 0x10));
-    removeSingleReferencedShapeData();
+    _SharedShapeData_removeSingleReferencedShapeData();
     return this;
 }
 
@@ -109,7 +109,7 @@ struct FUN_00d74420_Context
     int m_kPointB;  // +0x04
     int m_iThirdValue;  // +0x08, initialized to 0x80000000
     void _SharedShapeData_recursivelyParseShapeReferences(int shape);
-    void removeSingleReferencedShapeData();
+    void _SharedShapeData_removeSingleReferencedShapeData();
     void SharedShapeData_dtor();
 };
 
@@ -126,7 +126,7 @@ int RunContextOperation(int aiArg1, int aiArg2, int aiArg3, int* piOut)
     ctx.m_kPointB = 0;
     ctx.m_iThirdValue = 0x80000000;
     ctx._SharedShapeData_recursivelyParseShapeReferences(aiArg1);
-    ctx.removeSingleReferencedShapeData();
+    ctx._SharedShapeData_removeSingleReferencedShapeData();
     *piOut = hkpShape_ProcessEntries_00d739f0(aiArg1, aiArg2, &ctx, aiArg3);
     ctx.SharedShapeData_dtor();
     return 0;
@@ -480,7 +480,7 @@ struct hkShapeMapD748
     void* m_data;
     int m_iElementCount;
     int m_iCapacityState;
-    hkShapeMapD748* SharedShapeData_ctor(hkShapeEntryArrayD748* rigidBodies) throw();
+    hkShapeMapD748* _SharedShapeData__SharedShapeData(hkShapeEntryArrayD748* rigidBodies) throw();
     void SharedShapeData_dtor() throw();
 };
 
@@ -496,7 +496,7 @@ int __cdecl RemapCollisionShapes(hkShapeEntryArrayD748* refs, void* context, hkS
 {
     out->UpdateFields_00d73400();
     hkShapeMapD748 map;
-    map.SharedShapeData_ctor(refs);
+    map._SharedShapeData__SharedShapeData(refs);
     for (int i = 0; i < refs->m_iElementCount; i++)
     {
         hkShapeEntryD748* entry = refs->m_data[i];
@@ -580,9 +580,9 @@ struct D74A20Array
 };
 
 // @fnv 0x00d74a20
-// src: XBOX_RETAIL_PDB 0x00d74a20 (was HAVOK_LIB)
-// pdb: _SharedShapeData::removeSingleReferencedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high
-void _SharedShapeData::removeSingleReferencedShapeData()
+// src: HAVOK_LIB 0x00d74a20
+// pdb: _SharedShapeData::removeSingleReferencedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+void _SharedShapeData::_SharedShapeData_removeSingleReferencedShapeData()
 {
     D74A20Array* array = reinterpret_cast<D74A20Array*>(this);
 

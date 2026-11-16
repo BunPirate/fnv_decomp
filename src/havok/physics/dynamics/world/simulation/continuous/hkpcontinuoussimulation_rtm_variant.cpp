@@ -3923,7 +3923,7 @@ struct SolveRecord { SolveConstraint* constraint; void* schema; float depth; };
 struct SolveViolation { SolveConstraint* constraint; const SolvePoint* point; const void* properties; };
 extern "C" __declspec(nothrow) int __cdecl hkVector4_ProcessEntries_00d9f6f0(void*,void*,void*,int,float*) throw();
 extern "C" __declspec(nothrow) int __cdecl hkLs_areVelocitiesOk(float,SolveRecord*,float*,int,void*) throw();
-__declspec(noinline) __declspec(nothrow) BoolFlag hkLs_toiCheckFinalValidityOfCriticalConstraints(Resources& originalResources,const List<SchemaRecord>& originalRecords,ProcessInput& scene,List<Violation>* originalViolations)
+__declspec(noinline) __declspec(nothrow) BoolFlag hkLs_toiCheckFinalValidityOfCriticalConstraints(Resources& originalResources,const List<SchemaRecord>& originalRecords,ProcessInput& scene,List<Violation>* originalViolations) // src: XBOX_RETAIL_PDB 0x00d0ceb0
 {
     void* world=&originalResources;
     void* matrices=const_cast<List<SchemaRecord>*>(&originalRecords);

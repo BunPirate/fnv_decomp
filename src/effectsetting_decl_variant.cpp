@@ -39,7 +39,7 @@ void EffectSetting::SaveAlt()
     TESFullName::Save_00487010();
     TESDescription::Save_00482cb0();
     TESIcon::Save(CHUNK_ICON);
-    TESModel::BSSendSceneGraphCommand_WriteToBuffer(CHUNK_MODL, CHUNK_MODT);
+    TESModel::WriteToBuffer(CHUNK_MODL, CHUNK_MODT);
 
     TESSound* pkCastSound = data.m_pCastSound;
     data.m_pCastSound = (TESSound*)(data.m_pCastSound ? static_cast<const TESForm*>(data.m_pCastSound)->GetFormID() : 0);

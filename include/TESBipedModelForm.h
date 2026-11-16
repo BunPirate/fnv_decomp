@@ -52,7 +52,7 @@ public:
     void AddToBiped(BipedAnim* apBiped, SEX aeSex, BIPED_OBJECT aeBipedObject);
     void AddToBiped(BipedAnim* apBiped, SEX aeSex, int aeBipedObject);
     TESModelTextureSwap* GetWorldModel(int sex);
-    TESModelTextureSwap* TESBipedModelForm_GetBipedModel(SEX sex);
+    TESModelTextureSwap* GetBipedModel(SEX sex);
     const char* GetBipedModel(int sex);
     TESModel* GetWeaponModel(SEX sex);
 

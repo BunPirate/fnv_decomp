@@ -21,7 +21,7 @@ struct FUN_00b3ef80_shell
     int m_iValueAt00;
     void* m_pObjectAt04;
     float CTreeFileAccess_ParseFloat();
-    CVec3 BSSoundMessage_GetVector3();
+    CVec3 GetVector3();
 };
 struct FUN_00b3ed20_range
 {

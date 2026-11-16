@@ -310,7 +310,7 @@ struct WaveState {
 
 int __cdecl hkCalcQuantizedSize(int nValues, const char* desc);
 void* __cdecl hkMemoryRouter_getInstance(void);
-int __cdecl NiTextureCodec_DecodeBlock(unsigned char* data, int* qp, unsigned char* block, int nbytes);
+int __cdecl DecodeBlock(unsigned char* data, int* qp, unsigned char* block, int nbytes);
 void __cdecl DecodeQuantizedBlock(unsigned char* block, BitDesc* desc, float* out, int n);
 void __cdecl hkInverseWaveletTransform(float* out, int nValues);
 
@@ -351,7 +351,7 @@ static __declspec(noinline) void _decompress(float* params, WBlk outputData)
         if (ws.quant == lv)
             --ws.quant;
 
-        data += NiTextureCodec_DecodeBlock(data, &ws.bits, base, trackBytes);
+        data += DecodeBlock(data, &ws.bits, base, trackBytes);
         DecodeQuantizedBlock(base, &ws.desc, params, outputData.blockSize);
         hkInverseWaveletTransform(params, outputData.blockSize);
         params += outputData.blockSize;

@@ -61,7 +61,7 @@ ActorValueInfo* GetActorValueInfo(Index index);
 void ActorValue_RegisterActorValues();
 }
 namespace ActorValue {
-void ActorValue_RegisterActorValue(Index, char*, Section, unsigned int, ActorValueDeriveCallback, ActorValueMappingCallback,
+void RegisterActorValue(Index, char*, Section, unsigned int, ActorValueDeriveCallback, ActorValueMappingCallback,
                         ActorValueModifiedCallback, int, ...);
 }
 extern bool DAT_011d6154;
@@ -109,7 +109,7 @@ namespace ActorValue {
 
 Index GetActorValueForSectionIndex(Section, char);
 unsigned int GetCountForSection(Section);
-const char* ActorValue_GetActorValueName(Index);
+const char* GetActorValueName(Index);
 bool ActorValue_GetDerivedActorValue(ActorValueOwner*, Index, float&);
 void NotifyActorValueChanged(ActorValueOwner*, Index, float, float, ActorValueOwner*);
 Index* GetDependentActorValueIndices(Index, int&);
@@ -124,7 +124,7 @@ namespace ActorValue {
 bool IsDerivedAttribute(Index);
 bool IsAIAttribute(Index);
 bool IsSkill(Index);
-Section ActorValue_GetSection(Index);
+Section GetSection(Index);
 unsigned char ToArrayIndex(int, Index);
 }
 bool ActorValue_IsAttribute(ActorValue::Index);

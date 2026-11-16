@@ -2306,7 +2306,7 @@ struct E3F0F0Less
 {
 };
 
-void __cdecl D3DXShader_HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
+void __cdecl HeapSort(int* piFirst, int* piLast, E3F0F0Less kPred);
 
 struct E3F0F0Owner
 {
@@ -2327,7 +2327,7 @@ struct E3F0F0Owner
 void E3F0F0Owner::ProcessState_00e3f0f0()
 {
     E3F0F0Less kPred;
-    D3DXShader_HeapSort(m_piFirst, m_piLast, kPred);
+    HeapSort(m_piFirst, m_piLast, kPred);
 }
 
 class BSAudio;

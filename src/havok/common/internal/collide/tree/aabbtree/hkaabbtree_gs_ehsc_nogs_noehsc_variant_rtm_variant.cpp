@@ -235,7 +235,7 @@ struct S_00d9d650_Tree
     S_00d9d650_Pool m_kNodePool;
 
     void ProcessEntries_00d9d1c0(S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Node* root, S_00d9d650_Array<int>& out, int depth);
-    void XGRAPHICS_VerNode_MergeNode(S_00d9d650_Node* root, int a, int b);
+    void MergeNode(S_00d9d650_Node* root, int a, int b);
     void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(S_00d9d650_Node* root, int skipNode);
     void BuildTree(const S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Array<int>& out) throw();
 };

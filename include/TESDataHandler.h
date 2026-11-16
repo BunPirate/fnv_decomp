@@ -370,7 +370,7 @@ public:
     void* GetQuestList();
     void AddQuest(TESQuest*);
     void RemoveQuest(TESQuest*);
-    unsigned int D3DArrayTexture_GetArraySize();
+    unsigned int GetAddonNodeCount();
     BGSAddonNode* GetAddonNodeByIndex(unsigned int);
     void AddAddonNode(BGSAddonNode*);
     void RemoveAddonNode(BGSAddonNode*);

@@ -345,7 +345,7 @@ void BGSImpactData::Save_0058e450()
     TESForm::BeginFormRecord();
 
     reinterpret_cast<TESModel*>(reinterpret_cast<unsigned char*>(this) + 0x18)
-        ->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+        ->WriteToBuffer(0x4c444f4d, 0x54444f4d);
 
     if (_FUN_00401500())
     {

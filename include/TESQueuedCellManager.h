@@ -3,7 +3,7 @@
 class TESObjectCELL;
 
 // pdb: class ExteriorCellLoader, size 0x1c (here 0x1), 1 members
-class ExteriorCellLoader // src: XBOX_RETAIL_PDB (old: TESQueuedCellManager)
+class ExteriorCellLoader // src: XBOX_RETAIL_PDB 0x00527eb0 (first of 16 linked methods; old: TESQueuedCellManager)
 {
 public:
     void ExteriorCellLoader_CancelAllCellLoads();
@@ -11,6 +11,6 @@ public:
     void ExteriorCellLoader_QueueCellLoad(TESObjectCELL*);
     int QueuedCellCount();
     void PostProcessCompletedTasks();
-    int TryCancelTasks();
-    void WaitForTasks();
+    int ExteriorCellLoader_TryCancelTasks();
+    void ExteriorCellLoader_WaitForTasks();
 };

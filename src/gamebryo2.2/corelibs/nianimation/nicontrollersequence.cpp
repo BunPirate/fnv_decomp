@@ -2817,7 +2817,7 @@ struct S00a35700_NodeRef
 };
 
 extern "C" void __cdecl NiSequence_CreateFromKFFile(NiStream*, unsigned int, LegacyPtr*, unsigned int) throw();
-extern "C" void __cdecl NiControllerSequence_ConvertOldSequence(NiObject*, S00a35700_NodeRef*) throw();
+extern "C" void __cdecl ConvertOldSequence(NiObject*, S00a35700_NodeRef*) throw();
 
 // Retrieves a NiNode by index from a NiStream, using version-specific lookup, and assigns it to the output pointer with a reference count adjustment.
 // @fnv 0x00a35700
@@ -2840,7 +2840,7 @@ void __cdecl NiControllerSequence_CreateSequenceFromFile(void* kStream, unsigned
     {
         LegacyPtr b = (NiObject*)0;
         NiSequence_CreateFromKFFile(stream, uiIndex, &b, 0);
-        NiControllerSequence_ConvertOldSequence(b.m_pObject, &a);
+        ConvertOldSequence(b.m_pObject, &a);
     }
     else
     {
@@ -3627,11 +3627,10 @@ struct OldSequence
 
 // Allocates a NiControllerSequence, copies name and controller data from pkOld, and assigns the result to spOut.
 // @fnv 0x00a349e0
-// src: XBOX_RETAIL_PDB 0x00a349e0
-// pdb: NiControllerSequence::ConvertOldSequence | NiControllerSequence.obj | retail, upstream name already matches, high
+// pdb: NiControllerSequence::ConvertOldSequence | NiControllerSequence.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pkOldSequence, aspControllerSequence
 // pdb locals: bFirstTime, spNewSequence, ui, pkController, pcName, bSuccess, eCycleType
-void __cdecl NiControllerSequence_ConvertOldSequence(OldSequence* pkOldSequence, SeqPtr<NiControllerSequence>& aspControllerSequence) throw()
+void __cdecl ConvertOldSequence(OldSequence* pkOldSequence, SeqPtr<NiControllerSequence>& aspControllerSequence) throw()
 
 {
 

@@ -419,7 +419,7 @@ struct W20Profiles
     NiFixedString* data;
     unsigned int capacity, count, unk0c, unk10;
     __declspec(nothrow) void ResizeStringArray(unsigned int);
-    __declspec(nothrow) void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(const NiFixedString& element)
+    __declspec(nothrow) void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(const NiFixedString& element) // src: XBOX_RETAIL_PDB 0x00e8e330
     {
         if (count == capacity)
             ResizeStringArray(capacity > 0 ? capacity * 2 : 1);

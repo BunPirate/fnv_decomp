@@ -848,7 +848,7 @@ typedef void (__cdecl *Call_d3a8c0)(int, int, int, LocalState_d3b1a0*);
 // pdb: hkpSymmetricAgentLinearCast<hkpCapsuleTriangleAgent>::staticGetPenetrations | hkpCapsuleTriangleAgent.obj | retail, object-file gap fill, high
 // pdb params: bodyA, bodyB, input, collector
 // pdb locals: flip
-void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int collector) {
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int collector) { // src: XBOX_RETAIL_PDB 0x00d3b1a0
     LocalState_d3b1a0 state;
     state.m_iValue = collector;
     state.m_bZero = 0;

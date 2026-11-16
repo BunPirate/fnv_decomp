@@ -1179,10 +1179,9 @@ struct SortEntry
 void __cdecl SiftDownHeap(SortEntry* entries, int index, int count, int compare);
 // Sorts an array of SortEntry in place using a heap sort, sifting down to build the heap and then extracting elements.
 // @fnv 0x00e3eff0
-// src: XBOX_RETAIL_PDB 0x00e3eff0
-// pdb: D3DXShader::HeapSort | cprogram.obj | retail, upstream name already matches, high
+// pdb: D3DXShader::HeapSort | cprogram.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pfnCompare, pVal, cVal, pContext
-void __cdecl D3DXShader_HeapSort(SortEntry* entries, int count, int compare)
+void __cdecl HeapSort(SortEntry* entries, int count, int compare)
 {
     int remaining = count;
     int index = count / 2;
@@ -1381,15 +1380,14 @@ struct S00e3eba0_class
     int unk24;
     S00e3eba0_class** m_items;
     int m_uiItemCount;
-    void TESContainer_ReplaceObject(hkReferencedObject* apObject, hkReferencedObject* GetObject);
+    void ReplaceObject(hkReferencedObject* apObject, hkReferencedObject* GetObject);
 };
 // If m_pShape equals oldObject, replaces it with GetObject; then recursively applies the operation to every item in m_items.
 // @fnv 0x00e3eba0
-// src: XBOX_DEBUG_PDB 0x00e3eba0
-// pdb: TESContainer::ReplaceObject | TESContainer.obj | debug, upstream name already matches, high
+// pdb: TESContainer::ReplaceObject | TESContainer.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apObject, apReplace
 // pdb locals: pkList, pobj
-void S00e3eba0_class::TESContainer_ReplaceObject(hkReferencedObject* apObject, hkReferencedObject* apReplace)
+void S00e3eba0_class::ReplaceObject(hkReferencedObject* apObject, hkReferencedObject* apReplace)
 {
     if (m_pShape == (void*)apObject)
     {
@@ -1404,7 +1402,7 @@ void S00e3eba0_class::TESContainer_ReplaceObject(hkReferencedObject* apObject, h
         }
     }
     for (int i = 0; i < m_uiItemCount; i++)
-        m_items[i]->TESContainer_ReplaceObject(apObject, apReplace);
+        m_items[i]->ReplaceObject(apObject, apReplace);
 }
 
 // Calls FUN_00c903b0 for each strided item, acquiring the critical section when multi-threaded mode is enabled and TLS lacks the marker.

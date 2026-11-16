@@ -8656,7 +8656,7 @@ struct ShadowSystem
     void ShadowSceneNode_DisableAllShadowLights();
     void FUN_00b5c3c0();
     void* FUN_00b5cbd0(ShadowNode*);
-    void ShadowSceneNode_SortShadowLights(void*);
+    void FUN_00b5cde0(void*);
     ShadowMap* FUN_00b5afc0();
     ShadowMap* FUN_00b5b010();
     void* ShadowSceneNode_QPortalGraph();
@@ -8923,7 +8923,7 @@ void ShadowHost::Main_DrawWorld_UpdateOffscreenBuffers()
                 }
             }
             DAT_011f1180.BSSpinLock_Unlock();
-            system->ShadowSceneNode_SortShadowLights(playerShadow32);
+            system->FUN_00b5cde0(playerShadow32);
             ShadowNode* playerNode50 = DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(1);
             if (playerNode50)
             {
@@ -11909,7 +11909,7 @@ struct HostV
 
 struct LightShell
 {
-    void ShadowSceneNode_SetSunLight(void* p);
+    void FUN_00b5aac0(void* p);
 };
 
 struct ISM2
@@ -11932,7 +11932,7 @@ void TESMain_InitSky()
     ProgramFlow("Initializing Sky...");
     DAT_011dea20->Sky_Initialize(DAT_011deb34.Modelloader_GetReferencedThis(), DAT_011deb00.Modelloader_GetReferencedThis());
     ((HostV*)g_011deda4.Modelloader_GetReferencedThis())->v37(((ModelOps*)(void*)DAT_011dea20->FUN_0045cd60())->NiObjectNET_GetControllers(), 1);
-    ((LightShell*)FUN_00450b80(0))->ShadowSceneNode_SetSunLight((void*)DAT_011dea20->Sky_GetLight());
+    ((LightShell*)FUN_00450b80(0))->FUN_00b5aac0((void*)DAT_011dea20->Sky_GetLight());
     DAT_011deb34.Modelloader_GetReferencedThis()->UpdateProperties();
     ((ISM2*)BSShaderManager_GetImageSpaceManager())->ImageSpaceManager_SetUseSunbeams(((SettingT<INISettingCollection>*)&g_011deadc)->Bool()[0]);
     if (((SettingT<INISettingCollection>*)&g_011deadc)->Bool()[0])

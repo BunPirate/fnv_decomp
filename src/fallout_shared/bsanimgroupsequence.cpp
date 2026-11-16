@@ -516,7 +516,7 @@ bool __cdecl BSAnimGroupSequence_PlaySounds(NiControllerSequence* apSeq, TESObje
                             position4 = apRef->GetNiNode()->NiAVObject_GetWorldTranslate();
                     }
                     if (apRef &&
-                        (looping5 || special2 || SoundDistanceTest(sound2, position4, 1.0f)))
+                        (looping5 || special2 || SoundDistanceTest(sound2, position4, 1.0f))) // src: XBOX_RETAIL_PDB 0x0082eca0
                     {
                         if (looping5)
                             handle = BSAudio::GetSingleton()->GetSoundHandleByFormID(sound2->GetFormID(),

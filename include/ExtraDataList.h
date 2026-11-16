@@ -173,7 +173,7 @@ public:
     // 0x0041aa20
     void SetEquippedState(bool abWorn, bool abwearleft);
     // 0x0042dde0
-    void ExtraDataList_SetHotKey(unsigned char acKey);
+    void SetHotKey(unsigned char acKey);
     // 0x0041ac30
     void SetSeedIndex(unsigned char aiSeed);
     // 0x0041d280
@@ -183,7 +183,7 @@ public:
     // 0x00419970
     void SetHealth(float afHealth);
     // 0x0041b580
-    void ExtraDataList_SetHealthPerc(float afHealthPerc);
+    void SetHealthPerc(float afHealthPerc);
     // 0x00419a20
     void SetUses(unsigned char pextra);
     // 0x00419bb0
@@ -199,7 +199,7 @@ public:
     // 0x00419050
     void SetLockData(LockExtraData* apLock);
     // 0x00418310
-    void ExtraDataList_SetRadioData(int* apRadioData);
+    void SetRadioData(int* apRadioData);
     // 0x00419120
     void SetTeleportData(TeleportableReference* apData);
     // 0x00419250
@@ -231,7 +231,7 @@ public:
     // 0x0041c490
     void SetCanopyShadowMaskData(int aeState, NiCanopyTexture* apTex, CanopyShadowMaskData** apOutRect);
     // 0x0041c190
-    void ExtraDataList_SetClimate(TESClimate* apClimate);
+    void SetClimate(TESClimate* apClimate);
     // 0x0041c290
     void ExtraDataList_SetImageSpace(TESImageSpace* apImageSpace);
     // 0x0041c390
@@ -262,7 +262,7 @@ public:
     // 0x00421c60
     void SetEncounterZone(BGSEncounterZone* apZone);
     // 0x00421d50
-    void ExtraDataList_SetEmittanceSource(TESForm* apSource);
+    void SetEmittanceSource(TESForm* apSource);
     // 0x00421e40
     void SetMultiBoundRef(TESObjectREFR* apRef);
     // 0x00421f30
@@ -276,7 +276,7 @@ public:
     // 0x00422220
     void SetRadius(float afRadius);
     // 0x00422350
-    void ExtraDataList_SetRadiation(float afRadiation);
+    void SetRadiation(float afRadiation);
     // 0x0042e760
     void UpdateExtraDataListExtension();
     // 0x0042e800
@@ -290,7 +290,7 @@ public:
     // 0x00420f00
     void SetRoomNode(BSRoomNode* apRoom);
     // 0x0041fc10
-    void ExtraDataList_SetPatrolRefData(PatrolRefData* apPatrolRefData);
+    void SetPatrolRefData(PatrolRefData* apPatrolRefData);
     // 0x00422150
     void ExtraDataList_SetOcclusionPlane(BSOcclusionShapeNode* apShape);
     // 0x0041fec0
@@ -308,7 +308,7 @@ public:
     // 0x00420e00
     void SetPortalNode(BSPortalNode* apPortal);
     // 0x0042f200
-    void ExtraDataList_SetIgnoredBySandbox(bool abVal);
+    void SetIgnoredBySandbox(bool abVal);
     // 0x0042f420
     ExtraFollowerSwimBreadcrumbs* ExtraDataList_GetOrCreateExtraFollowerSwimBreadcrumbs();
     // 0x0042e380

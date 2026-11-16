@@ -201,7 +201,7 @@ extern SettingString g_011c8394;
 
 #include "../../include/ActorValue.h"
 namespace ActorValue {
-const char* __cdecl ActorValue_GetActorValueName(Index aiIndex);
+const char* __cdecl GetActorValueName(Index aiIndex);
 }
 
 float __cdecl FUN_004bd510(float afValue, float afMult);
@@ -274,7 +274,7 @@ void TermHack::BGSTerminal_HandleOpenFinish(TESObjectREFR* apItemActivated, Play
             break;
         case 4: {
             ::BSStringT<char> kMsg;
-            BSStringT_char_SPrintF(&kMsg, g_011c8394.GetString(), ActorValue::ActorValue_GetActorValueName((ActorValue::Index)0x28),
+            BSStringT_char_SPrintF(&kMsg, g_011c8394.GetString(), ActorValue::GetActorValueName((ActorValue::Index)0x28),
                          (int)FUN_004bd510(BGSTerminal_GetMinSkillRequiredToHack(apItemActivated), 1.0f));
             QueueUIMessage(kMsg, 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_sad.dds", 0, 2.0f, false);
         }

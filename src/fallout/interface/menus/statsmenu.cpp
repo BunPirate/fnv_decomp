@@ -399,7 +399,7 @@ bool ActiveEffect::HasConditions()
 }
 
 int __cdecl TruncateFloatToInt(float);
-float __cdecl GetSkillValue(void*, int, bool);
+float __cdecl AiFormulas_AVDeriveSkill(void*, int, bool);
 
 // @fnv 0x007dfb00
 // pdb: StatsMenu::SkillsUpdateFn | StatsMenu.obj | retail, object-file run extension, high
@@ -411,8 +411,8 @@ void __cdecl UpdateActorValueTile(Tile* apTile, ActorValue::Index aeIndex)
     {
         int ival = g_thePlayer->GetActorValueAsInteger(aeIndex);
         int ibase = g_thePlayer->GetPermanentActorValue(aeIndex);
-        float fderivedVal = GetSkillValue((ActorValueOwner*)g_thePlayer, aeIndex, false);
-        float fderivedBase = GetSkillValue((ActorValueOwner*)g_thePlayer, aeIndex, true);
+        float fderivedVal = AiFormulas_AVDeriveSkill((ActorValueOwner*)g_thePlayer, aeIndex, false);
+        float fderivedBase = AiFormulas_AVDeriveSkill((ActorValueOwner*)g_thePlayer, aeIndex, true);
         int idelta = (ival - ibase) + TruncateFloatToInt(fderivedVal - fderivedBase);
 
         apTile->Set(0x1005, ival);
@@ -591,7 +591,7 @@ struct StatsMenuActiveEffects : public StatsMenu
 
 struct AVH
 {
-    static const char* __cdecl ActorValue_GetActorValueName(ActorValue::Index);
+    static const char* __cdecl GetActorValueName(ActorValue::Index);
     static ActorValue::Index __cdecl GetActorValueForSectionIndex(int, unsigned char);
     static unsigned int __cdecl GetCountForSection(int);
 };
@@ -725,8 +725,8 @@ Tile* StatsMenu_Create()
             {
                 Tile* ptmp =
                     ((LBH*)&StatsMenu::ms_pInventoryMenu->lbSpecial)->AddListEntry(eindex, 0, 0, 0);
-                ptmp->Set(0xfc4, AVH::ActorValue_GetActorValueName(eindex), true);
-                ((Tile*)ptmp)->SetName(AVH::ActorValue_GetActorValueName(eindex));
+                ptmp->Set(0xfc4, AVH::GetActorValueName(eindex), true);
+                ((Tile*)ptmp)->SetName(AVH::GetActorValueName(eindex));
             }
         }
         ((LBH*)&StatsMenu::ms_pInventoryMenu->lbSkills)
@@ -738,8 +738,8 @@ Tile* StatsMenu_Create()
             {
                 Tile* ptmp =
                     ((LBH*)&StatsMenu::ms_pInventoryMenu->lbSkills)->AddListEntry(eindex, 0, 0, 0);
-                ptmp->Set(0xfc4, AVH::ActorValue_GetActorValueName(eindex), true);
-                ((Tile*)ptmp)->SetName(AVH::ActorValue_GetActorValueName(eindex));
+                ptmp->Set(0xfc4, AVH::GetActorValueName(eindex), true);
+                ((Tile*)ptmp)->SetName(AVH::GetActorValueName(eindex));
             }
         }
         ((void (__thiscall*)(ListBoxBase*, void*))(*(void***)&StatsMenu::ms_pInventoryMenu->lbSkills)[8])(&StatsMenu::ms_pInventoryMenu->lbSkills, (void*)CompareActorValueNames);
@@ -1555,15 +1555,14 @@ struct S_007dc010
 {
     unsigned char _pad[52];
     unsigned int arr[1];
-    unsigned int CBaseEndianBuffer_GetByte(unsigned int, unsigned int);
+    unsigned int GetByte(unsigned int, unsigned int);
 };
 // Returns byte b of the 32-bit value stored at arr[a] by masking and shifting.
 // @fnv 0x007dc010
-// src: XBOX_DEBUG_PDB 0x007dc010
-// pdb: CBaseEndianBuffer::GetByte | endian.obj | debug, upstream name already matches, high
+// pdb: CBaseEndianBuffer::GetByte | endian.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pb
 // pdb locals: cb
-unsigned int S_007dc010::CBaseEndianBuffer_GetByte(unsigned int auiIndex, unsigned int auiByteIndex)
+unsigned int S_007dc010::GetByte(unsigned int auiIndex, unsigned int auiByteIndex)
 {
     return (arr[auiIndex] & (0xFF << (auiByteIndex * 8))) >> (auiByteIndex * 8);
 }
@@ -3607,7 +3606,7 @@ struct InputList
 struct InputStatus
 {
     unsigned int Modelloader_GetReferencedThis() const;
-    int CBaseEndianBuffer_GetByte(unsigned int, int);
+    int GetByte(unsigned int, int);
     void SetBodyPart(int, bool);
 };
 class FUN_007db2c0;
@@ -3693,7 +3692,7 @@ bool InputStats::StatsMenu_DoGamepad(int aiButton, float afValue)
                 return false;
             }
             int selected3 =
-                ((InputStatus*)StatsMenu_BodyPartController_GetInstance())->CBaseEndianBuffer_GetByte(((InputStatus*)StatsMenu_BodyPartController_GetInstance())->Modelloader_GetReferencedThis(), direction);
+                ((InputStatus*)StatsMenu_BodyPartController_GetInstance())->GetByte(((InputStatus*)StatsMenu_BodyPartController_GetInstance())->Modelloader_GetReferencedThis(), direction);
             if (selected3 < 6)
             {
                 ((InputStatus*)StatsMenu_BodyPartController_GetInstance())->SetBodyPart(selected3, true);

@@ -1623,7 +1623,7 @@ void* ArchiveManager_GetFile(const char* apFileName, unsigned int aiBufferSize, 
             sparchive->FindFile_00af9bf0((int)&kDirectoryNameHash, (int)&kFileNameHash, (int*)&uiFolderIndex,
                                     (int)&uiFileIndex, (int)apFileName))
         {
-            return sparchive->NiLogger_NiLogFile_OpenFile(uiFolderIndex, uiFileIndex, aiBufferSize, apFileName);
+            return sparchive->OpenFile(uiFolderIndex, uiFileIndex, aiBufferSize, apFileName);
         }
         pCurrentElementNext = pCurrentElementNext->m_pkNext;
     }
@@ -2027,15 +2027,14 @@ struct ArchiveFileOpen : public Archive
         return !!(oFlags & uiFlag);
     }
     bool IsFileEntryValid(ArchiveFileEntryStand*, bool);
-    ArchiveFile* NiLogger_NiLogFile_OpenFile(int iFolder, int iFile, int iMode, const char* pName);
+    ArchiveFile* OpenFile(int iFolder, int iFile, int iMode, const char* pName);
 };
 
 // @fnv 0x00afa550
-// src: XBOX_DEBUG_PDB 0x00afa550
-// pdb: NiLogger::NiLogFile::OpenFile | NiLog_Xenon.obj | debug, upstream name already matches, high
+// pdb: NiLogger::NiLogFile::OpenFile | NiLog_Xenon.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: eOpenMode, bCommitToDisk
 // pdb locals: acOpenMode
-ArchiveFile* ArchiveFileOpen::NiLogger_NiLogFile_OpenFile(int iFolder, int iFile, int iMode, const char* pName)
+ArchiveFile* ArchiveFileOpen::OpenFile(int iFolder, int iFile, int iMode, const char* pName)
 {
     ArchiveFile* pArchiveFile = 0;
     ArchiveFileEntryStand* pEntry = &reinterpret_cast<ArchiveFolderEntryStand*>(pDirectories)[iFolder].pFiles[iFile];

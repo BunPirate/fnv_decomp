@@ -2721,7 +2721,7 @@ inline bool IsKindOfType(Collision* object)
 // pdb locals: pcol, pnode, i, pchild, pbody, fratio, fmass, center
 // hkVector4 has constructors in the shared header; retain the original stack cookie.
 #pragma strict_gs_check(push, on)
-void __cdecl bhkRigidBody_CalculateCOMAndMassRecursive(Object* apObject, hkVector4* aCenter, float* afMass)
+void __cdecl bhkRigidBody_CalculateCOMAndMassRecursive(Object* apObject, hkVector4* aCenter, float* afMass) // src: XBOX_RETAIL_PDB 0x00c8e800
 {
     if (!apObject)
         return;

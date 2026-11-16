@@ -2827,7 +2827,7 @@ FUN_0080d900_cls::FUN_0080d900_cls(MagicCaster* a1, MagicItem* a2, EffectItem* a
 }
 
 // pdb: class LockEffect, size 0x48, bases: ActiveEffect, 0 members
-struct LockEffect : ActiveEffect // src: EXE (old: FUN_0080f390_shell)
+struct LockEffect : ActiveEffect // src: EXE 0x0107a4ac (vtable; old: FUN_0080f390_shell)
 {
     LockEffect(MagicCaster* a, MagicItem* b, EffectItem* c);
 };

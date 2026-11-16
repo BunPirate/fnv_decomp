@@ -1258,10 +1258,9 @@ float __cdecl Runtime_GetDAT0104da4c(void)
 }
 
 // @fnv 0x00e52fe0
-// src: XBOX_DEBUG_PDB 0x00e52fe0
-// pdb: D3DXShader::CCommentBlock::SwapBytes | ccommentblock.obj | debug, upstream name already matches, high
+// pdb: D3DXShader::CCommentBlock::SwapBytes | ccommentblock.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: buffer, pSegment
-void __cdecl D3DXShader_CCommentBlock_SwapBytes(void* pData)
+void __cdecl SwapBytes(void* pData)
 {
     unsigned char* p = static_cast<unsigned char*>(pData);
     unsigned char* q = p + 1;
@@ -5184,7 +5183,7 @@ void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 // pdb: hkpConstraintChainUtil::getAdjointEntities | hkpConstraintChainUtil.obj | retail, object-file gap fill, high
 // pdb params: allConstraints, entity, entitiesOut, constraintsOut
 // pdb locals: instance
-void __cdecl hkpConstraintChainUtil_getAdjointEntities(ChainArray<void*>* allConstraints, void* entity, ChainArray<void*>* entitiesOut, ChainArray<void*>* constraintsOut) {
+void __cdecl hkpConstraintChainUtil_getAdjointEntities(ChainArray<void*>* allConstraints, void* entity, ChainArray<void*>* entitiesOut, ChainArray<void*>* constraintsOut) { // src: XBOX_RETAIL_PDB 0x00e5b830
     for (int i = 0; i < allConstraints->m_iElementCount; ++i) {
         ChainElem* elem = (ChainElem*)allConstraints->m_data[i];
         void* a = elem->m_link14;
@@ -5530,7 +5529,7 @@ struct SparseGrid {
  void FreeThreeDynamicArrays();
 };
 float hkaNURBS_OneBasisFun(int p,int m,ElevationArray<float>* knots,int i,float u);
-__declspec(noinline) float hkaNURBS_OneBasisFun(int p,int m,ElevationArray<float>* knots,int i,float u) {
+__declspec(noinline) float hkaNURBS_OneBasisFun(int p,int m,ElevationArray<float>* knots,int i,float u) { // src: XBOX_RETAIL_PDB 0x00e54110
  const float* U=knots->data;
  if((i==0 && u==U[0]) || (i==m-p-1 && u==U[m])) return 1.0f;
  const float* b=U+i;
@@ -5556,7 +5555,7 @@ char* CheckPointsWithinThreshold(char*,int,int,ElevationArray<KnotVector>*,Eleva
 // pdb: hkaNURBS::LeastSquaresFit | hkaNURBS.obj | retail, object-file gap fill, high
 // pdb params: n, p, P, U, m, Q, ub, numericalTolerance, errorBound
 // pdb locals: AA, status, PP, b, xx, assertBuf, ostr, S
-char* hkaNURBS_LeastSquaresFit(char* result,int n,int degree,ElevationArray<KnotVector>* output,ElevationArray<float>* knots,int m,ElevationArray<KnotVector>* points,ElevationArray<float>* params,float tolerance,float tolerance2) {
+char* hkaNURBS_LeastSquaresFit(char* result,int n,int degree,ElevationArray<KnotVector>* output,ElevationArray<float>* knots,int m,ElevationArray<KnotVector>* points,ElevationArray<float>* params,float tolerance,float tolerance2) { // src: XBOX_RETAIL_PDB 0x00e57620
  if(n>m) {*result=0;return result;}
  SparseGrid grid;
  grid.ResetSpawnArrays(m-1,n-1);
@@ -6233,7 +6232,7 @@ typedef FUN_00cf3ea0 Se5b160_Instance;
 // pdb: hkpConstraintUtils::convertToPowered | hkpConstraintUtils.obj | retail, string-set bridge, high
 // pdb params: originalConstraint, constraintMotor, enableMotors
 // pdb locals: assertBuf, ostr
-Se5b160_Instance* __cdecl hkpConstraintUtils_convertToPowered(const Se5b160_Instance* __restrict originalConstraint, Se5b160_Motor* constraintMotor, bool enableMotors) {
+Se5b160_Instance* __cdecl hkpConstraintUtils_convertToPowered(const Se5b160_Instance* __restrict originalConstraint, Se5b160_Motor* constraintMotor, bool enableMotors) { // src: XBOX_RETAIL_PDB 0x00e5b160
     Se5b160_Instance* newConstraint = 0;
     Se5b160_Data* constraintData = originalConstraint->m_data;
     Se5b160_Entity* entityA = originalConstraint->getEntityA();
@@ -6292,11 +6291,10 @@ struct S00e51a60_BlockDesc {
 };
 
 // @fnv 0x00e51a60
-// src: XBOX_RETAIL_PDB 0x00e51a60
-// pdb: NiTextureCodec::DecodeBlock | NiTextureCodec.obj | retail, upstream name already matches, high
+// pdb: NiTextureCodec::DecodeBlock | NiTextureCodec.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pucDest, uiCols, uiRows
 // pdb locals: aucColorBlock, uiDestRowLength, pucColor, uiBlockRow
-unsigned int __cdecl NiTextureCodec_DecodeBlock(const unsigned char* encodedData, S00e51a60_BlockDesc& desc, unsigned char* rawData, unsigned int rawDataSizeBytes)
+unsigned int __cdecl DecodeBlock(const unsigned char* encodedData, S00e51a60_BlockDesc& desc, unsigned char* rawData, unsigned int rawDataSizeBytes)
 {
     unsigned int nBits = (rawDataSizeBytes - desc.m_ucSecondQuantizationParameter * 4) * 8;
     unsigned int nValues = nBits / desc.m_uiFirstQuantizationParameter;

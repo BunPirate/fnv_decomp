@@ -770,7 +770,7 @@ struct GraphicsRenderer
 
 extern int DAT_011fa020;
 void __cdecl BSRenderedTexture_Pop();
-int __cdecl Conversation_GetCurrentItem();
+int __cdecl GetCurrentItem();
 
 // @fnv 0x00b6b840
 // src: COMMUNITY 0x00b6b840
@@ -782,7 +782,7 @@ void BSRenderedTexture_End()
     {
         NiRenderer::ms_pRenderer->TryUnlock();
         BSRenderedTexture_Pop();
-        int r = Conversation_GetCurrentItem();
+        int r = GetCurrentItem();
         if (r == 0)
         {
             NiRenderer* p = NiRenderer::ms_pRenderer;
@@ -2358,14 +2358,13 @@ extern B6B100Stack g_kB6B100Stack;
 class B6B100Manager
 {
   public:
-    static NiRefObject* Conversation_GetCurrentItem();
+    static NiRefObject* GetCurrentItem();
 };
 
 // Returns the item at the top of g_kB6B100Stack, or null when the stack is empty.
 // @fnv 0x00b6b100
-// src: XBOX_DEBUG_PDB 0x00b6b100
-// pdb: Conversation::GetCurrentItem | Conversation.obj | debug, upstream name already matches, high
-NiRefObject* B6B100Manager::Conversation_GetCurrentItem()
+// pdb: Conversation::GetCurrentItem | Conversation.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+NiRefObject* B6B100Manager::GetCurrentItem()
 {
     return g_kB6B100Stack.m_iArrayLength ? g_kB6B100Stack.m_aspItems[g_kB6B100Stack.m_iArrayLength - 1]
                                    : NiPointer<NiRefObject>(0);

@@ -153,7 +153,7 @@ struct FUN_00dc03d0_cls
     Element** m_ppArray;
     int m_iArrayLength;
     unsigned int m_uCapacity;
-    void NiPick_Results_ClearArray();
+    void ClearArray();
 };
 struct AudioObject
 {
@@ -302,7 +302,7 @@ struct DBED30Writer
 
     void WriteSigned64BitInteger(__int64 i);
     void WriteByteArray(const void* buf, int nbytes);
-    void NiD3DUtility_WriteString(const char* s);
+    void WriteString(const char* s);
 };
 struct Rec_00dbf0d0
 {
@@ -498,7 +498,7 @@ struct S_dbf1a0_Writer
     S_dbf1a0_Map m_map;
 
     void __thiscall WriteVarint(__int64 val) throw();
-    void __thiscall NiD3DUtility_WriteString(const char* str) throw();
+    void __thiscall WriteString(const char* str) throw();
     int WriteHandle(const S_dbf1a0_Handle& h) throw();
 };
 class hkMemoryAllocatorDBE8;
@@ -626,7 +626,7 @@ struct Host
     __declspec(nothrow) void HashUInt(float f);
     __declspec(nothrow) void WriteFloatArray(void* p, int v);
     __declspec(nothrow) void ProcessEntries_00dc00b0(const StringHandle& v);
-    __declspec(nothrow) void NiD3DUtility_WriteString(int v);
+    __declspec(nothrow) void WriteString(int v);
     __declspec(nothrow) void hkOArchive_writeRaw(void* p, int n);
     __declspec(nothrow) int IsTruthy(Pair* p);
 };
@@ -683,7 +683,7 @@ struct S_00dbfef0_Visitor
     void HashUInt(float v);
     void WriteFloatArray(int p, int n);
     void WriteVarint(__int64 v);
-    void NiD3DUtility_WriteString(int v);
+    void WriteString(int v);
     void WriteArray(S_00dbfef0_A* a, int n);
     void ProcessEntries_00dc00b0(int v);
     void WriteNode(S_00dbfef0_Node* node, S_00dbfef0_B b);

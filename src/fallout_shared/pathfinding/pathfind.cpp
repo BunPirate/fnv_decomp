@@ -1278,14 +1278,13 @@ struct S5460
     unsigned int m_08;
     unsigned int m_0c;
     unsigned int m_10;
-    unsigned int BSStripPSysData_GetNextIndex();
+    unsigned int GetNextIndex();
 };
 // If FUN_00438b90 succeeds, initializes m_08/m_10 via v1 or SetData, then increments m_0c and returns the previous value.
 // @fnv 0x006d0450
-// src: XBOX_DEBUG_PDB 0x006d0450
-// pdb: BSStripPSysData::GetNextIndex | NiXenonRenderer.obj | debug, upstream name already matches, high
+// pdb: BSStripPSysData::GetNextIndex | NiXenonRenderer.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: ausParicle, aiIndex
-unsigned int S5460::BSStripPSysData_GetNextIndex()
+unsigned int S5460::GetNextIndex()
 {
     if (BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
     {

@@ -276,7 +276,7 @@ struct FUN_00d5f480_class
     int count;
     int mask;
 
-    void CWindMatrices_Resize(void* u34, int new_cap);
+    void Resize(void* u34, int new_cap);
     int hkMapBase_unsigned_long_struct_hkLeakDetectAllocator_AllocInfo_struct_hkMapOperations_unsigned_long_insert(void* u34, int key, ParamStruct val);
 };
 
@@ -290,7 +290,7 @@ int FUN_00d5f480_class::hkMapBase_unsigned_long_struct_hkLeakDetectAllocator_All
 {
     if ((count & 0x7fffffff) * 2 > mask)
     {
-        CWindMatrices_Resize(u34, mask * 2 + 2);
+        Resize(u34, mask * 2 + 2);
     }
 
     int idx = ((unsigned int)key >> 4) * 0x9e3779b1 & mask;
@@ -678,15 +678,14 @@ struct D5F670Map
     int m_iPairCount;
 
     int insert(D5F670Allocator& alloc, unsigned int key, D5F670Value val);
-    void CWindMatrices_Resize(D5F670Allocator& alloc, int newcap);
+    void Resize(D5F670Allocator& alloc, int newcap);
 };
 
 // @fnv 0x00d5f670
-// src: XBOX_RETAIL_PDB 0x00d5f670
-// pdb: CWindMatrices::Resize | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb: CWindMatrices::Resize | SpeedTreeRT.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: usCount
 // pdb locals: i
-void D5F670Map::CWindMatrices_Resize(D5F670Allocator& alloc, int aiNewCapacity)
+void D5F670Map::Resize(D5F670Allocator& alloc, int aiNewCapacity)
 {
     aiNewCapacity = (aiNewCapacity > 8) ? aiNewCapacity : 8;
     int iNoDeallocate = m_iCapacityFlags & 0x80000000;

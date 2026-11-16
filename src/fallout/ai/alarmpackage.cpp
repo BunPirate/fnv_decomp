@@ -230,14 +230,13 @@ struct Crime
     int BackgroundTask;
     char pad[0x18];
     FUN_009eb9c0_list actors;
-    void ProcessArray_AddActor(Actor* apActor);
+    void AddActor(Actor* apActor);
 };
 // @fnv 0x009eb9c0
-// src: XBOX_RETAIL_PDB 0x009eb9c0
-// pdb: ProcessArray::AddActor | ProcessArray.obj | retail, upstream name already matches, high
+// pdb: ProcessArray::AddActor | ProcessArray.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apActor, aWhichList
 // pdb locals: NextList
-void Crime::ProcessArray_AddActor(Actor* apActor)
+void Crime::AddActor(Actor* apActor)
 {
     if (!actors.IsInList(apActor))
     {

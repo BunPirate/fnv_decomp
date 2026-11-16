@@ -524,7 +524,7 @@ struct FnvCpu_FUN_00c91090_CpuOwner {
     void ForwardCall_00c91090(int arg0);
 };
 struct PendingOperations {
-    void __thiscall hkpWorldOperationQueue_queueOperation();
+    void __thiscall FUN_00cf7690();
 };
 struct WorldWithPending : hkpWorld {
     void __thiscall hkpWorld_queueOperation();
@@ -7689,7 +7689,7 @@ struct WorldCtor {
     void hkpWorld_addEntity(ObjectCtor*,int);
 };
 namespace WorldCtorFactorySetup {
-static void hkWorld_setupContactMgrFactories(::CFB240Dispatcher* dispatcher, WorldCtor* dis)
+static void hkWorld_setupContactMgrFactories(::CFB240Dispatcher* dispatcher, WorldCtor* dis) // src: XBOX_RETAIL_PDB 0x00c912e0
 {
     ::FUN_00cfd450* first = new ::FUN_00cfd450(dis);
     ::FUN_00cfca20* second = new ::FUN_00cfca20(dis);

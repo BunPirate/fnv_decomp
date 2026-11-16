@@ -9309,7 +9309,7 @@ FUN_00e95b60_cls* FUN_00e95b60_cls::Reset() {
 }
 
 struct S_00e97790_This {
-    void __thiscall NiD3DShaderConstantManager_ctor(void* pkD3DRenderer);
+    void __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(void* pkD3DRenderer);
 };
 
 
@@ -9331,7 +9331,7 @@ int FUN_00e97790_Class::InitFromSource(int a, int apSource)
     int zero = 0;
     int sixteen = zero + 0x10;
 
-    pThis->NiD3DShaderConstantManager_ctor(reinterpret_cast<void*>(a));
+    pThis->NiD3DShaderConstantManager_NiD3DShaderConstantManager(reinterpret_cast<void*>(a));
 
     *reinterpret_cast<int*>(this) =
         reinterpret_cast<int>(&DAT_010f1550);
@@ -11440,7 +11440,7 @@ struct C_00e8f010 {
     void FUN_00e8f010(int fvf);
 };
 struct FUN_00e69b40_shell {
-    unsigned int NiD3DShaderConstantMap_GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int pszKey);
 };
 struct Outer;
 extern "C" void* memmove(void* dst, const void* src, unsigned int n);
@@ -11513,7 +11513,7 @@ VBEntry* ThisObj::NiDX9VertexBufferManager_PackTransformedVB(C_00e8f010* owner, 
         if (!bReuse) {
             if (!NiDX9VertexBufferManager_AllocateBufferSpace((Outer*)owner, 0))
                 return 0;
-            result = (VBEntry*)((FUN_00e69b40_shell*)owner)->NiD3DShaderConstantMap_GetEntry(0);
+            result = (VBEntry*)((FUN_00e69b40_shell*)owner)->GetEntry(0);
         }
         unsigned int uiFlags = result->uiFlags;
         unsigned int uiSize = result->uiSize;
@@ -14546,16 +14546,16 @@ struct FUN_00e98910_Class {
     FUN_00e98910_Target* unk80;
     void* unk84;
 
-    FUN_00e98910_Class* __thiscall NiD3DShaderConstantManager_ctor(int* pkD3DRenderer);
+    FUN_00e98910_Class* __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* pkD3DRenderer);
 };
 
 // @fnv 0x00e98910
-// src: XBOX_RETAIL_PDB 0x00e98910
-// pdb: NiD3DShaderConstantManager::NiD3DShaderConstantManager | NiD3DShaderConstantManager.obj | retail, upstream name already matches, high
+// src: EXE 0x00e98910
+// pdb: NiD3DShaderConstantManager::NiD3DShaderConstantManager | NiD3DShaderConstantManager.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pkD3DRenderer
 FUN_00e98910_Class* __thiscall
-// src: XBOX_RETAIL_PDB 0x00e98910 (was EXE)
-FUN_00e98910_Class::NiD3DShaderConstantManager_ctor(int* pkD3DRenderer) {
+// src: EXE 0x00e98910
+FUN_00e98910_Class::NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* pkD3DRenderer) {
     this->unk00 = &DAT_0101dce4;
     this->unk04 = 0;
 

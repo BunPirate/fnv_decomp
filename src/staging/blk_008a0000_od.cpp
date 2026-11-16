@@ -3186,7 +3186,7 @@ struct NewObj
     void Actor_InitiateStealWarning(Actor*, TESForm*);
     int Actor_GetDetectionLevelAgainstActor(int, Actor*, char*, int, int, int, int);
     void* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    void ProcessArray_AddActor(RefObj*);
+    void AddActor(RefObj*);
 };
 struct G67
 {
@@ -3296,7 +3296,7 @@ void Actor::StealAlarm(TESObjectREFR* apRef, int apObj, int ainumb, int aiTotal,
         p->Actor_IncrementMinorCrimes();
         p->Actor_AddFactionMinorCrime(1, 1);
         ((Z*)&DAT_011e0e80)->AddObjectToList(k);
-        k->ProcessArray_AddActor(p);
+        k->AddActor(p);
         if (this->bAttackOnNextTheft)
         {
             c = true;

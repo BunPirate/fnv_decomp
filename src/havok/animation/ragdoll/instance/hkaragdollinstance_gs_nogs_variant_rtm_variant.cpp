@@ -509,7 +509,7 @@ struct PoseVelocity_MyQuaternion
     }
 };
 
-// src: XBOX_DEBUG_PDB 0x005611c0 (was COMMUNITY)
+// src: XBOX_DEBUG_PDB 0x005611c0 (was COMMUNITY)
 inline void PoseVelocity_MyQuaternion::hkQuaternion_normalize()
 {
     m_vec.normalize(4);

@@ -1010,16 +1010,15 @@ struct hkpWorldOperationQueue
     int cap;
     char* owner;
     VecBase sub;
-    void hkpWorldOperationQueue_queueOperation(Elem* operation);
+    void queueOperation(Elem* operation);
 };
 
 // Appends a copy of arg to the vector and, by tag, calls FUN_00c90510 on referenced objects, copying pointer arrays or a 32-byte block for some tags.
 // @fnv 0x00cf7690
-// src: XBOX_RETAIL_PDB 0x00cf7690
-// pdb: hkpWorldOperationQueue::queueOperation | hkpWorldOperationQueue.obj | retail, upstream name already matches, high
+// pdb: hkpWorldOperationQueue::queueOperation | hkpWorldOperationQueue.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: operation
 // pdb locals: assertBuf, ostr
-void hkpWorldOperationQueue::hkpWorldOperationQueue_queueOperation(Elem* operation)
+void hkpWorldOperationQueue::queueOperation(Elem* operation)
 {
     hkReferencedObject_lockAll();
     BSAudio* bsa = hkMemoryRouter_getInstance();

@@ -5193,7 +5193,7 @@ struct Act_009e3520
 };
 struct FUN_008b8f90_S
 {
-    void Explosion_ProcessTargets();
+    void ProcessTargets();
 };
 
 float __fastcall FUN_004a7290(const NiPoint3&);
@@ -5881,7 +5881,7 @@ bhkCharacterController* FUN_0092f260_shell::MobileObject_Move(float afDeltaTime,
                 }
             }
             if (pactor)
-                ((FUN_008b8f90_S*)pactor)->Explosion_ProcessTargets();
+                ((FUN_008b8f90_S*)pactor)->ProcessTargets();
         }
         else
         {

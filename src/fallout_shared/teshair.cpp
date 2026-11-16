@@ -198,7 +198,7 @@ struct FUN_0048e370_obj
 };
 struct FUN_004891d0_holder
 {
-    void __thiscall BSSendSceneGraphCommand_WriteToBuffer(unsigned int a, unsigned int b);
+    void __thiscall WriteToBuffer(unsigned int a, unsigned int b);
 };
 void __cdecl TESForm_AddChunk_3(unsigned int, unsigned char);
 
@@ -214,7 +214,7 @@ void FUN_005fdc50_shell::TESHair_Save()
 {
     reinterpret_cast<FUN_004855a0*>(this)->M();
     reinterpret_cast<S_00487010*>(reinterpret_cast<char*>(this) + 0x18)->Save_00487010();
-    reinterpret_cast<FUN_004891d0_holder*>(reinterpret_cast<char*>(this) + 0x24)->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    reinterpret_cast<FUN_004891d0_holder*>(reinterpret_cast<char*>(this) + 0x24)->WriteToBuffer(0x4c444f4d, 0x54444f4d);
     reinterpret_cast<FUN_0048e370_obj*>(reinterpret_cast<char*>(this) + 0x3c)->TESTexture_Save(0x4e4f4349);
     TESForm_AddChunk_3(0x41544144, reinterpret_cast<char*>(this)[0x48]);
     reinterpret_cast<FUN_00485680*>(this)->M();

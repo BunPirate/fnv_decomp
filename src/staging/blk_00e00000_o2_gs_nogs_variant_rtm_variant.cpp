@@ -3139,7 +3139,7 @@ void SwapHeaderEndianness(Payload*);
 void hkpSaveContactPointsEndianUtil_swapEndianType_00e05fe0(Payload*);
 void hkpSaveContactPointsEndianUtil_swapEndianType_00e06010(void*);
 void ProcessListBlocks(Context**, void*);
-void XGRAPHICS_Compiler_ProcessInput(Context** context, Input* input, void* argument, bool reverse, int* type, bool* changed);
+void ProcessInput(Context** context, Input* input, void* argument, bool reverse, int* type, bool* changed);
 struct ListEntryE061
 {
     int unk;
@@ -3170,7 +3170,7 @@ struct ListE061
     ListEntryE061** m_0c;
     int m_10;
 };
-void __cdecl XGRAPHICS_Compiler_ProcessInput(int a1, char* pos, ListEntryE061* cur, FlagE061 flag, int* consumed, bool* pbOut);
+void __cdecl ProcessInput(int a1, char* pos, ListEntryE061* cur, FlagE061 flag, int* consumed, bool* pbOut);
 void __cdecl ProcessListBlocks(int a1, ListE061* list);
 struct TimedEntry
 {

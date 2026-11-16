@@ -1271,8 +1271,8 @@ struct FUN_004d5a90_Class
 
 // Returns the absolute value of m_i4 scaled by DAT_010209a8 when m_i4 is negative, otherwise 0.0.
 // @fnv 0x004d5a90
-// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | retail, object-file gap fill, disputed (was high), not renamed: the debug build links this name to 0x004d52d0
-// pdb params (of the disputed candidate, unverified): aFilename
+// pdb: LipSynchAnim::LoadFromFile | LipSynchAnim.obj | retail, object-file gap fill, rejected (was high), not renamed: this is a float getter with no arguments, and every LoadFromFile overload takes a file; 0x004d52d0 is LoadFromFile(const char*)
+// pdb params (of the rejected candidate): aFilename
 float FUN_004d5a90_Class::GetNegativeMagnitude()
 {
     return (float)(m_i4 < 0 ? (double)(m_i4 * -1) * DAT_010209a8 : 0.0);

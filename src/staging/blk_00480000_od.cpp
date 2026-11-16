@@ -1004,7 +1004,7 @@ TESModelTextureSwap* TESBipedModelForm_GetBipedTESModel(TESForm* apObj, TESObjec
     int aSex = 0;
     if (owner && owner->FNV_GetFormType() == 0x2a)
         aSex = reinterpret_cast<TESActorBase*>(owner)->GetSex();
-    return model2->TESBipedModelForm_GetBipedModel((SEX)aSex);
+    return model2->GetBipedModel((SEX)aSex);
 }
 
 extern int DAT_0101d274;
@@ -1804,16 +1804,15 @@ struct FUN_0049c410_cls
     virtual unsigned int vSlot1(unsigned short key);
     unsigned int m_uiCount;
     FUN_0049c410_item** m_ppItems;
-    void NiSCMExtraData_GetNextEntry(FUN_0049c410_item** pp, unsigned short* outKey, unsigned int* outValue);
+    void GetNextEntry(FUN_0049c410_item** pp, unsigned short* outKey, unsigned int* outValue);
 };
 
 // Reads the key and value of the item at *pp, advances *pp to the next item or the next non-null bucket entry, or sets it to null when exhausted.
 // @fnv 0x0049c410
-// src: XBOX_DEBUG_PDB 0x0049c410
-// pdb: NiSCMExtraData::GetNextEntry | NiD3DShaderConstantMap.obj | debug, upstream name already matches, high
+// pdb: NiSCMExtraData::GetNextEntry | NiD3DShaderConstantMap.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: uiConstantIndex, uiPass, eType, bGlobal
 // pdb locals: uiIndex
-void FUN_0049c410_cls::NiSCMExtraData_GetNextEntry(FUN_0049c410_item** apItem, unsigned short* ausKey, unsigned int* auiValue)
+void FUN_0049c410_cls::GetNextEntry(FUN_0049c410_item** apItem, unsigned short* ausKey, unsigned int* auiValue)
 {
     FUN_0049c410_item* item = *apItem;
     *ausKey = item->m_usKey;
@@ -2201,7 +2200,7 @@ struct MapObj
 {
     virtual int Call0(int);
     void* FUN_004b9ba0();
-    void NiSCMExtraData_GetNextEntry(void**, void**, VObj**);
+    void GetNextEntry(void**, void**, VObj**);
     void FUN_00438af0();
 };
 struct Loader
@@ -2346,7 +2345,7 @@ FUN_0048fb50::~FUN_0048fb50()
     while (pos5 != 0)
     {
         outVal = 0;
-        mapPtr->NiSCMExtraData_GetNextEntry(&pos5, &outKey3, &outVal);
+        mapPtr->GetNextEntry(&pos5, &outKey3, &outVal);
         if (outVal != 0)
         {
             copyA = outVal;

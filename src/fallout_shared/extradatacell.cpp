@@ -358,7 +358,7 @@ struct Base_40f
 };
 
 // pdb: class ExtraSeenData, size 0x10, bases: BSExtraData, 1 members
-struct ExtraSeenData : Base_40f // src: EXE (old: FUN_0040f5f0)
+struct ExtraSeenData : Base_40f // src: EXE 0x01014294 (vtable; old: FUN_0040f5f0)
 {
     void* pad1;
     void* pad2;

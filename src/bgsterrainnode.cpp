@@ -196,15 +196,14 @@ struct FUN_006fd7b0
 };
 struct FUN_006fd750
 {
-    void MagicItem_Unload();
+    void Unload();
 };
 // Calls Go(7), then for each of the four pointers at offset 0x20 calls Del(1) on the non-null ones.
 // @fnv 0x006fd750
-// src: XBOX_RETAIL_PDB 0x006fd750
-// pdb: MagicItem::Unload | MagicItem.obj | retail, upstream name already matches, high
+// pdb: MagicItem::Unload | MagicItem.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: abRelease
 // pdb locals: plist, binProgess, pavEffectSetting, pitem, pes, pform, pweapon, parmor, pcreature, pnpc, modelList, pfilename, path, pfilelist, plastBackSlash, pcreatureFileList, plastSlash, pkfList, pFilenameList, pspecialList
-void FUN_006fd750::MagicItem_Unload()
+void FUN_006fd750::Unload()
 {
     ((FUN_006fd7b0*)this)->Go(7);
     for (int i = 0; i < 4; i++)

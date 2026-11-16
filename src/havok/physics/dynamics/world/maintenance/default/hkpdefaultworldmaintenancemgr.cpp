@@ -16,7 +16,7 @@ struct S_00d0b250_RefObj
 };
 
 // pdb: class hkpDefaultWorldMaintenanceMgr, size 0x10, bases: hkpWorldMaintenanceMgr, 2 members
-struct hkpDefaultWorldMaintenanceMgr : S_00d0b250_RefObj // src: EXE (old: FUN_00d0b250)
+struct hkpDefaultWorldMaintenanceMgr : S_00d0b250_RefObj // src: EXE 0x010cd34c (vtable; old: FUN_00d0b250)
 {
     float m_minAllowedTimeValue; // src: XBOX_RETAIL_PDB +0x8 (old: m_kPointA)
     float m_maxAllowedTimeValue; // src: XBOX_RETAIL_PDB +0xc (old: m_kPointB)

@@ -1703,7 +1703,7 @@ class C3B270_Sub : public C3B270_SubBase
     }
 };
 // pdb: class BSNodeReferences, size 0x18, bases: NiObject, 1 members
-class BSNodeReferences : public FUN_00a5d3a0 // src: EXE (old: C3B270_Object)
+class BSNodeReferences : public FUN_00a5d3a0 // src: EXE 0x010c13f4 (vtable; old: C3B270_Object)
 {
   public:
     C3B270_Sub RefNodeA; // src: XBOX_RETAIL_PDB +0x8 (old: m_08)

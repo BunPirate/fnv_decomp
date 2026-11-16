@@ -52,14 +52,13 @@ void MatrixRange::SetMatrixRange(unsigned int nStartingMatrix, unsigned int nMat
 extern float DAT_011f8d80;
 struct FUN_00b37470_shell
 {
-    float TESAttributes_SetStrength(float fOldStrength, float fNewStrength, float fOldTimeShift);
+    float SetStrength(float fOldStrength, float fNewStrength, float fOldTimeShift);
 };
 // Stores the old strength, recomputes the frequency-scaled values at offsets 0x20/0x24 and the phase at offset 0, resets 0x30/0x34, and returns the phase.
 // @fnv 0x00b37470
-// src: XBOX_DEBUG_PDB 0x00b37470
-// pdb: TESAttributes::SetStrength | TESActorBase.obj | debug, upstream name already matches, high
+// pdb: TESAttributes::SetStrength | TESActorBase.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: acValue
-float FUN_00b37470_shell::TESAttributes_SetStrength(float fOldStrength, float fNewStrength, float fOldTimeShift)
+float FUN_00b37470_shell::SetStrength(float fOldStrength, float fNewStrength, float fOldTimeShift)
 {
     float fNewLeafFrequency = DAT_010a5784 * fNewStrength * ((float*)((char*)this + 0x1c))[0];
     ((float*)((char*)this + 4))[0] = fOldStrength;

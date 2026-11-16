@@ -380,7 +380,7 @@ struct State
     unsigned used;
     SlabArray slabs;
 };
-__declspec(noinline) static Record* hkAgentNnMachine_AllocateEntry(State* state)
+__declspec(noinline) static Record* hkAgentNnMachine_AllocateEntry(State* state) // src: XBOX_RETAIL_PDB 0x00cfe820
 {
     if (state->used < 512u)
     {

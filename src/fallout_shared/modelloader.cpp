@@ -12662,7 +12662,7 @@ struct Weapon : WeaponPrefix, Model
 };
 struct ModelPair
 {
-    Model* TESBipedModelForm_GetBipedModel(int);
+    Model* GetBipedModel(int);
 };
 struct Armor : Form
 {
@@ -12790,9 +12790,9 @@ void Main::UpdateModels()
                         if (form->FUN_00401170() == 24)
                         {
                             Armor* armor = (Armor*)form;
-                            DAT_011c3b3c->ModelLoader_QueueModel(armor->models.TESBipedModelForm_GetBipedModel(0), IOTask_GetIOTaskPriority(), this,
+                            DAT_011c3b3c->ModelLoader_QueueModel(armor->models.GetBipedModel(0), IOTask_GetIOTaskPriority(), this,
                                                        TES_GetLODMult(armor), 1, 0, 0);
-                            DAT_011c3b3c->ModelLoader_QueueModel(armor->models.TESBipedModelForm_GetBipedModel(1), IOTask_GetIOTaskPriority(), this,
+                            DAT_011c3b3c->ModelLoader_QueueModel(armor->models.GetBipedModel(1), IOTask_GetIOTaskPriority(), this,
                                                        TES_GetLODMult(armor), 1, 0, 0);
                         }
                     }

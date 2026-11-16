@@ -258,7 +258,7 @@ struct FUN_006cf520_Class
 };
 struct FUN_006d0450_Class
 {
-    int __thiscall BSStripPSysData_GetNextIndex();
+    int __thiscall GetNextIndex();
 };
 void* __cdecl operator new(unsigned int, void*);
 struct EightByteData

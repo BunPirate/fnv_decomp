@@ -189,7 +189,7 @@ void __cdecl StartMenu_ChooseBack();
 int __cdecl BSstrcmp(char const* a, char const* b);
 struct AVH
 {
-    static char const* ActorValue_GetActorValueName(ActorValue::Index aiIndex);
+    static char const* GetActorValueName(ActorValue::Index aiIndex);
 };
 struct FUN_007da270_T
 {
@@ -203,8 +203,8 @@ struct FUN_007da270_T
 // pdb locals: avName2, iresult, avName1
 int CompareActorValueNames(FUN_007da270_T* apLeft, FUN_007da270_T* apRight)
 {
-    char const* nameA = AVH::ActorValue_GetActorValueName(apLeft->index);
-    char const* nameB6 = AVH::ActorValue_GetActorValueName(apRight->index);
+    char const* nameA = AVH::GetActorValueName(apLeft->index);
+    char const* nameB6 = AVH::GetActorValueName(apRight->index);
     int result = BSstrcmp(nameA, nameB6);
     return result;
 }

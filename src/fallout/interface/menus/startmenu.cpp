@@ -1643,7 +1643,7 @@ StartMenu::~StartMenu()
 }
 
 
-struct Option // src: XBOX_RETAIL_PDB (old: StartMenu_Option)
+struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first of 1 linked methods; old: StartMenu_Option)
 {
     void InitPointer();
     void* FUN_007ce660(unsigned int flags);
@@ -2951,16 +2951,16 @@ void HUDMainMenu_SetVisibilityFlag(int aFlags, int aSet)
 }
 
 // pdb: class BSContentPackage, size 0x138 (here 0x4), 2 members
-struct BSContentPackage // src: XBOX_RETAIL_PDB (old: FUN_00b008d0_StandIn)
+struct BSContentPackage // src: XBOX_DEBUG_PDB 0x00b008d0 (first of 2 linked methods; old: FUN_00b008d0_StandIn)
 {
     void* m_pUnk;
-    void* DisplayName();
+    void* BSContentPackage_DisplayName();
 };
 
 // @fnv 0x00b008d0
-// src: XBOX_DEBUG_PDB 0x00b008d0 (was XBOX_PDB)
-// pdb: BSContentPackage::DisplayName | BSContentPackage_Xenon.obj | debug, upstream name already matches, high
-void* BSContentPackage::DisplayName()
+// src: XBOX_PDB 0x00b008d0
+// pdb: BSContentPackage::DisplayName | BSContentPackage_Xenon.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+void* BSContentPackage::BSContentPackage_DisplayName()
 {
     return m_pUnk;
 }
@@ -3005,17 +3005,17 @@ void FUN_007d1320_Class::PlayerCharacter_SetKillCamMode(int value)
 
 unsigned int __cdecl gm_GetTickCount();
 
-struct IdleTimer // src: XBOX_RETAIL_PDB (old: FUN_007d5120_Class)
+struct IdleTimer // src: XBOX_RETAIL_PDB 0x007cf5c0 (first of 5 linked methods; old: FUN_007d5120_Class)
 {
     unsigned int a;
     unsigned int b;
-    void __thiscall Start();
+    void __thiscall StartMenu_IdleTimer_Start();
 };
 
 // @fnv 0x007d5120
-// src: XBOX_DEBUG_PDB 0x007d5120 (was XBOX_PDB)
-// pdb: StartMenu::IdleTimer::Start | StartMenu.obj | debug, upstream name already matches, high
-void __thiscall IdleTimer::Start()
+// src: XBOX_PDB 0x007d5120
+// pdb: StartMenu::IdleTimer::Start | StartMenu.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+void __thiscall IdleTimer::StartMenu_IdleTimer_Start()
 {
     a = gm_GetTickCount();
     b = 0;
@@ -7329,7 +7329,7 @@ int StartMenuSaveDirectory::CreateScriptMessageDirectory(char* pcPathBuffer)
 namespace fnv_007d69f0 {
 struct Item_007d69f0
 {
-    void* DisplayName();
+    void* BSContentPackage_DisplayName();
 };
 
 struct Node_007d69f0
@@ -7446,7 +7446,7 @@ void __cdecl StartMenu_LoadDownloadedContent()
         pItem2 = *pNode->B006815c0();
         if (pItem2 != 0)
         {
-            void* e = pItem2->DisplayName();
+            void* e = pItem2->BSContentPackage_DisplayName();
             char j[0x104];
             FUN_00ecacb2(j, e, 0x104);
             p = j;
@@ -7471,7 +7471,7 @@ struct ListX
 };
 struct HudX
 {
-    void Start();
+    void StartMenu_IdleTimer_Start();
     void Reset();
 };
 HudX* FUN_007cb710();
@@ -7504,7 +7504,7 @@ void OptionMenuOperations::StartMenu_UpdateHighlightedSaveGameInfo()
     {
         if (fnv_007d4df0::InterfaceManager_Has360Controller() && DAT_011dabb0.GetBoolValue())
         {
-            fnv_007d4df0::FUN_007cb710()->Start();
+            fnv_007d4df0::FUN_007cb710()->StartMenu_IdleTimer_Start();
             bA = true;
             m_pTiles[11]->Tile_Set(0xfa9, 0.0f, true);
         }
@@ -8478,7 +8478,7 @@ void __cdecl Interface_CloseMessageMenu();
 char* __cdecl FUN_00ecacb2(char* dest, const char* src, unsigned int count);
 struct DLCEntry
 {
-    const char* DisplayName();
+    const char* BSContentPackage_DisplayName();
 };
 struct StartMenuDLC : StartMenu
 {
@@ -8500,7 +8500,7 @@ void __cdecl StartMenu_MountDLCCallback(int which, int last, int valid, DLCEntry
     }
     else
     {
-        const char* name = package->DisplayName();
+        const char* name = package->BSContentPackage_DisplayName();
         char buffer[128];
         FUN_00ecacb2(buffer, name, 128);
         char* text = buffer;

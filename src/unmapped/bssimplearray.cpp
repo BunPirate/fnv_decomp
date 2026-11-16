@@ -907,7 +907,7 @@ struct FUN_006cf520_Class
 
 struct FUN_006d0450_Class
 {
-    int __thiscall BSStripPSysData_GetNextIndex();
+    int __thiscall GetNextIndex();
 };
 
 // @fnv 0x006cf520
@@ -918,7 +918,7 @@ struct FUN_006d0450_Class
 int __thiscall FUN_006cf520_Class::BSScrapArray_bool_1024_Add(const unsigned char* aValue)
 {
     int iVar1;
-    iVar1 = ((FUN_006d0450_Class*)this)->BSStripPSysData_GetNextIndex();
+    iVar1 = ((FUN_006d0450_Class*)this)->GetNextIndex();
     ((FUN_006e1280_Class*)this)->VisitPlacementAddresses((char*)(*(int*)((char*)this + 4) + iVar1), 1);
     *(unsigned char*)(*(int*)((char*)this + 4) + iVar1) = *aValue;
     return iVar1;

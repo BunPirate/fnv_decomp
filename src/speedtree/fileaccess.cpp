@@ -37,14 +37,13 @@ struct FUN_00b3ef80_shell
     int m_iValueAt00;
     void* m_pObjectAt04;
     float CTreeFileAccess_ParseFloat();
-    CVec3 BSSoundMessage_GetVector3();
+    CVec3 GetVector3();
 };
 
 // Builds a 3-component vector by calling FUN_00b3ed20 once per component and returns it.
 // @fnv 0x00b3ef80
-// src: XBOX_DEBUG_PDB 0x00b3ef80
-// pdb: BSSoundMessage::GetVector3 | BSAudioManager.obj | debug, upstream name already matches, high
-CVec3 FUN_00b3ef80_shell::BSSoundMessage_GetVector3()
+// pdb: BSSoundMessage::GetVector3 | BSAudioManager.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+CVec3 FUN_00b3ef80_shell::GetVector3()
 {
     // Preserve explicit initialization without calling the shared default constructor.
     float vecResult[sizeof(CVec3) / sizeof(float)];

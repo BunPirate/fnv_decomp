@@ -7657,7 +7657,7 @@ class FUN_00e95b60_cls
 };
 struct S_00e97790_This
 {
-    void __thiscall NiD3DShaderConstantManager_ctor(void* pkD3DRenderer);
+    void __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(void* pkD3DRenderer);
 };
 struct FUN_00e984d0_Struct
 {

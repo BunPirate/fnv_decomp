@@ -404,7 +404,7 @@ struct List
     int count;
 };
 
-static __declspec(noinline) bool _isConstraintSupported(Obj* constraint, bool warnIfNot) throw()
+static __declspec(noinline) bool _isConstraintSupported(Obj* constraint, bool warnIfNot) throw() // src: XBOX_RETAIL_PDB 0x00ce9ba0
 {
     return constraint->inner != 0 && warnIfNot;
 }

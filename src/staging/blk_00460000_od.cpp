@@ -1195,13 +1195,12 @@ struct FUN_00474a00_shell
 {
     void* p;
     void* q;
-    void* BGSAmmoForm_GetAmmoForm();
+    void* GetAmmoForm();
 };
 // Returns q if it is non-null and its form type is 0x29, otherwise returns null.
 // @fnv 0x00474a00
-// src: XBOX_DEBUG_PDB 0x00474a00
-// pdb: BGSAmmoForm::GetAmmoForm | BGSAmmoForm.obj | debug, upstream name already matches, high
-void* FUN_00474a00_shell::BGSAmmoForm_GetAmmoForm()
+// pdb: BGSAmmoForm::GetAmmoForm | BGSAmmoForm.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+void* FUN_00474a00_shell::GetAmmoForm()
 {
     return q && reinterpret_cast<TESForm*>(q)->GetFormType() == 0x29 ? q : 0;
 }

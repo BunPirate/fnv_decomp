@@ -140,17 +140,17 @@ float AiFormulas_AVDeriveBodyPartCondition()
     return originalRuntimeFloatSetting310.Float()->f;
 }
 
-float __cdecl GetSkillValue(ActorValueOwner*, int, bool);
+float __cdecl AiFormulas_AVDeriveSkill(ActorValueOwner*, int, bool);
 
 // Calls GetSkillValue with arg2, arg3 and false, returning the resulting float.
 // @fnv 0x00643bd0
 // src: COMMUNITY 0x00643bd0
-// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | debug, object-file gap fill, medium; the name is also claimed by the retail build's object-file run extension link to 0x00643c90, which is marked disputed there
+// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | debug, object-file gap fill, medium; the 2-argument overload; 0x00643c90 is the 3-argument one
 // pdb params: apActor, aiWhich
 // pdb locals: fresult
 float __cdecl callback4C(void* arg2, int arg3)
 {
-    float result = GetSkillValue(static_cast<ActorValueOwner*>(arg2), arg3, 0);
+    float result = AiFormulas_AVDeriveSkill(static_cast<ActorValueOwner*>(arg2), arg3, 0);
     return result;
 }
 
@@ -539,20 +539,20 @@ bool __cdecl ActorValue_IsSkill(int);
 void __cdecl GetSkillAttributeAndBase(int aiSkill, int* aiPrimaryAttribute, float* afBase);
 float __cdecl CalcSkillBase(float, float, float);
 // @fnv 0x00643c90
-// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x00643bd0
-// pdb params (of the disputed candidate, unverified): apActor, aiWhich
-// pdb locals (of the disputed candidate, unverified): fresult
-float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiSkill, bool abCurrent)
+// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, high; the 3-argument overload AVDeriveSkill(ActorValueOwner*, ActorValue::Index, bool) at 0x82448f20; 0x00643bd0 is the 2-argument one
+// pdb params: apActor, aiWhich, abBaseDerivation
+// pdb locals: fresult, btagSkill, iprimaryAttribute, pform, preference
+float __cdecl AiFormulas_AVDeriveSkill(ActorValueOwner* apActor, int aiWhich, bool abBaseDerivation) // src: XBOX_RETAIL_PDB 0x00643c90
 {
     float fResult = 0.0f;
-    if (ActorValue_IsSkill(aiSkill))
+    if (ActorValue_IsSkill(aiWhich))
     {
         int iAttribute = -1;
-        GetSkillAttributeAndBase(aiSkill, &iAttribute, &fResult);
+        GetSkillAttributeAndBase(aiWhich, &iAttribute, &fResult);
         bool bUnused = false;
         if (iAttribute != -1)
         {
-            if (!abCurrent)
+            if (!abBaseDerivation)
             {
                 fResult = CalcSkillBase(fResult, apActor->GetActorValueFloatByIndex(iAttribute),
                                         apActor->GetActorValueFloatByIndex(11));
@@ -576,7 +576,7 @@ float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiSkill, bool abCurren
             if (pForm->IsActor())
             {
                 TESNPC* pNPC = (TESNPC*)pForm;
-                if (pNPC->GetClass() && pNPC->GetClass()->IsTagSkill((ActorValue::Index)aiSkill))
+                if (pNPC->GetClass() && pNPC->GetClass()->IsTagSkill((ActorValue::Index)aiWhich))
                 {
                     fResult += originalRuntimeFloatSetting327.Float()->f;
                 }

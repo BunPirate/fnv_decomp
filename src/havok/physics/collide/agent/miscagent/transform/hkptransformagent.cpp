@@ -1391,7 +1391,7 @@ struct S_00d43030_Agent : S_00d43030_RefObj {
     virtual void vfn04();
 };
 // pdb: class hkpTransformAgent, size 0x10, bases: hkpCollisionAgent, 1 members
-struct hkpTransformAgent : S_00d43030_Agent { // src: EXE (old: S_00d43030_TransformAgent)
+struct hkpTransformAgent : S_00d43030_Agent { // src: EXE 0x010cf280 (vtable; old: S_00d43030_TransformAgent)
     S_00d43030_Agent* m_childAgent; // src: XBOX_RETAIL_PDB +0xc (old: m_pAgent)
     __forceinline hkpTransformAgent(const S_00d43030_CdBody& bodyA, const S_00d43030_CdBody& bodyB, const S_00d43030_CollisionInput& input, S_00d43030_ContactMgr* mgr) throw();
     virtual void vfn04();

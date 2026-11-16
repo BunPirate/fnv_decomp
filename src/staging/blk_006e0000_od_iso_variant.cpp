@@ -822,7 +822,7 @@ struct Flt
 };
 struct FUN_006fd750
 {
-    void __thiscall MagicItem_Unload();
+    void __thiscall Unload();
 };
 void __cdecl Deallocate(void*);
 struct FUN_006fca40_Class
@@ -1109,7 +1109,7 @@ struct FUN_006ff860_Class
 };
 struct FUN_006ffb90_Class
 {
-    void __thiscall ImageSpaceEffectCinematic_SetParams(int apfData, int auiEnables);
+    void __thiscall SetParams(int apfData, int auiEnables);
 };
 struct FUN_006ff9f0 : FUN_006ff970_Class
 {
@@ -3049,7 +3049,7 @@ struct S_006f9c20
     S_006f9c20_Elem* unk04;
     int GetNextIndex();
     void ConstructElementsInPlace(S_006f9c20_Elem* p, int n);
-    int D3DXShader_CFragmentRegisterAllocator_AddElement(const S_006f9c20_Elem* a1);
+    int AddElement(const S_006f9c20_Elem* a1);
 };
 void* __cdecl operator new(unsigned int size, void* place);
 void __cdecl operator delete(void* p, void* place);
@@ -3522,7 +3522,7 @@ struct FFB90Request
     int m_iParam2;
 
     void UnregisterSteamCallback();
-    void ImageSpaceEffectCinematic_SetParams(int apfData, int auiEnables);
+    void SetParams(int apfData, int auiEnables);
 };
 extern "C" __declspec(dllimport) void __cdecl SteamAPI_RegisterCallback(void* callback, int callbackId);
 struct FUN_006ffc20_shell : FUN_006ff970_Class

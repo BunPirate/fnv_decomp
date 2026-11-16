@@ -27,7 +27,7 @@ struct FUN_009eb500
     FUN_009eb500(int, TESObjectREFR*, Actor*, int, int, int);
     Actor* FUN_0044ddc0();
     Actor* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    void ProcessArray_AddActor(Actor*);
+    void AddActor(Actor*);
 };
 
 struct CrimeLimit
@@ -85,7 +85,7 @@ void Actor::PickpocketAlarm(TESObjectREFR* apRef, int apObj, int ainumb)
     TESNPC* form = dynamic_cast<TESNPC*>(target->GetObjectReference());
     entry->GetProcess()->SetIsWeaponReady(true);
     target->GetExtraData()->AddOrCreateExtraItem(isLowLevel, g_011de7b8.FUN_00867da0());
-    isLowLevel->ProcessArray_AddActor((Actor*)this);
+    isLowLevel->AddActor((Actor*)this);
     g_011e0e80.AddObjectToList(isLowLevel);
     target->Actor_IncrementMinorCrimes();
     target->Actor_AddFactionMinorCrime(true, true);

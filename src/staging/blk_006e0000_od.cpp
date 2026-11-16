@@ -2739,7 +2739,7 @@ void Tile::SetNodeFloat(float afValue)
 
 struct FUN_006fd750
 {
-    void __thiscall MagicItem_Unload();
+    void __thiscall Unload();
 };
 void __cdecl Deallocate(void*);
 struct FUN_006fca40_Class
@@ -2751,7 +2751,7 @@ struct FUN_006fca40_Class
 // pdb: BGSTerrainNode::`scalar deleting destructor' | BGSTerrainManager.obj | debug, call graph, medium
 void* __thiscall FUN_006fca40_Class::FUN_006fca40(unsigned int auiFlags)
 {
-    ((FUN_006fd750*)this)->MagicItem_Unload();
+    ((FUN_006fd750*)this)->Unload();
     if (auiFlags & 1)
         Deallocate(this);
     return this;
@@ -3628,7 +3628,7 @@ void FUN_006ff860_Class::SteamAPI_RunCallbacks_()
 
 struct FUN_006ffb90_Class
 {
-    void __thiscall ImageSpaceEffectCinematic_SetParams(int apfData, int auiEnables);
+    void __thiscall SetParams(int apfData, int auiEnables);
 };
 struct FUN_006ff9f0 : FUN_006ff970_Class
 {
@@ -3644,7 +3644,7 @@ FUN_006ff9f0::FUN_006ff9f0(int iFirst, int iSecond)
     m_kPointA = iFirst;
     m_kPointB = iSecond;
     if (iFirst && iSecond)
-        ((FUN_006ffb90_Class*)this)->ImageSpaceEffectCinematic_SetParams(iFirst, iSecond);
+        ((FUN_006ffb90_Class*)this)->SetParams(iFirst, iSecond);
 }
 
 struct FUN_006ffa70 : FUN_006ff970_Class
@@ -6935,13 +6935,12 @@ struct S_006f9c20
     S_006f9c20_Elem* unk04;
     int GetNextIndex();
     void ConstructElementsInPlace(S_006f9c20_Elem* p, int n);
-    int D3DXShader_CFragmentRegisterAllocator_AddElement(const S_006f9c20_Elem* a1);
+    int AddElement(const S_006f9c20_Elem* a1);
 };
 // @fnv 0x006f9c20
-// src: XBOX_RETAIL_PDB 0x006f9c20
-// pdb: D3DXShader::CFragmentRegisterAllocator::AddElement | cassembler.obj | retail, upstream name already matches, high
+// pdb: D3DXShader::CFragmentRegisterAllocator::AddElement | cassembler.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: szName, iRegister, cRegisters
-int S_006f9c20::D3DXShader_CFragmentRegisterAllocator_AddElement(const S_006f9c20_Elem* pElem)
+int S_006f9c20::AddElement(const S_006f9c20_Elem* pElem)
 {
     int iIndex = GetNextIndex();
     ConstructElementsInPlace(&unk04[iIndex], 1);
@@ -7785,14 +7784,13 @@ struct FFB90Request
     int m_iParam2;
 
     void UnregisterSteamCallback();
-    void ImageSpaceEffectCinematic_SetParams(int apfData, int auiEnables);
+    void SetParams(int apfData, int auiEnables);
 };
 
 // @fnv 0x006ffb90
-// src: XBOX_RETAIL_PDB 0x006ffb90
-// pdb: ImageSpaceEffectCinematic::SetParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high
+// pdb: ImageSpaceEffectCinematic::SetParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apfData, auiEnables
-void FFB90Request::ImageSpaceEffectCinematic_SetParams(int apfData, int auiEnables)
+void FFB90Request::SetParams(int apfData, int auiEnables)
 {
     if (!apfData || !auiEnables)
         return;

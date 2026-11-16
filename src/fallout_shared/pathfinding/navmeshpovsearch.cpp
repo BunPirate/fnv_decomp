@@ -8130,7 +8130,7 @@ bool P072Search::FindNeighborNodes(P072Node* apNode, P072List* apRetNodes)
                 direction += crossFirst.pos.SubtractIntoVector(cost.pos).FUN_00457990();
                 P072Node* arcCost;
                 switch (
-                    AStarSearch_PathSmootherPOVNode_PathSmootherPOVLink_GetOrCreateAStarNode(GetKeyForNode(object, distance.tangents[tangent].direction), direction, &arcCost))
+                    AStarSearch_PathSmootherPOVNode_PathSmootherPOVLink_GetOrCreateAStarNode(GetKeyForNode(object, distance.tangents[tangent].direction), direction, &arcCost)) // src: XBOX_RETAIL_PDB 0x006b3420
                 {
                 case 0:
                     SetEdgeFromSphere(arcCost, object, distance.tangents[tangent].direction, group);

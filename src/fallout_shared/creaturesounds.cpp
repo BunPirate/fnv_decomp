@@ -129,7 +129,7 @@ bool CreatureSounds::LoadCreatureSound(TESFile* apFile, CREATURE_SOUND_TYPE aeTy
 
 struct FUN_005f0860_helper
 {
-    void TESRegionDataSound_ClearSoundList(int);
+    void ClearSoundList(int);
 };
 
 // Calls ClearSoundList for each index from 0 to 21 on this object.
@@ -141,7 +141,7 @@ void CreatureSounds::FreeAllCreatureSoundLists()
 {
     for (char i = 0; i < 22; ++i)
     {
-        ((FUN_005f0860_helper*)this)->TESRegionDataSound_ClearSoundList(i);
+        ((FUN_005f0860_helper*)this)->ClearSoundList(i);
     }
 }
 
@@ -152,14 +152,13 @@ struct SoundListView_helper : SoundListView
 
 struct CreatureSounds_shell : CreatureSounds
 {
-    void TESRegionDataSound_ClearSoundList(CREATURE_SOUND_TYPE type);
+    void ClearSoundList(CREATURE_SOUND_TYPE type);
 };
 
 // @fnv 0x005f0860
-// src: XBOX_RETAIL_PDB 0x005f0860
-// pdb: TESRegionDataSound::ClearSoundList | TESRegionDataSound.obj | retail, upstream name already matches, high
+// pdb: TESRegionDataSound::ClearSoundList | TESRegionDataSound.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb locals: psnd, tmpList
-void CreatureSounds_shell::TESRegionDataSound_ClearSoundList(CREATURE_SOUND_TYPE type)
+void CreatureSounds_shell::ClearSoundList(CREATURE_SOUND_TYPE type)
 {
     SoundListView* list = (SoundListView*)GetSoundListForType(type);
     while (list && !list->IsEmpty())

@@ -3110,16 +3110,15 @@ class S00b66050_cls
     unsigned int unk13C;
     S00b66050_list m_kNode;
 
-    void NiD3DShaderConstantMap_RemoveEntry(unsigned int pszKey);
+    void RemoveEntry(unsigned int pszKey);
 };
 
 // Finds the entry with the given key in the linked list, frees its object and the entry itself, then removes the node from the list.
 // @fnv 0x00b66050
-// src: XBOX_RETAIL_PDB 0x00b66050
-// pdb: NiD3DShaderConstantMap::RemoveEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb: NiD3DShaderConstantMap::RemoveEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pszKey
 // pdb locals: uiIndex, pkEntry, kKey
-void S00b66050_cls::NiD3DShaderConstantMap_RemoveEntry(unsigned int pszKey)
+void S00b66050_cls::RemoveEntry(unsigned int pszKey)
 {
     S00b66050_node* node = m_kNode.m_pFirstNode;
     if (node == 0)

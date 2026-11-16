@@ -256,7 +256,7 @@ struct Proxy
 };
 extern int DAT_010cf9c8;
 int __cdecl dispatch(Proxy*, int*, int, void*);
-static __declspec(noinline) int _saveTagfile(int a, void* b, int* c)
+static __declspec(noinline) int _saveTagfile(int a, void* b, int* c) // src: XBOX_RETAIL_PDB 0x00d48560
 {
     if (!a)
         return 1;

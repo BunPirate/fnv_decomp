@@ -54,7 +54,7 @@ public:
     NiPointer<NiNode> pData;
 
     __declspec(noinline) bool QReadyToLevelUp();
-    void FinishLevelUp();
+    void CharacterProgression_FinishLevelUp();
 };
 #include "../../../../include/StatsMenu.h"
 #include "../../../../include/Setting.h"
@@ -168,7 +168,7 @@ void __cdecl UpdateLevelUpMenu()
     HUDMainMenu_ClearXPMeterFinishedMoving();
     if (DAT_011d9fdc != 0)
     {
-        g_thePlayer->GetCharacterProgressionInfo()->FinishLevelUp();
+        g_thePlayer->GetCharacterProgressionInfo()->CharacterProgression_FinishLevelUp();
         ((ListBox_enum_ActorValue__Index_*)((int)DAT_011d9fdc + 0x94))->Traverse(LevelUpMenu_SetPerksFunc, 0, 0x7fffffff);
         if (g_thePlayer->GetCharacterProgressionInfo()->QReadyToLevelUp())
             ((Actor*)g_thePlayer)->ConfigureActorState(true, false);
@@ -1340,7 +1340,7 @@ extern int DAT_011d9ff0, DAT_011d9fe4, DAT_011d9ff8;
 extern const char str_01073dcc[], str_01073db8[], str_0106eb00[];
 unsigned int FUN_0066ecf0(int);
 int FUN_0066ec10(int, unsigned char);
-const char* ActorValue_GetActorValueName(int);
+const char* FUN_0066e950(int);
 void CompareActorValueNames();
 int MinInt(int, int);
 bool ActorValue_IsFlagSet(int, unsigned int);
@@ -1394,8 +1394,8 @@ void SkillsMenu::LevelUpMenu_InitLists()
         int iSkillId = FUN_0066ec10(2, (unsigned char)i);
         if (!ActorValue_IsFlagSet(iSkillId, 0x2000))
         {
-            SkillTile* tile = skills.AddListEntry(iSkillId, ActorValue_GetActorValueName(iSkillId), 0, 0);
-            tile->SetName(ActorValue_GetActorValueName(iSkillId));
+            SkillTile* tile = skills.AddListEntry(iSkillId, FUN_0066e950(iSkillId), 0, 0);
+            tile->SetName(FUN_0066e950(iSkillId));
             tile->FUN_00700320(0xfaa, 11);
             tile->Tile_Set(DAT_011d9ff0, 0.0f, 1);
             tile->FUN_00700320(DAT_011d9fe4,

@@ -55,7 +55,7 @@ class StatisticalEntry : public MorphName
 class DifferentialArray
 {
   public:
-    unsigned int NiD3DShaderConstantMap_GetEntryCount();
+    unsigned int GetEntryCount();
     DifferentialEntry* GetCheckedElement_00662860(unsigned int);
     unsigned int data[6];
 };
@@ -107,7 +107,7 @@ BSFaceGenMorphDataHead::BSFaceGenMorphDataHead(FaceGenTriData* apFaceGenTri)
         unsigned int expression;
     } local;
     // Load differential morphs by matching the four sets of names.
-    for (local.i = 0; local.i < apFaceGenTri->differential.NiD3DShaderConstantMap_GetEntryCount(); local.i++)
+    for (local.i = 0; local.i < apFaceGenTri->differential.GetEntryCount(); local.i++)
     {
         local.found = false;
         for (local.expression = 0; local.expression < 15; local.expression++)
@@ -416,7 +416,7 @@ void __cdecl FUN_00ec7c56();
 // pdb params: _Pos
 DifferentialEntry* DifferentialArray::GetCheckedElement_00662860(unsigned int _Pos)
 {
-    if (_Pos >= NiD3DShaderConstantMap_GetEntryCount())
+    if (_Pos >= GetEntryCount())
         FUN_00ec7c56();
     do
     {
@@ -448,9 +448,8 @@ NiRTTI* FUN_006626e0_shell::GetRTTI()
 }
 
 // @fnv 0x00662840
-// src: XBOX_DEBUG_PDB 0x00662840
-// pdb: NiD3DShaderConstantMap::GetEntryCount | NiD3DShader.obj | debug, upstream name already matches, high
-int __fastcall NiD3DShaderConstantMap_GetEntryCount(int* thisPtr)
+// pdb: NiD3DShaderConstantMap::GetEntryCount | NiD3DShader.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+int __fastcall GetEntryCount(int* thisPtr)
 {
     return (*(thisPtr + 4) - *(thisPtr + 3)) / 0x34;
 }

@@ -961,14 +961,13 @@ struct BaseS
 };
 struct FUN_004f7070_shell
 {
-    void* __thiscall NiActorManager_TimelineData_SetValues(float, float);
+    void* __thiscall SetValues(float, float);
 };
 // Calls _ref_006815c0, then FUN_0052ce20 with a and SetValue with b, and returns this.
 // @fnv 0x004f7070
-// src: XBOX_DEBUG_PDB 0x004f7070
-// pdb: NiActorManager::TimelineData::SetValues | NiActorManager.obj | debug, upstream name already matches, high
+// pdb: NiActorManager::TimelineData::SetValues | NiActorManager.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: fEventTime, eEventType, eSequenceID, pkMatchObject, kTextKeyMatched
-void* __thiscall FUN_004f7070_shell::NiActorManager_TimelineData_SetValues(float afFirst, float afSecond)
+void* __thiscall FUN_004f7070_shell::SetValues(float afFirst, float afSecond)
 {
     ((BaseS*)this)->_ref_006815c0();
     ((AlphaColor*)this)->TESRegionPoint_SetX(afFirst);
@@ -3281,7 +3280,7 @@ struct Polygon : PolygonNode
     float TESRegionPointList_GetMinX();
     float TESRegionPointList_GetMaxX();
     float TESRegionPointList_GetMinY();
-    float TESRegionPointList_GetMaxY();
+    float GetMaxY();
     bool TESRegionPointList_IsInsideRegion(PolygonPoint*);
 };
 // NiPoint3-in-polygon test (even-odd crossing rule) after a bounding-box reject.
@@ -3304,7 +3303,7 @@ bool Polygon::TESRegionPointList_IsInsideRegion(PolygonPoint* apTest)
         return false;
     float x = apTest->AStarSearch_EvaluateValue_006a7f50();
     float by = apTest->CombatTimer_GetTargetTime();
-    if (x < TESRegionPointList_GetMinX() || x > TESRegionPointList_GetMaxX() || by < TESRegionPointList_GetMinY() || by > TESRegionPointList_GetMaxY())
+    if (x < TESRegionPointList_GetMinX() || x > TESRegionPointList_GetMaxX() || by < TESRegionPointList_GetMinY() || by > GetMaxY())
         return false;
     PolygonNode* node6 = this;
     PolygonNode* nextX = 0;

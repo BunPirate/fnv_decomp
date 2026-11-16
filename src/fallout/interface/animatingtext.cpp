@@ -27,7 +27,7 @@ struct TwTile
     char pad00[8];
     float m_fAlpha;
     void Tile_Value_SetFloat_00a0a270(float fValue, int iPropagate);
-    void Tile_Value_SetString(const char* pcText, int abClearActions);
+    void SetString(const char* pcText, int abClearActions);
 };
 unsigned int __cdecl Cmd_GetSessionTime_Execute();
 int __cdecl BSstrlen(const char* pcStr);
@@ -78,7 +78,7 @@ void TwTypewriter::AnimatingText_Update()
                 m_bDone = true;
             }
             FUN_00401460(m_pString + iStartTmp, Modelloader_GetReferencedThis() + iStartTmp, uiCountZ);
-            m_pkText->Tile_Value_SetString(m_pString, 1);
+            m_pkText->SetString(m_pString, 1);
         }
         else
         {
@@ -108,7 +108,7 @@ struct ObjC
 };
 struct ObjD
 {
-    void Tile_Value_SetString(int a, int abClearActions);
+    void SetString(int a, int abClearActions);
 };
 
 extern "C" int __cdecl BSstrlen(int v);
@@ -158,7 +158,7 @@ void FUN_00700110_cls::AnimatingText_ForceFinish()
             if (m_08 != 0 && m_24 != 0)
             {
                 FUN_00401460(m_24, Modelloader_GetReferencedThis(), BSstrlen(Modelloader_GetReferencedThis()));
-                m_08->Tile_Value_SetString(m_24, 1);
+                m_08->SetString(m_24, 1);
                 m_29 = 1;
             }
         }

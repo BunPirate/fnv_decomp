@@ -204,7 +204,7 @@ struct SecondBase
 };
 
 // pdb: class hkStatisticsProcess, size 0x44, bases: hkReferencedObject, hkProcess, 3 members
-struct hkStatisticsProcess : FirstBase, SecondBase // src: EXE (old: FUN_00ddc0b0)
+struct hkStatisticsProcess : FirstBase, SecondBase // src: EXE 0x010d7e28 (vtable; old: FUN_00ddc0b0)
 {
     int unk0c;
     int unk10;

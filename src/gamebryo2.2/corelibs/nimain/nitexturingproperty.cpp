@@ -436,7 +436,7 @@ const char* const* NiDynamicEffect_GetRTTI()
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
-struct Map // src: EXE (old: FUN_00a69e00)
+struct Map // src: EXE 0x0109c4c4 (vtable; old: FUN_00a69e00)
 {
     unsigned short m_usFlags;
     void* m_spTexture;

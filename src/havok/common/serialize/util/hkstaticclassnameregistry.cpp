@@ -45,7 +45,7 @@ SlotEntry* FUN_00db7ae0_cls::FindSlotByKey(void* className)
 }
 
 // pdb: class hkStaticClassNameRegistry, size 0x18, bases: hkClassNameRegistry, 4 members
-struct hkStaticClassNameRegistry // src: EXE (old: FUN_00db7b40)
+struct hkStaticClassNameRegistry // src: EXE 0x010d6014 (vtable; old: FUN_00db7b40)
 {
     virtual void v0();
     unsigned short unk04;

@@ -2952,7 +2952,7 @@ bool __cdecl BSDecalPlacementVectorExtraData_FindDecalPlacementVectorGroupRecurs
 
 extern int DAT_010c1364;
 // pdb: class BSReference, size 0xc, bases: NiObject, 1 members
-class BSReference : public NiObject // src: EXE (old: FactoryObject)
+class BSReference : public NiObject // src: EXE 0x010c1364 (vtable; old: FactoryObject)
 {
   public:
     static void* operator new(unsigned int size)
@@ -3640,16 +3640,16 @@ void FUN_00c62390_cls::BSPSysArrayEmitter_GetPointFromObject(void* pObject, void
 
 extern NiFixedString* DAT_012043ac;
 // pdb: class PArrayPoint, size 0xc, bases: NiExtraData, 0 members
-struct PArrayPoint : NiExtraData // src: EXE (old: ExtraData850)
+struct PArrayPoint : NiExtraData // src: EXE 0x010c361c (vtable; old: ExtraData850)
 {
     PArrayPoint(const NiFixedString& kName) : NiExtraData(kName)
     {}
     virtual ~PArrayPoint();
 };
 // @fnv 0x00c61850
-// src: XBOX_DEBUG_PDB 0x00c61850 (was COMMUNITY)
-// pdb: PArrayPoint::PArrayPoint | BSPSysArrayEmitter.obj | debug, upstream name already matches, high
-PArrayPoint* __cdecl PArrayPoint_ctor()
+// src: COMMUNITY 0x00c61850
+// pdb: PArrayPoint::PArrayPoint | BSPSysArrayEmitter.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+PArrayPoint* __cdecl PArrayPoint_PArrayPoint()
 {
     PArrayPoint* pkData = new PArrayPoint(*DAT_012043ac);
     pkData->SetName(DAT_011f49e0);

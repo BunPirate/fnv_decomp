@@ -2603,15 +2603,14 @@ struct TileValueStr {
     char* pString;
     void RefreshA();
     void RefreshB(bool);
-    void Tile_Value_SetString(const char* apString, bool abClearActions);
+    void SetString(const char* apString, bool abClearActions);
 };
 
 // @fnv 0x00a0a300
-// src: XBOX_RETAIL_PDB 0x00a0a300
-// pdb: Tile::Value::SetString | Tile.obj | retail, upstream name already matches, high
+// pdb: Tile::Value::SetString | Tile.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: apString, abClearActions
 // pdb locals: bforceUpdate, uiLen
-void TileValueStr::Tile_Value_SetString(const char* apString, bool abClearActions)
+void TileValueStr::SetString(const char* apString, bool abClearActions)
 {
     const char* pCur;
     char* pOld;

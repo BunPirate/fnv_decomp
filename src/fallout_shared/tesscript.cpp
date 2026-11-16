@@ -717,7 +717,7 @@ void __cdecl Script_InitActionList(TESObjectREFR* ownerObject, ExtraDataList* ap
         ScriptLocals* locals = apExtra->ExtraDataList_GetScriptLocals();
         if (!locals->m_pActionList)
         {
-            ScriptRunManager::Instance()->InitActionList(locals->m_pMasterScript, ownerObject, locals);
+            ScriptRunManager::Instance()->ScriptRunManager_InitActionList(locals->m_pMasterScript, ownerObject, locals);
         }
     }
 }
@@ -1123,10 +1123,10 @@ bool Script::LoadForm(TESFile* apFile)
 
 struct FUN_00857ba0_class
 {
-    void __thiscall TESSaveLoadGame_ReadFile(int apFile, int apData, int aiSize);
+    void __thiscall ReadFromStream(int apFile, int apData, int aiSize);
 };
 
-void __thiscall FUN_00857ba0_class::TESSaveLoadGame_ReadFile(int apFile, int apData, int aiSize)
+void __thiscall FUN_00857ba0_class::ReadFromStream(int apFile, int apData, int aiSize)
 {}
 
 struct FUN_008586d0_class
@@ -1140,7 +1140,7 @@ struct FUN_008586d0_class
 // pdb params: apFile, apBuffer, aiSize
 void __thiscall FUN_008586d0_class::ReadFromStream_Thunk(int a, int b, int c)
 {
-    reinterpret_cast<FUN_00857ba0_class*>(this)->TESSaveLoadGame_ReadFile(a, b, c);
+    reinterpret_cast<FUN_00857ba0_class*>(this)->ReadFromStream(a, b, c);
 }
 
 struct LocalListStub
@@ -1254,7 +1254,7 @@ void ScriptLocals::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
     if (apLoadGameBuffer->GetVersion() >= 0x15)
         apLoadGameBuffer->BGSLoadGameBuffer::ReadTypedData((void*)&bonLoadFlagSet, 1);
     if (*(void**)((char*)this + 8) == 0)
-        ScriptRunManager::Instance()->InitActionList(*(Script**)this, apLoadGameBuffer->GetReference(), this);
+        ScriptRunManager::Instance()->ScriptRunManager_InitActionList(*(Script**)this, apLoadGameBuffer->GetReference(), this);
     else
         ((ScriptLocals*)this)->ClearActionFlags();
     if (bonLoadFlagSet)

@@ -553,7 +553,7 @@ struct OwnerRefB0
     ~OwnerRefB0()
     {}
 };
-struct BSWin32TaskletGroupData : ThreadBaseE8 // src: EXE (old: FUN_00b02860)
+struct BSWin32TaskletGroupData : ThreadBaseE8 // src: EXE 0x010a48d8 (vtable; old: FUN_00b02860)
 {
     unsigned char m_bStopped;
     int unk08;

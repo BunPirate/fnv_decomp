@@ -1465,7 +1465,7 @@ bool Object_ProcessAndReturnValue_00a28a80(UHelper* a, UHelper* b);
 // pdb: NiBezRotKey::Equal | NiBezRotKey.obj | retail, object-file gap fill, high
 // pdb params: key0, key1
 // pdb locals: bez0, bez1
-bool NiBezRotKey_Equal(UHelper* key0, UHelper* key1) {
+bool NiBezRotKey_Equal(UHelper* key0, UHelper* key1) { // src: XBOX_RETAIL_PDB 0x00a28ea0
     if (!Object_ProcessAndReturnValue_00a28a80(key0, key1)) {
         return false;
     }
@@ -2189,7 +2189,7 @@ extern A29FE0LoadFunc g_apfnA29FE0Load[];
 // pdb: NiEulerRotKey::LoadBinary | NiEulerRotKey.obj | retail, object-file gap fill, high
 // pdb params: stream
 // pdb locals: iOrder, uiI, cf, eType
-void NiEulerRotKey_LoadBinary(A29FE0Context* pkContext, A29FE0Block* pkBlock) {
+void NiEulerRotKey_LoadBinary(A29FE0Context* pkContext, A29FE0Block* pkBlock) { // src: XBOX_RETAIL_PDB 0x00a29fe0
     unsigned int* puiCount = pkBlock->m_auiCount;
     for (int i = 0; i < 3; i++, puiCount++) {
         pkContext->m_pDataStream->Write(puiCount, 4);

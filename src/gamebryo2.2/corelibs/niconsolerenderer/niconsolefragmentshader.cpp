@@ -384,7 +384,7 @@ struct FieldsMid_e8db90
     }
 };
 
-struct NiDX9FragmentShader : BaseObj_e8db90, FieldsMid_e8db90 // src: EXE (old: FUN_00e8db90)
+struct NiDX9FragmentShader : BaseObj_e8db90, FieldsMid_e8db90 // src: EXE 0x010eff44 (vtable; old: FUN_00e8db90)
 {
     virtual void unk00();
     SubObj_e8db90 m_3c;

@@ -141,7 +141,7 @@ public:
 
     using TESObjectREFR::IsDead;
     bool IsDead();
-    void Actor_UnloadPermanentMagic() {}
+    void Actor_UnloadPermanentMagic() {} // src: XBOX_RETAIL_PDB 0x008c30a0
 
     bool FUN_00440d80();
     bool FUN_00440da0();

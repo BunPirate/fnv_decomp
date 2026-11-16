@@ -339,7 +339,7 @@ struct D28030FixedArray {
 struct D28030UnionFind {
     D28030FixedArray& m_pParentArray;
 
-    __forceinline int hkUnionFind__findRootOfNode(int i)
+    __forceinline int _findRootOfNode(int i)
     {
         int root = i;
         while (m_pParentArray[root] >= 0)
@@ -358,8 +358,8 @@ struct D28030UnionFind {
 // @fnv 0x00d28030
 void D28030UnionFind::Union(int aiNodeA, int aiNodeB)
 {
-    int iRootA = hkUnionFind__findRootOfNode(aiNodeA);
-    int iRootB = hkUnionFind__findRootOfNode(aiNodeB);
+    int iRootA = _findRootOfNode(aiNodeA);
+    int iRootB = _findRootOfNode(aiNodeB);
     if (iRootA != iRootB) {
         int iSizeA = m_pParentArray[iRootA];
         if (iRootA < iRootB) {
@@ -573,7 +573,7 @@ public:
 // pdb: hkpMoppAgent::createBvBvAgent | hkpMoppAgent.obj | retail, object-file gap fill, high
 // pdb params: bodyA, bodyB, input, mgr
 // pdb locals: assertBuf, ostr
-D2F240Agent* hkpMoppAgent_createBvBvAgent(const D2F240CdBody& bodyA, const D2F240CdBody& bodyB, const void* input, void* mgr) {
+D2F240Agent* hkpMoppAgent_createBvBvAgent(const D2F240CdBody& bodyA, const D2F240CdBody& bodyB, const void* input, void* mgr) { // src: XBOX_RETAIL_PDB 0x00d2f240
     if (bodyA.m_pkBody->m_pkShape->m_iType < bodyB.m_pkBody->m_pkShape->m_iType)
         return new D2F240Agent(mgr);
     return new D2F240SymmetricAgent(mgr);
@@ -1326,8 +1326,7 @@ public:
 
 // Walks the parent array to the root of element i, then path-compresses the chain so every visited element points at the root, and returns the last element index.
 // @fnv 0x00d27fb0
-// src: XBOX_DEBUG_PDB 0x00d27fb0
-// pdb: hkUnionFind::_findRootOfNode | hkUnionFind.obj | debug, upstream name already matches, high
+// pdb: hkUnionFind::_findRootOfNode | hkUnionFind.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: i
 int hkUnionFind::FindRoot(int aiIndex)
 {

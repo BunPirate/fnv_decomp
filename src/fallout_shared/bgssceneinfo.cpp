@@ -512,7 +512,7 @@ struct SceneRecord
 };
 struct SceneSource
 {
-    unsigned int D3DArrayTexture_GetArraySize();
+    unsigned int FUN_0045a120();
     SceneRecord* FUN_004617e0(unsigned int);
 };
 struct SceneLoader
@@ -539,7 +539,7 @@ struct LoadScenes
 // pdb locals: iaddonNodeCount, i, paddonNode, sdis, bmaster, pav, ptemp
 void LoadScenes::LoadSceneModels()
 {
-    unsigned int count = DAT_011c3f2c->D3DArrayTexture_GetArraySize();
+    unsigned int count = DAT_011c3f2c->FUN_0045a120();
     for (unsigned int uiSceneIndex = 0; uiSceneIndex < count; ++uiSceneIndex)
     {
         SceneInfo sceneInfo;
@@ -1091,7 +1091,7 @@ void SceneStatistics::BGSSceneInfo_CollectSceneDataRecursive(StatObject* ap3D, i
             {
                 StatExtra* extra = (StatExtra*)NiObject_DynamicCast(&DAT_01202de8, node3);
                 int index = extra->DialoguePackage_GetActorStartedConversation();
-                if (index >= 0 && index < (int)DAT_011c3f2c->D3DArrayTexture_GetArraySize() &&
+                if (index >= 0 && index < (int)DAT_011c3f2c->FUN_0045a120() &&
                     index < (int)DAT_011c5ab4.GetSize())
                 {
                     for (int i = 0; i < 16; i++)

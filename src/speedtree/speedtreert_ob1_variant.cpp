@@ -4721,7 +4721,7 @@ struct LeafB076E0
     {
         m_eMode14 = e;
     }
-    void ComputeWindEffect(int nLodLevel);
+    void CIndexedGeometry_ComputeWindEffect(int nLodLevel);
 };
 
 struct SpeedTreeRTB076E0
@@ -4762,7 +4762,7 @@ void SpeedTreeRTB076E0::CSpeedTreeRT_SetBranchWindMethod(int eMethod)
             if (eMethod == 2 && m_pWind->GetMode() == 1)
             {
                 m_pLeafData->SetFlag12(false);
-                m_pLeafData->ComputeWindEffect(0);
+                m_pLeafData->CIndexedGeometry_ComputeWindEffect(0);
             }
             m_pWind->SetMode(eMethod);
             m_pLeafData->SetFlag08(eMethod != 2);
@@ -4931,7 +4931,7 @@ struct LeafB07900
     {
         m_eMode14 = e;
     }
-    void ComputeWindEffect(int nLodLevel);
+    void CIndexedGeometry_ComputeWindEffect(int nLodLevel);
 };
 
 struct SpeedTreeRTB07900
@@ -4979,7 +4979,7 @@ void SpeedTreeRTB07900::CSpeedTreeRT_SetFrondWindMethod(int eMethod)
             if (eMethod == 2 && m_pWind->GetMode() == 1)
             {
                 m_pLeafData->SetFlag12(false);
-                m_pLeafData->ComputeWindEffect(0);
+                m_pLeafData->CIndexedGeometry_ComputeWindEffect(0);
             }
             m_pWind->SetMode(eMethod);
             m_pLeafData->SetFlag08(eMethod != 2);
@@ -5047,7 +5047,7 @@ struct WindQ
     {
         return f0;
     }
-    float TESAttributes_SetStrength(float a, float b, float c);
+    float SetStrength(float a, float b, float c);
 };
 struct GeomQ
 {
@@ -5096,7 +5096,7 @@ float SpdTreeQ::CSpeedTreeRT_SetWindStrength(float fNewStrength, float fOldStren
                 fOldStrength = pWind->f4;
             if (fFrequencyTimeOffset == -1.0)
                 fFrequencyTimeOffset = pWind->GetF0();
-            fResult = pWind->TESAttributes_SetStrength(fNewStrength, fOldStrength, fFrequencyTimeOffset);
+            fResult = pWind->SetStrength(fNewStrength, fOldStrength, fFrequencyTimeOffset);
             if (FUN_00b076c0() == 1 && pBranch)
                 pBranch->SetB12(false);
             if (CSpeedTreeRT_GetFrondWindMethod() == 1 && pFrond)
@@ -14126,7 +14126,7 @@ class exception
 };
 }
 
-inline void __cdecl CSpeedTreeRT_SetError(const char* pError)
+inline void __cdecl CSpeedTreeRT_SetError(const char* pError) // src: XBOX_DEBUG_PDB 0x00b09270
 {
     int d0, d1, d2, d3;
     for (int i = 0; i < 1; ++i)
@@ -14264,7 +14264,7 @@ class exception
 // FUN_00b09270 is defined in this translation unit (error logger); under /Ob1
 // the compiler attempts to inline it at both catch sites and declines the
 // expansion, which is what reserves the dead slots the original frame shows.
-inline void CSpeedTreeRT_SetError(const char* pError)
+inline void CSpeedTreeRT_SetError(const char* pError) // src: XBOX_DEBUG_PDB 0x00b09270
 {
     int d0, d1, d2, d3;
     d0 = (int)(pError != 0);
@@ -14587,7 +14587,7 @@ struct Iterator
     }
 };
 
-inline void CSpeedTreeRT_SetError(const char* pError)
+inline void CSpeedTreeRT_SetError(const char* pError) // src: XBOX_DEBUG_PDB 0x00b09270
 {
     ErrorStringView& target = *(ErrorStringView*)&DAT_011f8ba4;
     unsigned count = _strlen(pError);

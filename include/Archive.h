@@ -51,7 +51,7 @@ public:
     }
     unsigned long BufferSize();
     bool SetBufferSize(unsigned int);
-    void* NiLogger_NiLogFile_OpenFile(unsigned int auiFolderIndex, unsigned int auiFileIndex,
+    void* OpenFile(unsigned int auiFolderIndex, unsigned int auiFileIndex,
                    unsigned int auiBufferSize, const char* apFileName);
     unsigned short HasArchiveTypeFlags(unsigned int auiFlags)
     {

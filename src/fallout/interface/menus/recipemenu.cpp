@@ -3560,7 +3560,7 @@ struct RecipeBox
 extern RecipeData* DAT_011d8e94;
 int __cdecl BSsprintf(char*, int, const char*, ...);
 const char* __cdecl ConvertFromUni(const char*, bool);
-const char* __cdecl ActorValue_GetActorValueName(int);
+const char* __cdecl FUN_0066e950(int);
 int __cdecl TESBipedModelForm_GetMessageIcon_0(TESObjectARMO*, FNVAuxController*);
 struct SexData
 {
@@ -3687,7 +3687,7 @@ void RecipeEnterMenu::RecipeMenu_DoEnter(int aiID, Tile* apTarget)
                     char skill[256];
                     skill[0] = 0;
                     if (DAT_011d8e94->FUN_0059bb30() > -1)
-                        BSsprintf(skill, 256, "%s (%d/%d)", ActorValue_GetActorValueName(DAT_011d8e94->FUN_0059bb30()),
+                        BSsprintf(skill, 256, "%s (%d/%d)", FUN_0066e950(DAT_011d8e94->FUN_0059bb30()),
                                      owner->stats.FUN_0066ef20(DAT_011d8e94->FUN_0059bb30()),
                                      DAT_011d8e94->FUN_0045cd60());
                     ((RecipeEnterMenu*)DAT_011d8e90)->tiles[5]->Tile_Set_00a01350(0xfc4, skill, true);

@@ -42,7 +42,7 @@ class MagicItemComponent
 int __cdecl Warning(const char*, ...);
 extern SettingT_GameSettingCollection_ g_011d21a8, g_011d4a5c, g_011d2ce8;
 namespace ActorValue {
-const char* ActorValue_GetActorValueName(Index);
+const char* GetActorValueName(Index);
 }
 // Exe 0x0082bbe0: unit-local Interface view; declarations and layout are preserved.
 class ValuemodifiereffectInterfaceView
@@ -197,7 +197,7 @@ void ValueModifierEffect::ShowAttributeReductionMessage()
             bool continuous = pEffect->GetEffectSetting()->IsFlagSet(2) || IsFlagged();
             char buffer[200];
             sprintf(buffer, "%s %s %s", g_011d2ce8.String(),
-                    ActorValue::ActorValue_GetActorValueName((ActorValue::Index)pEffect->GetAffectedActorValue()),
+                    ActorValue::GetActorValueName((ActorValue::Index)pEffect->GetAffectedActorValue()),
                     continuous ? g_011d21a8.String()
                                : g_011d4a5c.String());
             ValuemodifiereffectInterfaceView::ShowMessage(buffer, 0, 0, 0, 2.0f, false);

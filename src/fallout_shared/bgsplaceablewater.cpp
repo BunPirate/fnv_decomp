@@ -367,7 +367,7 @@ void FUN_005802d0_shell::BGSPlaceableWater_SetReflectsLODBuildings(bool abValue)
 class ModelCallees
 {
   public:
-    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int chunkA, unsigned int chunkB);
+    void WriteToBuffer(unsigned int chunkA, unsigned int chunkB);
 };
 
 class WaterFormCallees
@@ -395,7 +395,7 @@ void __cdecl AppendChunk(unsigned int chunkId, void* data, unsigned int size);
 void FUN_004fc7b0_cls::BGSPlaceableWater_SaveAlt()
 {
     BeginFormRecord();
-    ((ModelCallees*)((char*)this + 0x30))->BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    ((ModelCallees*)((char*)this + 0x30))->WriteToBuffer(0x4c444f4d, 0x54444f4d);
     PlaceableWaterData waterFormData;
     waterFormData.FUN_004019f0();
     FUN_00401460(&waterFormData, &Data, 8);

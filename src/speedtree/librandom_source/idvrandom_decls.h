@@ -1,7 +1,7 @@
 // speedtree/librandom_source/idvrandom_decls.h: declares RandomNumberGenerator
 
 // pdb: class CIdvRandom, size 0x1, 0 members
-class CIdvRandom // src: XBOX_RETAIL_PDB (old: RandomNumberGenerator)
+class CIdvRandom // src: XBOX_RETAIL_PDB 0x00b3f100 (first of 3 linked methods; old: RandomNumberGenerator)
 {
   public:
     CIdvRandom();

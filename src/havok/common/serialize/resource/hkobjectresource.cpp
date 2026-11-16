@@ -73,12 +73,12 @@ struct FUN_00e05090_class
 {
     virtual FUN_00e05090_class* FUN_00e05090(int flags);
     unsigned short m_resourceId;
-    void NiXenonRenderer_ReleaseResource();
+    void ReleaseResource();
 };
 
 FUN_00e05090_class* FUN_00e05090_class::FUN_00e05090(int flags)
 {
-    NiXenonRenderer_ReleaseResource();
+    ReleaseResource();
 
     if (flags & 1)
     {
@@ -239,15 +239,14 @@ struct FUN_00e04f80_class
     hkReferencedObject* context;
     Listener_00e04f80* listener;
 
-    void NiXenonRenderer_ReleaseResource();
+    void ReleaseResource();
 };
 
 // @fnv 0x00e04f80
-// src: XBOX_RETAIL_PDB 0x00e04f80
-// pdb: NiXenonRenderer::ReleaseResource | NiXenonRenderer.obj | retail, upstream name already matches, high
+// pdb: NiXenonRenderer::ReleaseResource | NiXenonRenderer.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pkResource
 // pdb locals: icurThreadID, pkDevice, iownerThreadID, pkTask
-void FUN_00e04f80_class::NiXenonRenderer_ReleaseResource()
+void FUN_00e04f80_class::ReleaseResource()
 {
     Resource_00e04f80* oldResource = resource;
     vtable = &DAT_010ea4dc;

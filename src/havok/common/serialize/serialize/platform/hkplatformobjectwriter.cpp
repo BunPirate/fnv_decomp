@@ -56,7 +56,7 @@ struct BaseE02c70
     {}
 };
 // pdb: class hkPlatformObjectWriter, size 0x10, bases: hkObjectWriter, 2 members
-struct hkPlatformObjectWriter : BaseE02c70 // src: EXE (old: FUN_00e02c70_Class)
+struct hkPlatformObjectWriter : BaseE02c70 // src: EXE 0x010ea370 (vtable; old: FUN_00e02c70_Class)
 {
     hkReferencedObject* m_copier; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     FUN_00e02d40_helper* m_cache; // src: XBOX_RETAIL_PDB +0xc (old: unk0c)

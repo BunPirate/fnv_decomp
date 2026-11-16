@@ -1309,7 +1309,7 @@ void BS9AA340List::CombatWorldStateList_RemoveWorldState(int aeState)
 struct FUN_004891d0_shell
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14;
-    void BSSendSceneGraphCommand_WriteToBuffer(unsigned int, unsigned int);
+    void WriteToBuffer(unsigned int, unsigned int);
 };
 struct FUN_0048e370_obj
 {
@@ -1352,7 +1352,7 @@ struct SaveTree
 void SaveTree::TESObjectTREE_Save()
 {
     BeginFormRecord();
-    model.BSSendSceneGraphCommand_WriteToBuffer(0x4c444f4d, 0x54444f4d);
+    model.WriteToBuffer(0x4c444f4d, 0x54444f4d);
     icon.TESTexture_Save(0x4e4f4349);
     destruct.FUN_00477f20();
     if (seeds.GetSize() > 0)

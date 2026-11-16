@@ -23,13 +23,13 @@ public:
 class NiNode;
 
 // pdb: class CharacterProgression, size 0x4, 1 members
-class CharacterProgression // src: XBOX_RETAIL_PDB (old: NiNodeBooleanState_falloutcharacterprogression)
+class CharacterProgression // src: XBOX_RETAIL_PDB 0x008d4360 (first of 16 linked methods; old: NiNodeBooleanState_falloutcharacterprogression)
 {
 public:
     NiPointer<NiNode> pData;
 
     __declspec(noinline) bool QReadyToLevelUp();
-    void FinishLevelUp();
+    void CharacterProgression_FinishLevelUp();
 };
 #include "../../../include/Actor.h"
 #include "../../../include/ActorValueOwner.h"
@@ -248,9 +248,9 @@ extern G7d1 g_011e0a30;
 }  // namespace fnv_008d5270
 
 // @fnv 0x008d5270
-// src: XBOX_RETAIL_PDB 0x008d5270 (was XBOX_PDB)
-// pdb: CharacterProgression::FinishLevelUp | FalloutCharacterProgression.obj | retail, upstream name already matches, high
-void CharacterProgression::FinishLevelUp()
+// src: XBOX_PDB 0x008d5270
+// pdb: CharacterProgression::FinishLevelUp | FalloutCharacterProgression.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+void CharacterProgression::CharacterProgression_FinishLevelUp()
 {
     using namespace fnv_008d5270;
     if (!((fnv_008d5270::FUN_008d55e0_shell*)pData.operator->())->CharacterProgressionData_CheckCanLevelUp(_g_thePlayer->Actor::GetLevel() + 1))
@@ -314,7 +314,7 @@ void FUN_008d5300_shell::SetPlayerLevel(int aLevel)
     *(int*)(data + 4) = ActorValueUtility_falloutcharacterprogression::GamePlayFormulas_GetRequiredExperiencePoints(aLevel + 1);
 
     ((TESActorBaseData*)((char*)reinterpret_cast<::Actor*>(_g_thePlayer)->GetActorBase() + 0x30))->SetLevel(aLevel);
-    reinterpret_cast<CharacterProgression*>(this)->FinishLevelUp();
+    reinterpret_cast<CharacterProgression*>(this)->CharacterProgression_FinishLevelUp();
     StatsMenu_UpdatePlayerName();
     StatsMenu::UpdatePlayerTitle();
 }

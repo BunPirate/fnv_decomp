@@ -660,7 +660,7 @@ struct S_00d9d650_Tree
     S_00d9d650_Pool m_kNodePool;
 
     void ProcessEntries_00d9d1c0(S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Node* root, hkArray<int>& out, int depth);
-    void XGRAPHICS_VerNode_MergeNode(S_00d9d650_Node* root, int a, int b);
+    void MergeNode(S_00d9d650_Node* root, int a, int b);
     void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(S_00d9d650_Node* root, int skipNode);
     void BuildTree(const S_00d9d650_Aabb* aabbs, const int* keys, int n, hkArray<int>& out) throw();
 };
@@ -696,7 +696,7 @@ void S_00d9d650_Tree::BuildTree(const S_00d9d650_Aabb* aabbs, const int* keys, i
         {
             ProcessEntries_00d9d1c0(tmp.m_data, keys, n, m_pTreeNode, out, 0);
         }
-        XGRAPHICS_VerNode_MergeNode(m_pTreeNode, m_14, 0x7fffffff);
+        MergeNode(m_pTreeNode, m_14, 0x7fffffff);
         hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(m_pTreeNode, 0);
     }
 }
@@ -926,14 +926,13 @@ struct S_00d9af30 {
     int unk14;
     int unk18;
     S_00d9af30_Pool m_kNodePool;
-    void __thiscall XGRAPHICS_VerNode_MergeNode(S_00d9af30_Node* n, int a, int b);
+    void __thiscall MergeNode(S_00d9af30_Node* n, int a, int b);
 };
 // Stores b in n->unk2c; for nonleaf nodes, updates child flags, recurses, and combines their bounds into n.
 // @fnv 0x00d9af30
-// src: XBOX_DEBUG_PDB 0x00d9af30
-// pdb: XGRAPHICS::VerNode::MergeNode | vercore.obj | debug, upstream name already matches, high
+// pdb: XGRAPHICS::VerNode::MergeNode | vercore.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pn
-void __thiscall S_00d9af30::XGRAPHICS_VerNode_MergeNode(S_00d9af30_Node* apNode, int a, int b)
+void __thiscall S_00d9af30::MergeNode(S_00d9af30_Node* apNode, int a, int b)
 {
     apNode->unk2c = b;
     if ((apNode->m_flags & 0x80000000) == 0) {
@@ -941,8 +940,8 @@ void __thiscall S_00d9af30::XGRAPHICS_VerNode_MergeNode(S_00d9af30_Node* apNode,
         S_00d9af30_Node* r = m_kNodePool.ComputeValue_00d9a4c0(apNode->unk24);
         pLeft->m_flags = (pLeft->m_flags & 0x80000000) | a;
         r->m_flags = (r->m_flags & 0x80000000) | a;
-        XGRAPHICS_VerNode_MergeNode(pLeft, apNode->unk20, apNode->unk24);
-        XGRAPHICS_VerNode_MergeNode(r, apNode->unk24, b);
+        MergeNode(pLeft, apNode->unk20, apNode->unk24);
+        MergeNode(r, apNode->unk24, b);
         apNode->m_kMinimumCorner = _mm_min_ps(pLeft->m_kMinimumCorner, r->m_kMinimumCorner);
         apNode->m_kMaximumCorner = _mm_max_ps(pLeft->m_kMaximumCorner, r->m_kMaximumCorner);
     }

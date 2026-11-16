@@ -40,7 +40,7 @@ struct FUN_006f8650
 };
 struct FUN_006b3140_shell
 {
-    void D3DXShader_CFragmentRegisterAllocator_AddElement(void*);
+    void AddElement(void*);
     void* FUN_006b3140();
 };
 extern FUN_006b3140_shell g_011d85d0;

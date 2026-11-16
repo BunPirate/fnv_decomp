@@ -2954,7 +2954,7 @@ NiGPUProgram* NiSequence_ConvertSequence(BinaryDataRecord*, unsigned int, void*)
 // pdb params: pcSequenceFile, uiIndex, aspSequence, pcSequenceName
 // pdb locals: kStream
 
-void NiSequence_CreateFromKFFile(BinaryDataRecord* kStream, unsigned int uiIndex, NiPointer<NiGPUProgram>& aspSequence, void* pcSequenceName) throw()
+void NiSequence_CreateFromKFFile(BinaryDataRecord* kStream, unsigned int uiIndex, NiPointer<NiGPUProgram>& aspSequence, void* pcSequenceName) throw() // src: XBOX_RETAIL_PDB 0x00a47f40
 {
     NiPointer<NiGPUProgram> program;
     if (kStream->version < 0x04010003)

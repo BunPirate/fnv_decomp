@@ -2445,7 +2445,7 @@ class C1A3B0Object
     int unkC4;
     C1A3B0Bound m_kWorldBound;
 
-    void NiAVObject_SetWorldBound(C1A3B0Bound kBound);
+    void SetWorldBound(C1A3B0Bound kBound);
 };
 struct FUN_00c1a500_out
 {

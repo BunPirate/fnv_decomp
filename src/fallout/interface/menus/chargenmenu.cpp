@@ -623,7 +623,7 @@ struct MenuState
 MenuState* __cdecl InterfaceManager_GetSingleton();
 unsigned int __cdecl FUN_0066ecf0(int);
 int __cdecl FUN_0066ec10(int, unsigned char);
-const char* __cdecl ActorValue_GetActorValueName(int);
+const char* __cdecl FUN_0066e950(int);
 struct Player
 {
     unsigned int unk00;
@@ -693,7 +693,7 @@ void CharGenMenu::InitAttributeList()
     for (unsigned int i = 0; i < fnv_007539a0::FUN_0066ecf0(0); ++i)
     {
         int e = fnv_007539a0::FUN_0066ec10(0, (unsigned char)i);
-        Tile* j = ((fnv_007539a0::List*)&lbItemList)->AddListEntry(e, fnv_007539a0::ActorValue_GetActorValueName(e), 0, 0);
+        Tile* j = ((fnv_007539a0::List*)&lbItemList)->AddListEntry(e, fnv_007539a0::FUN_0066e950(e), 0, 0);
         int c = fnv_007539a0::DAT_011dea3c->values.GetPermanentActorValue((ActorValue::Index)e);
         j->FUN_00700320(4010, 8);
         j->FUN_00700320(fnv_007539a0::DAT_011d9210, c);
@@ -1422,7 +1422,7 @@ SkillInterface* __cdecl InterfaceManager_GetSingleton();
 unsigned int __cdecl FUN_0066ecf0(int);
 ActorValue::Index __cdecl FUN_0066ec10(int, unsigned char);
 bool __cdecl ActorValue_IsFlagSet(ActorValue::Index, unsigned int);
-const char* __cdecl ActorValue_GetActorValueName(ActorValue::Index);
+const char* __cdecl FUN_0066e950(ActorValue::Index);
 void __cdecl CompareActorValueNames();
 extern Setting DAT_011ccf5c;
 extern const char DAT_01071ca0[];
@@ -1446,9 +1446,9 @@ void CharGenMenu::InitSkillList()
         ActorValue::Index skill = fnv_00753b10::FUN_0066ec10(2, (unsigned char)i);
         if (!fnv_00753b10::ActorValue_IsFlagSet(skill, 8192))
         {
-            Tile* tile = ((fnv_00753b10::SkillList*)&lbItemList)->AddListEntry(skill, fnv_00753b10::ActorValue_GetActorValueName(skill), 0, 0);
+            Tile* tile = ((fnv_00753b10::SkillList*)&lbItemList)->AddListEntry(skill, fnv_00753b10::FUN_0066e950(skill), 0, 0);
             float value = (float)((fnv_00753b10::SkillPlayer*)g_thePlayer)->values.GetPermanentActorValue(skill);
-            tile->SetName(fnv_00753b10::ActorValue_GetActorValueName(skill));
+            tile->SetName(fnv_00753b10::FUN_0066e950(skill));
             tile->Set(4010, 9);
             tile->Set(DAT_011d9210, value, true);
             if (g_thePlayer->GetClass()->IsTagSkill(skill))

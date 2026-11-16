@@ -2227,7 +2227,7 @@ class List71F
     List71F* m_pkNext;
 };
 
-class NamedEffectsList // src: EXE (old: FUN_0071f570_ModelList)
+class NamedEffectsList // src: EXE 0x01070020 (vtable; old: FUN_0071f570_ModelList)
 {
   public:
     virtual ~NamedEffectsList();

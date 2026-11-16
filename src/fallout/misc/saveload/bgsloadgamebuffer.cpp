@@ -339,7 +339,7 @@ struct FUN_0043aaa0_shell
 
 // @fnv 0x0043aaa0
 // src: XBOX_DEBUG_PDB 0x0043aaa0
-// pdb: DoorTeleportData::LoadGame | TeleportData.obj | debug, call graph, high; the name is also claimed by the retail build's object-file run extension link to 0x0043a9a0, which is marked disputed there
+// pdb: DoorTeleportData::LoadGame | TeleportData.obj | debug, call graph, high; the overload LoadGame(BGSLoadGameBuffer*); 0x0043a9a0 is LoadGame()
 // pdb params: apLoadGameBuffer
 void FUN_0043aaa0_shell::DoorTeleportData_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {

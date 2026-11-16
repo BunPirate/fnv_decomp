@@ -14197,7 +14197,7 @@ struct Q80
 struct Sub4
 {
     void f96aaf0(RefEx*, int);
-    void NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(RefEx*, int);
+    void f96a970(RefEx*, int);
 };
 struct List78
 {
@@ -14342,7 +14342,7 @@ void FUN_0096eb40_cls::ProcessLists_ChangeProcessLevelTempList()
                             if (!pPkg || (pPkg->f41ca90() != 1 && pPkg->f41ca90() != 2))
                             {
                                 g_ref->GetProc()->Set364(0);
-                                sub4.NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_InsertAt(g_ref, g_ref->GetProc()->f45cd60());
+                                sub4.f96a970(g_ref, g_ref->GetProc()->f45cd60());
                             }
                         }
                         else

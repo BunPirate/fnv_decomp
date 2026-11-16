@@ -40,7 +40,7 @@ struct MainMenuWorldAccess
     void TES_ShowLoadingMenu(int, int, int);
 };
 // This player accessor is not yet declared by the shared PlayerCharacter header.
-int __cdecl PlayerCharacter_GetMediaLocationController();
+int __cdecl GetMediaLocationController();
 typedef int (__thiscall* PlayerMediaAccessor)(PlayerCharacter*);
 class TES;
 void __cdecl PlayAudioMedia(int, const char*, unsigned int, bool, bool, float, unsigned int);
@@ -69,7 +69,7 @@ void StartMenu_ChooseMainMenu()
     ((MainMenuAudioAccess*)BSAudio_QInstance())->BSAudio_KillAllOfType(-1, false);
     FalloutAudioMedia_MediaClear();
     {
-        int bIsChild = ((PlayerMediaAccessor)&PlayerCharacter_GetMediaLocationController)(g_thePlayer);
+        int bIsChild = ((PlayerMediaAccessor)&GetMediaLocationController)(g_thePlayer);
         bIsChild = 0;
     }
     if (XGamerProfile_Instance())
