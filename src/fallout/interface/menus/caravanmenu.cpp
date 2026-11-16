@@ -16195,7 +16195,7 @@ extern Actor* DAT_011dea3c;
 // pdb locals: filename, maxraise, i, pBetTile, pushmeoverthisfar
 }  // namespace fnv_0073d020
 
-// src: COMMUNITY 0x0073d020
+// src: XBOX_RETAIL_PDB 0x0073d020 (was COMMUNITY)
 void CaravanMenu::PrepareAnteMenu()
 {
     using fnv_0073d020::BSstrlen;

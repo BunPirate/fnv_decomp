@@ -3207,7 +3207,7 @@ struct BitTrim : TrimContainer
     {
         return (_Count + 31) / 32;
     }
-// src: GUESS 0x00b429d0 (confidence: high)
+// src: XBOX_RETAIL_PDB 0x00b429d0
     void std_vector_bool_std_allocator_bool__Trim() const
     {
         throw TrimLengthError("vector<bool> too long");

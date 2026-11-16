@@ -237,7 +237,7 @@ int __cdecl FUN_00e03360_ext2(VObj* p);
 
 // Module-local helper: the manager hands it the object it just looked up
 // together with a mode value.
-// src: GUESS 0x00e03360 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00e03360
 __declspec(noinline) static void objectCopierPadUp(VObj* w, int pad)
 {
     int k = FUN_00e03360_ext1(pad);
@@ -622,7 +622,7 @@ struct DiagnosticWriterOrig {
 };
 static DiagnosticWriterOrig& wch(DiagnosticWriter& w) { return *(DiagnosticWriterOrig*)&w; }
 
-// src: GUESS 0x00e03170 (confidence: medium)
+// src: XBOX_RETAIL_PDB 0x00e03170
 static __declspec(noinline) void writePodArray(Target* oa, unsigned int mtype, unsigned int elemsize, unsigned int nelem, void* startAddress) {
     switch (mtype) {
     case 12:

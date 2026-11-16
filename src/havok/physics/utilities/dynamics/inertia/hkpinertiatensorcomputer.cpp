@@ -1097,7 +1097,7 @@ __declspec(noinline) void __cdecl AddInertiaTensor(float* c, float m, float* I)
     I[8] = I[2] = zx;
 }
 void __cdecl hkpInertiaTensorComputer_computeBoxVolumeMassProperties_ComputeGeometryMassProperties(const CEFBGeom* geometry, float mass, CE50Body* out);
-// src: GUESS 0x00cee290 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00cee290
 __declspec(noinline) int __cdecl hkpInertiaTensorComputer_computeTriangleSurfaceMassProperties(const hkVector4* v0, const hkVector4* v1, const hkVector4* v2, float mass,
                                               float surfaceThickness, CE50Body* result)
 {

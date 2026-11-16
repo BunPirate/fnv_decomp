@@ -21871,7 +21871,7 @@ struct ShaderPassBuilder : DynCastHelper
     void BSShaderPPLightingProperty_AddSelfIllumAlphaPass(SceneGeometry*, unsigned short*, unsigned char, bool, bool);
     void BSShaderProperty_AddPass_AmbDiffTex(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool,
                       bool, bool);
-// src: COMMUNITY 0x00bd9da0
+// src: XBOX_RETAIL_PDB 0x00bd9da0 (was COMMUNITY)
     BSShaderProperty::ShaderPassEntry* BSShaderPPLightingProperty_AddRenderNormalsPass_1x(SceneGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst,
                                   bool abSkinned, bool abRefractionFire)
     {

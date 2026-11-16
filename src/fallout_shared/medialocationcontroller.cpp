@@ -48,7 +48,7 @@ void MediaLocationController::ClearData()
 }
 
 // @fnv 0x005977d0
-// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | debug, object-file gap fill, medium
+// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | debug, object-file gap fill, medium; the name is also claimed by the retail build's object-file run extension link to 0x00599780, which is marked disputed there
 MediaSetEntry::MediaSetEntry()
 {
     Name.Set(0, 0);

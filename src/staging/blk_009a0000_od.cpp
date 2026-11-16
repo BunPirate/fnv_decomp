@@ -3027,7 +3027,7 @@ struct S_9a54a0_Class
 };
 // @fnv 0x009a54a0
 // src: COMMUNITY 0x009a54a0
-// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | debug, object-file gap fill, medium
+// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | debug, object-file gap fill, medium; the name is also claimed by the retail build's object-file run extension link to 0x009a52f0, which is marked disputed there
 // pdb params: apRef, apExplosion, afTime
 // pdb locals: fdamage, fradius
 void S_9a54a0_Class::CombatThreatMap_AddThreat(int a1, S_9a54a0_Actor* pActor, float a3)

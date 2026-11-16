@@ -209,7 +209,7 @@ struct FUN_00d49420_cls
     void unk20(Obj1* apA, void* apB, void* apC);
 };
 extern volatile int DAT_01269b70;
-// src: GUESS 0x00d48950 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00d48950
 static __declspec(noinline) int anonymous_namespace_checkTagfileWorld(int world, int errorOut, int versionManager, int classReg)
 {
     int* pb = &versionManager;
@@ -299,7 +299,7 @@ extern const char str_010cfa94[];
 int S00d48d30_Finish(int opts);
 void hkSerializeUtil_detectFormat(void* reader, int* details) throw();
 int __cdecl hkDataObjectUtil_toResourceWithRegistry(const S00d48d30_Ref& r, int classReg);
-// src: GUESS 0x00d48a90 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00d48a90
 static __declspec(noinline) int anonymous_namespace_loadBinaryTagfileIntoWorld(S00d48d30_Stream* streamIn, S00d48d30_Reader* world, S00d48d30_Result* errorOut)
 {
     world->prepare();
@@ -315,7 +315,7 @@ static __declspec(noinline) int anonymous_namespace_loadBinaryTagfileIntoWorld(S
     }
     return 0;
 }
-// src: GUESS 0x00d48760 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00d48760
 static __declspec(noinline) int anonymous_namespace_loadPackfile(S00d48d30_Stream* streamIn, S00d48d30_Format* details, S00d48d30_Result* errorOut,
                                              int typeReg)
 {

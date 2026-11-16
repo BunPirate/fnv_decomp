@@ -725,7 +725,7 @@ float __cdecl InterfaceManager_GetScreenSafeY(void);
 extern const double DAT_0106e7f8;
 
 // @fnv 0x0078b9b0
-// src: XBOX_DEBUG_PDB 0x0078b9b0 (was EXE)
+// src: XBOX_RETAIL_PDB 0x0078b9b0 (was EXE)
 // pdb: LoadingMenu::CalcLoadScreenTypeTextWindowFaces | LoadingMenu.obj | retail, object-file run extension, high; confirmed by the debug build, whose CalcLoadScreenTypeTextWindowFaces prints the same warning (the message keeps the older name CalcLoadScreenTypeTextWindowVerts; neither PDB has a Verts function)
 // pdb params: apData
 // pdb locals: fSafeWidth, fConvertedYPos, fSafeHeight, fConvertedHeight, fCurrentScreenWidth, fCurrentScreenHeight, fConvertedWidth, fConvertedXPos
@@ -1773,7 +1773,7 @@ void LoadingMenu::UpdateXPProgressTilesAlphas(float afAlpha, int anSlide)
     }
 }
 
-void LoadingMenu::GetPlayerTileDefaultSettings()
+void LoadingMenu::GetPlayerTileDefaultSettings() // src: XBOX_RETAIL_PDB 0x0078b810 (pdb: LoadingMenu::GetPlayerTileDefaultSettings | LoadingMenu.obj | retail, call graph (anchored callee segments), high)
 {
     for (int i = 0; i < 38; i++)
     {

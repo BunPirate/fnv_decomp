@@ -162,7 +162,7 @@ struct EntryD738
     int m_iObjectReferenceCount;
 };
 
-// src: GUESS 0x00d737d0 (confidence: high)
+// src: XBOX_RETAIL_PDB 0x00d737d0
 static __declspec(noinline) void _getShapeChildren(hkpShape* shape, hkArray<hkpShape*>* childrenOut)
 {
     switch (shape->getType())

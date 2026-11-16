@@ -4067,7 +4067,7 @@ struct RefListOps
 // pdb locals: plist, bquit, pref, plastlist
 } // namespace fnv_0054c740
 
-// src: XBOX_PDB 0x0054c740
+// src: XBOX_RETAIL_PDB 0x0054c740 (was XBOX_PDB)
 bool TESObjectCELL::RunScripts(bool bIgnore3D, bool bIgnoreActors)
 {
     using namespace fnv_0054c740;

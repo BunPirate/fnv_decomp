@@ -1060,7 +1060,7 @@ inline void hkVector4::setMul(const hkVector4* a, const hkVector4* b)
     __m128 w = _mm_sub_ps(p, _mm_shuffle_ps(s, s, 0));
     m_vComponents = blendXYZW(xyz, w);
 }
-// src: COMMUNITY 0x005611c0
+// src: XBOX_DEBUG_PDB 0x005611c0 (was COMMUNITY)
 inline void hkVector4::hkQuaternion_normalize()
 {
     __m128 s = ::dot4(m_vComponents, m_vComponents);

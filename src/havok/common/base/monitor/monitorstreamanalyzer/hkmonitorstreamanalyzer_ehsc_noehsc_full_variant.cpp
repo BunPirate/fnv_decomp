@@ -2126,7 +2126,7 @@ struct AggObj
 };
 void __cdecl ext_free(int);
 int __cdecl ext_init(int, const char*, int);
-// src: GUESS 0x00e0d000 (confidence: high)
+// src: XBOX_RETAIL_PDB 0x00e0d000
 __declspec(noinline) AggObj* AggObj::hkMonitorStreamAnalyzer_Node_ctor(int parent, const char* name, int type)
 {
     unk00 = ext_init(parent, name, type);

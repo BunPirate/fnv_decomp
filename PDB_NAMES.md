@@ -10,7 +10,8 @@ Every function still compiles to the game's bytes.
 `python3 tools/build_and_match.py --image <FalloutNV.exe>` on this branch gives the same result as `main`:
 
 - 2,989 of 2,989 units match.
-- 68,667 of 68,667 functions (11,458,254 bytes) match.
+- 68,667 of 68,667 functions (11,458,254 bytes) match. (That counts each unit's functions; 10 of the 68,657
+  addresses are built by two units.)
 - 1,954 of 1,954 EH tails match.
 
 The compilers are Microsoft's, from the downloads the CI uses, checked against the digests it pins. Nothing outside
@@ -18,11 +19,11 @@ The compilers are Microsoft's, from the downloads the CI uses, checked against t
 
 ## What changes
 
-### Renames (29,414)
+### Renames (29,411)
 
 | Kind | Renamed | Example |
 |---|---|---|
-| Parameters | 20,733 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
+| Parameters | 20,730 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
 | Fields | 4,852 | `CombatProcedureBeInCover` +0x44: `m_waitingOutTimer` → `WaitingOutOfCoverTimer` |
 | Functions | 3,231 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
 | Globals | 517 | `DAT_0126b1b0` → `hkpVehicleInstanceClass` |
@@ -56,7 +57,7 @@ Naming rules:
   `main` already named), so they are tagged `EXE`; the other 27 come from linked methods and are tagged
   `XBOX_RETAIL_PDB`. Renamed parameters have no marker; they are in the mapping (see the end of this file).
 
-### Comments on every linked function (37,465) and class (2,509)
+### Comments on linked functions and classes (2,509)
 
 ```cpp
 // @fnv 0x009e9e50
@@ -72,6 +73,9 @@ void PlayerMover::Update(float fdeltaT)
 - **Class comments** give the PDB class, its size (and the size here, when it differs), its bases and its member
   count.
 - **Unrenamed functions.** Where a rename was not possible, the comment still carries the real name.
+- **Where comments go.** At each definition that carries the function's `// @fnv` address, so a function defined in
+  several variant units has several. 347 linked functions have no such anchor in the source (mostly compiler-generated
+  destructors and helpers), so their PDB names are only in the mapping.
 
 ## How PC functions were linked to the Xbox 360 builds
 
@@ -79,7 +83,7 @@ void PlayerMover::Update(float fdeltaT)
 |---|---|
 | Retail build PDB (51,207 named functions) | 20,732 |
 | Debug build PDB (105,100 named functions; inline helpers stay functions) | 16,728 more |
-| **Total** | **37,460 of 68,657** (high 26,724, medium 4,348, low 6,388) |
+| **Total** | **37,460 of the 68,657 function addresses** (high 26,717, disputed in review 7, medium 4,348, low 6,388) |
 
 Evidence, repeated until nothing new is found:
 
@@ -111,7 +115,7 @@ linked by their name-string argument, which has to match a public symbol in the 
 | Rejected by the build | 2,045 | They made a unit fail to compile or compile differently, usually through a use the parser missed. |
 | Declared twice under two names in one file | 860 | One address declared twice (for example `GetExtraData` and `FUN_00a5bdd0`); renaming both would collide. |
 | Already named, only spelled differently | 293 | The existing name and its tag already carry the same evidence (see the naming rules). |
-| Conflicts found in review | 7 | 2 names from the public Xbox 360 symbols (probably folded code); 5 whose original is also linked to another PC function by a different build. Their comment shows the tier `disputed (was high)`, and their parameter and local names are labelled unverified. |
+| Conflicts found in review | 7 | 2 names from the public Xbox 360 symbols (probably folded code); 5 whose original is also linked to another PC function by a different build. Their comment shows the tier `disputed (was high)`, their parameter and local names are labelled unverified, and the 3 parameter names applied from them are reverted. The function that keeps each name notes the dispute. |
 | Collisions and shadowing | 372 | The name already exists on the class, a base or derived class, in the function body, or as another global. |
 | Classes whose real name is already defined | 2,249 | Stand-ins for real classes; the comment names the real class. |
 | Local variables | all | No safe way to pair the current locals with the originals by position. They are listed in `// pdb locals:`. |

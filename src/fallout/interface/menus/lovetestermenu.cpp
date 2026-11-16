@@ -683,7 +683,7 @@ extern const char str_01074bb8[];
 // pdb locals: strPlatform, strtmp, pfilepath, i
 }  // namespace fnv_00796100
 
-// src: COMMUNITY 0x00796100
+// src: XBOX_RETAIL_PDB 0x00796100 (was COMMUNITY)
 void LoveTesterMenu::LoadButtonAndTextImages()
 {
     using namespace fnv_00796100;

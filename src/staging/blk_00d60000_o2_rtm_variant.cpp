@@ -1910,7 +1910,7 @@ struct Output
     hkReal m_fOutputValue;
 };
 
-// src: GUESS 0x00d6b510 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00d6b510
 static __declspec(noinline) void calcComPoseUsingHierarchy(const hkQsTransform* desiredPoseLocalSpace, const IntegerTriple& bodydata,
                                               const ControlData* controlPalette, const hkQsTransform& worldFromPose,
                                               BoneAndCenterOfMassPose* mc)

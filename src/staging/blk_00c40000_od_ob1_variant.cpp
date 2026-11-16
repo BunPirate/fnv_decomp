@@ -16962,7 +16962,7 @@ struct ObjC57 : TESObjectDoorController
 // pdb params: afInnerRadius, afOuterRadius, aiSlices, aiStacks, apColor
 // pdb locals: arraySize, normals, sideDelta, theta, currentStrip, sinTheta, vertices, cosTheta, torus, stripLengths, stripLists, numVertices, colors, ringDelta, numVerticesPerStrip, i, cosTheta1, phi, theta1, sinTheta1, j, cosPhi, dist, sinPhi
 #pragma intrinsic(memcpy)
-// src: COMMUNITY 0x00c57d70
+// src: XBOX_DEBUG_PDB 0x00c57d70 (was COMMUNITY)
 ObjC57* __cdecl BSTestObjects_CreateTorus(float afInnerRadius, float afOuterRadius, unsigned short aiSlices, unsigned short aiStacks, Vec4* apColor)
 {
     float angleStep8;

@@ -21340,7 +21340,7 @@ struct Tri : Vector_TriWriterRework<E0>
     Vector_TriWriterRework<EC0> vc0;
     Vector_TriWriterRework<ED8> vd8;
     unsigned int FffTriFileDataS_numModelVtx() const;
-// src: GUESS 0x0065a5a0 (confidence: low)
+// src: XBOX_DEBUG_PDB 0x0065a5a0
     unsigned int FffTriFileDataS_numModelVtx()
     {
         unsigned int n = size();

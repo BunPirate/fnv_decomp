@@ -3018,11 +3018,11 @@ struct FUN_009a52f0_shell
 // pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x009a54a0
 // pdb params (of the disputed candidate, unverified): apProjectile
 // pdb locals (of the disputed candidate, unverified): pexplosion, pprojectileBase, fdamage, fradius, fendTime, fstartTime
-void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* apProjectile)
+void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* projectile)
 {
-    if (apProjectile->Projectile_IsFlagSet(1))
+    if (projectile->Projectile_IsFlagSet(1))
         return;
-    ProjectileBaseCalls* base = apProjectile->FUN_004181e0();
+    ProjectileBaseCalls* base = projectile->FUN_004181e0();
     ExplosionSource* source = base->BGSProjectile_GetExplosion();
     if (base->GetHasExplosion() && source)
     {
@@ -3037,9 +3037,9 @@ void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* apProjectile)
                 float duration = DAT_0108e2b0;
                 if (base->FUN_00975300())
                 {
-                    if (apProjectile->GetFieldE4Float() != 3.4028234663852886e+38)
+                    if (projectile->GetFieldE4Float() != 3.4028234663852886e+38)
                     {
-                        duration = apProjectile->GetFieldE4Float() + 1.0;
+                        duration = projectile->GetFieldE4Float() + 1.0;
                         if (duration > *setting11ceabc.Float())
                             elapsed = duration - *setting11ceabc.Float();
                     }
@@ -3047,7 +3047,7 @@ void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* apProjectile)
                         duration = *setting11cf764.Float();
                 }
                 if (duration > 0.0)
-                    AddOrUpdateItem(apProjectile, length, elapsed, duration, radius);
+                    AddOrUpdateItem(projectile, length, elapsed, duration, radius);
             }
         }
     }

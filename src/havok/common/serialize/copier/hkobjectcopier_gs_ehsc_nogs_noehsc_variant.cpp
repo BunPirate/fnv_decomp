@@ -116,7 +116,7 @@ struct List
 int __cdecl hkString_strLen(int);
 int __cdecl FUN_00e03360_ext1(int);
 int __cdecl FUN_00e03360_ext2(VObj* p);
-// src: GUESS 0x00e03360 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00e03360
 __declspec(noinline) static void objectCopierPadUp(VObj* w, int pad)
 {
     int k = FUN_00e03360_ext1(pad);
@@ -432,7 +432,7 @@ __declspec(noinline) static int saveCstring(Ctx* dataIn, List* klassMemOffset, i
 }
 
 extern const char str_010ea3e4[];
-// src: GUESS 0x00e03170 (confidence: medium)
+// src: XBOX_RETAIL_PDB 0x00e03170
 __declspec(noinline) static void writePodArray(Target* oa, unsigned int mtype, unsigned int elemsize, unsigned int nelem, void* startAddress)
 {
     switch (nelem) {

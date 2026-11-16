@@ -871,7 +871,7 @@ struct TextList {
   --count;
   return data;
  }
-// src: GUESS 0x00a11c40 (confidence: low)
+// src: XBOX_DEBUG_PDB 0x00a11c40
  DynamicEntry* NiTPointerListBase_DFALL_NiTListItem_DebugText_DebugTextData_DebugText_DebugTextData_GetNext(DynamicEntry*& kPos) {
   Link* position=Find(kPos);
   return position?RemoveNode(position):kPos;
@@ -1804,7 +1804,7 @@ struct TextList {
     }
 };
 
-// src: GUESS 0x00a11c40 (confidence: low)
+// src: XBOX_DEBUG_PDB 0x00a11c40
 inline DebugItem* TextList::NiTPointerListBase_DFALL_NiTListItem_DebugText_DebugTextData_DebugText_DebugTextData_GetNext(DebugItem*& kPos) {
     unsigned s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16;
     s0 = s1 = s2 = s3 = s4 = s5 = s6 = s7 = s8 = s9 = s10 = s11 = s12 = s13 = s14 = s15 = s16 = 0;

@@ -878,7 +878,7 @@ inline void CRotTransform::RotateAxisFromIdentity(float fAngle, BranchPoint cAxi
     m21 = complement * y * z - sine * x;
     m22 = complement * z * z + cosine;
 }
-// src: GUESS 0x00b12d50 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00b12d50
 inline void CRotTransform::RotateAxis(float fAngle, BranchPoint cAxis)
 {
     CRotTransform rotation;
@@ -897,7 +897,7 @@ inline void CRotTransform::RotateAxis(float fAngle, BranchPoint cAxis)
     rotation.m22 = complement * z * z + cosine;
     *this = rotation.Multiply(*this);
 }
-// src: GUESS 0x00b12c00 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00b12c00
 inline void CRotTransform::RotateYZ(float fYangle, float fZangle)
 {
     CRotTransform rotation;

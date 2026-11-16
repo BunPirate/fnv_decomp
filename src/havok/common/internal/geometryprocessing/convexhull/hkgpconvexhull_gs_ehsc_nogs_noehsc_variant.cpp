@@ -9714,7 +9714,7 @@ __declspec(noinline) S00d7fb80_Vertex* S00d7fb80_VertexList::hkgpAbstractMeshDef
     m_iAllocatedCount++;
     return item;
 }
-// src: HAVOK_LIB 0x00d7efc0
+// src: XBOX_RETAIL_PDB 0x00d7efc0 (was HAVOK_LIB)
 __declspec(noinline) S00d7fb80_Triangle* S00d7fb80_TriangleList::hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Triangle_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Triangle_32_hkContainerHeapAllocator_allocate(const S00d7fb80_Triangle& value)
 {
     S00d7fb80_Triangle* item = new (allocateItem()) S00d7fb80_Triangle(value);

@@ -10856,7 +10856,7 @@ __declspec(thread) struct FUN_005b9ea0_TLS_DATA
     unsigned char flag;
 } FUN_005b9ea0_tlsData;
 
-// src: EXE 0x005b9ea0
+// src: XBOX_RETAIL_PDB 0x005b9ea0 (was EXE)
 bool Script_SetTargetDOF(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
@@ -11457,7 +11457,7 @@ void __fastcall _ref_00ec408c(unsigned int cookie);
 
 extern __declspec(thread) unsigned char FUN_005c4940_TLS[0x269];
 
-// src: EXE 0x005c4940
+// src: XBOX_RETAIL_PDB 0x005c4940 (was EXE)
 bool __cdecl Script_GetIsFormTypeFunction(
     const ScriptParameter* apParameters,
     const char* apCompiledParams,
@@ -12117,7 +12117,7 @@ void __cdecl _DebugLog(const char* message);
 __declspec(thread) unsigned char FUN_005d4400_tls_padding[0x268];
 __declspec(thread) unsigned char FUN_005d4400_tls_flag;
 
-// src: EXE 0x005d4400
+// src: XBOX_RETAIL_PDB 0x005d4400 (was EXE)
 bool Script_FlushPersistantActors(const ScriptParameter* apParameters,
                   const char* apCompiledParams,
                   TESObjectREFR* apRefObject,

@@ -2059,7 +2059,7 @@ extern void* __cdecl memset(void*, int, unsigned int);
 extern "C" void _ReadWriteBarrier();
 
 extern void FUN_00ec61c0(void* dst, int value, int n);
-// src: GUESS 0x00dbcdd0 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00dbcdd0
 static __declspec(noinline) void padUp(ClockObj* w, unsigned int pad)
 {
     S00dbcdd0_Obj* obj = (S00dbcdd0_Obj*)w;

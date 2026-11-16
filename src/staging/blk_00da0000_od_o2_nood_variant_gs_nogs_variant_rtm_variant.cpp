@@ -255,7 +255,7 @@ class S00da8180_AabbCastMachine
 
 extern void visitLevel(int);
 
-// src: GUESS 0x00da71c0 (confidence: low)
+// src: XBOX_RETAIL_PDB 0x00da71c0
 __declspec(noinline) void S00da8180_AabbCastMachine::hkpMoppAabbCastVirtualMachine_queryRayOnTree(const MachineVectorIndexRecord* query,
                                                                   const unsigned char* pc, Vector4Pair* fQuery,
                                                                   int level)

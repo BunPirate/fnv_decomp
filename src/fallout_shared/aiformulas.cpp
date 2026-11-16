@@ -145,7 +145,7 @@ float __cdecl GetSkillValue(ActorValueOwner*, int, bool);
 // Calls GetSkillValue with arg2, arg3 and false, returning the resulting float.
 // @fnv 0x00643bd0
 // src: COMMUNITY 0x00643bd0
-// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | debug, object-file gap fill, medium
+// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | debug, object-file gap fill, medium; the name is also claimed by the retail build's object-file run extension link to 0x00643c90, which is marked disputed there
 // pdb params: apActor, aiWhich
 // pdb locals: fresult
 float __cdecl callback4C(void* arg2, int arg3)
@@ -542,17 +542,17 @@ float __cdecl CalcSkillBase(float, float, float);
 // pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x00643bd0
 // pdb params (of the disputed candidate, unverified): apActor, aiWhich
 // pdb locals (of the disputed candidate, unverified): fresult
-float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiWhich, bool abBaseDerivation)
+float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiSkill, bool abCurrent)
 {
     float fResult = 0.0f;
-    if (ActorValue_IsSkill(aiWhich))
+    if (ActorValue_IsSkill(aiSkill))
     {
         int iAttribute = -1;
-        GetSkillAttributeAndBase(aiWhich, &iAttribute, &fResult);
+        GetSkillAttributeAndBase(aiSkill, &iAttribute, &fResult);
         bool bUnused = false;
         if (iAttribute != -1)
         {
-            if (!abBaseDerivation)
+            if (!abCurrent)
             {
                 fResult = CalcSkillBase(fResult, apActor->GetActorValueFloatByIndex(iAttribute),
                                         apActor->GetActorValueFloatByIndex(11));
@@ -576,7 +576,7 @@ float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiWhich, bool abBaseDe
             if (pForm->IsActor())
             {
                 TESNPC* pNPC = (TESNPC*)pForm;
-                if (pNPC->GetClass() && pNPC->GetClass()->IsTagSkill((ActorValue::Index)aiWhich))
+                if (pNPC->GetClass() && pNPC->GetClass()->IsTagSkill((ActorValue::Index)aiSkill))
                 {
                     fResult += originalRuntimeFloatSetting327.Float()->f;
                 }

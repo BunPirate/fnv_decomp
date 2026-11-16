@@ -14554,7 +14554,7 @@ struct FUN_00e98910_Class {
 // pdb: NiD3DShaderConstantManager::NiD3DShaderConstantManager | NiD3DShaderConstantManager.obj | retail, upstream name already matches, high
 // pdb params: pkD3DRenderer
 FUN_00e98910_Class* __thiscall
-// src: EXE 0x00e98910
+// src: XBOX_RETAIL_PDB 0x00e98910 (was EXE)
 FUN_00e98910_Class::NiD3DShaderConstantManager_ctor(int* pkD3DRenderer) {
     this->unk00 = &DAT_0101dce4;
     this->unk04 = 0;
