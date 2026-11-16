@@ -7784,22 +7784,22 @@ struct FFB90Request
     int m_iParam2;
 
     void UnregisterSteamCallback();
-    void SetParams(int apfData, int auiEnables);
+    void SetParams(int param1, int param2);
 };
 
 // @fnv 0x006ffb90
-// pdb: ImageSpaceEffectCinematic::SetParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: apfData, auiEnables
-void FFB90Request::SetParams(int apfData, int auiEnables)
+// pdb: ImageSpaceEffectCinematic::SetParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apfData, auiEnables
+void FFB90Request::SetParams(int param1, int param2)
 {
-    if (!apfData || !auiEnables)
+    if (!param1 || !param2)
         return;
     if (m_ucFlags & 1)
         UnregisterSteamCallback();
     if (false)
         m_ucFlags |= 2;
-    m_iParam1 = apfData;
-    m_iParam2 = auiEnables;
+    m_iParam1 = param1;
+    m_iParam2 = param2;
     g_pfnFFB90Notify(this, 0x44e);
 }
 

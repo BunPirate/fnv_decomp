@@ -3627,27 +3627,27 @@ struct OldSequence
 
 // Allocates a NiControllerSequence, copies name and controller data from pkOld, and assigns the result to spOut.
 // @fnv 0x00a349e0
-// pdb: NiControllerSequence::ConvertOldSequence | NiControllerSequence.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: pkOldSequence, aspControllerSequence
-// pdb locals: bFirstTime, spNewSequence, ui, pkController, pcName, bSuccess, eCycleType
-void __cdecl ConvertOldSequence(OldSequence* pkOldSequence, SeqPtr<NiControllerSequence>& aspControllerSequence) throw()
+// pdb: NiControllerSequence::ConvertOldSequence | NiControllerSequence.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pkOldSequence, aspControllerSequence
+// pdb locals (unverified, name-only link): bFirstTime, spNewSequence, ui, pkController, pcName, bSuccess, eCycleType
+void __cdecl ConvertOldSequence(OldSequence* pkOld, SeqPtr<NiControllerSequence>& spOut) throw()
 
 {
 
     void* pvRaw = Object_DispatchCommandFour(0x74);
 
-    unsigned int ItemUpdateArray = pvRaw != 0 ? pkOldSequence->m_usElementCount : 0;
+    unsigned int ItemUpdateArray = pvRaw != 0 ? pkOld->m_usElementCount : 0;
 
-    SeqPtr<NiControllerSequence> spSeq = ::new (pvRaw) NiControllerSequence(NiFixedString(pkOldSequence->m_pcName), ItemUpdateArray, ItemUpdateArray);
+    SeqPtr<NiControllerSequence> spSeq = ::new (pvRaw) NiControllerSequence(NiFixedString(pkOld->m_pcName), ItemUpdateArray, ItemUpdateArray);
 
     bool bFirst = true;
 
-    for (unsigned int i = 0; i < pkOldSequence->m_usElementCount; i++)
+    for (unsigned int i = 0; i < pkOld->m_usElementCount; i++)
     {
 
-        void* pkObject = pkOldSequence->m_ppObjects[i];
+        void* pkObject = pkOld->m_ppObjects[i];
 
-        SeqController* pkCtlr = pkOldSequence->m_ppControllers[i];
+        SeqController* pkCtlr = pkOld->m_ppControllers[i];
 
         if (pkObject && pkCtlr)
         {
@@ -3676,11 +3676,11 @@ void __cdecl ConvertOldSequence(OldSequence* pkOldSequence, SeqPtr<NiControllerS
         }
     }
 
-    spSeq->m_spTextKeyData = pkOldSequence->m_spTextKeyData.m_pObject;
+    spSeq->m_spTextKeyData = pkOld->m_spTextKeyData.m_pObject;
 
     spSeq->m_kAccumulationRootName = a3::DAT_011f49e0;
 
-    aspControllerSequence = spSeq;
+    spOut = spSeq;
 }
 
 extern "C" void _ReadWriteBarrier(void);

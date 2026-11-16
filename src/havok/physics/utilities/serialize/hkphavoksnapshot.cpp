@@ -231,23 +231,23 @@ struct FUN_00cc08f0_cls
     unsigned int unk04;
     PtrList m_08;
 
-    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** p, void** k);
+    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** a1, void** a2);
 };
 
 // Checks type matchers on *a2, allocates and links a new object into m_08, or clears the pointer when the back-reference matches.
 // @fnv 0x00cc08f0
 // src: XBOX_PDB 0x00cc08f0
-// pdb: hkpHavokSnapshot::ConvertListener::addObjectCallback | hkpHavokSnapshot.obj | retail, upstream name already matches, high
-// pdb params: p, k
-void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void** p, void** k)
+// pdb: hkpHavokSnapshot::ConvertListener::addObjectCallback | hkpHavokSnapshot.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): p, k
+void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void** a1, void** a2)
 {
-    void** cur = k;
+    void** cur = a2;
 
     if (g_01268f2c.hkClass_isSuperClass(*cur))
     {
         if (*cur != (void*)&hkpStorageMeshShapeClass)
         {
-            void* v = *p;
+            void* v = *a1;
             State* h = hkMemoryRouter_getInstance();
             Obj70* o = (Obj70*)((Allocator*)h->interface10)->allocate(0x70);
             o->m_04 = 0x70;
@@ -259,16 +259,16 @@ void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void**
                 ResizeAudioStream(h2->interface10, list, 4);
             }
             list->Add(o);
-            *p = o;
-            *k = (void*)&hkpStorageMeshShapeClass;
-            cur = k;
+            *a1 = o;
+            *a2 = (void*)&hkpStorageMeshShapeClass;
+            cur = a2;
         }
     }
     if (g_01268e24.hkClass_isSuperClass(*cur))
     {
         if (*cur != (void*)&hkpStorageExtendedMeshShapeClass)
         {
-            void* v = *p;
+            void* v = *a1;
             State* h = hkMemoryRouter_getInstance();
             Obj110* o = (Obj110*)((Allocator*)h->interface10)->allocate(0x110);
             o->m_04 = 0x110;
@@ -280,14 +280,14 @@ void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void**
                 ResizeAudioStream(h2->interface10, list, 4);
             }
             list->Add(o);
-            *p = o;
-            *k = (void*)&hkpStorageExtendedMeshShapeClass;
+            *a1 = o;
+            *a2 = (void*)&hkpStorageExtendedMeshShapeClass;
             return;
         }
     }
     if (g_01268c5c.hkClass_isSuperClass(*cur))
     {
-        void* v = *p;
+        void* v = *a1;
         if (((unsigned char*)v)[0x1d] == 2)
         {
             State* h = hkMemoryRouter_getInstance();
@@ -301,18 +301,18 @@ void FUN_00cc08f0_cls::hkpHavokSnapshot_ConvertListener_addObjectCallback(void**
                 ResizeAudioStream(h2->interface10, list, 4);
             }
             list->Add(o);
-            *p = o;
-            *k = (void*)&hkpStorageSampledHeightFieldShapeClass;
+            *a1 = o;
+            *a2 = (void*)&hkpStorageSampledHeightFieldShapeClass;
         }
         return;
     }
     if (g_01268bcc.hkClass_isSuperClass(*cur))
     {
-        void* v = *p;
+        void* v = *a1;
         unsigned int* back = (unsigned int*)((unsigned int*)v)[2];
         if (back != 0 && back[9] == (unsigned int)v)
         {
-            *p = 0;
+            *a1 = 0;
             *cur = 0;
         }
     }

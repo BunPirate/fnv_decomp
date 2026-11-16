@@ -3522,7 +3522,7 @@ struct FFB90Request
     int m_iParam2;
 
     void UnregisterSteamCallback();
-    void SetParams(int apfData, int auiEnables);
+    void SetParams(int param1, int param2);
 };
 extern "C" __declspec(dllimport) void __cdecl SteamAPI_RegisterCallback(void* callback, int callbackId);
 struct FUN_006ffc20_shell : FUN_006ff970_Class

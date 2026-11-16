@@ -11440,7 +11440,7 @@ struct C_00e8f010 {
     void FUN_00e8f010(int fvf);
 };
 struct FUN_00e69b40_shell {
-    unsigned int GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int index);
 };
 struct Outer;
 extern "C" void* memmove(void* dst, const void* src, unsigned int n);
@@ -14550,7 +14550,6 @@ struct FUN_00e98910_Class {
 };
 
 // @fnv 0x00e98910
-// src: EXE 0x00e98910
 // pdb: NiD3DShaderConstantManager::NiD3DShaderConstantManager | NiD3DShaderConstantManager.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: pkD3DRenderer
 FUN_00e98910_Class* __thiscall

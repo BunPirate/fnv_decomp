@@ -427,17 +427,17 @@ struct FUN_00e69b40_shell {
     unsigned int count;
     unsigned int pad24;
     unsigned int* entries;
-    unsigned int GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int index);
 };
 
 // @fnv 0x00e69b40
-// pdb: NiD3DShaderConstantMap::GetEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: pszKey
-// pdb locals: bFound, pkEntry, uiSize, ui
-unsigned int FUN_00e69b40_shell::GetEntry(unsigned int pszKey)
+// pdb: NiD3DShaderConstantMap::GetEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pszKey
+// pdb locals (unverified, name-only link): bFound, pkEntry, uiSize, ui
+unsigned int FUN_00e69b40_shell::GetEntry(unsigned int index)
 {
-    if (pszKey < count)
-        return entries[pszKey];
+    if (index < count)
+        return entries[index];
     return 0;
 }
 

@@ -49,7 +49,7 @@ struct ShapeRefArray
 };
 
 // pdb: class _SharedShapeData, size 0xc (here 0x10), 1 members
-struct _SharedShapeData // src: XBOX_RETAIL_PDB 0x00d738f0 (first of 5 linked methods; old: ShapeData)
+struct _SharedShapeData // src: XBOX_RETAIL_PDB 0x00d74aa0 (first of 1 high-tier linked methods; old: ShapeData)
 {
     int m_kPointA;
     int m_kPointB;

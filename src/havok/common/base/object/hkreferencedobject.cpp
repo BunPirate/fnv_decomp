@@ -1380,29 +1380,29 @@ struct S00e3eba0_class
     int unk24;
     S00e3eba0_class** m_items;
     int m_uiItemCount;
-    void ReplaceObject(hkReferencedObject* apObject, hkReferencedObject* GetObject);
+    void ReplaceObject(hkReferencedObject* oldObject, hkReferencedObject* GetObject);
 };
 // If m_pShape equals oldObject, replaces it with GetObject; then recursively applies the operation to every item in m_items.
 // @fnv 0x00e3eba0
-// pdb: TESContainer::ReplaceObject | TESContainer.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: apObject, apReplace
-// pdb locals: pkList, pobj
-void S00e3eba0_class::ReplaceObject(hkReferencedObject* apObject, hkReferencedObject* apReplace)
+// pdb: TESContainer::ReplaceObject | TESContainer.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apObject, apReplace
+// pdb locals (unverified, name-only link): pkList, pobj
+void S00e3eba0_class::ReplaceObject(hkReferencedObject* oldObject, hkReferencedObject* apNewObject)
 {
-    if (m_pShape == (void*)apObject)
+    if (m_pShape == (void*)oldObject)
     {
         _ReadWriteBarrier();
-        if (m_pShape != (void*)apReplace)
+        if (m_pShape != (void*)apNewObject)
         {
-            if (apReplace)
-                FUN_00c90510(apReplace);
+            if (apNewObject)
+                FUN_00c90510(apNewObject);
             if (m_pShape)
                 FUN_00c905b0(m_pShape);
-            m_pShape = apReplace;
+            m_pShape = apNewObject;
         }
     }
     for (int i = 0; i < m_uiItemCount; i++)
-        m_items[i]->ReplaceObject(apObject, apReplace);
+        m_items[i]->ReplaceObject(oldObject, apNewObject);
 }
 
 // Calls FUN_00c903b0 for each strided item, acquiring the critical section when multi-threaded mode is enabled and TLS lacks the marker.

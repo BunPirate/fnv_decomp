@@ -1,7 +1,7 @@
 #pragma once
 
 // pdb: class CombatFormulas, size 0x1, 0 members
-class CombatFormulas // src: XBOX_RETAIL_PDB 0x00644a70 (first of 34 linked methods; old: CombatDamageCalculator)
+class CombatFormulas // src: XBOX_DEBUG_PDB 0x00646360 (first of 6 high-tier linked methods; old: CombatDamageCalculator)
 {
   public:
     static float CalculateWeaponDamage(ActorValueOwner*, TESObjectWEAP*, float, bool, InventoryStackRecord*, bool, bool, int,

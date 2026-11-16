@@ -18251,18 +18251,18 @@ namespace fnv_00449750 {
 struct LockFreeCaseInsensitiveStringMap_t
 {
     unsigned int FUN_0044ddc0();
-    unsigned int GetBucketIndex(const char* cb);
+    unsigned int GetBucketIndex(const char* apKey);
 };
 // Computes a case-insensitive hash of apKey and returns it modulo the table size from FUN_0044ddc0.
 // @fnv 0x00449750
-// pdb: D3DXShader::CompilerHeap::GetBucketIndex | main.obj | debug, upstream name already matches, high
-// pdb params: cb
-unsigned int LockFreeCaseInsensitiveStringMap_t::GetBucketIndex(const char* cb)
+// pdb: D3DXShader::CompilerHeap::GetBucketIndex | main.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): cb
+unsigned int LockFreeCaseInsensitiveStringMap_t::GetBucketIndex(const char* apKey)
 {
     unsigned int uiHash = 0;
-    while (*cb)
+    while (*apKey)
     {
-        uiHash = (uiHash << 5) + uiHash + tolower(*cb++);
+        uiHash = (uiHash << 5) + uiHash + tolower(*apKey++);
     }
     return uiHash % FUN_0044ddc0();
 }

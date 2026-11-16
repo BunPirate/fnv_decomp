@@ -20,15 +20,15 @@ The compilers are Microsoft's, from the downloads the CI uses, checked against t
 
 ## What changes
 
-### Renames (29,329)
+### Renames (29,206)
 
 | Kind | Renamed | Example |
 |---|---|---|
-| Parameters | 20,733 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
+| Parameters | 20,611 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
 | Fields | 4,852 | `CombatProcedureBeInCover` +0x44: `m_waitingOutTimer` → `WaitingOutOfCoverTimer` |
 | Functions | 3,146 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
 | Globals | 517 | `DAT_0126b1b0` → `hkpVehicleInstanceClass` |
-| Classes | 81 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
+| Classes | 80 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
 
 The renames were made with a C++ parser (libclang in MSVC-compatibility mode). Each reference is tied to its exact
 entity:
@@ -54,12 +54,15 @@ Naming rules:
   member offset or address, and the old name, so each one can be found and reversed on its own:
   `Timer WaitingOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x44 (old: m_waitingOutTimer)`. Field names come from the
   retail build's type records. A global is marked on each of its declarations. When several renamed fields share one
-  declaration, the marker names each. 54 of the 81 class names come from the PC executable's own RTTI (the vtable
-  `main` already named), so they are tagged `EXE` with the vtable's address. The other 27 come from linked methods and
-  carry the build of those links (25 `XBOX_RETAIL_PDB`, 2 `XBOX_DEBUG_PDB`) and the first linked method's address.
+  declaration, the marker names each. 54 of the 80 class names come from the PC executable's own RTTI (the vtable
+  `main` already named), so they are tagged `EXE` with the vtable's address. The other 26 come from high-tier links of
+  their methods (not counting name-only links). They carry the build most of those links come from (21
+  `XBOX_RETAIL_PDB`, 5 `XBOX_DEBUG_PDB`) and the address of the first such link.
   Renamed parameters have no marker; they are in the mapping (see the end of this file).
-- A link made only because `main` already used the PDB name (link method "upstream name already matches") renames
-  nothing: the name is the evidence, so its spelling stays.
+- A link made only because `main` already used the PDB name (link method "upstream name already matches") renames no
+  function or class: the name is the evidence, so its spelling stays. Its parameter names are applied only where the
+  function's class here is the PDB class (or both are free functions of that name); otherwise they stay in the comment,
+  labelled unverified.
 
 ### Comments on linked functions and classes (2,509)
 
@@ -118,9 +121,9 @@ linked by their name-string argument, which has to match a public symbol in the 
 | Functions the parser found no definition for | 5,552 | Mostly units clang cannot fully parse (648 of 2,989), or names it decorates differently. |
 | Rejected by the build | 2,045 | They made a unit fail to compile or compile differently, usually through a use the parser missed. |
 | Declared twice under two names in one file | 860 | One address declared twice (for example `GetExtraData` and `FUN_00a5bdd0`); renaming both would collide. |
-| Already named, only spelled differently | 293 | The existing name and its tag already carry the same evidence (see the naming rules). |
-| Linked only by the existing name | 90 | The link method is "upstream name already matches", so the rename would only respell the name it came from (see the naming rules). |
-| Conflicts found in review | 3 | 2 names from the public Xbox 360 symbols (probably folded code), shown as `disputed (was high)` with their parameter and local names labelled unverified; and 0x004d5a90, a float getter with no arguments linked to `LipSynchAnim::LoadFromFile`, shown as `rejected (was high)`. Four other pairs that review first took for conflicts are overloads of one name, so both functions of each pair keep it; their comments name the overload. |
+| Already named, only spelled differently | 292 | The existing name and its tag already carry the same evidence (see the naming rules). |
+| Linked only by the existing name | 90 functions, 1 class | The link method is "upstream name already matches", so the rename would only respell the name it came from (see the naming rules). 74 of these links are on a class that differs from the PDB class, so their 122 parameter names are not applied either. |
+| Conflicts found in review | 3 | 2 names from the public Xbox 360 symbols (probably folded code), shown as `disputed (was high)` with their parameter and local names labelled unverified; and 0x004d5a90, a float getter with no arguments linked to `LipSynchAnim::LoadFromFile`, shown as `rejected (was high)`. Four other pairs that review first took for conflicts are overloads of one name, so both links of each pair hold; their comments name the overload. |
 | Collisions and shadowing | 372 | The name already exists on the class, a base or derived class, in the function body, or as another global. |
 | Classes whose real name is already defined | 2,249 | Stand-ins for real classes; the comment names the real class. |
 | Local variables | all | No safe way to pair the current locals with the originals by position. They are listed in `// pdb locals:`. |

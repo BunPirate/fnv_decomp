@@ -2916,23 +2916,23 @@ struct Map_00863bc0
     virtual unsigned int Hash(unsigned char key) = 0;
     unsigned int m_uiCount;
     Item_00863bc0** m_ppBuckets;
-    void GetNextItem(Item_00863bc0*& arIterator, unsigned char& arpItemChange, unsigned int& aiIterateFlags);
+    void GetNextItem(Item_00863bc0*& item, unsigned char& key, unsigned int& val);
 };
 
 // Outputs the item's key and value, then advances item to the next chained item or the next non-empty bucket, or null.
 // @fnv 0x00863bc0
-// pdb: InventoryChanges::GetNextItem | InventoryChanges.obj | retail, upstream name already matches, high
-// pdb params: arIterator, arpItemChange, aiIterateFlags
-// pdb locals: pcontainerObject, pbipedform, pweapon, pitemChange, icount, pboundObject
-void Map_00863bc0::GetNextItem(Item_00863bc0*& arIterator, unsigned char& arpItemChange, unsigned int& aiIterateFlags)
+// pdb: InventoryChanges::GetNextItem | InventoryChanges.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): arIterator, arpItemChange, aiIterateFlags
+// pdb locals (unverified, name-only link): pcontainerObject, pbipedform, pweapon, pitemChange, icount, pboundObject
+void Map_00863bc0::GetNextItem(Item_00863bc0*& item, unsigned char& key, unsigned int& val)
 {
-    Item_00863bc0* pkItem = arIterator;
+    Item_00863bc0* pkItem = item;
     unsigned int uiIndex;
-    arpItemChange = pkItem->m_key;
-    aiIterateFlags = pkItem->m_val;
+    key = pkItem->m_key;
+    val = pkItem->m_val;
     if (pkItem->m_pkNext != 0)
     {
-        arIterator = pkItem->m_pkNext;
+        item = pkItem->m_pkNext;
         return;
     }
     uiIndex = Hash(pkItem->m_key);
@@ -2942,11 +2942,11 @@ void Map_00863bc0::GetNextItem(Item_00863bc0*& arIterator, unsigned char& arpIte
         pkItem = m_ppBuckets[uiIndex];
         if (pkItem != 0)
         {
-            arIterator = pkItem;
+            item = pkItem;
             return;
         }
     }
-    arIterator = 0;
+    item = 0;
 }
 
 class B63CD0MapBase

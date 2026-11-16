@@ -1755,29 +1755,29 @@ struct FUN_0096a970_Class
     void ResizeAndClear(int n);
     void ProcessArray_CheckNextUpdateBounds();
     void InsertAt(int uiIndex);
-    void InsertAt(int uiIndex, int element);
+    void InsertAt(int uiIndex, int index);
 };
 
 // @fnv 0x0096a970
-// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::InsertAt | NiNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: uiIndex, element
-// pdb locals: isize, i, t
-void FUN_0096a970_Class::InsertAt(int uiIndex, int element)
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::InsertAt | NiNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): uiIndex, element
+// pdb locals (unverified, name-only link): isize, i, t
+void FUN_0096a970_Class::InsertAt(int aiValue, int index)
 {
-    if (element != -1)
+    if (index != -1)
     {
-        int iNextIndex = element + 1;
-        if (element < 3)
+        int iNextIndex = index + 1;
+        if (index < 3)
         {
-            if (m_20[element] + 1 > (unsigned int)m_10[iNextIndex])
+            if (m_20[index] + 1 > (unsigned int)m_10[iNextIndex])
             {
                 InsertAt(*FUN_00877a30(m_10[iNextIndex], iNextIndex));
-                m_10[iNextIndex] = m_20[element] + 1;
+                m_10[iNextIndex] = m_20[index] + 1;
             }
         }
-        FUN_0096ae90(m_20[element], &uiIndex);
-        m_20[element] = m_20[element] + 1;
-        if ((unsigned int)m_20[element] >= (unsigned int)GetShortAtOffsetA())
+        FUN_0096ae90(m_20[index], &aiValue);
+        m_20[index] = m_20[index] + 1;
+        if ((unsigned int)m_20[index] >= (unsigned int)GetShortAtOffsetA())
         {
             ResizeAndClear(100);
         }

@@ -221,16 +221,16 @@ void __cdecl Deallocate(void*);
 
 struct FUN_006db090_shell
 {
-    void FreeBuffer(void* pvBuffer);
+    void FreeBuffer(void* apBuffer);
 };
 
 // @fnv 0x006db090
-// pdb: BSPackedAdditionalGeometryData::NiBSPackedAGDDataBlock::FreeBuffer | BSPackedAdditionalGeometryData.obj | retail, upstream name already matches, high
-// pdb params: pvBuffer
-// pdb locals: patt, att
-void FUN_006db090_shell::FreeBuffer(void* pvBuffer)
+// pdb: BSPackedAdditionalGeometryData::NiBSPackedAGDDataBlock::FreeBuffer | BSPackedAdditionalGeometryData.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pvBuffer
+// pdb locals (unverified, name-only link): patt, att
+void FUN_006db090_shell::FreeBuffer(void* apBuffer)
 {
-    Deallocate(pvBuffer);
+    Deallocate(apBuffer);
 }
 
 void __fastcall FUN_006e2620(void*);

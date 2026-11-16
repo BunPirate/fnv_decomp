@@ -188,24 +188,24 @@ struct FUN_00e05a80Class
     int m_0c;
     int m_10;
 
-    int __thiscall ReadFromBuffer(void* apReadBuffer, int aiByteCount);
+    int __thiscall ReadFromBuffer(void* destination, int count);
 };
 extern "C" void __cdecl hkString_memCpy(void* destination, const void* source, int count);
 
 // @fnv 0x00e05a80
-// pdb: ArchiveFile::ReadFromBuffer | Archive_Xenon.obj | retail, upstream name already matches, high
-// pdb params: apReadBuffer, aiByteCount
-// pdb locals: uiAvailBufferBytes, uiRead, ioffset, iarchivePos, ialignedArchivePos, iamountRead, isizeToRead
-int __thiscall FUN_00e05a80Class::ReadFromBuffer(void* apReadBuffer, int aiByteCount)
+// pdb: ArchiveFile::ReadFromBuffer | Archive_Xenon.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apReadBuffer, aiByteCount
+// pdb locals (unverified, name-only link): uiAvailBufferBytes, uiRead, ioffset, iarchivePos, ialignedArchivePos, iamountRead, isizeToRead
+int __thiscall FUN_00e05a80Class::ReadFromBuffer(void* destination, int count)
 {
     unsigned char state;
     if (*checkState(&state))
     {
         int remaining = m_10 - m_0c;
-        int copied = aiByteCount < remaining ? aiByteCount : remaining;
-        hkString_memCpy(apReadBuffer, m_08 + m_0c, copied);
+        int copied = count < remaining ? count : remaining;
+        hkString_memCpy(destination, m_08 + m_0c, copied);
         m_0c += copied;
-        if (copied == 0 && aiByteCount != 0)
+        if (copied == 0 && count != 0)
             m_0c = m_10 + 1;
         return copied;
     }

@@ -2856,12 +2856,12 @@ struct FUN_009e2660_Class
 
 // Returns whether the container at offset 0x30 finds the given value, comparing against -1 to indicate presence.
 // @fnv 0x009e2660
-// pdb: NiSkinPartition::BoneSet::Contains | NiSkinPartition.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: kThat
-// pdb locals: uiThat, uiThis
-bool FUN_009e2660_Class::Contains(unsigned int kThat)
+// pdb: NiSkinPartition::BoneSet::Contains | NiSkinPartition.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): kThat
+// pdb locals (unverified, name-only link): uiThat, uiThis
+bool FUN_009e2660_Class::Contains(unsigned int auiValue)
 {
-    return ((LS3de0*)((char*)this + 0x30))->Find(kThat, 0, (bool(__cdecl*)(int const*, int const*))_FUN_009a3830) !=
+    return ((LS3de0*)((char*)this + 0x30))->Find(auiValue, 0, (bool(__cdecl*)(int const*, int const*))_FUN_009a3830) !=
            -1;
 }
 

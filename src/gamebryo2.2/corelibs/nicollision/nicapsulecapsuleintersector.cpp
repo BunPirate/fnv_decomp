@@ -131,16 +131,16 @@ struct S_00eaef80
     float m_fParamA;
     float m_fParamB;
 
-    void UpdatePoints(const NiPoint3& ausParticle, const NiPoint3& afTime);
+    void UpdatePoints(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB);
 };
 
 inline NiPoint3 CopyPoint(const NiPoint3& p) { return NiPoint3(p.x, p.y, p.z); }
 
 // @fnv 0x00eaef80
-// pdb: BSStripPSysData::UpdatePoints | BSStripPSysData.obj | retail, upstream name already matches, high
-// pdb params: ausParticle, afTime
-// pdb locals: pkCurrentParticle, iprevindex, fsize, pprevDir, stripData, icurrindex
-void S_00eaef80::UpdatePoints(const NiPoint3& ausParticle, const NiPoint3& afTime)
+// pdb: BSStripPSysData::UpdatePoints | BSStripPSysData.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): ausParticle, afTime
+// pdb locals (unverified, name-only link): pkCurrentParticle, iprevindex, fsize, pprevDir, stripData, icurrindex
+void S_00eaef80::UpdatePoints(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB)
 {
     NiPoint3 kPointA;
     m_pkShapeA->m_kLine.NiSegment_GetPoint(kPointA, m_fParamA);
@@ -151,10 +151,10 @@ void S_00eaef80::UpdatePoints(const NiPoint3& ausParticle, const NiPoint3& afTim
     if (unk18 == 2)
     {
         {
-            NiPoint3 t = CopyPoint(ausParticle * unk1C);
+            NiPoint3 t = CopyPoint(kOffsetA * unk1C);
             kPointA += t;
         }
-        FUN_Offset(kPointB, afTime, unk1C);
+        FUN_Offset(kPointB, kOffsetB, unk1C);
 
         m_kPoint2C = kPointB - kPointA;
         m_kPoint2C.Unitize_004a0c10();

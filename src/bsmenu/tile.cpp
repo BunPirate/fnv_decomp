@@ -2603,14 +2603,14 @@ struct TileValueStr {
     char* pString;
     void RefreshA();
     void RefreshB(bool);
-    void SetString(const char* apString, bool abClearActions);
+    void SetString(const char* apString, bool abUpdate);
 };
 
 // @fnv 0x00a0a300
-// pdb: Tile::Value::SetString | Tile.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: apString, abClearActions
-// pdb locals: bforceUpdate, uiLen
-void TileValueStr::SetString(const char* apString, bool abClearActions)
+// pdb: Tile::Value::SetString | Tile.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apString, abClearActions
+// pdb locals (unverified, name-only link): bforceUpdate, uiLen
+void TileValueStr::SetString(const char* apString, bool abUpdate)
 {
     const char* pCur;
     char* pOld;
@@ -2632,7 +2632,7 @@ void TileValueStr::SetString(const char* apString, bool abClearActions)
         strcpy_s(pDest4, uiLen6 + 1, apString);
     }
     fValue = 0.0f;
-    if (abClearActions)
+    if (abUpdate)
         RefreshA();
     RefreshB(kBChanged);
 }

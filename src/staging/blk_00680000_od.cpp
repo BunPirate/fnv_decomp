@@ -2911,17 +2911,17 @@ class B69BB90List
   public:
     unsigned int GetSize();
     B69BB90Entry* GetAt(unsigned int uiIndex);
-    unsigned int FindIndex(B69BB90Handle nIndex);
+    unsigned int FindIndex(B69BB90Handle kHandle);
 };
 
 // @fnv 0x0069bb90
-// pdb: CPointerList<XAUDIO2::CX2EffectChain::EffectEntry,1,4294967295,0>::FindIndex | x2effectchain.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: nIndex
-unsigned int B69BB90List::FindIndex(B69BB90Handle nIndex)
+// pdb: CPointerList<XAUDIO2::CX2EffectChain::EffectEntry,1,4294967295,0>::FindIndex | x2effectchain.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): nIndex
+unsigned int B69BB90List::FindIndex(B69BB90Handle kHandle)
 {
     for (unsigned int i = 0; i < GetSize(); i++)
     {
-        if (GetAt(i)->IsEqual(nIndex))
+        if (GetAt(i)->IsEqual(kHandle))
             return i;
     }
     return 0xffffffff;

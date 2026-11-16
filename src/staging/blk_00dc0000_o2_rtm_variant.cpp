@@ -1100,8 +1100,8 @@ extern "C" unsigned int be_store_value(void);
 static void StoreBigEndian(BEStoreTarget* self, unsigned int value);
 void be_store_caller(BEStoreTarget* self);
 // @fnv 0x00dcb460
-// pdb: StructArrayImplementation::Object::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high
-// pdb params: name
+// pdb: StructArrayImplementation::Object::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): name
 struct DispatchTarget
 {
     virtual void v00();
@@ -1149,9 +1149,9 @@ struct Owner
     void StructArrayImplementation_Object_asObject(unsigned int);
 };
 // src: XBOX_PDB 0x00dcb460
-void Owner::StructArrayImplementation_Object_asObject(unsigned int name)
+void Owner::StructArrayImplementation_Object_asObject(unsigned int i)
 {
-    table->entryAt(table->StructArrayImplementation__find(name))->forward(context);
+    table->entryAt(table->StructArrayImplementation__find(i))->forward(context);
 }
 #include <stdlib.h>
 // Text reader: read the next number as a double.

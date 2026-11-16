@@ -2103,8 +2103,8 @@ struct LayoutItem {
         position=0;
     }
 // src: COMMUNITY 0x00a1b7f0
-    void FontManager_CharData_SetChar(unsigned char acChar) {
-        character=acChar;
+    void FontManager_CharData_SetChar(unsigned char value) {
+        character=value;
         if(!string.Get() || !string[0]) {
             FontManager* manager=FontManager::pInstance;
             Font* selected=manager->pFont[font];
@@ -2389,7 +2389,7 @@ struct FontTextManager
 };
 
 // pdb: structure CharData, size 0x14 (here 0x38), 5 members
-struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first of 4 linked methods; old: FontTextParams)
+struct CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first of 2 high-tier linked methods; old: FontTextParams)
 {
     int m_iType;
     bool bFlag;
@@ -3286,8 +3286,8 @@ struct LayoutItem {
         position=0;
     }
 // src: COMMUNITY 0x00a1b7f0
-    void FontManager_CharData_SetChar(unsigned char acChar) {
-        character=acChar;
+    void FontManager_CharData_SetChar(unsigned char value) {
+        character=value;
         if(Empty()) {
             FontCharacterInfo* letter=&((FontCharacterInfo*)(LayoutFonts::Instance()->GetFont(font)->pFontData)->pFontLetters)[character];
             width=(int)(letter->m_fGlyphWidthInPixels+(letter->m_fGlyphWidthInPixels!=0.0?letter->m_fHorizontalSpacing+letter->m_fHorizontalAdvance:0.0));
@@ -3577,20 +3577,20 @@ struct OwnQ {
   unsigned int GetCount() { return ItemUpdateArray; }
   EntQ*& First() { return pHead->pEnt; }
   void AddItem(EntQ** ppEnt);
-  void FontManager_TextDoc_AddChar(int apChar, int aiNewLines, bool abNewPage);
+  void FontManager_TextDoc_AddChar(int apChar, int aiNewLines, bool bForce);
 };
 // Calls FUN_00a19c00 on First() when the count is nonzero and bForce is false; otherwise allocates FUN_00a1bc70, then passes a non-null result to AddItem.
 // @fnv 0x00a19a10
 // src: COMMUNITY 0x00a19a10
-// pdb: FontManager::TextDoc::AddChar | Font.obj | retail, upstream name already matches, high
-// pdb params: apChar, aiNewLines, abNewPage
-// pdb locals: ppage
-void OwnQ::FontManager_TextDoc_AddChar(int apChar, int aiNewLines, bool abNewPage) {
+// pdb: FontManager::TextDoc::AddChar | Font.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apChar, aiNewLines, abNewPage
+// pdb locals (unverified, name-only link): ppage
+void OwnQ::FontManager_TextDoc_AddChar(int aiParam1, int aiParam2, bool bForce) {
   EntQ* pEnt = 0;
-  if (GetCount() && !abNewPage)
-    pEnt = First()->ProcessEntries_00a19c00(apChar, aiNewLines);
+  if (GetCount() && !bForce)
+    pEnt = First()->ProcessEntries_00a19c00(aiParam1, aiParam2);
   else
-    pEnt = new FUN_00a1bc70(this, apChar, unk0c, unk10);
+    pEnt = new FUN_00a1bc70(this, aiParam1, unk0c, unk10);
   if (pEnt) AddItem(&pEnt);
 }
 }  // namespace fnv_00a19a10
@@ -5351,9 +5351,9 @@ struct S00a1b7f0_GlyphMetric {
 // Stores the character, conditionally computes width, height, and drop when the icon is empty, and resets fields.
 // @fnv 0x00a1b7f0
 // src: COMMUNITY 0x00a1b7f0
-// pdb: FontManager::CharData::SetChar | Font.obj | debug, upstream name already matches, high
-// pdb params: acChar
-// pdb locals: pfontletter
+// pdb: FontManager::CharData::SetChar | Font.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): acChar
+// pdb locals (unverified, name-only link): pfontletter
 void S00a1b7f0_GlyphMetric::FontManager_CharData_SetChar(unsigned char acChar) {
 
  character = acChar;

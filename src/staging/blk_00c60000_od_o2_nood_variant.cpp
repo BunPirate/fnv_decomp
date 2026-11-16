@@ -7289,14 +7289,14 @@ struct Vec4Sink
 
 // @fnv 0x00c6d620
 // src: COMMUNITY 0x00c6d620
-// pdb: `anonymous namespace'::ExtractStiltCapsuleInfo | bhkCharacterController.obj | debug, upstream name already matches, high
-// pdb params: arCapShape, arTransf, arCapsuleTopOut
-// pdb locals: temppt
-void __cdecl ExtractStiltCapsuleInfo(VectorData* arCapShape, int arTransf, Vec4Sink* arCapsuleTopOut)
+// pdb: `anonymous namespace'::ExtractStiltCapsuleInfo | bhkCharacterController.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): arCapShape, arTransf, arCapsuleTopOut
+// pdb locals (unverified, name-only link): temppt
+void __cdecl ExtractStiltCapsuleInfo(VectorData* data, int arg, Vec4Sink* callee)
 {
-    P064Quad value = arCapShape->m_20;
-    ((float*)&value)[2] += arCapShape->m_10;
-    arCapsuleTopOut->setTransformedPos_00c7f640(arTransf, &value);
+    P064Quad value = data->m_20;
+    ((float*)&value)[2] += data->m_10;
+    callee->setTransformedPos_00c7f640(arg, &value);
 }
 
 

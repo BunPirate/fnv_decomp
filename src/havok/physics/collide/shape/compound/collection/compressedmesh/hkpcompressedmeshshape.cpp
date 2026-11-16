@@ -248,31 +248,31 @@ struct FUN_00e3ca10_Class
     unsigned short* unk28;
     int unk2c;
 
-    int hkpCompressedMeshShape_Chunk_getNextIndex(int index, int* winding);
+    int hkpCompressedMeshShape_Chunk_getNextIndex(int aiIndex, int* apOut);
 };
 
 // Locates aiIndex+1 among cumulative section sizes in unk28, adjusts it, sets *apOut to a parity bit in the strip part, and returns -1 once past unk20.
 // @fnv 0x00e3ca10
 // src: HAVOK_LIB 0x00e3ca10
-// pdb: hkpCompressedMeshShape::Chunk::getNextIndex | hkpCompressedMeshShape.obj | retail, upstream name already matches, high
-// pdb params: index, winding
-int FUN_00e3ca10_Class::hkpCompressedMeshShape_Chunk_getNextIndex(int index, int* winding)
+// pdb: hkpCompressedMeshShape::Chunk::getNextIndex | hkpCompressedMeshShape.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): index, winding
+int FUN_00e3ca10_Class::hkpCompressedMeshShape_Chunk_getNextIndex(int aiIndex, int* apOut)
 {
-    *winding = 0;
-    if (index < 0)
+    *apOut = 0;
+    if (aiIndex < 0)
     {
         return unk20 ? 0 : -1;
     }
 
     int iCount = unk2c;
-    ++index;
+    ++aiIndex;
     int i = 0;
     int iAccumulated = 0;
     int iPrevious = 0;
     if (iCount != 0)
     {
         iAccumulated = unk28[0];
-        if (index >= iAccumulated)
+        if (aiIndex >= iAccumulated)
         {
             do
             {
@@ -283,35 +283,35 @@ int FUN_00e3ca10_Class::hkpCompressedMeshShape_Chunk_getNextIndex(int index, int
                 }
                 iPrevious = iAccumulated;
                 iAccumulated += unk28[i];
-            } while (index >= iAccumulated);
+            } while (aiIndex >= iAccumulated);
         }
     }
 
     if (i >= iCount)
     {
-        int iDelta = index - iAccumulated;
+        int iDelta = aiIndex - iAccumulated;
         int iStride = 3;
         while (iDelta % iStride != 0)
         {
             ++iDelta;
-            ++index;
+            ++aiIndex;
         }
     }
-    else if (index >= iAccumulated - 2)
+    else if (aiIndex >= iAccumulated - 2)
     {
-        index = iAccumulated;
+        aiIndex = iAccumulated;
     }
     else
     {
-        *winding = (index - iPrevious) & 1;
+        *apOut = (aiIndex - iPrevious) & 1;
     }
 
-    if (index >= unk20)
+    if (aiIndex >= unk20)
     {
         return -1;
     }
 
-    return index;
+    return aiIndex;
 }
 
 struct StripsShapeE3CEB0

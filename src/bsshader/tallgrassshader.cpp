@@ -1154,9 +1154,9 @@ extern NiPoint3 DAT_012004f0;
 // If neither flag is set, copies the renderer's two matrices and the source's x/y/z point into globals and sets DAT_0120045e true and DAT_011adcdc false.
 // @fnv 0x00ba9420
 // src: COMMUNITY 0x00ba9420
-// pdb: BSShaderProperty::PreviousTransform::SaveCamera | BSShaderProperty.obj | retail, upstream name already matches, high
-// pdb params: apCamera
-void BSShaderProperty_PreviousTransform_SaveCamera(const Source215* apCamera)
+// pdb: BSShaderProperty::PreviousTransform::SaveCamera | BSShaderProperty.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apCamera
+void BSShaderProperty_PreviousTransform_SaveCamera(const Source215* source)
 {
     if (!DAT_0120045c && !DAT_0120045d)
     {
@@ -1164,7 +1164,7 @@ void BSShaderProperty_PreviousTransform_SaveCamera(const Source215* apCamera)
         DAT_012004b0 = *reinterpret_cast<const Matrix215*>(DAT_011f9508->kD3DProj);
         DAT_0120045e = true;
         DAT_011adcdc = false;
-        NiPoint3 point(apCamera->x, apCamera->y, apCamera->z);
+        NiPoint3 point(source->x, source->y, source->z);
         DAT_012004f0 = point;
     }
 }

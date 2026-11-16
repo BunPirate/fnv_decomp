@@ -405,11 +405,11 @@ struct RenderedMenuNodeMethods : public FORenderedMenu
 
 // @fnv 0x004dc540
 // src: XBOX_PDB 0x004dc540
-// pdb: NiTexturingProperty::Map::SetTexture | TESScriptFunctions.obj | debug, upstream name already matches, high
-// pdb params: pkTexture
-void RenderedMenuNodeMethods::NiTexturingProperty_Map_SetTexture(NiAVObject* pkTexture)
+// pdb: NiTexturingProperty::Map::SetTexture | TESScriptFunctions.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pkTexture
+void RenderedMenuNodeMethods::NiTexturingProperty_Map_SetTexture(NiAVObject* apScreenParent)
 {
-    spScreenParent = (NiNode*)pkTexture;
+    spScreenParent = (NiNode*)apScreenParent;
 }
 
 struct NiStream;

@@ -9517,18 +9517,18 @@ struct BaseProcessCall
 {
     char pad[0x2c];
     CachedValuesCall* m_pCachedValues;
-    void SetEndurance(float acValue);
+    void SetEndurance(float afEndurance);
 };
 
 // Stores afEndurance into the cached values object and calls its FUN_008848c0 with 0x80 when that object is present.
 // @fnv 0x008ba050
-// pdb: TESAttributes::SetEndurance | TESActorBase.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: acValue
-void BaseProcessCall::SetEndurance(float acValue)
+// pdb: TESAttributes::SetEndurance | TESActorBase.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): acValue
+void BaseProcessCall::SetEndurance(float afEndurance)
 {
     if (m_pCachedValues)
     {
-        m_pCachedValues->fEndurance = acValue;
+        m_pCachedValues->fEndurance = afEndurance;
         m_pCachedValues->FUN_008848c0(0x80);
     }
 }

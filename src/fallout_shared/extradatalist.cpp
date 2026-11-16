@@ -9699,23 +9699,23 @@ struct FUN_00431e20 : public LegacyExtraData
 
 struct FUN_00419a20
 {
-    void SetExtra(unsigned char pextra);
+    void SetExtra(unsigned char type);
 };
 
 // Gets the extra data of type 0x26, updates its byte to type, or allocates a new one and adds it to the list.
 // @fnv 0x00419a20
-// pdb: TESObjectREFR::SetExtra | TESObjectREFR.obj | debug, upstream name already matches, high
-// pdb params: pextra
-void FUN_00419a20::SetExtra(unsigned char pextra)
+// pdb: TESObjectREFR::SetExtra | TESObjectREFR.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pextra
+void FUN_00419a20::SetExtra(unsigned char type)
 {
     BSExtraData* extra = ((BaseExtraList*)this)->GetExtraData(0x26);
     if (extra)
     {
-        ((FUN_00431e20*)extra)->cExtraData = pextra;
+        ((FUN_00431e20*)extra)->cExtraData = type;
     }
     else
     {
-        extra = reinterpret_cast<BSExtraData*>(new FUN_00431e20(pextra));
+        extra = reinterpret_cast<BSExtraData*>(new FUN_00431e20(type));
         ((BaseExtraList*)this)->AddExtra(reinterpret_cast<BSExtraData*>(extra));
     }
 }
@@ -17462,27 +17462,27 @@ struct FUN_0041bbd0_shell : ExtraDataList
 
 // Sets or clears the region list extra data: removes it when value is null, creates it when absent, otherwise replaces the stored regions pointer.
 // @fnv 0x0041bbd0
-// pdb: ExtraDataList::SetRegionList | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: apList
-// pdb locals: pExtra
-void FUN_0041bbd0_shell::SetRegionList(RegionList* apList)
+// pdb: ExtraDataList::SetRegionList | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apList
+// pdb locals (unverified, name-only link): pExtra
+void FUN_0041bbd0_shell::SetRegionList(RegionList* pRegions)
 {
     ExtraRegionList* data = reinterpret_cast<ExtraRegionList*>(GetExtraData(4));
-    if (apList == 0)
+    if (pRegions == 0)
     {
         if (data)
             reinterpret_cast<Dummy_00410020*>(this)->BaseExtraList_RemoveExtra(data, true);
     }
     else if (data == 0)
     {
-        data = new ExtraRegionList(apList);
+        data = new ExtraRegionList(pRegions);
         AddExtra(reinterpret_cast<BSExtraData*>(data));
     }
     else
     {
-        if (data->pList && data->pList != apList)
+        if (data->pList && data->pList != pRegions)
             delete data->pList;
-        data->pList = apList;
+        data->pList = pRegions;
     }
 }
 

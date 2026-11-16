@@ -8135,15 +8135,15 @@ BSShaderPPLightingProperty* ProcessLightingAccess::MiddleHighProcess_GetLighting
 
 struct HighProcess_008d8c60 : HighProcess
 {
-    void RemoveTopicInfo(TESTopicInfo* pKillTopicInfo);
+    void RemoveTopicInfo(TESTopicInfo* topicInfo);
 };
 
 // @fnv 0x008d8c60
-// pdb: TESDataHandler::RemoveTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high
-// pdb params: pKillTopicInfo
-void HighProcess_008d8c60::RemoveTopicInfo(TESTopicInfo* pKillTopicInfo)
+// pdb: TESDataHandler::RemoveTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pKillTopicInfo
+void HighProcess_008d8c60::RemoveTopicInfo(TESTopicInfo* topicInfo)
 {
-    pLastSpokeToList->Remove(pKillTopicInfo);
+    pLastSpokeToList->Remove(topicInfo);
 }
 
 struct FUN_008d8cd0_shell : public HighProcess
@@ -18085,11 +18085,11 @@ struct FUN_008ed400_shell
     void AddTopicInfo(TESTopicInfo* pNewTopicInfo);
 };
 // @fnv 0x008ed400
-// pdb: TESDataHandler::AddTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high
-// pdb params: pNewTopicInfo
-void FUN_008ed400_shell::AddTopicInfo(TESTopicInfo* pNewTopicInfo)
+// pdb: TESDataHandler::AddTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pNewTopicInfo
+void FUN_008ed400_shell::AddTopicInfo(TESTopicInfo* apTopicInfo)
 {
-    (*(BSSimpleList<TESTopicInfo*>**)((char*)this + 0x264))->AddHead(pNewTopicInfo);
+    (*(BSSimpleList<TESTopicInfo*>**)((char*)this + 0x264))->AddHead(apTopicInfo);
 }
 
 namespace fnv_008ed420 {

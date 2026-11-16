@@ -41674,7 +41674,7 @@ bool Cmd_IsLimbGone_Execute(const ScriptParameter* scriptParameter,
             for (int index = start; index <= end; ++index)
             {
                 if (reinterpret_cast<TESObjectREFR*>(dismemberedObject)->
-                        GetDismembered(index)) // src: XBOX_RETAIL_PDB 0x00573090
+                        GetDismembered(index))
                 {
                     result = 1.0;
                     return true;

@@ -1643,7 +1643,7 @@ StartMenu::~StartMenu()
 }
 
 
-struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first of 1 linked methods; old: StartMenu_Option)
+struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first of 1 high-tier linked methods; old: StartMenu_Option)
 {
     void InitPointer();
     void* FUN_007ce660(unsigned int flags);
@@ -2951,7 +2951,7 @@ void HUDMainMenu_SetVisibilityFlag(int aFlags, int aSet)
 }
 
 // pdb: class BSContentPackage, size 0x138 (here 0x4), 2 members
-struct BSContentPackage // src: XBOX_DEBUG_PDB 0x00b008d0 (first of 2 linked methods; old: FUN_00b008d0_StandIn)
+struct FUN_00b008d0_StandIn
 {
     void* m_pUnk;
     void* BSContentPackage_DisplayName();
@@ -2960,7 +2960,7 @@ struct BSContentPackage // src: XBOX_DEBUG_PDB 0x00b008d0 (first of 2 linked met
 // @fnv 0x00b008d0
 // src: XBOX_PDB 0x00b008d0
 // pdb: BSContentPackage::DisplayName | BSContentPackage_Xenon.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-void* BSContentPackage::BSContentPackage_DisplayName()
+void* FUN_00b008d0_StandIn::BSContentPackage_DisplayName()
 {
     return m_pUnk;
 }
@@ -3005,7 +3005,7 @@ void FUN_007d1320_Class::PlayerCharacter_SetKillCamMode(int value)
 
 unsigned int __cdecl gm_GetTickCount();
 
-struct IdleTimer // src: XBOX_RETAIL_PDB 0x007cf5c0 (first of 5 linked methods; old: FUN_007d5120_Class)
+struct IdleTimer // src: XBOX_DEBUG_PDB 0x007cb710 (first of 1 high-tier linked methods; old: FUN_007d5120_Class)
 {
     unsigned int a;
     unsigned int b;

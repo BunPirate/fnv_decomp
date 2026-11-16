@@ -235,7 +235,7 @@ struct FUN_00e69b40_shell {
     unsigned int count;
     unsigned int pad24;
     unsigned int* entries;
-    unsigned int GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int index);
 };
 unsigned int GetValueForIndex(unsigned int param);
 extern NiPoint3 DAT_011f474c;

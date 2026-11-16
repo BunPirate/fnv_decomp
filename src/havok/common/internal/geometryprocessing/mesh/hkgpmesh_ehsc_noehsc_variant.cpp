@@ -3456,7 +3456,7 @@ struct FUN_00e21e60_cls
     float m_f20;
     unsigned int m_u24;
 
-    float hkgpMesh_WeldingPolicy_addLeaf(FUN_00e21e60_pair* leaf);
+    float hkgpMesh_WeldingPolicy_addLeaf(FUN_00e21e60_pair* p);
 };
 struct LocVertex
 {

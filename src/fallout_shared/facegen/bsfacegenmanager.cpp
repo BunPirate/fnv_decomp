@@ -2939,18 +2939,18 @@ unsigned int __cdecl BSFaceGenManager_GetMaxControlID(int aeFanType, int aeFanSy
 struct FUN_007b3810Class
 {
     Tile* m_tile;
-    void RaceSexMenu_MenuOption_SetDisplay(const char* apDisplay);
+    void RaceSexMenu_MenuOption_SetDisplay(const char* a1);
 };
 
 // If m_tile and a1 are non-null, calls m_tile->Set with id 0x1009, the string a1 and true.
 // @fnv 0x007b3810
 // src: COMMUNITY 0x007b3810
-// pdb: RaceSexMenu::MenuOption::SetDisplay | RaceSexMenu.obj | debug, upstream name already matches, high
-// pdb params: apDisplay
-void FUN_007b3810Class::RaceSexMenu_MenuOption_SetDisplay(const char* apDisplay)
+// pdb: RaceSexMenu::MenuOption::SetDisplay | RaceSexMenu.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): apDisplay
+void FUN_007b3810Class::RaceSexMenu_MenuOption_SetDisplay(const char* a1)
 {
-    if (m_tile && apDisplay)
-        m_tile->Set(0x1009, apDisplay, true);
+    if (m_tile && a1)
+        m_tile->Set(0x1009, a1, true);
 }
 
 namespace fnv_00651650 {

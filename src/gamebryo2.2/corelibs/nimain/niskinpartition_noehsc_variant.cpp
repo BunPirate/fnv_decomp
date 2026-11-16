@@ -109,7 +109,7 @@ struct FUN_00a81ff0_elem
     int m_20;
     int m_24;
     int m_28;
-    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* kPartition);
+    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* other);
 };
 struct FUN_00a81ff0_cls
 {
@@ -321,7 +321,7 @@ __forceinline bool EqualBuffers(const void* right, const void* left, unsigned in
 }
 struct PartitionCompare : NiSkinPartition::Partition
 {
-    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* kPartition);
+    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* other);
 };
 struct CA82250IndexArray
 {

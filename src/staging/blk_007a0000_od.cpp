@@ -614,14 +614,14 @@ struct ActiveEffectCollection
     float rate;
     int Modelloader_GetReferencedThis();
     ActiveEffectEntry*** NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(int* iterator);
-    void RaceSexMenu_MenuOptionList_ScrollBy(int aiDelta);
+    void RaceSexMenu_MenuOptionList_ScrollBy(int amount);
 };
 // @fnv 0x007b4530
 // src: XBOX_PDB 0x007b4530
-// pdb: RaceSexMenu::MenuOptionList::ScrollBy | RaceSexMenu.obj | retail, upstream name already matches, high
-// pdb params: aiDelta
-// pdb locals: piter, fy, ptile
-void ActiveEffectCollection::RaceSexMenu_MenuOptionList_ScrollBy(int aiDelta)
+// pdb: RaceSexMenu::MenuOptionList::ScrollBy | RaceSexMenu.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): aiDelta
+// pdb locals (unverified, name-only link): piter, fy, ptile
+void ActiveEffectCollection::RaceSexMenu_MenuOptionList_ScrollBy(int amount)
 {
     if (rate <= DAT_01012060)
         return;
@@ -630,7 +630,7 @@ void ActiveEffectCollection::RaceSexMenu_MenuOptionList_ScrollBy(int aiDelta)
     {
         ActiveEffectEntry* pEffect = **NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(&it);
         float fAmount = pEffect->FUN_00a011b0(4002);
-        fAmount = (float)aiDelta * rate + fAmount;
+        fAmount = (float)amount * rate + fAmount;
         pEffect->Tile_Set(4002, fAmount, true);
     }
 }

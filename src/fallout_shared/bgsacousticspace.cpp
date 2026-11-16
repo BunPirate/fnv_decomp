@@ -177,16 +177,16 @@ char __fastcall GetByteAtOffset48(void* this_ptr)
 
 struct FUN_00589f50_shell
 {
-    void SetSound(void* afSound);
+    void SetSound(void* apSound);
 };
 
 // @fnv 0x00589f50
-// pdb: ExtraDataList::SetSound | ExtraDataList.obj | retail, upstream name already matches, high
-// pdb params: afSound
-// pdb locals: pSound
-void __thiscall FUN_00589f50_shell::SetSound(void* afSound)
+// pdb: ExtraDataList::SetSound | ExtraDataList.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): afSound
+// pdb locals (unverified, name-only link): pSound
+void __thiscall FUN_00589f50_shell::SetSound(void* apSound)
 {
-    *(int*)((char*)this + 0x4c) = (int)afSound;
+    *(int*)((char*)this + 0x4c) = (int)apSound;
 }
 
 struct Standin00589930

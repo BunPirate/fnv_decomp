@@ -42322,7 +42322,7 @@ int S::TESObjectREFR_RemoveItem(Item* apObject, void* apExtra, int aiNumber, boo
                     (*(S**)&DAT_011dea3c)->PlayerCharacter_ReturnRockItAmmo();
             }
             if (actor && actor->FUN_008d8520() && !actor->dead(0) && this != *(S**)&DAT_011dea3c && !Interface_ContainerIsBarter() &&
-                !Interface_ContainerIsRecipe()) // src: XBOX_RETAIL_PDB 0x00705000
+                !Interface_ContainerIsRecipe())
             {
                 actor->FUN_008d8520()->update(apObject, apExtra);
                 if (apObject->FUN_00401170() == 40 && !actor->Actor_IsInCombat())

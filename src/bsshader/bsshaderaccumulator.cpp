@@ -3110,28 +3110,28 @@ class S00b66050_cls
     unsigned int unk13C;
     S00b66050_list m_kNode;
 
-    void RemoveEntry(unsigned int pszKey);
+    void RemoveEntry(unsigned int key);
 };
 
 // Finds the entry with the given key in the linked list, frees its object and the entry itself, then removes the node from the list.
 // @fnv 0x00b66050
-// pdb: NiD3DShaderConstantMap::RemoveEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: pszKey
-// pdb locals: uiIndex, pkEntry, kKey
-void S00b66050_cls::RemoveEntry(unsigned int pszKey)
+// pdb: NiD3DShaderConstantMap::RemoveEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): pszKey
+// pdb locals (unverified, name-only link): uiIndex, pkEntry, kKey
+void S00b66050_cls::RemoveEntry(unsigned int key)
 {
     S00b66050_node* node = m_kNode.m_pFirstNode;
     if (node == 0)
     {
         return;
     }
-    unsigned int uiKey = pszKey;
+    unsigned int uiKey = key;
     while (node != 0)
     {
         S00b66050_entry*& slot = node->m_data;
         node = node->m_next;
         S00b66050_entry* entry = slot;
-        pszKey = (unsigned int)entry;
+        key = (unsigned int)entry;
         if (entry != 0 && entry->m_key == uiKey)
         {
             if (entry->m_ptr != 0)
@@ -3146,7 +3146,7 @@ void S00b66050_cls::RemoveEntry(unsigned int pszKey)
                 entry->m_ptr = 0;
             }
             DAT_011f6238.Free(entry);
-            m_kNode.Remove(&pszKey);
+            m_kNode.Remove(&key);
             return;
         }
     }

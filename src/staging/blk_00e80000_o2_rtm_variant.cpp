@@ -3481,7 +3481,7 @@ struct C_00e8f010 {
     void FUN_00e8f010(int fvf);
 };
 struct FUN_00e69b40_shell {
-    unsigned int GetEntry(unsigned int pszKey);
+    unsigned int GetEntry(unsigned int index);
 };
 struct Outer;
 extern "C" void* memmove(void* dst, const void* src, unsigned int n);

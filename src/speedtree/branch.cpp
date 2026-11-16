@@ -203,13 +203,13 @@ struct FUN_00b15170
 
 // Returns a pointer to the element at index a in the buffer from m_0c to m_10, calling FUN_00ec7c56 if a is out of range.
 // @fnv 0x00b15170
-// pdb: D3DXShader::CFragmentRegisterAllocator::GetElement | cassembler.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: szName
-char* FUN_00b15170::GetElement(unsigned int szName)
+// pdb: D3DXShader::CFragmentRegisterAllocator::GetElement | cassembler.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): szName
+char* FUN_00b15170::GetElement(unsigned int uiIndex)
 {
-    if (szName >= (unsigned int)(m_10 - m_0c))
+    if (uiIndex >= (unsigned int)(m_10 - m_0c))
         FUN_00ec7c56();
-    return m_0c + szName;
+    return m_0c + uiIndex;
 }
 
 struct FUN_00b2a180

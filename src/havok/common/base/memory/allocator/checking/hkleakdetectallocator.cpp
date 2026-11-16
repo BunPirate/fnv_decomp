@@ -717,21 +717,21 @@ struct Node2b50
 struct List2b50
 {
     Node2b50* m_kNodeCollection;
-    int hkStackTracer_CallTree_getCallStack(int id, unsigned int* addrs, int maxAddrs);
+    int hkStackTracer_CallTree_getCallStack(int id, unsigned int* out, int count);
 };
 // @fnv 0x00da2b50
 // src: HAVOK_LIB 0x00da2b50
-// pdb: hkStackTracer::CallTree::getCallStack | hkStackTracer.obj | debug, upstream name already matches, high
-// pdb params: id, addrs, maxAddrs
-int List2b50::hkStackTracer_CallTree_getCallStack(int id, unsigned int* addrs, int maxAddrs)
+// pdb: hkStackTracer::CallTree::getCallStack | hkStackTracer.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): id, addrs, maxAddrs
+int List2b50::hkStackTracer_CallTree_getCallStack(int iStartIndex, unsigned int* out, int count)
 {
-    int iIndex = id;
+    int iIndex = iStartIndex;
     int i;
-    for (i = 0; i < maxAddrs; i++)
+    for (i = 0; i < count; i++)
     {
         if (iIndex <= 0)
             break;
-        addrs[i] = m_kNodeCollection[iIndex].m_uiFilterValue;
+        out[i] = m_kNodeCollection[iIndex].m_uiFilterValue;
         iIndex = m_kNodeCollection[iIndex].m_next;
     }
     return i;
@@ -865,7 +865,7 @@ struct SnapshotD5
 
 struct SourceD5
 {
-    int hkStackTracer_CallTree_getCallStack(int id, unsigned int* addrs, int maxAddrs);
+    int hkStackTracer_CallTree_getCallStack(int id, unsigned int* out, int maxAddrs);
 };
 
 struct FUN_00d5ef20_Class

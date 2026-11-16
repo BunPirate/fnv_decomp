@@ -1805,14 +1805,14 @@ extern GlobalObject_0045cfe0 g_011cdde0;
 struct FUN_00525620_shell { int GetStateValue(bool aiValue, bool aiUnsatisfiedValue); };
 // Reads a state value from offset 0x364, overridden to 2 or 1 by the flags, and returns the int from the matching global.
 // @fnv 0x00525620
-// pdb: CombatWorldStateArray::GetStateValue | CombatPlan.obj | debug, upstream name already matches, high
-// pdb params: aiValue, aiUnsatisfiedValue
-int FUN_00525620_shell::GetStateValue(bool aiValue, bool aiUnsatisfiedValue)
+// pdb: CombatWorldStateArray::GetStateValue | CombatPlan.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): aiValue, aiUnsatisfiedValue
+int FUN_00525620_shell::GetStateValue(bool abForceState2, bool abForceState1)
 {
     int r7 = 0;
     int s = *(int*)((char*)this + 0x364);
-    if (aiValue) s = 2;
-    if (aiUnsatisfiedValue) s = 1;
+    if (abForceState2) s = 2;
+    if (abForceState1) s = 1;
     switch (s) {
     case 2: r7 = *g_011cd3b4.Int(); break;
     case 1: r7 = *g_011cd538.Int(); break;

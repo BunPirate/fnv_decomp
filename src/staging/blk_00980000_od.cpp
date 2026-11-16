@@ -4884,22 +4884,22 @@ struct CombatGroupStrategy1 : CombatGroupStrategy
 
 // Creates and returns a combat group strategy object for the given type, warning and returning 0 for unknown types.
 // @fnv 0x0098fdf0
-// pdb: CombatGroupStrategy::CreateCombatGroupStrategy | CombatGroupStrategy.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-// pdb params: aeCombatGroupStrategy
-int __cdecl CreateCombatGroupStrategy(unsigned int aeCombatGroupStrategy)
+// pdb: CombatGroupStrategy::CreateCombatGroupStrategy | CombatGroupStrategy.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
+// pdb params (unverified, name-only link): aeCombatGroupStrategy
+int __cdecl CreateCombatGroupStrategy(unsigned int type)
 {
-    switch (aeCombatGroupStrategy)
+    switch (type)
     {
     case 0:
-        return (int)new CombatGroupStrategy0(aeCombatGroupStrategy);
+        return (int)new CombatGroupStrategy0(type);
     case 2:
-        return (int)new CombatGroupStrategy2(aeCombatGroupStrategy);
+        return (int)new CombatGroupStrategy2(type);
     case 3:
-        return (int)new CombatGroupStrategy3(aeCombatGroupStrategy);
+        return (int)new CombatGroupStrategy3(type);
     case 1:
-        return (int)new CombatGroupStrategy1(aeCombatGroupStrategy);
+        return (int)new CombatGroupStrategy1(type);
     default:
-        FNV_Warning("COMBAT: Could not create combat group strategy of type %i", aeCombatGroupStrategy);
+        FNV_Warning("COMBAT: Could not create combat group strategy of type %i", type);
         return 0;
     }
 }
