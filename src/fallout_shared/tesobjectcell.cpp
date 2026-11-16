@@ -4060,7 +4060,6 @@ struct RefListOps
 };
 
 // @fnv 0x0054c740
-// src: XBOX_RETAIL_PDB 0x0054c740 (was XBOX_PDB)
 // pdb: TESObjectCELL::RunScripts | TESObjectCELL.obj | retail, call graph, high
 // pdb params: bIgnore3D, bIgnoreActors
 // pdb locals: plist, bquit, pref, plastlist

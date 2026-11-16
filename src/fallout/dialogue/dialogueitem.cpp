@@ -361,7 +361,7 @@ class DialogueResponse
 // src: XBOX_DEBUG_PDB 0x0083cc10
 // pdb: DialogueItem::LoadGame | DialogueItem.obj | debug, call graph, high
 // pdb locals: ispeakerID, ccurrentResponse, iinfoID, itopicID, ccount, iquestID, i, presponse
-void __fastcall DialogueItem_LoadGame(DialogueItem* apLoadGameBuffer)
+void __fastcall DialogueItem_LoadGame(DialogueItem* item)
 {
     unsigned char cCount4;
     unsigned int iloopB;
@@ -377,26 +377,26 @@ void __fastcall DialogueItem_LoadGame(DialogueItem* apLoadGameBuffer)
     {
         presponse3 = reinterpret_cast< ::DialogueResponse*>(new DialogueResponse);
         reinterpret_cast<DialogueResponse*>(presponse3)->DialogueResponse_LoadGame();
-        apLoadGameBuffer->lResponses.AddTail(presponse3);
+        item->lResponses.AddTail(presponse3);
     }
 
     g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&cCurrentVal, 1);
     // The equivalent thiscall signature avoids a temporary value-type argument.
     if (cCurrentVal != -1)
         reinterpret_cast<void (__thiscall*)(DialogueItem*, DialogueResponse*)>(SetActiveDialogueResponse)(
-            apLoadGameBuffer, apLoadGameBuffer->GetResponseByIndex(cCurrentVal));
+            item, item->GetResponseByIndex(cCurrentVal));
     else
-        apLoadGameBuffer->pCurrentResponse = 0;
+        item->pCurrentResponse = 0;
 
     g_TESSaveLoadGame->FUN_00857aa0(&aIInfoID, 4);
     if (aIInfoID)
-        apLoadGameBuffer->pInfo = dynamic_cast<TESTopicInfo*>(::GetFormByID(aIInfoID));
+        item->pInfo = dynamic_cast<TESTopicInfo*>(::GetFormByID(aIInfoID));
     g_TESSaveLoadGame->FUN_00857aa0(&m_uiTopicFormID, 4);
     if (m_uiTopicFormID)
-        apLoadGameBuffer->pTopic = dynamic_cast<TESTopic*>(::GetFormByID(m_uiTopicFormID));
+        item->pTopic = dynamic_cast<TESTopic*>(::GetFormByID(m_uiTopicFormID));
     g_TESSaveLoadGame->FUN_00857aa0(&iQuestID_2, 4);
     if (iQuestID_2)
-        apLoadGameBuffer->pQuest = dynamic_cast<TESQuest*>(::GetFormByID(iQuestID_2));
+        item->pQuest = dynamic_cast<TESQuest*>(::GetFormByID(iQuestID_2));
     g_TESSaveLoadGame->FUN_00857aa0(&iSpeakerID, 4);
-    apLoadGameBuffer->pSpeaker = (::TESObjectREFR*)iSpeakerID;
+    item->pSpeaker = (::TESObjectREFR*)iSpeakerID;
 }

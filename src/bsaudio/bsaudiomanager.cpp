@@ -130,7 +130,6 @@ struct FUN_00adcaa0_shell
 
 // Forwards the two arguments to BSAudioManager's FUN_00adcaa0.
 // @fnv 0x00ad84b0
-// src: XBOX_RETAIL_PDB 0x00ad84b0
 // pdb: BSAudio::UnMuteType | BSAudio.obj | retail, object-file run extension, high
 // pdb params: aiType, aiFadeTimeMS
 void BSAudio::ForwardToManager(unsigned int aiType, unsigned int aiFadeTimeMS)
@@ -144,7 +143,6 @@ struct FUN_00adcc10_shell
 };
 // Forwards param1 and param2 to the BSAudioManager method FUN_00adcc10.
 // @fnv 0x00ad8540
-// src: XBOX_RETAIL_PDB 0x00ad8540
 // pdb: BSAudio::UnPauseAllOfType | BSAudio.obj | retail, object-file gap fill, high
 // pdb params: aiType, abExactMatch
 void __thiscall BSAudio::ForwardToManager(unsigned int aiType, bool abExactMatch)

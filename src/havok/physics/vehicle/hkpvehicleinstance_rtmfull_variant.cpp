@@ -218,7 +218,6 @@ struct VUC_Instance
 };
 
 // @fnv 0x00e38e60
-// src: XBOX_RETAIL_PDB 0x00e38e60
 // pdb: hkpVehicleInstance::updateComponents | hkpVehicleInstance.obj | retail, string-set bridge, high
 // pdb params: stepInfo, cdInfo, aerodynamicsDragInfo, suspensionForceAtWheel, totalLinearForceAtWheel
 // pdb locals: wheelBreakingInfo, transmissionInfo, filteredDriverInputInfo
@@ -799,7 +798,6 @@ struct hkpVehicleSteeringAnglesOutputE38D
 
 // Copies the steering angles into a temporary output, runs the steering component's update, then writes the resulting angle and array back.
 // @fnv 0x00e38d50
-// src: XBOX_RETAIL_PDB 0x00e38d50
 // pdb: hkpVehicleInstance::updateSteering | hkpVehicleInstance.obj | retail, object-file gap fill, high
 // pdb params: deltaTime, filteredDriverInputInfo
 // pdb locals: steeringInfo
@@ -1283,7 +1281,7 @@ struct Q_e380c0_cls
     void UpdateFields_00e380c0(const hkVector4* in);
 };
 // @fnv 0x00e380c0
-// src: XBOX_RETAIL_PDB 0x00e380c0
+// src: GUESS 0x00e380c0 (confidence: low)
 // pdb: hkpVehicleInstance::applyResultsToChassis | hkpVehicleInstance.obj | retail, object-file gap fill, high
 // pdb params: accumulatorForChassis
 // pdb locals: angVelWs

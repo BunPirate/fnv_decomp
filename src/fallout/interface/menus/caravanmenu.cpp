@@ -16190,7 +16190,6 @@ extern Actor* DAT_011dea3c;
 
 // Loads currency NIFs, resets state, computes bet totals, updates UI labels and controls, and places bills and coins.
 // @fnv 0x0073d020
-// src: XBOX_RETAIL_PDB 0x0073d020 (was COMMUNITY)
 // pdb: CaravanMenu::PrepareAnteMenu | CaravanMenu.obj | retail, unique string literal, high
 // pdb locals: filename, maxraise, i, pBetTile, pushmeoverthisfar
 }  // namespace fnv_0073d020

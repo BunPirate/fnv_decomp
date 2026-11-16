@@ -260,7 +260,6 @@ struct DelStandIn
 };
 // Calls FUN_0083dec0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x009bc890
-// src: XBOX_RETAIL_PDB 0x009bc890
 // pdb: ProjectileTarget::`scalar deleting destructor' | Projectile.obj | retail, call graph (shared callers), high
 void* DelStandIn::Destroy(unsigned int flags)
 {

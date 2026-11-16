@@ -10847,7 +10847,6 @@ extern unsigned int __tls_index;
 void _DebugLog(const char*);
 
 // @fnv 0x005b9ea0
-// src: XBOX_RETAIL_PDB 0x005b9ea0 (was EXE)
 // pdb: Script::SetTargetDOF | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 __declspec(thread) struct FUN_005b9ea0_TLS_DATA
@@ -11495,7 +11494,6 @@ bool __cdecl Script_GetIsFormTypeFunction(
     }
 
 // @fnv 0x005c4940
-// src: XBOX_RETAIL_PDB 0x005c4940 (was EXE)
 // pdb: Script::GetIsFormTypeFunction | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: input
@@ -12139,7 +12137,6 @@ bool Script_FlushPersistantActors(const ScriptParameter* apParameters,
     DAT_011e0e80.ProcessLists_FlushNonPersistentActors(iCount);
 
 // @fnv 0x005d4400
-// src: XBOX_RETAIL_PDB 0x005d4400 (was EXE)
 // pdb: Script::FlushPersistantActors | TESScriptFunctions.obj | retail, string-set bridge, high
 // pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 // pdb locals: iCount

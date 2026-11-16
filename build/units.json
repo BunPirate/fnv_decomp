@@ -319213,7 +319213,7 @@
     },
     {
      "address": "0x00a69e00",
-     "symbol": "??0NiTexturingProperty_Map@@QAE@PAXGFG0@Z",
+     "symbol": "??0FUN_00a69e00@@QAE@PAXGFG0@Z",
      "size": 95
     },
     {
@@ -319443,7 +319443,7 @@
     "??_7?$NiTPrimitiveArray@PAVMap@NiTexturingProperty@@@@6B@": "0x0109c5ac",
     "??_7?$NiTPrimitiveArray@PAVShaderMap@NiTexturingProperty@@@@6B@": "0x0109c5b4",
     "??_7BumpMap@NiTexturingProperty@@6B@": "0x0109c4d8",
-    "??_7NiTexturingProperty_Map@@6B@": "0x0109c4c4",
+    "??_7FUN_00a69e00@@6B@": "0x0109c4c4",
     "??_7Map@NiTexturingProperty@@6B@": "0x0109c4c4",
     "??_7NiTexturingProperty@@6B@": "0x0109c514",
     "??_7ParallaxMap@NiTexturingProperty@@6B@": "0x0109c500",
@@ -575171,7 +575171,7 @@
     },
     {
      "address": "0x0071f570",
-     "symbol": "??1StatsMenu_NamedEffectsList@@UAE@XZ",
+     "symbol": "??1FUN_0071f570_ModelList@@UAE@XZ",
      "size": 95
     },
     {
@@ -575307,7 +575307,7 @@
     "??4Str6a70@@QAEAAU0@PBD@Z": "0x00438390",
     "??_7FUN_00719160_cls@@6B@": "0x0106f418",
     "??_7FUN_0071f340@fnv_0071f340@@6B@": "0x0106ffd4",
-    "??_7StatsMenu_NamedEffectsList@@6B@": "0x01070020",
+    "??_7FUN_0071f570_ModelList@@6B@": "0x01070020",
     "??_7FUN_0071f600@@6B@": "0x01070028",
     "??_7FUN_0071fa80@@6B@": "0x01070034",
     "??_7FUN_0071fb60_Class@fnv_0071fb60@@6B@": "0x01070034",
@@ -575322,7 +575322,7 @@
     "?Allocate@?$NiTMallocInterface@PAVActorCombatGroup@@@@SAPAPAVActorCombatGroup@@I@Z": "0x0096afc0",
     "?CallAndReturnSelf@FUN_00501c10_Class@@QAEXH@Z": "0x00501c10",
     "?CallGetFlags@TESObjectREFR_GetFlags_Helper@@QAEIXZ": "0x0044ddc0",
-    "?Clear@StatsMenu_NamedEffectsList@@QAEXXZ": "0x007e09b0",
+    "?Clear@FUN_0071f570_ModelList@@QAEXXZ": "0x007e09b0",
     "?Clear@GlobalObject_00869f00@@QAEX_N@Z": "0x008454f0",
     "?Clear@GlobalObject_00869f00@fnv_00709eb0@@QAEX_N@Z": "0x008454f0",
     "?Close@BSFile@@QAEXXZ": "0x00affd10",
@@ -575557,7 +575557,7 @@
     "__ehhandler$??0FUN_0071fa80@@QAE@XZ": "0x00f08963",
     "__ehhandler$??0FUN_0071fbf0@fnv_0071fbf0@@QAE@XZ": "0x00f089d8",
     "__ehhandler$??1FUN_0071dec0@@QAE@XZ": "0x00f005f8",
-    "__ehhandler$??1StatsMenu_NamedEffectsList@@UAE@XZ": "0x00f08f1b",
+    "__ehhandler$??1FUN_0071f570_ModelList@@UAE@XZ": "0x00f08f1b",
     "__ehhandler$??1FUN_0071f600@@QAE@XZ": "0x00f08f1b",
     "__ehhandler$??1FUN_0071f930@@QAE@XZ": "0x00f088f6",
     "__ehhandler$??1FUN_0071f9f0@@QAE@XZ": "0x00f0892b",
@@ -600183,7 +600183,7 @@
     },
     {
      "address": "0x00aca390",
-     "symbol": "??0ios_base_failure@@QAE@PAX@Z",
+     "symbol": "??0FUN_00aca390@@QAE@PAX@Z",
      "size": 39
     },
     {
@@ -600682,7 +600682,7 @@
     "??1CB770Lockit@@QAE@XZ": "0x00ec330b",
     "??1GlobalObjectO2_00ec3a75@@QAE@XZ": "0x00ace2d0",
     "??3@YAXPAX@Z": "0x00401030",
-    "??_7ios_base_failure@@6B@": "0x010a3070",
+    "??_7FUN_00aca390@@6B@": "0x010a3070",
     "??_7FUN_00ad6f40@@6B@": "0x010a323c",
     "?Assign@AC27Vector@@QAEAAU1@ABU1@@Z": "0x00ac27c0",
     "?AssignSubstring@FUN_0044a580_cls@fnv_00ad6190@@QAEXHHH@Z": "0x0044a580",

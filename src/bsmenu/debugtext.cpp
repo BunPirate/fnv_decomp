@@ -127,12 +127,12 @@ typedef char* va_list;
 // pdb: DebugText::PrintLineC | DebugText.obj | debug, upstream name already matches, high
 // pdb params: aColor, aeLocation, aeJustify, apFormatString, args
 // pdb locals: iret
-int DebugText_PrintLineC(DebugText* aColor, const NiColorA* apTextColor, DEBUGTEXT_LOCATION aeLocation, DEBUGTEXT_JUSTIFY aeJustify, const char* apFormatString, ...)
+int DebugText_PrintLineC(DebugText* pThis, const NiColorA* apTextColor, DEBUGTEXT_LOCATION aeLocation, DEBUGTEXT_JUSTIFY aeJustify, const char* apFormatString, ...)
 {
     va_list args;
     int iret;
     args = (va_list)&apFormatString + 4;
-    iret = ((int (__thiscall*)(DebugText*, DEBUGTEXT_LOCATION, DEBUGTEXT_JUSTIFY, const char*, va_list, const NiColorA*))(*(void***)aColor)[6])(aColor, aeLocation, aeJustify, apFormatString, args, apTextColor);
+    iret = ((int (__thiscall*)(DebugText*, DEBUGTEXT_LOCATION, DEBUGTEXT_JUSTIFY, const char*, va_list, const NiColorA*))(*(void***)pThis)[6])(pThis, aeLocation, aeJustify, apFormatString, args, apTextColor);
     return iret;
 }
 }  // namespace fnv_00a0e710

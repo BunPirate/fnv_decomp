@@ -5432,7 +5432,7 @@ extern "C" {
 ::LocalM128 _mm_rsqrt_ps(::LocalM128);::LocalM128 _mm_cmpeq_ps(::LocalM128,::LocalM128);
 ::LocalM128 _mm_unpacklo_ps(::LocalM128,::LocalM128);::LocalM128 _mm_movelh_ps(::LocalM128,::LocalM128);
 }
-// src: XBOX_DEBUG_PDB 0x005611c0 (was COMMUNITY)
+// src: COMMUNITY 0x005611c0
 __declspec(noinline) void hkQuaternion::normalize_005611c0(){const ::LocalM128 half=_mm_set_ps1(0.5f),three=_mm_set_ps1(3.0f),zero=_mm_setzero_ps();
 
  const ::LocalM128 input=QuaternionQuad(*this);

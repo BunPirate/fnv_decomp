@@ -86,9 +86,9 @@ void __cdecl hkpAgentMachineUtil_calc1nStatistics(void* agentTrack, int input, S
 // pdb: hkpListAgent::updateShapeCollectionFilter | hkpListAgent.obj | retail, upstream name already matches, high
 // pdb params: bodyA, listShapeBodyB, input, constraintOwner
 // pdb locals: vin
-void __fastcall hkpListAgent_updateShapeCollectionFilter(hkpListAgent* bodyA, void*, S_00d368a0_Arg* input, int constraintOwner)
+void __fastcall hkpListAgent_updateShapeCollectionFilter(hkpListAgent* agent, void*, S_00d368a0_Arg* a, int unused)
 {
-    hkpAgentMachineUtil_calc1nStatistics(&bodyA->m_dispatcher[4], input->m_field08, input);
+    hkpAgentMachineUtil_calc1nStatistics(&agent->m_dispatcher[4], a->m_field08, a);
 }
 
 extern "C" void __cdecl hkAgent1nMachine_UpdateShapeCollectionFilter(void*, void*);

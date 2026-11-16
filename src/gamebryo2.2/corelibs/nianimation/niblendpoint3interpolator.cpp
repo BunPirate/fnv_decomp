@@ -136,10 +136,10 @@ void FUN_00a55ef0_shell::AppendPoint3Value(void* pkStrings)
 // src: XBOX_PDB 0x00a55a60
 // pdb: NiBlendPoint3Interpolator::InterpolatorIsCorrectType | NiBlendPoint3Interpolator.obj | debug, upstream name already matches, high
 // pdb params: pkInterpolator
-bool __stdcall NiBlendPoint3Interpolator_InterpolatorIsCorrectType(NiBlendPoint3Interpolator* pkInterpolator)
+bool __stdcall NiBlendPoint3Interpolator_InterpolatorIsCorrectType(NiBlendPoint3Interpolator* p)
 {
     return reinterpret_cast<bool(__thiscall*)(NiObject*)>(*reinterpret_cast<const unsigned int*>(
-        reinterpret_cast<const unsigned char*>(*reinterpret_cast<const unsigned int*>(pkInterpolator)) + 0xb0))(pkInterpolator);
+        reinterpret_cast<const unsigned char*>(*reinterpret_cast<const unsigned int*>(p)) + 0xb0))(p);
 }
 
 void __fastcall NiBlendInterpolator_NiBlendInterpolator(void*);

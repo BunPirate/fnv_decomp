@@ -136,7 +136,6 @@ bool BloodSplatterBeamShader::LoadStagesAndPasses()
 }
 
 // @fnv 0x00bd23f0
-// src: XBOX_RETAIL_PDB 0x00bd23f0
 // pdb: DebugShader::CreateShader | DebugShader.obj | retail, call graph, high
 // pdb locals: spShaderDecl, pshader
 BSShader* BloodSplatterBeamShader::CreateShader()

@@ -3742,9 +3742,9 @@ BSAnimGroupSequence* StandIn::Animation_GetSpecialIdleSequence()
 
 // @fnv 0x004937c0
 // pdb: TESAnimGroup::IsAimAction | Animation.obj | debug, call graph, high
-bool __fastcall IsAimAnimGroup(TESAnimGroup* asGroup)
+bool __fastcall IsAimAnimGroup(TESAnimGroup* group)
 {
-    return TESAnimGroup::IsAimAnimation(asGroup->sType);
+    return TESAnimGroup::IsAimAnimation(group->sType);
 }
 
 
@@ -3753,9 +3753,9 @@ namespace fnv_004937e0 {
 
 // @fnv 0x004937e0
 // pdb: TESAnimGroup::IsAttackAction | Animation.obj | debug, call graph, high
-bool __fastcall IsAnimGroupActionValid(TESAnimGroup* asGroup)
+bool __fastcall IsAnimGroupActionValid(TESAnimGroup* group)
 {
-    return TESAnimGroup::IsActionTypeValid(asGroup->sType);
+    return TESAnimGroup::IsActionTypeValid(group->sType);
 }
 }  // namespace fnv_004937e0
 

@@ -2227,10 +2227,10 @@ class List71F
     List71F* m_pkNext;
 };
 
-class StatsMenu_NamedEffectsList // src: EXE 0x01070020 (vtable; old: FUN_0071f570_ModelList)
+class FUN_0071f570_ModelList
 {
   public:
-    virtual ~StatsMenu_NamedEffectsList();
+    virtual ~FUN_0071f570_ModelList();
 
     void Clear();
 
@@ -2239,7 +2239,7 @@ class StatsMenu_NamedEffectsList // src: EXE 0x01070020 (vtable; old: FUN_0071f5
 
 // @fnv 0x0071f570
 // pdb: StatsMenu::NamedEffectsList::~NamedEffectsList | MenuManager.obj | debug, call graph (shared callers), low
-StatsMenu_NamedEffectsList::~StatsMenu_NamedEffectsList()
+FUN_0071f570_ModelList::~FUN_0071f570_ModelList()
 {
     Clear();
 }

@@ -1678,7 +1678,6 @@ extern SettingT_GameSettingCollection_ g_011cbd84;
 
 // Looks up the positive and negative reputation indices and returns the title string from the 4x4 table of game settings.
 // @fnv 0x00616710
-// src: XBOX_DEBUG_PDB 0x00616710
 // pdb: TESReputation::GetReputationTitle | TESReputation.obj | debug, call graph, high
 // pdb locals: cPosIndex, cNegIndex, pRepTitles
 const char* TESReputation::GetReputationName()

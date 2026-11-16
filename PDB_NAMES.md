@@ -20,15 +20,15 @@ The compilers are Microsoft's, from the downloads the CI uses, checked against t
 
 ## What changes
 
-### Renames (29,257)
+### Renames (29,265)
 
 | Kind | Renamed | Example |
 |---|---|---|
-| Parameters | 20,672 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
+| Parameters | 20,683 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
 | Fields | 4,852 | `CombatProcedureBeInCover` +0x44: `m_waitingOutTimer` → `WaitingOutOfCoverTimer` |
 | Functions | 3,141 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
 | Globals | 517 | `DAT_0126b1b0` → `hkpVehicleInstanceClass` |
-| Classes | 75 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
+| Classes | 72 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
 
 The renames were made with a C++ parser (libclang in MSVC-compatibility mode). Each reference is tied to its exact
 entity:
@@ -44,11 +44,13 @@ any that made a unit fail or compile differently was left out.
 Naming rules:
 - A method keeps its current class. When the PDB puts it on a different class, it becomes `Class_Method`, the
   convention the project already uses for a real name on a stand-in scope. A function declared in several places
-  (stand-in views) is named per declaration: the PDB method name where the declaration is on the PDB class itself,
-  `Class_Method` elsewhere. Where that class already has a member of that name, or `main` spelled it with an address
-  suffix, that declaration keeps `main`'s name. 192 renamed functions keep `main`'s name in some other declaration;
-  the mapping lists them as `unchanged_symbols`.
-- A nested class takes `Outer_Inner`, as `main` does (`StatsMenu_NamedEffectsList` for `StatsMenu::NamedEffectsList`).
+  (stand-in views) takes the plain PDB method name on each declaration that is on the PDB class itself. Where any
+  declaration of that class in the tree already has a member of that name, or `main` spelled it with an address suffix,
+  that declaration keeps `main`'s name. Declarations on other scopes follow the definition: `Class_Method` when the
+  definition is on a stand-in, the plain method name when the definition is on the PDB class. 192 renamed functions
+  keep `main`'s name in some other declaration (constructor and destructor symbols not counted); the mapping lists
+  them as `unchanged_symbols`.
+- A nested class takes `Outer_Inner`, as `main` does (`FontManager_CharData` for `FontManager::CharData`).
 - Static members and function-local statics become `Class_member` or `Class_Function_name`.
 - A class is renamed only where the real class is not already defined elsewhere in the tree.
 - A renamed function's provenance tag becomes `XBOX_RETAIL_PDB` or `XBOX_DEBUG_PDB`. When it replaces another tag, the
@@ -59,14 +61,15 @@ Naming rules:
   member offset or address, and the old name, so each one can be found and reversed on its own:
   `Timer WaitingOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x44 (old: m_waitingOutTimer)`. Field names come from the
   retail build's type records. A global is marked on each of its declarations. When several renamed fields share one
-  declaration, the marker names each. 53 of the 75 class names come from the PC executable's own RTTI (the vtable
+  declaration, the marker names each. 50 of the 72 class names come from the PC executable's own RTTI (the vtable
   `main` already named), so they are tagged `EXE` with the vtable's address. The other 22 come from high-tier links to
   their own methods here (not counting name-only links). They carry the build most of those links come from, retail on
   a tie (16 `XBOX_RETAIL_PDB`, 6 `XBOX_DEBUG_PDB`), and the address of the first such link from that build.
   Renamed parameters have no marker; they are in the mapping (see the end of this file).
-- A renamed parameter is renamed at the definition and at every declaration of the same function: those bound to its
-  address in `build/units.json`, and those on the PDB class under the PDB name with the same parameter types.
-  A declaration in neither group (an unbound view of the function with other parameter types) keeps `main`'s names.
+- A renamed parameter is renamed at the definition and at the declarations tied to it: those bound to its address in
+  `build/units.json`, and those on the PDB class under the PDB name with the same parameter types. Other declarations
+  of the same function can still carry `main`'s names. Where a stand-in passes `this` as an explicit first parameter,
+  the positions do not line up with the PDB, so its parameters keep `main`'s names.
 - A link made only because `main` already used the PDB name (link method "upstream name already matches") renames no
   function or class: the name is the evidence, so its spelling stays. Its parameter names are applied when `main`
   already ties the function to the PDB class: it is a method of that class here, `main` names it `Class_Method` (or
@@ -158,9 +161,13 @@ All of these still get the real name in a comment.
 - **Overloads.** Run extension and gap fill can land on a sibling overload of the same name. The name is then right,
   but the Xbox 360 address in the mapping, and names taken from that function, can belong to the sibling. Review found
   this at 0x009a52f0 (`AddThreat`) and 0x0043a9a0 (`LoadGame`); their comments name the matching overload, and the
-  mapping gives its address as `x360_address_matching_overload`. 39 parameter names in 29 functions are not symbols of
-  the linked Xbox 360 function itself: 35 come from a sibling overload of the same name and 4 from the other
+  mapping gives its address as `x360_address_matching_overload`. 31 parameter names in 23 functions are not symbols of
+  the linked Xbox 360 function itself: 27 come from a sibling overload of the same name and 4 from the other
   build's copy of the function. The mapping marks each with `name_found_in`.
+- **Parameter positions.** Parameter names are applied by position. 453 of them sit on 159 declarations (in 111
+  functions) whose parameter count differs from the definition's, another view of the same function. Many of these
+  are right (`BSShaderProperty::SetFlag(unsigned int aiFlag, bool abSetFlag)`); some sit on the wrong parameter. The
+  mapping lists each in `parameters_other_count_declarations.jsonl`.
 - **Folded code.** A function the linker folded with identical code stands for several originals, so its name is one
   of several.
 - **Field types.** Field renames follow the PDB layout at an offset. Where a class here models a smaller or
@@ -181,7 +188,10 @@ It holds extracted names and metadata (addresses, offsets, link methods); no PDB
 - `fields.jsonl`: class, offset, old name, new name, PDB type, file and line of the marker.
 - `globals.jsonl`: address, old names, new name, PDB symbol, and each declaration's file, line and marker.
 - `classes.jsonl`: old and new name, source, tag, the vtable or first linked method's address, file, line, marker.
-- `parameters.jsonl`: function address, parameter index, old name, new name, the link it came from, and
+- `parameters.jsonl`: function address, parameter index, old name (the definition's on `main`), new name, the link it
+  came from, `applied_at` for the 30 renames that stand only at declarations, and
   `name_found_in` where the name is not a symbol of the linked function itself.
 - `symbols_changed_by_class_or_type_renames.jsonl`: decorated names that changed only because a class or type in them
   was renamed.
+- `parameters_other_count_declarations.jsonl`: the 453 parameter names on declarations whose parameter count differs
+  from the definition's (see Known risks).

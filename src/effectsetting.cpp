@@ -522,7 +522,7 @@ struct BSStringCompareArguments
     bool ignoreCase;
 };
 bool __fastcall BSStringsEqual(BSStringT<char>* self, BSStringArgument string);
-int __fastcall CompareBSStrings(BSStringT<char>* arString, BSStringCompareArguments abIgnoreCase);
+int __fastcall CompareBSStrings(BSStringT<char>* self, BSStringCompareArguments args);
 
 // @fnv 0x00501c30
 // pdb: BSStringT<char>::operator!= | BGSTerminal.obj | debug, call graph, high
@@ -545,9 +545,9 @@ bool __fastcall BSStringsEqual(BSStringT<char>* self, BSStringArgument string)
 // @fnv 0x00501c90
 // pdb: BSStringT<char>::StrCmp | BGSTerminal.obj | debug, call graph, high
 // pdb params: arString, abIgnoreCase
-int __fastcall CompareBSStrings(BSStringT<char>* arString, BSStringCompareArguments abIgnoreCase)
+int __fastcall CompareBSStrings(BSStringT<char>* self, BSStringCompareArguments args)
 {
-    return arString->StrCmp(static_cast<const char*>(*abIgnoreCase.value), abIgnoreCase.ignoreCase);
+    return self->StrCmp(static_cast<const char*>(*args.value), args.ignoreCase);
 }
 
 struct IMH

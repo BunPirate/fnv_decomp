@@ -106,7 +106,6 @@ void NavMeshObstacleManager::AddProcessedTask(ObstacleTaskData* apTaskData)
     ((RecursiveSpinLock*)((char*)this + 0x160))->Unlock();
 }
 // @fnv 0x006c4540
-// src: XBOX_DEBUG_PDB 0x006c4540
 // pdb: NavMeshObstacleManager::DeleteCurrentTasks | NavMeshObstacleManager.obj | debug, call graph, high
 // pdb locals: icount, t
 bool NavMeshObstacleManager::ClearBackgroundTasks()
@@ -122,7 +121,6 @@ bool NavMeshObstacleManager::ClearBackgroundTasks()
     return true;
 }
 // @fnv 0x006c4ec0
-// src: XBOX_DEBUG_PDB 0x006c4ec0
 // pdb: NavMeshObstacleManager::QueueTasks | NavMeshObstacleManager.obj | debug, call graph, high
 // pdb locals: taskIt, formID, ptaskData
 void NavMeshObstacleManager::QueueObstacleTasks()

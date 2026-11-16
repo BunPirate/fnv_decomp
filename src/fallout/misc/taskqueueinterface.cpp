@@ -2546,14 +2546,14 @@ struct PlainPackedTask
 // pdb: TaskQueueInterface::QueueScriptFunctionCall | TaskQueueInterface.obj | retail, upstream name already matches, high
 // pdb params: aeFunc, apRefObject, argList
 // pdb locals: task, sparamcount, idataindex, ifunc, i, pref
-void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* aeFunc, unsigned int apRefObject, FormTaskRef* form, ...)
+void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* queue, unsigned int opcode, FormTaskRef* form, ...)
 {
     int h;
     int p;
     unsigned short a;
     char task[32];
     ((int*)task)[0] = 31;
-    ((int*)task)[1] = apRefObject;
+    ((int*)task)[1] = opcode;
     if (form)
         ((int*)task)[2] = form->GetFormID();
     else
@@ -2562,7 +2562,7 @@ void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* aeFu
         va_list args;
         va_start(args, form);
         h = 3;
-        p = apRefObject - 0x1000;
+        p = opcode - 0x1000;
         a = scriptCommands[p].numParams;
         for (int s = 0; s < a; s++)
         {
@@ -2592,7 +2592,7 @@ void __cdecl TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface* aeFu
         }
         va_end(args);
     }
-    aeFunc->ProcessPackedTask(*(const BSPackedTask*)&task);
+    queue->ProcessPackedTask(*(const BSPackedTask*)&task);
 }
 
 // Use the game's out-of-line smart-pointer constructor and destructor.

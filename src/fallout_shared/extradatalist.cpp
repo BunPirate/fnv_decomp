@@ -7959,12 +7959,12 @@ extern int DAT_01015944;
 // @fnv 0x0042c860
 // src: XBOX_DEBUG_PDB 0x0042c860
 // pdb: ExtraTresPassPackage::ExtraTresPassPackage | ExtraDataList.obj | debug, call graph, high
-ExtraTresPassPackage* __fastcall ExtraTresPassPackage_ctor(ExtraTresPassPackage* apPack)
+ExtraTresPassPackage* __fastcall ExtraTresPassPackage_ctor(ExtraTresPassPackage* extra)
 {
-    apPack->BSExtraData::BSExtraData(0x1a);
-    *reinterpret_cast<int**>(apPack) = &DAT_01015944;
-    apPack->package = 0;
-    return apPack;
+    extra->BSExtraData::BSExtraData(0x1a);
+    *reinterpret_cast<int**>(extra) = &DAT_01015944;
+    extra->package = 0;
+    return extra;
 }
 }  // namespace fnv_0042c860
 
@@ -9453,12 +9453,12 @@ extern void* kTeleportDefaultVtable[];
 // @fnv 0x0042c580
 // src: XBOX_DEBUG_PDB 0x0042c580
 // pdb: ExtraTeleport::ExtraTeleport | ExtraDataList.obj | debug, call graph, high
-ExtraTeleport* __fastcall ExtraTeleport_ctor(ExtraTeleport* apTeleport)
+ExtraTeleport* __fastcall ExtraTeleport_ctor(ExtraTeleport* extra)
 {
-    apTeleport->BSExtraData::BSExtraData(0x2b);
-    *reinterpret_cast<void***>(apTeleport) = kTeleportDefaultVtable;
-    apTeleport->data = 0;
-    return apTeleport;
+    extra->BSExtraData::BSExtraData(0x2b);
+    *reinterpret_cast<void***>(extra) = kTeleportDefaultVtable;
+    extra->data = 0;
+    return extra;
 }
 }  // namespace fnv_0042c580
 
@@ -18009,13 +18009,13 @@ extern int DAT_01015950;
 // @fnv 0x0042c8c0
 // src: XBOX_DEBUG_PDB 0x0042c8c0
 // pdb: ExtraLeveledItem::ExtraLeveledItem | ExtraDataList.obj | debug, call graph, high
-ExtraLeveledItem* __fastcall ExtraLeveledItem_ctor(ExtraLeveledItem* aiIndex)
+ExtraLeveledItem* __fastcall ExtraLeveledItem_ctor(ExtraLeveledItem* extra)
 {
-    aiIndex->BSExtraData::BSExtraData(0x2f);
-    *reinterpret_cast<int**>(aiIndex) = &DAT_01015950;
-    aiIndex->iIndex = 0;
-    aiIndex->m_bIsLeveledItem = 0;
-    return aiIndex;
+    extra->BSExtraData::BSExtraData(0x2f);
+    *reinterpret_cast<int**>(extra) = &DAT_01015950;
+    extra->iIndex = 0;
+    extra->m_bIsLeveledItem = 0;
+    return extra;
 }
 
 struct ActorBaseFixup

@@ -916,6 +916,7 @@ struct S_00db8670_MultiMapUlong
     }
 };
 
+// src: XBOX_RETAIL_PDB 0x00dba360
 __declspec(noinline) void S_00db8670_MultiMap64::hkSerializeMultiMap_unsigned_int64_int_insert(S_00db8670_Uint64 k, const int& value) throw()
 {
     int oldHead = (int)m_pHashFunction.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(k, S_00db8670_Uint64(-1));

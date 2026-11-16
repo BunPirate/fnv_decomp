@@ -451,14 +451,14 @@ extern "C" void* DAT_010c9314;
 // @fnv 0x00cc00b0
 // pdb: hkOstream::hkOstream | hkOStream.obj | retail, call graph, high
 // pdb params: sw
-hkOstream* __fastcall InitializeOstream(hkOstream* mem, void*, void* isString)
+hkOstream* __fastcall InitializeOstream(hkOstream* self, void*, void* owner)
 {
-    mem->m_referenceCount = 1;
-    *reinterpret_cast<void**>(mem) = &DAT_010c9314;
-    mem->m_writer = static_cast<hkStreamWriter*>(isString);
-    if (isString)
-        ReleaseOstreamOwner(static_cast<hkReferencedObject*>(isString));
-    return mem;
+    self->m_referenceCount = 1;
+    *reinterpret_cast<void**>(self) = &DAT_010c9314;
+    self->m_writer = static_cast<hkStreamWriter*>(owner);
+    if (owner)
+        ReleaseOstreamOwner(static_cast<hkReferencedObject*>(owner));
+    return self;
 }
 
 extern "C" void __cdecl _delete(void* p, int flags);
@@ -18117,10 +18117,10 @@ extern "C" void* DAT_010c933c;
 // @fnv 0x00cc0550
 // pdb: hkOstream::hkOstream | hkOStream.obj | retail, object-file gap fill, high
 // pdb params: sw
-hkOstream* __fastcall InitializeOstreamValue(hkOstream* mem, void*, int isString)
+hkOstream* __fastcall InitializeOstreamValue(hkOstream* self, void*, int value)
 {
-    mem->m_referenceCount = 1;
-    *reinterpret_cast<void**>(mem) = &DAT_010c9314;
+    self->m_referenceCount = 1;
+    *reinterpret_cast<void**>(self) = &DAT_010c9314;
 
     FUN_00cc0550_Holder* holder =
         reinterpret_cast<FUN_00cc0550_Holder*>(hkMemoryRouter_getInstance());
@@ -18130,11 +18130,11 @@ hkOstream* __fastcall InitializeOstreamValue(hkOstream* mem, void*, int isString
     pValueBlock->m_usField04 = 0x10;
     pValueBlock->m_usField06 = 1;
     pValueBlock->m_pVtable = &DAT_010c933c;
-    pValueBlock->m_pField08 = reinterpret_cast<void*>(isString);
+    pValueBlock->m_pField08 = reinterpret_cast<void*>(value);
     pValueBlock->m_iField0C = 1;
 
-    mem->m_writer = reinterpret_cast<hkStreamWriter*>(pValueBlock);
-    return mem;
+    self->m_writer = reinterpret_cast<hkStreamWriter*>(pValueBlock);
+    return self;
 }
 
 struct FUN_00d46d40_s {

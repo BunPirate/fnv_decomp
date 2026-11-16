@@ -12,7 +12,6 @@ struct MM
 extern MM g_memoryManager;
 extern void* DAT_011c5f54;
 // @fnv 0x00a8a200
-// src: XBOX_RETAIL_PDB 0x00a8a200 (was COMMUNITY)
 // pdb: NiTAbstractPoolAllocator<unsigned int>::_SDMShutdown | NiMainSDM.obj | retail, object-file gap fill, high
 // pdb locals: pkCurr, pkNext
 template <class T> struct PoolAllocatorBase
