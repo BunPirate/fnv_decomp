@@ -1123,17 +1123,17 @@ struct Storage_00a0ae70 {
     TileTemplate_00a0ae70* m_pTileTemplate;
     bool m_owns;
 
-    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* apName);
+    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* pName);
 };
 
 // @fnv 0x00a0ae70
 // src: COMMUNITY 0x00a0ae70
-// pdb: Tile::BuildStorage::NewSubTemplate | Tile.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pName
-// pdb locals (unverified, name-only link): ptemplate
-TileTemplate_00a0ae70* Storage_00a0ae70::Tile_BuildStorage_NewSubTemplate(const char* apName)
+// pdb: Tile::BuildStorage::NewSubTemplate | Tile.obj | retail, upstream name already matches, high
+// pdb params: pName
+// pdb locals: ptemplate
+TileTemplate_00a0ae70* Storage_00a0ae70::Tile_BuildStorage_NewSubTemplate(const char* pName)
 {
-    TileTemplate_00a0ae70* pTemplate = new TileTemplate_00a0ae70(apName, this);
+    TileTemplate_00a0ae70* pTemplate = new TileTemplate_00a0ae70(pName, this);
     m_kNode.AddTail(&pTemplate);
     return pTemplate;
 }
@@ -1592,17 +1592,17 @@ inline void* operator new(unsigned int size) { return g_mm.Allocate(size); }
 void operator delete(void* memory);
 // @fnv 0x00a0b950
 // src: COMMUNITY 0x00a0b950
-// pdb: Tile::TileTemplate::GetItem | Tile.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiCmd, afVal, apStr, aiTA, aiLine
-// pdb locals (unverified, name-only link): pitem
-ReuseNode* Tile_TileTemplate_GetItem(int a, float f, const char* s, int b, int c) {
+// pdb: Tile::TileTemplate::GetItem | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiCmd, afVal, apStr, aiTA, aiLine
+// pdb locals: pitem
+ReuseNode* Tile_TileTemplate_GetItem(int aiCmd, float afVal, const char* apStr, int aiTA, int aiLine) {
     ReuseNode* node;
     if ((unsigned int)DAT_011f32dc > 0) {
         DAT_011f32dc = DAT_011f32dc - 1;
         node = (ReuseNode*)DAT_011f329c[DAT_011f32dc];
-        node->Init(a, f, s, b, c);
+        node->Init(aiCmd, afVal, apStr, aiTA, aiLine);
     } else {
-        node = new ReuseNode(a, f, s, b, c);
+        node = new ReuseNode(aiCmd, afVal, apStr, aiTA, aiLine);
     }
     return node;
 }
@@ -3158,17 +3158,17 @@ struct FUN_00a0c190
 struct A1E1D0_Holder
 {
     FUN_00a0c190* m_entry;
-    void Tile_BuildStorage_SetTemplate(FUN_00a0c190* entry);
+    void Tile_BuildStorage_SetTemplate(FUN_00a0c190* apTemplate);
 };
 // @fnv 0x00a1e1d0
 // src: COMMUNITY 0x00a1e1d0
-// pdb: Tile::BuildStorage::SetTemplate | Menu.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): apTemplate
-void A1E1D0_Holder::Tile_BuildStorage_SetTemplate(FUN_00a0c190* entry)
+// pdb: Tile::BuildStorage::SetTemplate | Menu.obj | debug, upstream name already matches, high
+// pdb params: apTemplate
+void A1E1D0_Holder::Tile_BuildStorage_SetTemplate(FUN_00a0c190* apTemplate)
 {
     if (m_entry)
         delete m_entry;
-    m_entry = entry;
+    m_entry = apTemplate;
 }
 }  // namespace fnv_00a1e1d0
 
@@ -3844,28 +3844,28 @@ extern float DAT_01094cf4;
 
 // @fnv 0x00a0a410
 // src: XBOX_PDB 0x00a0a410
-// pdb: Tile::TileTemplate::AddPair | Tile.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiCmd, apStr, aiLine, aiPreserveStrings
-// pdb locals (unverified, name-only link): xelem, pitem, plast2, plast1, bis_number, fvalue, plast3, a
-void ParsedBuilder::Tile_TileTemplate_AddPair(int trait, const char* text, void* context, bool literal) {
+// pdb: Tile::TileTemplate::AddPair | Tile.obj | retail, upstream name already matches, high
+// pdb params: aiCmd, apStr, aiLine, aiPreserveStrings
+// pdb locals: xelem, pitem, plast2, plast1, bis_number, fvalue, plast3, a
+void ParsedBuilder::Tile_TileTemplate_AddPair(int aiCmd, const char* apStr, void* aiLine, bool aiPreserveStrings) {
     float value = DAT_01094cf4;
-    if (!literal)
-        value = (float)Tile_TextToTrait(text);
-    if (value == DAT_01094ba8 && (text[0] == '_' || (text[0] == '&' && text[1] == '_')))
-        value = (float)Tile_AddUserTrait(text, -1);
-    ParsedToken* createdToken16 = Tile_TileTemplate_GetItem(trait, value, text, (int)value, context);
+    if (!aiPreserveStrings)
+        value = (float)Tile_TextToTrait(apStr);
+    if (value == DAT_01094ba8 && (apStr[0] == '_' || (apStr[0] == '&' && apStr[1] == '_')))
+        value = (float)Tile_AddUserTrait(apStr, -1);
+    ParsedToken* createdToken16 = Tile_TileTemplate_GetItem(aiCmd, value, apStr, (int)value, aiLine);
     bool isNumericX = true;
-    for (unsigned i = 0; i < strlen(text); ++i) {
-        if ((text[i] < '0' || text[i] > '9') && text[i] != '-' && text[i] != '.') {
+    for (unsigned i = 0; i < strlen(apStr); ++i) {
+        if ((apStr[i] < '0' || apStr[i] > '9') && apStr[i] != '-' && apStr[i] != '.') {
             isNumericX = false;
             break;
         }
     }
     if (isNumericX) {
         if (value == DAT_01094ba8)
-            sscanf(text, DAT_01094cf0, &value);
+            sscanf(apStr, DAT_01094cf0, &value);
         if (value == DAT_01012060)
-            sscanf(text, DAT_01094cf0, &value);
+            sscanf(apStr, DAT_01094cf0, &value);
         createdToken16->text = DAT_01011584;
         createdToken16->value = value;
         createdToken16->integer = (int)value;
@@ -3877,30 +3877,30 @@ void ParsedBuilder::Tile_TileTemplate_AddPair(int trait, const char* text, void*
     if (iteratorPosition8) lastToken15 = tokens.GetPrevious(iteratorPosition8);
     if (iteratorPosition8) previousToken2 = tokens.GetPrevious(iteratorPosition8);
     if (iteratorPosition8) thirdToken12 = tokens.GetPrevious(iteratorPosition8);
-    if (trait == 3002 && lastToken15 && lastToken15->kind == 0 && lastToken15->value == DAT_01094ce8) {
+    if (aiCmd == 3002 && lastToken15 && lastToken15->kind == 0 && lastToken15->value == DAT_01094ce8) {
         if (parent->templateData) {
             Warning_005b5e40(DAT_01094ca8);
         } else {
-            parent->SetTileTemplate(parent->FindTemplateByName(text));
+            parent->SetTileTemplate(parent->FindTemplateByName(apStr));
             if (!parent->templateData) {
-                parent->SetTileTemplate(parent->Tile_BuildStorage_NewSubTemplate(text));
+                parent->SetTileTemplate(parent->Tile_BuildStorage_NewSubTemplate(apStr));
             }
         }
         Tile_TileTemplate_ThrowAway(tokens.PopFront());
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 1 && value == DAT_01094ce8 && parent->templateData) {
+    } else if (aiCmd == 1 && value == DAT_01094ce8 && parent->templateData) {
         parent->SetTileTemplate(0);
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 3002 && lastToken15 && lastToken15->kind == 0 &&
+    } else if (aiCmd == 3002 && lastToken15 && lastToken15->kind == 0 &&
                lastToken15->value >= DAT_01094ca0 && lastToken15->value <= DAT_01094c98) {
         lastToken15->kind = 6;
-        AssignParsedText(lastToken15->text, text);
+        AssignParsedText(lastToken15->text, apStr);
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 3002) {
+    } else if (aiCmd == 3002) {
         createdToken16->kind = 8;
         createdToken16->integer = 3002;
         tokens.Append(createdToken16);
-    } else if (trait == 1 && lastToken15 && lastToken15->kind == 3001 && previousToken2 &&
+    } else if (aiCmd == 1 && lastToken15 && lastToken15->kind == 3001 && previousToken2 &&
                (previousToken2->kind == 4 || previousToken2->kind == 2) && previousToken2->value == value) {
         if ((createdToken16->value >= DAT_01094c90 && createdToken16->value <= DAT_01094c88) || createdToken16->integer >= 10000)
             previousToken2->kind = 8;
@@ -3915,7 +3915,7 @@ void ParsedBuilder::Tile_TileTemplate_AddPair(int trait, const char* text, void*
         previousToken2->text = lastToken15->text;
         Tile_TileTemplate_ThrowAway(tokens.PopFront());
         Tile_TileTemplate_ThrowAway(createdToken16);
-    } else if (trait == 1 && lastToken15 && lastToken15->kind == 3004 && previousToken2 &&
+    } else if (aiCmd == 1 && lastToken15 && lastToken15->kind == 3004 && previousToken2 &&
                previousToken2->kind == 3003 && thirdToken12 && thirdToken12->kind == 2 && thirdToken12->value == value) {
         thirdToken12->kind = 10;
         thirdToken12->integer = (int)thirdToken12->value;

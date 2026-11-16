@@ -151,7 +151,7 @@ struct FUN_00cc08f0_cls
     unsigned int unk04;
     PtrList m_08;
 
-    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** a1, void** a2);
+    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** p, void** k);
 };
 
 #include <windows.h>

@@ -30,7 +30,7 @@ Entry* __stdcall LowerBoundEntry(Entry* first, Entry* last, unsigned short key);
 struct FUN_00d11960_cls {
     int* m_pEntryData;
     int m_iArrayLength;
-    void hkp3AxisSweep_hkpBpAxis_remove(int aiFirst, int aiSecond);
+    void hkp3AxisSweep_hkpBpAxis_remove(int minPosition, int maxPosition);
 };
 struct D1A0E0Allocator;
 struct D1A0E0MemoryRouter {

@@ -3767,16 +3767,16 @@ struct SortedList
     int unk04;
     SortItem** ppItems;
 
-    void hkpMoppDefaultSplitter_hkpMoppMaxList_addElement(SortItem* apItem);
+    void hkpMoppDefaultSplitter_hkpMoppMaxList_addElement(SortItem* compPrimitive);
 };
 
 // @fnv 0x00e09670
 // src: HAVOK_LIB 0x00e09670
-// pdb: hkpMoppDefaultSplitter::hkpMoppMaxList::addElement | hkpMoppDefaultSplitter.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): compPrimitive
-void SortedList::hkpMoppDefaultSplitter_hkpMoppMaxList_addElement(SortItem* apItem)
+// pdb: hkpMoppDefaultSplitter::hkpMoppMaxList::addElement | hkpMoppDefaultSplitter.obj | debug, upstream name already matches, high
+// pdb params: compPrimitive
+void SortedList::hkpMoppDefaultSplitter_hkpMoppMaxList_addElement(SortItem* compPrimitive)
 {
-    float fPriority = apItem->fPriority;
+    float fPriority = compPrimitive->fPriority;
     int i;
     for (i = iCount - 1; i >= 0; i--)
     {
@@ -3784,6 +3784,6 @@ void SortedList::hkpMoppDefaultSplitter_hkpMoppMaxList_addElement(SortItem* apIt
             break;
         ppItems[i + 1] = ppItems[i];
     }
-    ppItems[i + 1] = apItem;
+    ppItems[i + 1] = compPrimitive;
     iCount++;
 }

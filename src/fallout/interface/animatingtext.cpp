@@ -27,7 +27,7 @@ struct TwTile
     char pad00[8];
     float m_fAlpha;
     void Tile_Value_SetFloat_00a0a270(float fValue, int iPropagate);
-    void SetString(const char* pcText, int abClearActions);
+    void SetString(const char* pcText, int iPropagate);
 };
 unsigned int __cdecl Cmd_GetSessionTime_Execute();
 int __cdecl BSstrlen(const char* pcStr);
@@ -108,7 +108,7 @@ struct ObjC
 };
 struct ObjD
 {
-    void SetString(int a, int abClearActions);
+    void SetString(int a, int b);
 };
 
 extern "C" int __cdecl BSstrlen(int v);

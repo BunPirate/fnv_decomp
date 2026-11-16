@@ -3115,9 +3115,9 @@ class S00b66050_cls
 
 // Finds the entry with the given key in the linked list, frees its object and the entry itself, then removes the node from the list.
 // @fnv 0x00b66050
-// pdb: NiD3DShaderConstantMap::RemoveEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pszKey
-// pdb locals (unverified, name-only link): uiIndex, pkEntry, kKey
+// pdb: NiD3DShaderConstantMap::RemoveEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pszKey
+// pdb locals (unverified): uiIndex, pkEntry, kKey
 void S00b66050_cls::RemoveEntry(unsigned int key)
 {
     S00b66050_node* node = m_kNode.m_pFirstNode;

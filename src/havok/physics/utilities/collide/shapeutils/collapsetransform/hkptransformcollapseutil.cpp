@@ -49,7 +49,7 @@ struct ShapeRefArray
 };
 
 // pdb: class _SharedShapeData, size 0xc (here 0x10), 1 members
-struct _SharedShapeData // src: XBOX_RETAIL_PDB 0x00d74aa0 (first of 1 high-tier linked methods; old: ShapeData)
+struct ShapeData
 {
     int m_kPointA;
     int m_kPointB;
@@ -57,7 +57,7 @@ struct _SharedShapeData // src: XBOX_RETAIL_PDB 0x00d74aa0 (first of 1 high-tier
     int m_iFourthElementInteger;
     void _SharedShapeData_recursivelyParseShapeReferences(int);
     void _SharedShapeData_removeSingleReferencedShapeData();
-    _SharedShapeData* _SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies);
+    ShapeData* _SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies);
 };
 
 // Resets the three fields, forwards each ref's value at offset 0x10 to FUN_00d738f0, then calls FUN_00d74a20 and returns this.
@@ -65,7 +65,7 @@ struct _SharedShapeData // src: XBOX_RETAIL_PDB 0x00d74aa0 (first of 1 high-tier
 // src: HAVOK_LIB 0x00d74b20
 // pdb: _SharedShapeData::_SharedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: rigidBodies
-_SharedShapeData* _SharedShapeData::_SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies)
+ShapeData* ShapeData::_SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies)
 {
     m_kPointA = 0;
     m_kPointB = 0;
@@ -582,7 +582,7 @@ struct D74A20Array
 // @fnv 0x00d74a20
 // src: HAVOK_LIB 0x00d74a20
 // pdb: _SharedShapeData::removeSingleReferencedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-void _SharedShapeData::_SharedShapeData_removeSingleReferencedShapeData()
+void ShapeData::_SharedShapeData_removeSingleReferencedShapeData()
 {
     D74A20Array* array = reinterpret_cast<D74A20Array*>(this);
 

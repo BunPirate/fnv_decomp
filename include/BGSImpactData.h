@@ -33,7 +33,7 @@ public:
     void ResetFormData();
     void ReadTypedData(TESFile* apFile, void* apData, unsigned short asSize);
     void SetDecalTextureSet(BGSTextureSet* textureSet);
-    void SetSound1(TESSound* afSound);
+    void SetSound1(TESSound* sound);
     void SetSound2(TESSound* sound);
     void CopyDecalDataFromTextureSet();
     bool Load(TESFile* file);

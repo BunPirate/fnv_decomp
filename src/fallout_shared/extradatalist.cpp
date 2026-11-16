@@ -7602,7 +7602,7 @@ template <class T> class NiPointer_0069bb00
 };
 struct FUN_0069bb00_t
 {
-    int FindIndex(NiPointer_0069bb00<NavMesh> nIndex);
+    int FindIndex(NiPointer_0069bb00<NavMesh> apSearchNavMesh);
     void RemoveAndCollect(int iIndex);
     void NavMeshArray_RemoveNavMesh(NiPointer_0069bb00<NavMesh> apSearchNavMesh);
 };
@@ -9704,8 +9704,8 @@ struct FUN_00419a20
 
 // Gets the extra data of type 0x26, updates its byte to type, or allocates a new one and adds it to the list.
 // @fnv 0x00419a20
-// pdb: TESObjectREFR::SetExtra | TESObjectREFR.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pextra
+// pdb: TESObjectREFR::SetExtra | TESObjectREFR.obj | debug, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pextra
 void FUN_00419a20::SetExtra(unsigned char type)
 {
     BSExtraData* extra = ((BaseExtraList*)this)->GetExtraData(0x26);
@@ -17457,14 +17457,14 @@ struct RegionList
 
 struct FUN_0041bbd0_shell : ExtraDataList
 {
-    void SetRegionList(RegionList* apList);
+    void SetRegionList(RegionList* value);
 };
 
 // Sets or clears the region list extra data: removes it when value is null, creates it when absent, otherwise replaces the stored regions pointer.
 // @fnv 0x0041bbd0
-// pdb: ExtraDataList::SetRegionList | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): apList
-// pdb locals (unverified, name-only link): pExtra
+// pdb: ExtraDataList::SetRegionList | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apList
+// pdb locals (unverified): pExtra
 void FUN_0041bbd0_shell::SetRegionList(RegionList* pRegions)
 {
     ExtraRegionList* data = reinterpret_cast<ExtraRegionList*>(GetExtraData(4));

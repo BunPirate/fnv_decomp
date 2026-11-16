@@ -1251,9 +1251,9 @@ extern Setting g_011db458;
 
 // Validates aePage (0-4), updates the Pipboy menu, sets menu value 0x1004 to aePage, and applies page-specific actions.
 // @fnv 0x007dff40
-// pdb: TutorialMenu::SetPage | TutorialMenu.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiPage
-// pdb locals (unverified, name-only link): strtmp, pformlist
+// pdb: TutorialMenu::SetPage | TutorialMenu.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): aiPage
+// pdb locals (unverified): strtmp, pformlist
 void PageMenuMethods::SetPage(int aePage)
 {
     if (aePage < 0 || aePage > 4)
@@ -1398,16 +1398,16 @@ struct GroupedEffectLookupMethods : StatsMenu__StatusEffectList
 // Walks the list nodes and returns the first item whose form's GetFormID matches formID, or null if none matches.
 // @fnv 0x007e0c50
 // src: XBOX_PDB 0x007e0c50
-// pdb: StatsMenu::StatusEffectList::Find | StatsMenu.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiID
-// pdb locals (unverified, name-only link): peffect, pnode
-FUN_007e0c50_item* GroupedEffectLookupMethods::StatsMenu_StatusEffectList_Find(unsigned int formID)
+// pdb: StatsMenu::StatusEffectList::Find | StatsMenu.obj | debug, upstream name already matches, high
+// pdb params: aiID
+// pdb locals: peffect, pnode
+FUN_007e0c50_item* GroupedEffectLookupMethods::StatsMenu_StatusEffectList_Find(unsigned int aiID)
 {
     FUN_007e0c50_node* pNode;
     FUN_007e0c50_item* pEffect = 0;
     for (pNode = this ? reinterpret_cast<FUN_007e0c50_node*>(&bSSimpleList_StatsMenu__StatusEffect___Component) : 0; !pEffect && pNode && pNode->FUN_006815c0(); pNode = pNode->FUN_00726070())
     {
-        if (pNode->FUN_006815c0()->pForm->GetFormID() == formID)
+        if (pNode->FUN_006815c0()->pForm->GetFormID() == aiID)
             pEffect = pNode->FUN_006815c0();
     }
     return pEffect;

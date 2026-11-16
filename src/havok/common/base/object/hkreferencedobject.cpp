@@ -1384,9 +1384,9 @@ struct S00e3eba0_class
 };
 // If m_pShape equals oldObject, replaces it with GetObject; then recursively applies the operation to every item in m_items.
 // @fnv 0x00e3eba0
-// pdb: TESContainer::ReplaceObject | TESContainer.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): apObject, apReplace
-// pdb locals (unverified, name-only link): pkList, pobj
+// pdb: TESContainer::ReplaceObject | TESContainer.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apObject, apReplace
+// pdb locals (unverified): pkList, pobj
 void S00e3eba0_class::ReplaceObject(hkReferencedObject* oldObject, hkReferencedObject* apNewObject)
 {
     if (m_pShape == (void*)oldObject)

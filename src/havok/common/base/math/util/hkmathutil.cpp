@@ -91,18 +91,18 @@ struct S_c7a410_Obj
 // Iterates indexed items, dispatches on node type, and reads per-item data from arr at 0x10 plus 0x30-byte strides.
 // @fnv 0x00c7a410
 // src: XBOX_PDB 0x00c7a410
-// pdb: bhkRagdollController::bhkRagdollPoweredConstraintController::driveToPose | bhkRagdollController.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): ragdoll, desiredPose
-// pdb locals (unverified, name-only link): numBones, b, RBfromRA, constraint, constraintData, pmalData, RBFromCB, RBFromCA, RAFromCA, rest, desiredAngle, desiredRotAxis, CBFromCA, phc, assertBuf, ostr, desired, rc
-void bhkRagdollController_bhkRagdollPoweredConstraintController_driveToPose(S_c7a410_Obj* obj, char* apBuffer)
+// pdb: bhkRagdollController::bhkRagdollPoweredConstraintController::driveToPose | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: ragdoll, desiredPose
+// pdb locals: numBones, b, RBfromRA, constraint, constraintData, pmalData, RBFromCB, RBFromCA, RAFromCA, rest, desiredAngle, desiredRotAxis, CBFromCA, phc, assertBuf, ostr, desired, rc
+void bhkRagdollController_bhkRagdollPoweredConstraintController_driveToPose(S_c7a410_Obj* ragdoll, char* desiredPose)
 {
-    int iCount = obj->unk2c->unk1c;
+    int iCount = ragdoll->unk2c->unk1c;
     for (int iIndex = 0; iIndex < iCount; iIndex++)
     {
-        int iArrayIndex = obj->unk20[iIndex] - 1;
+        int iArrayIndex = ragdoll->unk20[iIndex] - 1;
         if (iArrayIndex < 0)
             continue;
-        S_c7a410_Item* pItem = obj->unk14[iArrayIndex];
+        S_c7a410_Item* pItem = ragdoll->unk14[iArrayIndex];
         if (!pItem)
             continue;
         S_c7a410_Node* p = pItem->unk0c;
@@ -112,7 +112,7 @@ void bhkRagdollController_bhkRagdollPoweredConstraintController_driveToPose(S_c7
         {
         case 7: {
             S_c7a410_B tTransform;
-            tTransform.hkRotation_set(apBuffer + 0x10 + iIndex * 0x30);
+            tTransform.hkRotation_set(desiredPose + 0x10 + iIndex * 0x30);
             p->hkpRagdollConstraintData_setTarget(&tTransform);
             break;
         }
@@ -122,7 +122,7 @@ void bhkRagdollController_bhkRagdollPoweredConstraintController_driveToPose(S_c7
             S_c7a410_A b;
             b.FUN_00cb26e0((char*)p + 0x60);
             S_c7a410_C c;
-            c.setMul(apBuffer + 0x10 + iIndex * 0x30, &a);
+            c.setMul(desiredPose + 0x10 + iIndex * 0x30, &a);
             S_c7a410_D d;
             d.hkQuaternion_setInverseMul(&b, &c);
             S_c7a410_Vec v;

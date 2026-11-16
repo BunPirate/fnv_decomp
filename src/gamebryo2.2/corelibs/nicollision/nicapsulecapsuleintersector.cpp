@@ -137,9 +137,9 @@ struct S_00eaef80
 inline NiPoint3 CopyPoint(const NiPoint3& p) { return NiPoint3(p.x, p.y, p.z); }
 
 // @fnv 0x00eaef80
-// pdb: BSStripPSysData::UpdatePoints | BSStripPSysData.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): ausParticle, afTime
-// pdb locals (unverified, name-only link): pkCurrentParticle, iprevindex, fsize, pprevDir, stripData, icurrindex
+// pdb: BSStripPSysData::UpdatePoints | BSStripPSysData.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): ausParticle, afTime
+// pdb locals (unverified): pkCurrentParticle, iprevindex, fsize, pprevDir, stripData, icurrindex
 void S_00eaef80::UpdatePoints(const NiPoint3& kOffsetA, const NiPoint3& kOffsetB)
 {
     NiPoint3 kPointA;

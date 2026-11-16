@@ -185,7 +185,7 @@ public:
     // 0x0041b580
     void SetHealthPerc(float afHealthPerc);
     // 0x00419a20
-    void SetUses(unsigned char pextra);
+    void SetUses(unsigned char acUses);
     // 0x00419bb0
     void SetTimeLeft(float afTimeLeft);
     // 0x00419c60

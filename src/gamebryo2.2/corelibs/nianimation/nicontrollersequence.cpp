@@ -3627,9 +3627,9 @@ struct OldSequence
 
 // Allocates a NiControllerSequence, copies name and controller data from pkOld, and assigns the result to spOut.
 // @fnv 0x00a349e0
-// pdb: NiControllerSequence::ConvertOldSequence | NiControllerSequence.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pkOldSequence, aspControllerSequence
-// pdb locals (unverified, name-only link): bFirstTime, spNewSequence, ui, pkController, pcName, bSuccess, eCycleType
+// pdb: NiControllerSequence::ConvertOldSequence | NiControllerSequence.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pkOldSequence, aspControllerSequence
+// pdb locals (unverified): bFirstTime, spNewSequence, ui, pkController, pcName, bSuccess, eCycleType
 void __cdecl ConvertOldSequence(OldSequence* pkOld, SeqPtr<NiControllerSequence>& spOut) throw()
 
 {

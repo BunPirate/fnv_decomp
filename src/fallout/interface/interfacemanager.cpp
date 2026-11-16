@@ -10481,18 +10481,18 @@ class FUN_00719490_cls
     virtual void v0();
     virtual void v1();
     virtual int v2(unsigned int);
-    int SystemColorManager_SystemColor_SetColor(float* p);
+    int SystemColorManager_SystemColor_SetColor(float* aInColor);
 };
 
 // @fnv 0x00719490
 // src: XBOX_PDB 0x00719490
-// pdb: SystemColorManager::SystemColor::SetColor | InterfaceManager.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aInColor
-int FUN_00719490_cls::SystemColorManager_SystemColor_SetColor(float* p)
+// pdb: SystemColorManager::SystemColor::SetColor | InterfaceManager.obj | retail, upstream name already matches, high
+// pdb params: aInColor
+int FUN_00719490_cls::SystemColorManager_SystemColor_SetColor(float* aInColor)
 {
-    return v2(PackRgba((unsigned int)FUN_004bd510((float)(p[0] * DAT_0101e568), 1.0f),
-                       (unsigned int)FUN_004bd510((float)(p[1] * DAT_0101e568), 1.0f),
-                       (unsigned int)FUN_004bd510((float)(p[2] * DAT_0101e568), 1.0f), 0xff));
+    return v2(PackRgba((unsigned int)FUN_004bd510((float)(aInColor[0] * DAT_0101e568), 1.0f),
+                       (unsigned int)FUN_004bd510((float)(aInColor[1] * DAT_0101e568), 1.0f),
+                       (unsigned int)FUN_004bd510((float)(aInColor[2] * DAT_0101e568), 1.0f), 0xff));
 }
 
 void Tile_AddToTable(const char*, bool);

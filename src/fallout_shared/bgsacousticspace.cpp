@@ -181,9 +181,9 @@ struct FUN_00589f50_shell
 };
 
 // @fnv 0x00589f50
-// pdb: ExtraDataList::SetSound | ExtraDataList.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): afSound
-// pdb locals (unverified, name-only link): pSound
+// pdb: ExtraDataList::SetSound | ExtraDataList.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): afSound
+// pdb locals (unverified): pSound
 void __thiscall FUN_00589f50_shell::SetSound(void* apSound)
 {
     *(int*)((char*)this + 0x4c) = (int)apSound;

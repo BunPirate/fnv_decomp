@@ -18255,8 +18255,8 @@ struct LockFreeCaseInsensitiveStringMap_t
 };
 // Computes a case-insensitive hash of apKey and returns it modulo the table size from FUN_0044ddc0.
 // @fnv 0x00449750
-// pdb: D3DXShader::CompilerHeap::GetBucketIndex | main.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): cb
+// pdb: D3DXShader::CompilerHeap::GetBucketIndex | main.obj | debug, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): cb
 unsigned int LockFreeCaseInsensitiveStringMap_t::GetBucketIndex(const char* apKey)
 {
     unsigned int uiHash = 0;

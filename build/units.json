@@ -120739,7 +120739,7 @@
     },
     {
      "address": "0x007d5120",
-     "symbol": "?StartMenu_IdleTimer_Start@IdleTimer@@QAEXXZ",
+     "symbol": "?StartMenu_IdleTimer_Start@FUN_007d5120_Class@@QAEXXZ",
      "size": 31
     },
     {
@@ -528082,7 +528082,7 @@
     },
     {
      "address": "0x00d74a20",
-     "symbol": "?_SharedShapeData_removeSingleReferencedShapeData@_SharedShapeData@@QAEXXZ",
+     "symbol": "?_SharedShapeData_removeSingleReferencedShapeData@ShapeData@@QAEXXZ",
      "size": 122
     },
     {
@@ -528092,7 +528092,7 @@
     },
     {
      "address": "0x00d74b20",
-     "symbol": "?_SharedShapeData__SharedShapeData@_SharedShapeData@@QAEPAU1@PAUShapeRefArray@@@Z",
+     "symbol": "?_SharedShapeData__SharedShapeData@ShapeData@@QAEPAU1@PAUShapeRefArray@@@Z",
      "size": 69
     }
    ],
@@ -528113,11 +528113,11 @@
     "?FUN_00cf5640@hkpListShape@@QAEPAV1@PBQBVhkpShape@@HH@Z": "0x00cf5640",
     "?UpdateFields_00d73400@hkShapeOutputD748@@QAEXXZ": "0x00d73400",
     "?_SharedShapeData_recursivelyParseShapeReferences@FUN_00d74420_Context@@QAEXH@Z": "0x00d738f0",
-    "?_SharedShapeData_recursivelyParseShapeReferences@_SharedShapeData@@QAEXH@Z": "0x00d738f0",
+    "?_SharedShapeData_recursivelyParseShapeReferences@ShapeData@@QAEXH@Z": "0x00d738f0",
     "?hkpShape_ProcessEntries_00d739f0@@YAHHHPAUFUN_00d74420_Context@@H@Z": "0x00d739f0",
     "?hkpShape_ProcessEntries_00d739f0@@YAPAVhkpShape@@PAV1@PAXPAUCache_d74480@@1@Z": "0x00d739f0",
     "?_SharedShapeData_removeSingleReferencedShapeData@FUN_00d74420_Context@@QAEXXZ": "0x00d74a20",
-    "?_SharedShapeData_removeSingleReferencedShapeData@_SharedShapeData@@QAEXXZ": "0x00d74a20",
+    "?_SharedShapeData_removeSingleReferencedShapeData@ShapeData@@QAEXXZ": "0x00d74a20",
     "?SharedShapeData_dtor@FUN_00d74420_Context@@QAEXXZ": "0x00d74aa0",
     "?SharedShapeData_dtor@hkShapeMapD748@@QAEXXZ": "0x00d74aa0",
     "?_SharedShapeData__SharedShapeData@hkShapeMapD748@@QAEPAU1@PAUhkShapeEntryArrayD748@@@Z": "0x00d74b20",
@@ -540605,7 +540605,7 @@
     },
     {
      "address": "0x00b30800",
-     "symbol": "?CIndexedGeometry_ComputeWindEffect@CIndexedGeometry@@QAEEG@Z",
+     "symbol": "?CIndexedGeometry_ComputeWindEffect@GeometryProcessor@@QAEEG@Z",
      "size": 1150
     },
     {
@@ -540659,7 +540659,7 @@
     "?FormHeapFreeAndLog_00401030@fnv_00b2c890@@YAXPAX@Z": "0x00401030",
     "?std_vector_float_std_allocator_float_resize_0060b410@AuxFloatArray@@QAEXIM@Z": "0x0060b410",
     "?std_vector_float_std_allocator_float_resize_0060b410@S_0060b3f0@@QAEXIM@Z": "0x0060b410",
-    "?CIndexedGeometry_GetNumStrips@CIndexedGeometry@@QAEGF@Z": "0x00b0a9a0",
+    "?CIndexedGeometry_GetNumStrips@GeometryProcessor@@QAEGF@Z": "0x00b0a9a0",
     "?CSpeedTreeRT_GetTextureFlip@@YA_NXZ": "0x00b0d7a0",
     "?ProcessState_00b0e200@ByteArray@@QAEXIE@Z": "0x00b0e200",
     "?ProcessAndReturnValue_00b0e3e0@VecQ_acad60@@QAE?AUItQ_acad60@@UCItQ_acad60@@ABD@Z": "0x00b0e3e0",

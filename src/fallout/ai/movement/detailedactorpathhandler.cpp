@@ -2851,14 +2851,14 @@ extern "C" unsigned int __cdecl _FUN_009a3830(unsigned int, unsigned int);
 
 struct FUN_009e2660_Class
 {
-    bool Contains(unsigned int kThat);
+    bool Contains(unsigned int arg);
 };
 
 // Returns whether the container at offset 0x30 finds the given value, comparing against -1 to indicate presence.
 // @fnv 0x009e2660
-// pdb: NiSkinPartition::BoneSet::Contains | NiSkinPartition.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): kThat
-// pdb locals (unverified, name-only link): uiThat, uiThis
+// pdb: NiSkinPartition::BoneSet::Contains | NiSkinPartition.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): kThat
+// pdb locals (unverified): uiThat, uiThis
 bool FUN_009e2660_Class::Contains(unsigned int auiValue)
 {
     return ((LS3de0*)((char*)this + 0x30))->Find(auiValue, 0, (bool(__cdecl*)(int const*, int const*))_FUN_009a3830) !=

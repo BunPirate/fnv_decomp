@@ -411,17 +411,17 @@ struct FUN_00dcb190_Class
     void* m4;
     void* m8;
     FUN_00dcb190_Inner* m_iThirdValue;
-    void* __thiscall StructArrayImplementation_Object_getMemberName(int index);
+    void* __thiscall StructArrayImplementation_Object_getMemberName(int it);
 };
 
 // Returns the m0 pointer of the element at the given index in the inner object's m_data array.
 // @fnv 0x00dcb190
 // src: XBOX_PDB 0x00dcb190
-// pdb: StructArrayImplementation::Object::getMemberName | hkDataObjectDict.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): it
-void* FUN_00dcb190_Class::StructArrayImplementation_Object_getMemberName(int index)
+// pdb: StructArrayImplementation::Object::getMemberName | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: it
+void* FUN_00dcb190_Class::StructArrayImplementation_Object_getMemberName(int it)
 {
-    return m_iThirdValue->m_data[index].m0;
+    return m_iThirdValue->m_data[it].m0;
 }
 
 struct FUN_00dc6fd0_VTable
@@ -1905,16 +1905,16 @@ struct FUN_00dcb3a0_class
     FUN_00dcb2b0_StandIn* m_iThirdValue;
     int m_10;
 
-    int __thiscall StructArrayImplementation_Object_asArray(int index);
+    int __thiscall StructArrayImplementation_Object_asArray(int name);
 };
 
 // @fnv 0x00dcb3a0
 // src: XBOX_PDB 0x00dcb3a0
-// pdb: StructArrayImplementation::Object::asArray | hkDataObjectDict.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): name
-int __thiscall FUN_00dcb3a0_class::StructArrayImplementation_Object_asArray(int index)
+// pdb: StructArrayImplementation::Object::asArray | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+int __thiscall FUN_00dcb3a0_class::StructArrayImplementation_Object_asArray(int name)
 {
-    int result = m_iThirdValue->StructArrayImplementation__find(index);
+    int result = m_iThirdValue->StructArrayImplementation__find(name);
 
     int* entries = *reinterpret_cast<int**>(reinterpret_cast<char*>(m_iThirdValue) + 0xc);
 
@@ -5126,17 +5126,17 @@ class hkOwnerDCB3
     hkTableDCB3* m_table;
     int m_10;
 
-    int StructArrayImplementation_Object_asString(int iKey);
+    int StructArrayImplementation_Object_asString(int name);
 };
 
 // Looks up the table entry for iKey and returns the object's V10 result for m_10.
 // @fnv 0x00dcb370
 // src: XBOX_PDB 0x00dcb370
-// pdb: StructArrayImplementation::Object::asString | hkDataObjectDict.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): name
-int hkOwnerDCB3::StructArrayImplementation_Object_asString(int iKey)
+// pdb: StructArrayImplementation::Object::asString | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+int hkOwnerDCB3::StructArrayImplementation_Object_asString(int name)
 {
-    int iIndex = m_table->StructArrayImplementation__find(iKey);
+    int iIndex = m_table->StructArrayImplementation__find(name);
     return m_table->m_entries[iIndex].m_object->V10(m_10);
 }
 
@@ -6787,13 +6787,13 @@ class hkMapDC92
 // Iterates over all used slots in the map and appends each slot's value to the output array.
 // @fnv 0x00dc9240
 // src: XBOX_PDB 0x00dc9240
-// pdb: hkDataWorldDict::ObjectTracker::findTrackedClasses | hkDataObjectDict.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): classesOut
-void hkMapDC92::hkDataWorldDict_ObjectTracker_findTrackedClasses(hkArray<int>& apUsedValues)
+// pdb: hkDataWorldDict::ObjectTracker::findTrackedClasses | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: classesOut
+void hkMapDC92::hkDataWorldDict_ObjectTracker_findTrackedClasses(hkArray<int>& classesOut)
 {
     for (int it = hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator(); isValid(it); it = FindNextUsedSlot(it))
     {
-        apUsedValues.pushBack(hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(it));
+        classesOut.pushBack(hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(it));
     }
 }
 
@@ -8983,24 +8983,24 @@ struct ManagerClass : public FUN_00d479e0_class
 // Recursively removes a Node from the multimap and reference maps, releasing child nodes and their references.
 // @fnv 0x00dcbdd0
 // src: XBOX_PDB 0x00dcbdd0
-// pdb: hkDataWorldDict::ObjectTracker::untrackClass | hkDataObjectDict.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): klass
-// pdb locals (unverified, name-only link): classes, derived, assertBuf, ostr
-void ManagerClass::hkDataWorldDict_ObjectTracker_untrackClass(Node* apNode) throw()
+// pdb: hkDataWorldDict::ObjectTracker::untrackClass | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: klass
+// pdb locals: classes, derived, assertBuf, ostr
+void ManagerClass::hkDataWorldDict_ObjectTracker_untrackClass(Node* klass) throw()
 {
-    void* target = apNode->GetTarget();
+    void* target = klass->GetTarget();
     TargetInfo* targetInfo = target ? (TargetInfo*)this->GetValue(target, 0) : 0;
-    this->hkDataWorldDict_ObjectTracker_removeClassContent(apNode);
+    this->hkDataWorldDict_ObjectTracker_removeClassContent(klass);
     void* subTarget = targetInfo->GetSubTarget();
     if (subTarget != 0)
     {
-        this->m_multimap.hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_removeByValue(subTarget, apNode);
+        this->m_multimap.hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_removeByValue(subTarget, klass);
     }
-    apNode->ClearEntries();
+    klass->ClearEntries();
 
     {
         StackAllocatedArray<Node*> stackNodes(64);
-        int it = this->m_multimap.LookupWithDefault(apNode);
+        int it = this->m_multimap.LookupWithDefault(klass);
         bool hasKey = (it != -1);
         if (hasKey)
         {
@@ -9020,7 +9020,7 @@ void ManagerClass::hkDataWorldDict_ObjectTracker_untrackClass(Node* apNode) thro
 
         if (hasKey)
         {
-            this->m_multimap.RemoveKey(apNode);
+            this->m_multimap.RemoveKey(klass);
         }
     }
 
@@ -9197,7 +9197,7 @@ class hkDataWorldDictTrackerDCA
 {
   public:
     int getClassKey(const hkDataClassImpl* pkClass, int iDefault) const throw();
-    void hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* pkObject) throw();
+    void hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* klass) throw();
 
     hkPointerMapDCA m_kLookupMap;
     unsigned int unk0c;
@@ -9210,15 +9210,15 @@ class hkDataWorldDictTrackerDCA
 // Recursively removes pkObject and its children from the tracker, clearing members and releasing references while warning about external references.
 // @fnv 0x00dca890
 // src: XBOX_PDB 0x00dca890
-// pdb: hkDataWorldDict::ObjectTracker::removeClassContent | hkDataObjectDict.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): klass
-// pdb locals (unverified, name-only link): objs, obj, assertBuf, ostr
-void hkDataWorldDictTrackerDCA::hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* pkObject) throw()
+// pdb: hkDataWorldDict::ObjectTracker::removeClassContent | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: klass
+// pdb locals: objs, obj, assertBuf, ostr
+void hkDataWorldDictTrackerDCA::hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* klass) throw()
 {
-    hkDataClassImpl* pkClass = pkObject->GetVariantValue();
+    hkDataClassImpl* pkClass = klass->GetVariantValue();
     int iClassKey = pkClass ? getClassKey(pkClass, 0) : 0;
 
-    for (int i = m_children.getFirstIndex(pkObject); i != -1; i = m_children.GetNextChainIndex(i))
+    for (int i = m_children.getFirstIndex(klass); i != -1; i = m_children.GetNextChainIndex(i))
     {
         hkDataWorldDict_ObjectTracker_removeClassContent(m_children.getValue(i));
     }

@@ -2730,8 +2730,8 @@ void be_store_caller(BEStoreTarget* self)
 
 // Looks up the table entry for i with FUN_00dcb2b0 and calls its forward method with the owner's context value.
 // @fnv 0x00dcb460
-// pdb: StructArrayImplementation::Object::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): name
+// pdb: StructArrayImplementation::Object::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
 struct DispatchTarget
 {
     virtual void v00();
@@ -2779,9 +2779,9 @@ struct Owner
     void StructArrayImplementation_Object_asObject(unsigned int);
 };
 // src: XBOX_PDB 0x00dcb460
-void Owner::StructArrayImplementation_Object_asObject(unsigned int i)
+void Owner::StructArrayImplementation_Object_asObject(unsigned int name)
 {
-    table->entryAt(table->StructArrayImplementation__find(i))->forward(context);
+    table->entryAt(table->StructArrayImplementation__find(name))->forward(context);
 }
 
 #include <stdlib.h>

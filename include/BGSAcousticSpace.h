@@ -75,7 +75,7 @@ public:
     void SetNightSound(TESSound* apSound);
     void SetWallaSound(TESSound* apSound);
     void SetRegion(TESRegion* apRegion);
-    void SetListenerID(CELL_ENVIRO_TYPE afSound);
+    void SetListenerID(CELL_ENVIRO_TYPE aeType);
     bool GetByteAtOffset48();
     int GetField4C();
 };

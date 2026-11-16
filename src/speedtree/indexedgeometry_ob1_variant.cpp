@@ -3774,7 +3774,7 @@ struct VertexIndexRow
     DataVector<U16*> indices;
 };
 // pdb: class CIndexedGeometry, size 0x118 (here 0x190), 29 members
-struct CIndexedGeometry // src: XBOX_RETAIL_PDB 0x00b2e9c0 (first of 2 high-tier linked methods; old: GeometryProcessor)
+struct GeometryProcessor
 {
     U32 unk00, unk04, unk08;
     unsigned char* processedVertices;
@@ -3817,7 +3817,7 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 // pdb: CIndexedGeometry::ComputeWindEffect | IndexedGeometry.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 // pdb params: nLodLevel
 // pdb locals: bGeometryUpdated, cInterpWindEffect, usVertexCount, cFullWindEffect, i, nStrip, nVertex, nIndex, fWeight, usWindGroup, pOrigCoord
-unsigned char CIndexedGeometry::CIndexedGeometry_ComputeWindEffect(U16 nLodLevel)
+unsigned char GeometryProcessor::CIndexedGeometry_ComputeWindEffect(U16 nLodLevel)
 {
     unsigned char changed = 0;
     if (!GetInitialized())

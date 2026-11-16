@@ -9522,8 +9522,8 @@ struct BaseProcessCall
 
 // Stores afEndurance into the cached values object and calls its FUN_008848c0 with 0x80 when that object is present.
 // @fnv 0x008ba050
-// pdb: TESAttributes::SetEndurance | TESActorBase.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): acValue
+// pdb: TESAttributes::SetEndurance | TESActorBase.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): acValue
 void BaseProcessCall::SetEndurance(float afEndurance)
 {
     if (m_pCachedValues)
@@ -108139,7 +108139,7 @@ class AHHighProcess : public AHProcess
 
 struct AHAnimNode
 {
-    void RemoveEntry(void* pszKey);
+    void RemoveEntry(void* pkNode);
 };
 struct AHCombatGroup
 {

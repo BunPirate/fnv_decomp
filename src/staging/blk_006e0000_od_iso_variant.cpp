@@ -1109,7 +1109,7 @@ struct FUN_006ff860_Class
 };
 struct FUN_006ffb90_Class
 {
-    void __thiscall SetParams(int apfData, int auiEnables);
+    void __thiscall SetParams(int a1, int a2);
 };
 struct FUN_006ff9f0 : FUN_006ff970_Class
 {

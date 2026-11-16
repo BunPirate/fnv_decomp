@@ -1754,14 +1754,14 @@ struct FUN_0096a970_Class
     int GetShortAtOffsetA();
     void ResizeAndClear(int n);
     void ProcessArray_CheckNextUpdateBounds();
-    void InsertAt(int uiIndex);
-    void InsertAt(int uiIndex, int index);
+    void InsertAt(int v);
+    void InsertAt(int a1, int index);
 };
 
 // @fnv 0x0096a970
-// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::InsertAt | NiNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): uiIndex, element
-// pdb locals (unverified, name-only link): isize, i, t
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::InsertAt | NiNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): uiIndex, element
+// pdb locals (unverified): isize, i, t
 void FUN_0096a970_Class::InsertAt(int aiValue, int index)
 {
     if (index != -1)

@@ -24,7 +24,7 @@ struct FUN_00b15170
     char m_00[0xc];
     char* m_0c;
     char* m_10;
-    char* GetElement(unsigned int szName);
+    char* GetElement(unsigned int a);
 };
 struct FUN_00b2a180
 {
@@ -587,7 +587,7 @@ struct BranchPoint
     }
 };
 // pdb: class CRotTransform, size 0x24, 1 members
-struct CRotTransform // src: XBOX_RETAIL_PDB 0x00b12c00 (first of 4 high-tier linked methods; old: BranchMatrix)
+struct CRotTransform // src: XBOX_RETAIL_PDB 0x00b12c00 (first of 4 high-tier links to its methods; old: BranchMatrix)
 {
     float m_afData, m01, m02, m10, m11, m12, m20, m21, m22; // src: XBOX_RETAIL_PDB +0x0 (old: m00)
     CRotTransform()
@@ -821,7 +821,7 @@ inline BranchPoint* __cdecl VecInterpolate(BranchPoint* out, const BranchPoint* 
     return out;
 }
 // pdb: class CIdvBranch, size 0x40 (here 0x50), 10 members
-struct CIdvBranch // src: XBOX_DEBUG_PDB 0x00b10dc0 (first of 4 high-tier linked methods; old: FUN_00b10dc0)
+struct CIdvBranch // src: XBOX_DEBUG_PDB 0x00b10dc0 (first of 2 high-tier links to its methods; old: FUN_00b10dc0)
 {
     int unk00;
     float time;

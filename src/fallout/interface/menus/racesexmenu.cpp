@@ -273,7 +273,7 @@ struct TileValueAccessor
 {
     Tile* m_tile;
     int __thiscall GetFloat1005();
-    void __thiscall RaceSexMenu_MenuOption_SetValue(int value);
+    void __thiscall RaceSexMenu_MenuOption_SetValue(int aiVal);
     void __thiscall RaceSexMenu_MenuOption_SetRange(int aiLow, int aiHigh);
 };
 // @fnv 0x007b3890
@@ -2555,32 +2555,32 @@ struct MenuOptionFor3760
     Tile* tile;
     int __thiscall GetFloat1005();
     void __thiscall RaceSexMenu_MenuOption_GetRange(int& fTargetUpperBound, int& fMinimumInputValue);
-    bool __thiscall RaceSexMenu_MenuOption_SetValue(int value);
+    bool __thiscall RaceSexMenu_MenuOption_SetValue(int aiVal);
 };
 
 // Clamps value between the option's min and max, and if it differs from the current value, updates the tile and its trait, returning true.
 // @fnv 0x007b3760
 // src: XBOX_PDB 0x007b3760
-// pdb: RaceSexMenu::MenuOption::SetValue | RaceSexMenu.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiVal
-// pdb locals (unverified, name-only link): icur, ilow, ihigh, pdisplay
-bool MenuOptionFor3760::RaceSexMenu_MenuOption_SetValue(int value)
+// pdb: RaceSexMenu::MenuOption::SetValue | RaceSexMenu.obj | retail, upstream name already matches, high
+// pdb params: aiVal
+// pdb locals: icur, ilow, ihigh, pdisplay
+bool MenuOptionFor3760::RaceSexMenu_MenuOption_SetValue(int aiVal)
 {
     if (tile != 0)
     {
         int currentValue = GetFloat1005();
         int fTargetUpperBound, fMinimumInputValue;
         RaceSexMenu_MenuOption_GetRange(fTargetUpperBound, fMinimumInputValue);
-        if (value < fTargetUpperBound)
-            value = fTargetUpperBound;
-        if (value > fMinimumInputValue)
-            value = fMinimumInputValue;
-        if (currentValue != value)
+        if (aiVal < fTargetUpperBound)
+            aiVal = fTargetUpperBound;
+        if (aiVal > fMinimumInputValue)
+            aiVal = fMinimumInputValue;
+        if (currentValue != aiVal)
         {
-            tile->FUN_00700320(0x1005, value);
+            tile->FUN_00700320(0x1005, aiVal);
             Trait* trait = (Trait*)tile->Tile_GetValue(0x1009);
             if (trait->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 0)
-                trait->Tile_Value_SetFloat_00a0a270((float)value, 1);
+                trait->Tile_Value_SetFloat_00a0a270((float)aiVal, 1);
             return true;
         }
     }
@@ -2780,25 +2780,25 @@ class B3CA0Menu
 {
   public:
     B3CA0SliderOption* AddOption(int apDisplayText, const char* apTemplate, int aiID, int apIter);
-    B3CA0SliderOption* RaceSexMenu_MenuOptionList_AddSliderOption(int m_uiSoundID, int iParent, int iLow, int iHigh, int iValue, float afJumpPct);
+    B3CA0SliderOption* RaceSexMenu_MenuOptionList_AddSliderOption(int apDisplayText, int aeID, int aiLowVal, int aiHighVal, int aiStartVal, float afJumpPct);
 };
 
 // @fnv 0x007b3ca0
 // src: XBOX_PDB 0x007b3ca0
-// pdb: RaceSexMenu::MenuOptionList::AddSliderOption | RaceSexMenu.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): apDisplayText, aeID, aiLowVal, aiHighVal, aiStartVal, afJumpPct
-// pdb locals (unverified, name-only link): pnew
-B3CA0SliderOption* B3CA0Menu::RaceSexMenu_MenuOptionList_AddSliderOption(int m_uiSoundID, int iParent, int iLow, int iHigh, int iValue, float afFraction)
+// pdb: RaceSexMenu::MenuOptionList::AddSliderOption | RaceSexMenu.obj | retail, upstream name already matches, high
+// pdb params: apDisplayText, aeID, aiLowVal, aiHighVal, aiStartVal, afJumpPct
+// pdb locals: pnew
+B3CA0SliderOption* B3CA0Menu::RaceSexMenu_MenuOptionList_AddSliderOption(int apDisplayText, int aeID, int aiLowVal, int aiHighVal, int aiStartVal, float afJumpPct)
 {
-    if (afFraction < 0.0)
-        afFraction = 0.0f;
-    if (afFraction > 1.0)
-        afFraction = 1.0f;
+    if (afJumpPct < 0.0)
+        afJumpPct = 0.0f;
+    if (afJumpPct > 1.0)
+        afJumpPct = 1.0f;
 
-    B3CA0SliderOption* pkOption = AddOption(m_uiSoundID, "RSM_slider_option_template", iParent, 0);
-    pkOption->SetRange(iLow, iHigh);
-    pkOption->SetValue(iValue);
-    pkOption->m_pkTile->Set(0x1008, B3CA0Max((float)(iHigh - iLow + 1) * afFraction, 1.0f), true);
+    B3CA0SliderOption* pkOption = AddOption(apDisplayText, "RSM_slider_option_template", aeID, 0);
+    pkOption->SetRange(aiLowVal, aiHighVal);
+    pkOption->SetValue(aiStartVal);
+    pkOption->m_pkTile->Set(0x1008, B3CA0Max((float)(aiHighVal - aiLowVal + 1) * afJumpPct, 1.0f), true);
     return pkOption;
 }
 
@@ -5872,15 +5872,15 @@ struct NavList
 // Moves the selection according to direction, retries navigation up to 100 times, then updates the selected tile.
 // @fnv 0x007b4260
 // src: XBOX_PDB 0x007b4260
-// pdb: RaceSexMenu::MenuOptionList::DoGamepad | RaceSexMenu.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiButton
-// pdb locals (unverified, name-only link): bret, bup, piter, itimeout
-bool NavList::RaceSexMenu_MenuOptionList_DoGamepad(int direction)
+// pdb: RaceSexMenu::MenuOptionList::DoGamepad | RaceSexMenu.obj | retail, upstream name already matches, high
+// pdb params: aiButton
+// pdb locals: bret, bup, piter, itimeout
+bool NavList::RaceSexMenu_MenuOptionList_DoGamepad(int aiButton)
 {
     void* position;
-    bool previousVal = direction == 1 || direction == 15;
+    bool previousVal = aiButton == 1 || aiButton == 15;
     bool bResult = true;
-    switch (direction)
+    switch (aiButton)
     {
     case 1:
     case 2: {
@@ -7316,28 +7316,28 @@ class StringList7B3D
     }
     ListNode7B3D* DereferenceIfNotNull(ListNode7B3D* pkPos);
     int CreateEntry(const char* apDisplayText, int apTemplate, int aiID, ListNode7B3D* apIter);
-    int RaceSexMenu_MenuOptionList_InsertMenuOption(int iIndex, const char* pcText, int iA, int iB);
+    int RaceSexMenu_MenuOptionList_InsertMenuOption(int aiPos, const char* apDisplayText, int apTemplate, int aiID);
 };
 
 // Inserts a new entry with pcText at position iIndex in the string list, returning 0 on failure or the result of CreateEntry.
 // @fnv 0x007b3d50
 // src: XBOX_PDB 0x007b3d50
-// pdb: RaceSexMenu::MenuOptionList::InsertMenuOption | RaceSexMenu.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiPos, apDisplayText, apTemplate, aiID
-// pdb locals (unverified, name-only link): piter
-int StringList7B3D::RaceSexMenu_MenuOptionList_InsertMenuOption(int iIndex, const char* pcText, int iA, int iB)
+// pdb: RaceSexMenu::MenuOptionList::InsertMenuOption | RaceSexMenu.obj | debug, upstream name already matches, high
+// pdb params: aiPos, apDisplayText, apTemplate, aiID
+// pdb locals: piter
+int StringList7B3D::RaceSexMenu_MenuOptionList_InsertMenuOption(int aiPos, const char* apDisplayText, int apTemplate, int aiID)
 {
-    if (!pcText || !DAT_011da634 || !((Manager7B3D*)DAT_011da634)->m_pkActive || !m_uiCount)
+    if (!apDisplayText || !DAT_011da634 || !((Manager7B3D*)DAT_011da634)->m_pkActive || !m_uiCount)
     {
         return 0;
     }
     ListNode7B3D* pkPos = GetHeadPos();
-    while (pkPos && iIndex)
+    while (pkPos && aiPos)
     {
         pkPos = DereferenceIfNotNull(pkPos);
-        iIndex--;
+        aiPos--;
     }
-    return CreateEntry(pcText, iA, iB, pkPos);
+    return CreateEntry(apDisplayText, apTemplate, aiID, pkPos);
 }
 
 namespace fnv_007ac1f0 {

@@ -8139,8 +8139,8 @@ struct HighProcess_008d8c60 : HighProcess
 };
 
 // @fnv 0x008d8c60
-// pdb: TESDataHandler::RemoveTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pKillTopicInfo
+// pdb: TESDataHandler::RemoveTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pKillTopicInfo
 void HighProcess_008d8c60::RemoveTopicInfo(TESTopicInfo* topicInfo)
 {
     pLastSpokeToList->Remove(topicInfo);
@@ -18082,11 +18082,11 @@ namespace fnv_008ecf20 {
 
 struct FUN_008ed400_shell
 {
-    void AddTopicInfo(TESTopicInfo* pNewTopicInfo);
+    void AddTopicInfo(TESTopicInfo* a1);
 };
 // @fnv 0x008ed400
-// pdb: TESDataHandler::AddTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pNewTopicInfo
+// pdb: TESDataHandler::AddTopicInfo | TESDataHandler.obj | debug, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pNewTopicInfo
 void FUN_008ed400_shell::AddTopicInfo(TESTopicInfo* apTopicInfo)
 {
     (*(BSSimpleList<TESTopicInfo*>**)((char*)this + 0x264))->AddHead(apTopicInfo);

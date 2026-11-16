@@ -85,17 +85,17 @@ Entry* __stdcall LowerBoundEntry(Entry* first, Entry* last, unsigned short key) 
 struct FUN_00d11960_cls {
     int* m_pEntryData;
     int m_iArrayLength;
-    void hkp3AxisSweep_hkpBpAxis_remove(int aiFirst, int aiSecond);
+    void hkp3AxisSweep_hkpBpAxis_remove(int minPosition, int maxPosition);
 };
 
 // @fnv 0x00d11960
 // src: HAVOK_LIB 0x00d11960
-// pdb: hkp3AxisSweep::hkpBpAxis::remove | hkp3AxisSweep.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): minPosition, maxPosition
-void FUN_00d11960_cls::hkp3AxisSweep_hkpBpAxis_remove(int aiFirst, int aiSecond)
+// pdb: hkp3AxisSweep::hkpBpAxis::remove | hkp3AxisSweep.obj | retail, upstream name already matches, high
+// pdb params: minPosition, maxPosition
+void FUN_00d11960_cls::hkp3AxisSweep_hkpBpAxis_remove(int minPosition, int maxPosition)
 {
-    int* p = m_pEntryData + aiFirst;
-    int* pEnd = m_pEntryData + aiSecond - 1;
+    int* p = m_pEntryData + minPosition;
+    int* pEnd = m_pEntryData + maxPosition - 1;
     while (p < pEnd) {
         p[0] = p[1];
         p++;

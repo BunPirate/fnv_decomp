@@ -1122,9 +1122,9 @@ struct FUN_00844c20_shell
 
 // If idx differs from the stored count, shrinks the array to idx elements, calls FUN_006a2770 with idx and the new count, then stores idx as the count.
 // @fnv 0x00844c20
-// pdb: ExtraDataList::SetCount | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): aiCount
-// pdb locals (unverified, name-only link): pcount
+// pdb: ExtraDataList::SetCount | ExtraDataList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): aiCount
+// pdb locals (unverified): pcount
 void FUN_00844c20_shell::SetCount(unsigned int idx)
 {
     if (idx == *(unsigned int*)((char*)this + 0xc))

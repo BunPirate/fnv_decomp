@@ -193,9 +193,9 @@ struct FUN_00e05a80Class
 extern "C" void __cdecl hkString_memCpy(void* destination, const void* source, int count);
 
 // @fnv 0x00e05a80
-// pdb: ArchiveFile::ReadFromBuffer | Archive_Xenon.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): apReadBuffer, aiByteCount
-// pdb locals (unverified, name-only link): uiAvailBufferBytes, uiRead, ioffset, iarchivePos, ialignedArchivePos, iamountRead, isizeToRead
+// pdb: ArchiveFile::ReadFromBuffer | Archive_Xenon.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apReadBuffer, aiByteCount
+// pdb locals (unverified): uiAvailBufferBytes, uiRead, ioffset, iarchivePos, ialignedArchivePos, iamountRead, isizeToRead
 int __thiscall FUN_00e05a80Class::ReadFromBuffer(void* destination, int count)
 {
     unsigned char state;

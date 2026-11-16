@@ -225,9 +225,9 @@ struct FUN_006db090_shell
 };
 
 // @fnv 0x006db090
-// pdb: BSPackedAdditionalGeometryData::NiBSPackedAGDDataBlock::FreeBuffer | BSPackedAdditionalGeometryData.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pvBuffer
-// pdb locals (unverified, name-only link): patt, att
+// pdb: BSPackedAdditionalGeometryData::NiBSPackedAGDDataBlock::FreeBuffer | BSPackedAdditionalGeometryData.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pvBuffer
+// pdb locals (unverified): patt, att
 void FUN_006db090_shell::FreeBuffer(void* apBuffer)
 {
     Deallocate(apBuffer);

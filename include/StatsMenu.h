@@ -74,7 +74,7 @@ public:
     static void __cdecl UpdatePlayerTitle();
     static void ClearPerks();
 
-    void SetCurrentPage(Page aiPage);
+    void SetCurrentPage(Page page);
     Page GetCurrentPage();
     void SetCurrentPageFromChar(char a);
     int GetTraitForValue(ActorValue::Index value);

@@ -9,7 +9,7 @@ class NiCamera;
 class NiNode;
 
 // pdb: class BSShaderUtil, size 0x1, 0 members
-class BSShaderUtil // src: XBOX_RETAIL_PDB 0x00b6ba70 (first of 3 high-tier linked methods; old: BSShaderRenderUtility_bsshaderutil)
+class BSShaderUtil // src: XBOX_RETAIL_PDB 0x00b6ba70 (first of 3 high-tier links to its methods; old: BSShaderRenderUtility_bsshaderutil)
 {
 public:
     bool IsRenderTargetId(unsigned int value);

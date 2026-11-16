@@ -2607,9 +2607,9 @@ struct TileValueStr {
 };
 
 // @fnv 0x00a0a300
-// pdb: Tile::Value::SetString | Tile.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): apString, abClearActions
-// pdb locals (unverified, name-only link): bforceUpdate, uiLen
+// pdb: Tile::Value::SetString | Tile.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apString, abClearActions
+// pdb locals (unverified): bforceUpdate, uiLen
 void TileValueStr::SetString(const char* apString, bool abUpdate)
 {
     const char* pCur;

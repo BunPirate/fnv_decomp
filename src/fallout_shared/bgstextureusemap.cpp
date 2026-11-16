@@ -13,7 +13,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // pdb: class BGSTextureUseMap, size 0x14 (here 0x1), 2 members
-struct BGSTextureUseMap // src: XBOX_RETAIL_PDB 0x004aa340 (first of 3 high-tier linked methods; old: FUN_004aa3d0_shell)
+struct BGSTextureUseMap // src: XBOX_DEBUG_PDB 0x004aa3a0 (first of 1 high-tier links to its methods; old: FUN_004aa3d0_shell)
 {
     void BGSTextureUseMap_CollectTexUseDataRecursive(int a, char b);
     void CollectTexUseData(int apNode, int apDefaultUser, char abCheckActors);

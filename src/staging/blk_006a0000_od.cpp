@@ -3341,7 +3341,7 @@ void FUN_006bfdd0_class::BSSimpleArray_PortalEdgeSwap_1024_InitialSetup(unsigned
 }
 
 // pdb: class NavMeshObstacleCutter, size 0x48 (here 0x1), 7 members
-struct NavMeshObstacleCutter // src: XBOX_RETAIL_PDB 0x006bde50 (first of 5 high-tier linked methods; old: FUN_006bde50)
+struct NavMeshObstacleCutter // src: XBOX_RETAIL_PDB 0x006bde50 (first of 2 high-tier links to its methods; old: FUN_006bde50)
 {
     bool CanAddEdge(void*, void*);
     void* CreateObject(void*, void*, int);

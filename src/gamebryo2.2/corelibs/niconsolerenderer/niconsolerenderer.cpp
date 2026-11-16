@@ -431,9 +431,9 @@ struct FUN_00e69b40_shell {
 };
 
 // @fnv 0x00e69b40
-// pdb: NiD3DShaderConstantMap::GetEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pszKey
-// pdb locals (unverified, name-only link): bFound, pkEntry, uiSize, ui
+// pdb: NiD3DShaderConstantMap::GetEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pszKey
+// pdb locals (unverified): bFound, pkEntry, uiSize, ui
 unsigned int FUN_00e69b40_shell::GetEntry(unsigned int index)
 {
     if (index < count)

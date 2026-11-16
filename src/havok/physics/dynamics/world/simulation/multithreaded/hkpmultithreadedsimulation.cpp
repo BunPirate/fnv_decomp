@@ -429,27 +429,27 @@ struct SubNode
 // For each handle in the pair whose type is 2, resolves its node and calls v07 on the target with the other handle's adjusted pointer.
 // @fnv 0x00d01fc0
 // src: XBOX_PDB 0x00d01fc0
-// pdb: hkpMultiThreadedSimulation::MtPhantomBroadPhaseListener::addCollisionPair | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): pair
-void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_addCollisionPair(HandlePair* pHandlePair)
+// pdb: hkpMultiThreadedSimulation::MtPhantomBroadPhaseListener::addCollisionPair | hkpMultithreadedSimulation.obj | retail, upstream name already matches, high
+// pdb params: pair
+void __stdcall hkpMultiThreadedSimulation_MtPhantomBroadPhaseListener_addCollisionPair(HandlePair* pair)
 {
-    Handle* h = pHandlePair->first;
+    Handle* h = pair->first;
     if (h->type == 2)
     {
         // the sub node of the first handle and the object behind it
         char* node = (char*)h + h->off;
-        Handle* other = pHandlePair->second;
+        Handle* other = pair->second;
         HandleTarget* target = (HandleTarget*)(node + ((SubNode*)node)->off10);
         // the second handle is passed on, offset by its own byte offset
         target->v07((Handle*)((char*)other + other->off));
     }
 
-    Handle* h2 = pHandlePair->second;
+    Handle* h2 = pair->second;
     if (h2->type == 2)
     {
         // the sub node of the second handle and the object behind it
         char* node = (char*)h2 + h2->off;
-        Handle* other = pHandlePair->first;
+        Handle* other = pair->first;
         HandleTarget* target = (HandleTarget*)(node + ((SubNode*)node)->off10);
         // the first handle is passed on, offset by its own byte offset
         target->v07((Handle*)((char*)other + other->off));

@@ -1643,7 +1643,7 @@ StartMenu::~StartMenu()
 }
 
 
-struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first of 1 high-tier linked methods; old: StartMenu_Option)
+struct Option // src: XBOX_RETAIL_PDB 0x007ce660 (first of 1 high-tier links to its methods; old: StartMenu_Option)
 {
     void InitPointer();
     void* FUN_007ce660(unsigned int flags);
@@ -3005,7 +3005,7 @@ void FUN_007d1320_Class::PlayerCharacter_SetKillCamMode(int value)
 
 unsigned int __cdecl gm_GetTickCount();
 
-struct IdleTimer // src: XBOX_DEBUG_PDB 0x007cb710 (first of 1 high-tier linked methods; old: FUN_007d5120_Class)
+struct FUN_007d5120_Class
 {
     unsigned int a;
     unsigned int b;
@@ -3015,7 +3015,7 @@ struct IdleTimer // src: XBOX_DEBUG_PDB 0x007cb710 (first of 1 high-tier linked 
 // @fnv 0x007d5120
 // src: XBOX_PDB 0x007d5120
 // pdb: StartMenu::IdleTimer::Start | StartMenu.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
-void __thiscall IdleTimer::StartMenu_IdleTimer_Start()
+void __thiscall FUN_007d5120_Class::StartMenu_IdleTimer_Start()
 {
     a = gm_GetTickCount();
     b = 0;

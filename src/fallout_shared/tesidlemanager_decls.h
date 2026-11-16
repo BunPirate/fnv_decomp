@@ -37,7 +37,7 @@ class AnimData
 };
 
 // pdb: class TESIdleManager, size 0x28, 3 members
-class TESIdleManager : public NiTMap<const char*, IdleAnimationDirectoryEntry*> // src: XBOX_RETAIL_PDB 0x00600170 (first of 9 high-tier linked methods; old: IdleAnimationManager)
+class TESIdleManager : public NiTMap<const char*, IdleAnimationDirectoryEntry*> // src: XBOX_RETAIL_PDB 0x00600170 (first of 6 high-tier links to its methods; old: IdleAnimationManager)
 {
     // The map occupies 0x10 bytes; the manager's loaded flag is at 0x14.
     unsigned char unused10[4];

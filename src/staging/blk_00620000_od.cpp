@@ -2356,16 +2356,16 @@ void __thiscall FUN_006399a0_Class::SetFlagsFromValue(int aiValue)
 
 struct FUN_006399e0_Class
 {
-    char NiAdditionalGeometryData_NiAGDDataStream_ConvertFromConsistency(int value);
+    char NiAdditionalGeometryData_NiAGDDataStream_ConvertFromConsistency(int eConsistency);
 };
 
 // @fnv 0x006399e0
 // src: COMMUNITY 0x006399e0
-// pdb: NiAdditionalGeometryData::NiAGDDataStream::ConvertFromConsistency | Precipitation.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): eConsistency
-char FUN_006399e0_Class::NiAdditionalGeometryData_NiAGDDataStream_ConvertFromConsistency(int value)
+// pdb: NiAdditionalGeometryData::NiAGDDataStream::ConvertFromConsistency | Precipitation.obj | debug, upstream name already matches, high
+// pdb params: eConsistency
+char FUN_006399e0_Class::NiAdditionalGeometryData_NiAGDDataStream_ConvertFromConsistency(int eConsistency)
 {
-    switch (value)
+    switch (eConsistency)
     {
     case 0:
         return 2;

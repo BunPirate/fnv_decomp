@@ -2135,42 +2135,42 @@ struct ColorState
     unsigned int threshold;
     unsigned int blendMode;
 
-    void NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* stream);
+    void NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* kStream);
 };
 
 // Writes red, green, blue, alpha, threshold and blendMode as 4-byte values, then format as 1 byte, to the stream's writer.
 // @fnv 0x00a72cb0
 // src: COMMUNITY 0x00a72cb0
-// pdb: NiAdditionalGeometryData::NiAGDDataStream::LoadBinary | NiAdditionalGeometryData.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): kStream
-void ColorState::NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* stream)
+// pdb: NiAdditionalGeometryData::NiAGDDataStream::LoadBinary | NiAdditionalGeometryData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void ColorState::NiAdditionalGeometryData_NiAGDDataStream_LoadBinary(BinaryStream* kStream)
 {
-    ObjectWriter* __restrict writer = stream->Writer();
+    ObjectWriter* __restrict writer = kStream->Writer();
     {
         unsigned int elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &red, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &green, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &blue, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &alpha, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &threshold, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 4;
         writer->bytesWritten += writer->write(writer, &blendMode, 4, &elementWidth, 1);
 
-        writer = stream->Writer();
+        writer = kStream->Writer();
         elementWidth = 1;
         writer->bytesWritten += writer->write(writer, this, 1, &elementWidth, 1);
     }

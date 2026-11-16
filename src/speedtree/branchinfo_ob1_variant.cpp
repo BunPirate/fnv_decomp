@@ -151,7 +151,7 @@ struct ByteVec
     int i8;
     char* pFirst;
     char* pLast;
-    unsigned char& FUN_00b15170(unsigned szName);
+    unsigned char& FUN_00b15170(unsigned n);
 };
 struct Parser
 {

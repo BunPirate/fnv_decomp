@@ -2174,12 +2174,12 @@ int __cdecl hkGeometryProcessing_checkTrianglesIntersection(void*,const Triple*)
 struct FUN_00e22270_Class { int unk00; unsigned int flags; int unk08,unk0c,output; float hkgpMeshInternals_TriangleOverlap_addLeaf(InputPacket*); };
 // @fnv 0x00e22270
 // src: HAVOK_LIB 0x00e22270
-// pdb: hkgpMeshInternals::TriangleOverlap::addLeaf | hkgpMesh.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): leaf
-// pdb locals (unverified, name-only link): v
-float FUN_00e22270_Class::hkgpMeshInternals_TriangleOverlap_addLeaf(InputPacket* input) {
+// pdb: hkgpMeshInternals::TriangleOverlap::addLeaf | hkgpMesh.obj | retail, upstream name already matches, high
+// pdb params: leaf
+// pdb locals: v
+float FUN_00e22270_Class::hkgpMeshInternals_TriangleOverlap_addLeaf(InputPacket* leaf) {
  __declspec(align(16)) Triple values;
- VectorGroup* group=input->group;
+ VectorGroup* group=leaf->group;
  values.first.copy(group->first);
  values.second.copy(group->second);
  values.third.copy(group->third);
@@ -7421,17 +7421,17 @@ struct FUN_00e21e60_cls {
     float m_f20;
     unsigned int m_u24;
 
-    float hkgpMesh_WeldingPolicy_addLeaf(FUN_00e21e60_pair* p);
+    float hkgpMesh_WeldingPolicy_addLeaf(FUN_00e21e60_pair* leaf);
 };
 
 // If the squared distance from m_v10 to the scaled sum of p's two vectors is <= m_f20, stores p->m_u20 in m_u24; always returns 1.0f.
 // @fnv 0x00e21e60
 // src: XBOX_PDB 0x00e21e60
-// pdb: hkgpMesh::WeldingPolicy::addLeaf | hkgpMesh.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): leaf
-float FUN_00e21e60_cls::hkgpMesh_WeldingPolicy_addLeaf(FUN_00e21e60_pair* p)
+// pdb: hkgpMesh::WeldingPolicy::addLeaf | hkgpMesh.obj | debug, upstream name already matches, high
+// pdb params: leaf
+float FUN_00e21e60_cls::hkgpMesh_WeldingPolicy_addLeaf(FUN_00e21e60_pair* leaf)
 {
-    __m128 sum = _mm_add_ps(p->m_v10, p->m_v00);
+    __m128 sum = _mm_add_ps(leaf->m_v10, leaf->m_v00);
     __m128 half = _mm_load_ss(&DAT_01016248);
     __m128 mid = _mm_mul_ps(sum, _mm_shuffle_ps(half, half, 0));
     __m128 d = _mm_sub_ps(mid, m_v10);
@@ -7443,7 +7443,7 @@ float FUN_00e21e60_cls::hkgpMesh_WeldingPolicy_addLeaf(FUN_00e21e60_pair* p)
     float dist;
     _mm_store_ss(&dist, r);
     if (dist <= m_f20) {
-        m_u24 = p->m_u20;
+        m_u24 = leaf->m_u20;
     }
     return 1.0f;
 }
@@ -7462,20 +7462,20 @@ __declspec(align(16)) struct Vec4Packet {
 struct FUN_00e22480_cls {
     virtual void Slot00();
     virtual void Slot01(Vec4Packet* out, unsigned int arg);
-    void IConvexOverlapImpl_ShapeBridge_convertVertexIdsToVertices(unsigned int ids, unsigned int numVerts, unsigned int a3);
+    void IConvexOverlapImpl_ShapeBridge_convertVertexIdsToVertices(unsigned int ids, unsigned int numVerts, unsigned int verticesOut);
 };
 
 // Stores a Vec4Packet with DAT_01012068 and DAT_01011d78 values and calls Slot01 with a3.
 // @fnv 0x00e22480
 // src: XBOX_PDB 0x00e22480
-// pdb: IConvexOverlapImpl::ShapeBridge::convertVertexIdsToVertices | hkgpMesh.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): ids, numVerts, verticesOut
-// pdb locals (unverified, name-only link): d, assertBuf, ostr
-void FUN_00e22480_cls::IConvexOverlapImpl_ShapeBridge_convertVertexIdsToVertices(unsigned int auiUnused1, unsigned int auiUnused2, unsigned int a3)
+// pdb: IConvexOverlapImpl::ShapeBridge::convertVertexIdsToVertices | hkgpMesh.obj | retail, upstream name already matches, high
+// pdb params: ids, numVerts, verticesOut
+// pdb locals: d, assertBuf, ostr
+void FUN_00e22480_cls::IConvexOverlapImpl_ShapeBridge_convertVertexIdsToVertices(unsigned int ids, unsigned int numVerts, unsigned int verticesOut)
 {
     Vec4Packet v;
     _mm_store_ps((float*)&v, _mm_setr_ps(DAT_01012068, DAT_01011d78, DAT_01011d78, DAT_01011d78));
-    this->Slot01(&v, a3);
+    this->Slot01(&v, verticesOut);
 }
 }  // namespace fnv_00e22480
 
@@ -8708,14 +8708,14 @@ inline unsigned int encodedEdge(const S_00e13910_Edge& edge) {
 // Collects triangles referenced by descriptors into a local array, then returns 1 if every descriptor's triangle is found in that array.
 // @fnv 0x00e155b0
 // src: HAVOK_LIB 0x00e155b0
-// pdb: hkgpMesh::Location::Region::hasCommonSuperset | hkgpMesh.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): regions, numRegions
-// pdb locals (unverified, name-only link): atoms, edge
-int __cdecl hkgpMesh_Location_Region_hasCommonSuperset(const HullDescriptor* const* descriptors,int count) {
+// pdb: hkgpMesh::Location::Region::hasCommonSuperset | hkgpMesh.obj | retail, upstream name already matches, high
+// pdb params: regions, numRegions
+// pdb locals: atoms, edge
+int __cdecl hkgpMesh_Location_Region_hasCommonSuperset(const HullDescriptor* const* regions,int numRegions) {
  HullLocalArray<S_00e13910_Triangle*> faces(64);
- for(int i=0;i<count;++i) {
-  S_00e13910_Edge edge=descriptors[i]->edge;
-  switch(descriptors[i]->kind) {
+ for(int i=0;i<numRegions;++i) {
+  S_00e13910_Edge edge=regions[i]->edge;
+  switch(regions[i]->kind) {
   case HullDescriptor::TRIANGLE: faces.AddBack(edge.m_pkTriangle); break;
   case HullDescriptor::EDGE:
    faces.AddBack(edge.m_pkTriangle);
@@ -8726,13 +8726,13 @@ int __cdecl hkgpMesh_Location_Region_hasCommonSuperset(const HullDescriptor* con
    do {
     faces.AddBack(edge.m_pkTriangle);
     edge=edge.prev().link();
-   } while(edge.isValid() && encodedEdge(edge)!=encodedEdge(descriptors[i]->edge));
+   } while(edge.isValid() && encodedEdge(edge)!=encodedEdge(regions[i]->edge));
    break;
   default: break;
   }
  }
- for(int i=0;i<count;++i) {
-  S_00e13910_Triangle* triangle=descriptors[i]->edge.m_pkTriangle;
+ for(int i=0;i<numRegions;++i) {
+  S_00e13910_Triangle* triangle=regions[i]->edge.m_pkTriangle;
   if(faces.indexOf(triangle)==-1) return 0;
  }
  return 1;
@@ -10945,7 +10945,7 @@ struct S_00e22050 {
     S_00e22050_Support* m_pSupport;
     char m_bHasHit;
     char m_flag;
-    float hkgpMesh_CollideShapeTriangle_addLeaf(S_00e22050_Arg* a);
+    float hkgpMesh_CollideShapeTriangle_addLeaf(S_00e22050_Arg* leaf);
 };
 
 static __forceinline float getReal(N::__m128 v) {
@@ -10969,12 +10969,12 @@ static N::__m128 Dot4B(N::__m128 a, N::__m128 b) {
 // Queries m_pSupport along the plane normal and its negation; if both band checks pass, calls m_cast->v1, sets m_bHasHit and returns 0 when below m_tol, else 1.
 // @fnv 0x00e22050
 // src: XBOX_PDB 0x00e22050
-// pdb: hkgpMesh::CollideShapeTriangle::addLeaf | hkgpMesh.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): leaf
-// pdb locals (unverified, name-only link): normalPos, sv, tshape, normalNeg
-float S_00e22050::hkgpMesh_CollideShapeTriangle_addLeaf(S_00e22050_Arg* a)
+// pdb: hkgpMesh::CollideShapeTriangle::addLeaf | hkgpMesh.obj | retail, upstream name already matches, high
+// pdb params: leaf
+// pdb locals: normalPos, sv, tshape, normalNeg
+float S_00e22050::hkgpMesh_CollideShapeTriangle_addLeaf(S_00e22050_Arg* leaf)
 {
-    S_00e22050_Plane* pPlane = a->m_kTriangleNormal;
+    S_00e22050_Plane* pPlane = leaf->m_kTriangleNormal;
     S_00e22050_V4 n;
     S_00e22050_V4 neg;
     n.m_vComponents = pPlane->m_kTriangleNormal.m_vComponents;
@@ -15413,15 +15413,15 @@ extern "C" void __cdecl ResizeAudioStream(void*, FUN_00e237b0_List*, unsigned in
 struct FUN_00e237b0_Owner {
     void* unk00;
     FUN_00e237b0_List list;
-    double hkgpMeshInternals_SimpleCollector_addLeaf(FUN_00e237b0_Input* input);
+    double hkgpMeshInternals_SimpleCollector_addLeaf(FUN_00e237b0_Input* leaf);
 };
 // Appends input->entry to the owner's list, growing the list by 4 if it is at capacity, and returns 1.0.
 // @fnv 0x00e237b0
 // src: XBOX_PDB 0x00e237b0
-// pdb: hkgpMeshInternals::SimpleCollector::addLeaf | hkgpMesh.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): leaf
-double FUN_00e237b0_Owner::hkgpMeshInternals_SimpleCollector_addLeaf(FUN_00e237b0_Input* input) {
-    void* entry = input->entry;
+// pdb: hkgpMeshInternals::SimpleCollector::addLeaf | hkgpMesh.obj | retail, upstream name already matches, high
+// pdb params: leaf
+double FUN_00e237b0_Owner::hkgpMeshInternals_SimpleCollector_addLeaf(FUN_00e237b0_Input* leaf) {
+    void* entry = leaf->entry;
     FUN_00e237b0_List* values = &list;
     hkMemoryRouter* alloc = hkMemoryRouter_getInstance();
     if (values->size == (values->capacityAndFlags & 0x3fffffff))

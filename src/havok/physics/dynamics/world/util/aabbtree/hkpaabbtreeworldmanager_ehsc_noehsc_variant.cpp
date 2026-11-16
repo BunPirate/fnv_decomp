@@ -96,7 +96,7 @@ struct EntryMap {
 };
 void __cdecl DispatchToOffsetTarget(hkpCollidable*, unsigned short);
 // pdb: class hkpAabbTreeWorldManager, size 0x70 (here 0x6c), bases: hkpTreeWorldManager, hkpEntityListener, hkpPhantomListener, hkpIslandActivationListener, hkpWorldPostSimulationListener, 15 members
-struct hkpAabbTreeWorldManager { // src: XBOX_RETAIL_PDB 0x00d08420 (first of 11 high-tier linked methods; old: UpdateState)
+struct hkpAabbTreeWorldManager { // src: XBOX_RETAIL_PDB 0x00d08800 (first of 3 high-tier links to its methods; old: UpdateState)
     int unk00; int unk04; int unk08; Tree* tree;
     FUN_00d08ff0_t gather;
     int unk20;

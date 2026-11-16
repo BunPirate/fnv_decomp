@@ -20,20 +20,20 @@ struct FUN_00d874d0_s
 };
 struct FUN_00db7d00_class
 {
-    void* __thiscall hkVersionPatchManager_UidFromClassVersion_cache(unsigned int a);
+    void* __thiscall hkVersionPatchManager_UidFromClassVersion_cache(unsigned int name);
 };
 // @fnv 0x00db7d00
 // src: XBOX_PDB 0x00db7d00
-// pdb: hkVersionPatchManager::UidFromClassVersion::cache | hkVersionPatchManager.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): name
-void* __thiscall FUN_00db7d00_class::hkVersionPatchManager_UidFromClassVersion_cache(unsigned int a)
+// pdb: hkVersionPatchManager::UidFromClassVersion::cache | hkVersionPatchManager.obj | retail, upstream name already matches, high
+// pdb params: name
+void* __thiscall FUN_00db7d00_class::hkVersionPatchManager_UidFromClassVersion_cache(unsigned int name)
 {
-    if (a)
+    if (name)
     {
-        void* p = ((FUN_00d479e0_class*)((char*)this + 0x1c))->GetValue((const void*)a, 0);
+        void* p = ((FUN_00d479e0_class*)((char*)this + 0x1c))->GetValue((const void*)name, 0);
         if (!p)
         {
-            p = hkString_strDup_00cb1410(a);
+            p = hkString_strDup_00cb1410(name);
             ((FUN_00d874d0_s*)((char*)this + 0x1c))->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert((const char*)p, (int)p);
         }
         return p;
@@ -1785,7 +1785,7 @@ extern "C" void __cdecl setAllDependeciesToDo(S00db94b0_Array_s* todo, int class
 
 struct DB7D00_Shell
 {
-    void* __thiscall hkVersionPatchManager_UidFromClassVersion_cache(unsigned int a);
+    void* __thiscall hkVersionPatchManager_UidFromClassVersion_cache(unsigned int name);
 };
 
 struct VersionUidCache

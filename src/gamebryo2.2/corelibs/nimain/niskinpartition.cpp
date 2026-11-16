@@ -339,7 +339,7 @@ struct FUN_00a81ff0_elem
     int m_20;
     int m_24;
     int m_28;
-    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* other);
+    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* kPartition);
 };
 
 struct FUN_00a81ff0_cls
@@ -702,47 +702,47 @@ __forceinline bool EqualBuffers(const void* right, const void* left, unsigned in
 }
 struct PartitionCompare : NiSkinPartition::Partition
 {
-    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* other);
+    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* kPartition);
 };
 // @fnv 0x00a81c90
 // src: GAMEBRYO_LIB 0x00a81c90
-// pdb: NiSkinPartition::Partition::IsEqual | NiSkinPartition.obj | debug, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): kPartition
-// pdb locals (unverified, name-only link): uiInteractions, uiStripLengthSum
-bool PartitionCompare::NiSkinPartition_Partition_IsEqual(const PartitionCompare* other)
+// pdb: NiSkinPartition::Partition::IsEqual | NiSkinPartition.obj | debug, upstream name already matches, high
+// pdb params: kPartition
+// pdb locals: uiInteractions, uiStripLengthSum
+bool PartitionCompare::NiSkinPartition_Partition_IsEqual(const PartitionCompare* kPartition)
 {
-    if (m_usVertices != other->m_usVertices)
+    if (m_usVertices != kPartition->m_usVertices)
         return false;
-    if (m_usTriangles != other->m_usTriangles)
+    if (m_usTriangles != kPartition->m_usTriangles)
         return false;
-    if (m_usBones != other->m_usBones)
+    if (m_usBones != kPartition->m_usBones)
         return false;
-    if (m_usStrips != other->m_usStrips)
+    if (m_usStrips != kPartition->m_usStrips)
         return false;
-    if (m_usBonesPerVertex != other->m_usBonesPerVertex)
+    if (m_usBonesPerVertex != kPartition->m_usBonesPerVertex)
         return false;
-    if (!EqualBuffers(other->m_pusBones, m_pusBones, m_usBones * sizeof(unsigned short)))
+    if (!EqualBuffers(kPartition->m_pusBones, m_pusBones, m_usBones * sizeof(unsigned short)))
         return false;
-    if (!EqualBuffers(other->m_pusVertexMap, m_pusVertexMap, m_usVertices * sizeof(unsigned short)))
+    if (!EqualBuffers(kPartition->m_pusVertexMap, m_pusVertexMap, m_usVertices * sizeof(unsigned short)))
         return false;
     unsigned int count = m_usVertices * m_usBonesPerVertex;
-    if (!EqualBuffers(other->m_pfWeights, m_pfWeights, count * sizeof(float)))
+    if (!EqualBuffers(kPartition->m_pfWeights, m_pfWeights, count * sizeof(float)))
         return false;
     if (!m_usStrips)
     {
-        if (!EqualBuffers(other->m_pusTriList, m_pusTriList, m_usTriangles * 3 * sizeof(unsigned short)))
+        if (!EqualBuffers(kPartition->m_pusTriList, m_pusTriList, m_usTriangles * 3 * sizeof(unsigned short)))
             return false;
     }
     else
     {
-        if (!EqualBuffers(other->m_pusStripLengths, m_pusStripLengths, m_usStrips * sizeof(unsigned short)))
+        if (!EqualBuffers(kPartition->m_pusStripLengths, m_pusStripLengths, m_usStrips * sizeof(unsigned short)))
             return false;
-        if (!EqualBuffers(other->m_pusTriList, m_pusTriList, NiSkinPartition_Partition_GetStripLengthSum() * sizeof(unsigned short)))
+        if (!EqualBuffers(kPartition->m_pusTriList, m_pusTriList, NiSkinPartition_Partition_GetStripLengthSum() * sizeof(unsigned short)))
             return false;
     }
-    if ((m_pucBonePalette == 0) != (other->m_pucBonePalette == 0))
+    if ((m_pucBonePalette == 0) != (kPartition->m_pucBonePalette == 0))
         return false;
-    if (m_pucBonePalette && !EqualBuffers(other->m_pucBonePalette, m_pucBonePalette, count))
+    if (m_pucBonePalette && !EqualBuffers(kPartition->m_pucBonePalette, m_pucBonePalette, count))
         return false;
     return true;
 }

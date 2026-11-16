@@ -42,27 +42,27 @@ struct Owner
 {
     unsigned char unk00[8];
     Reader* reader;
-    int hkSocket_WriterAdapter_write(int start, int length);
+    int hkSocket_WriterAdapter_write(int buf, int nbytes);
 };
 
 // @fnv 0x00d2b7b0
 // src: HAVOK_LIB 0x00d2b7b0
-// pdb: hkSocket::WriterAdapter::write | hkSocket.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): buf, nbytes
-int Owner::hkSocket_WriterAdapter_write(int start, int length)
+// pdb: hkSocket::WriterAdapter::write | hkSocket.obj | retail, upstream name already matches, high
+// pdb params: buf, nbytes
+int Owner::hkSocket_WriterAdapter_write(int buf, int nbytes)
 {
     int done = 0;
-    if (length > 0)
+    if (nbytes > 0)
     {
-        while (done < length)
+        while (done < nbytes)
         {
-            int amount = reader->Read(start + done, length - done);
+            int amount = reader->Read(buf + done, nbytes - done);
             done += amount;
             if (amount == 0)
                 return done;
         }
     }
-    return length;
+    return nbytes;
 }
 
 struct FUN_00da30a0_class
@@ -165,29 +165,29 @@ class FUN_00d2b740_cls
     unsigned int unk04;
     StreamIface* m_pBinaryStream;
 
-    int hkSocket_ReaderAdapter_read(char* buf, int size);
+    int hkSocket_ReaderAdapter_read(char* buf, int nbytes);
 };
 
 // @fnv 0x00d2b740
 // src: HAVOK_LIB 0x00d2b740
-// pdb: hkSocket::ReaderAdapter::read | hkSocket.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): buf, nbytes
-int FUN_00d2b740_cls::hkSocket_ReaderAdapter_read(char* apBuffer, int size)
+// pdb: hkSocket::ReaderAdapter::read | hkSocket.obj | retail, upstream name already matches, high
+// pdb params: buf, nbytes
+int FUN_00d2b740_cls::hkSocket_ReaderAdapter_read(char* buf, int nbytes)
 {
     int total = 0;
-    if (size > 0)
+    if (nbytes > 0)
     {
         do
         {
-            int n = m_pBinaryStream->Read(apBuffer + total, size - total);
+            int n = m_pBinaryStream->Read(buf + total, nbytes - total);
             total += n;
             if (n == 0)
             {
                 return total;
             }
-        } while (total < size);
+        } while (total < nbytes);
     }
-    return size;
+    return nbytes;
 }
 
 struct FUN_00d2b800_cls;

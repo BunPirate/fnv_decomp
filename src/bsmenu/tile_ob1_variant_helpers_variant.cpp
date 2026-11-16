@@ -426,7 +426,7 @@ struct Storage_00a0ae70 {
     TileTemplate_00a0ae70* m_pTileTemplate;
     bool m_owns;
 
-    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* apName);
+    TileTemplate_00a0ae70* Tile_BuildStorage_NewSubTemplate(const char* pName);
 };
 struct NiTexture;
 struct FUN_00a07530_shell { void Tile_SetChangeFlag(int); };

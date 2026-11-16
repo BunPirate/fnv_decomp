@@ -3628,7 +3628,7 @@ void FUN_006ff860_Class::SteamAPI_RunCallbacks_()
 
 struct FUN_006ffb90_Class
 {
-    void __thiscall SetParams(int apfData, int auiEnables);
+    void __thiscall SetParams(int a1, int a2);
 };
 struct FUN_006ff9f0 : FUN_006ff970_Class
 {
@@ -7788,8 +7788,8 @@ struct FFB90Request
 };
 
 // @fnv 0x006ffb90
-// pdb: ImageSpaceEffectCinematic::SetParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): apfData, auiEnables
+// pdb: ImageSpaceEffectCinematic::SetParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apfData, auiEnables
 void FFB90Request::SetParams(int param1, int param2)
 {
     if (!param1 || !param2)

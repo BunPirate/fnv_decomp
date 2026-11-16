@@ -11,7 +11,7 @@ extern TESDataHandler* g_dataHandler;
 // Save/load form-ID remapping table: forward map (formID -> save index),
 // reverse map (save index -> formID) and the next index to hand out.
 // pdb: class BGSSaveLoadFormIDMap, size 0x24, 3 members
-class BGSSaveLoadFormIDMap // src: XBOX_RETAIL_PDB 0x00846b60 (first of 3 high-tier linked methods; old: FormIDConverter)
+class BGSSaveLoadFormIDMap // src: XBOX_RETAIL_PDB 0x00846b60 (first of 2 high-tier links to its methods; old: FormIDConverter)
 {
   public:
     NiTPointerMap<unsigned int, unsigned int> FormIDToIndexMap;  // +0x0 // src: XBOX_RETAIL_PDB +0x0 (old: m_kSourceToTargetFormIDMap)

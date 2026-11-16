@@ -2921,9 +2921,9 @@ struct Map_00863bc0
 
 // Outputs the item's key and value, then advances item to the next chained item or the next non-empty bucket, or null.
 // @fnv 0x00863bc0
-// pdb: InventoryChanges::GetNextItem | InventoryChanges.obj | retail, upstream name already matches, high; a name-only link, and the class here differs from the PDB class, so its parameter names are not applied
-// pdb params (unverified, name-only link): arIterator, arpItemChange, aiIterateFlags
-// pdb locals (unverified, name-only link): pcontainerObject, pbipedform, pweapon, pitemChange, icount, pboundObject
+// pdb: InventoryChanges::GetNextItem | InventoryChanges.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): arIterator, arpItemChange, aiIterateFlags
+// pdb locals (unverified): pcontainerObject, pbipedform, pweapon, pitemChange, icount, pboundObject
 void Map_00863bc0::GetNextItem(Item_00863bc0*& item, unsigned char& key, unsigned int& val)
 {
     Item_00863bc0* pkItem = item;
