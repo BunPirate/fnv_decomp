@@ -290,7 +290,7 @@ class A42380Owner
 };
 extern const NiRTTI NiNodeRTTI_a42b70;
 extern const NiRTTI CtrlRTTI_A_a42b70;
-extern const NiRTTI NiLookAtController_ms_RTTI;
+extern const NiRTTI NiLookAtController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f98 (old: CtrlRTTI_B_a42b70/g_011f3f98)
 extern const NiRTTI CtrlRTTI_C_a42b70;
 struct StubController : NiObject
 {
@@ -1199,7 +1199,7 @@ struct Result
 Result* __cdecl CreateResultFromStreamObject(NiStream* stream, unsigned int index, const char* name);
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
-extern unsigned int NiSequence_ms_RTTI;
+extern unsigned int NiSequence_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f48 (old: g_011f3f48)
 NiGPUProgram* CreateResultFromStreamObject(NiStream*, unsigned int, void*) throw();
 void GetGPUProgram(NiStream* stream, unsigned int index, NiPointer<NiGPUProgram>& result, void* extra);
 void __cdecl NiFreeA4D(void* pvMem) throw();

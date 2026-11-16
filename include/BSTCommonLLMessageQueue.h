@@ -37,9 +37,9 @@ template <> class BSTCommonLLMessageQueue<ActorPathingMessage>
     virtual bool RemoveMessage(ActorPathingMessage& arMessage);
 
     LockPrimitive kLock;
-    BSTFreeList<ActorPathingMessage>* pFreeList;
+    BSTFreeList<ActorPathingMessage>* pFreeList; // src: XBOX_RETAIL_PDB +0x8 (old: pSizeClassFreeList)
     BSTFreeListElem<ActorPathingMessage>* pHead;
-    BSTFreeListElem<ActorPathingMessage>** ppTail;
+    BSTFreeListElem<ActorPathingMessage>** ppTail; // src: XBOX_RETAIL_PDB +0x10 (old: m_ppTailLink)
 };
 
 class MobileObjectTaskletContext;

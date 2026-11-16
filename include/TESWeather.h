@@ -41,16 +41,16 @@ public:
     float GetWeatherData(int data, float maximum, float minimum);
     unsigned char GetWeatherDataRaw(int);
 
-    TESTexture1024 cloudTexture[4];
-    unsigned char ucCloudLayerSpeed[4];
-    unsigned int uiCloudColorData[4][6];
-    TESModel precipNIF;
-    unsigned char ucWeatherData[15];
+    TESTexture1024 cloudTexture[4]; // src: XBOX_RETAIL_PDB +0x34 (old: m_kCloudLayerTextures)
+    unsigned char ucCloudLayerSpeed[4]; // src: XBOX_RETAIL_PDB +0x64 (old: m_aucCloudLayerSpeeds)
+    unsigned int uiCloudColorData[4][6]; // src: XBOX_RETAIL_PDB +0x68 (old: m_auiCloudLayerColors)
+    TESModel precipNIF; // src: XBOX_RETAIL_PDB +0xc8 (old: m_kWeatherModel)
+    unsigned char ucWeatherData[15]; // src: XBOX_RETAIL_PDB +0xe0 (old: m_aucWeatherFlags)
     unsigned char layoutPaddingEF[1];
-    float fFogData[6];
-    unsigned int uiColorData[10][6];
+    float fFogData[6]; // src: XBOX_RETAIL_PDB +0xf0 (old: m_afFogDistances)
+    unsigned int uiColorData[10][6]; // src: XBOX_RETAIL_PDB +0x108 (old: m_auiWeatherColors)
     TESWeather__WeatherSoundList soundList;
-    float fHDRData[14];
-    ImageSpaceModifierParameterData pImageSpaceParameterMods[2];
-    int iNumCloudLayers;
+    float fHDRData[14]; // src: XBOX_RETAIL_PDB +0x200 (old: m_afHdrParameters)
+    ImageSpaceModifierParameterData pImageSpaceParameterMods[2]; // src: XBOX_RETAIL_PDB +0x238 (old: m_akImageSpaceModifierParameters)
+    int iNumCloudLayers; // src: XBOX_RETAIL_PDB +0x368 (old: m_iCloudLayerCount)
 };

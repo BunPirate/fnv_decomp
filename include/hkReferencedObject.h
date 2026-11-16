@@ -66,8 +66,8 @@ public:
         MASK_MEMSIZE = 0x7fff
     };
 
-    unsigned short m_memSizeAndFlags;   // +0x4 m_memSizeAndFlags
-    mutable short m_referenceCount;      // +0x6 m_referenceCount
+    unsigned short m_memSizeAndFlags;   // +0x4 m_memSizeAndFlags // src: XBOX_RETAIL_PDB +0x4 (old: m_usMemSizeAndFlags)
+    mutable short m_referenceCount;      // +0x6 m_referenceCount // src: XBOX_RETAIL_PDB +0x6 (old: m_sReferenceCount)
 
 public:
     hkReferencedObject(FinishingFlag flag) {}

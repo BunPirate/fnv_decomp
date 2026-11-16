@@ -81,7 +81,7 @@ const NiRTTI* NiPSysBoundUpdateModifier::GetRTTI() const
     return &ms_kRTTI;
 }
 
-extern "C" const NiRTTI NiPSysSpawnModifier_ms_RTTI;
+extern "C" const NiRTTI NiPSysSpawnModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202550 (old: DAT_01202550/g_01202550)
 
 // @fnv 0x00c23ce0
 // src: COMMUNITY 0x00c23ce0

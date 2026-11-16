@@ -106,25 +106,25 @@ inline void* operator new(std::size_t, void* memory) throw()
 // pdb: class hkpRigidBodyCinfo, size 0xc0, 28 members
 struct hkpRigidBodyCinfo
 {
-    unsigned int m_collisionFilterInfo;
-    const hkpShape* m_shape;
-    hkReferencedObject* m_localFrame;
-    unsigned char m_collisionResponse, unk0d;
-    unsigned short m_contactPointCallbackDelay;
-    hkVector4 m_position;
-    hkQuaternion m_rotation;
-    hkVector4 m_linearVelocity, m_angularVelocity;
-    hkMatrix3 m_inertiaTensor;
-    hkVector4 m_centerOfMass;
-    float m_mass, m_linearDamping, m_angularDamping;
-    unsigned short m_gravityFactor, solverDeactivation;
-    float m_friction, m_restitution, m_maxLinearVelocity, m_maxAngularVelocity, m_allowedPenetrationDepth;
-    signed char m_motionType;
-    unsigned char m_enableDeactivation;
-    signed char m_solverDeactivation, m_qualityType;
-    unsigned char m_autoRemoveLevel, m_responseModifierFlags;
-    signed char m_numShapeKeysInContactPointProperties;
-    unsigned char m_forceCollideOntoPpu;
+    unsigned int m_collisionFilterInfo; // src: XBOX_RETAIL_PDB +0x0 (old: collisionFilterInfo)
+    const hkpShape* m_shape; // src: XBOX_RETAIL_PDB +0x4 (old: shape)
+    hkReferencedObject* m_localFrame; // src: XBOX_RETAIL_PDB +0x8 (old: localFrame)
+    unsigned char m_collisionResponse, unk0d; // src: XBOX_RETAIL_PDB +0xc (old: response)
+    unsigned short m_contactPointCallbackDelay; // src: XBOX_RETAIL_PDB +0xe (old: responseCount)
+    hkVector4 m_position; // src: XBOX_RETAIL_PDB +0x10 (old: position)
+    hkQuaternion m_rotation; // src: XBOX_RETAIL_PDB +0x20 (old: rotation)
+    hkVector4 m_linearVelocity, m_angularVelocity; // src: XBOX_RETAIL_PDB m_angularVelocity +0x40 (old: angularVelocity); m_linearVelocity +0x30 (old: linearVelocity)
+    hkMatrix3 m_inertiaTensor; // src: XBOX_RETAIL_PDB +0x50 (old: inertia)
+    hkVector4 m_centerOfMass; // src: XBOX_RETAIL_PDB +0x80 (old: centerOfMass)
+    float m_mass, m_linearDamping, m_angularDamping; // src: XBOX_RETAIL_PDB m_angularDamping +0x98 (old: angularDamping); m_linearDamping +0x94 (old: linearDamping); m_mass +0x90 (old: mass)
+    unsigned short m_gravityFactor, solverDeactivation; // src: XBOX_RETAIL_PDB +0x9c (old: unk9c)
+    float m_friction, m_restitution, m_maxLinearVelocity, m_maxAngularVelocity, m_allowedPenetrationDepth; // src: XBOX_RETAIL_PDB m_friction +0xa0 (old: friction); m_maxAngularVelocity +0xac (old: maxAngular); m_maxLinearVelocity +0xa8 (old: maxLinear); m_allowedPenetrationDepth +0xb0 (old: penetrationDepth); m_restitution +0xa4 (old: restitution)
+    signed char m_motionType; // src: XBOX_RETAIL_PDB +0xb4 (old: motionType)
+    unsigned char m_enableDeactivation; // src: XBOX_RETAIL_PDB +0xb5 (old: enableDeactivation)
+    signed char m_solverDeactivation, m_qualityType; // src: XBOX_RETAIL_PDB m_solverDeactivation +0xb6 (old: deactivationClass); m_qualityType +0xb7 (old: quality)
+    unsigned char m_autoRemoveLevel, m_responseModifierFlags; // src: XBOX_RETAIL_PDB m_autoRemoveLevel +0xb8 (old: removalLevel); m_responseModifierFlags +0xb9 (old: responseModifier)
+    signed char m_numShapeKeysInContactPointProperties; // src: XBOX_RETAIL_PDB +0xba (old: shapeKeys)
+    unsigned char m_forceCollideOntoPpu; // src: XBOX_RETAIL_PDB +0xbb (old: forceCollide)
 };
 
 unsigned char __cdecl GetSubtreeDepth(const hkpShape* shape) throw();

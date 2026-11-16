@@ -346,7 +346,7 @@ bool D077D0Object::hkpSimulationIsland_isFullyConnected()
 struct GlobalObjectO2_00d472a0
 {
 };
-extern GlobalObjectO2_00d472a0 hkpSimulationIslandClass;
+extern GlobalObjectO2_00d472a0 hkpSimulationIslandClass; // src: XBOX_RETAIL_PDB 0x012687cc (old: g_012687cc)
 // @fnv 0x00d078d0
 // src: GUESS 0x00d078d0 (confidence: low)
 GlobalObjectO2_00d472a0* hkpSimulationIsland_GetField012687ccAddress()

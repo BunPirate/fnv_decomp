@@ -9,12 +9,12 @@ class NavMeshTriList;
 class NavMeshGrid
 {
 public:
-    unsigned int iGridSize;
-    float fColumnSectionLen;
-    float fRowSectionLen;
-    NiPoint3 GridBoundsMin;
-    NiPoint3 GridBoundsMax;
-    BSSimpleArray<unsigned short, 1024>* GridData;
+    unsigned int iGridSize; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiGridIndex)
+    float fColumnSectionLen; // src: XBOX_RETAIL_PDB +0x4 (old: m_fFirstGridValue)
+    float fRowSectionLen; // src: XBOX_RETAIL_PDB +0x8 (old: NavMeshPointEntry)
+    NiPoint3 GridBoundsMin; // src: XBOX_RETAIL_PDB +0xc (old: IndexedPointRecord)
+    NiPoint3 GridBoundsMax; // src: XBOX_RETAIL_PDB +0x18 (old: IndexedPointData)
+    BSSimpleArray<unsigned short, 1024>* GridData; // src: XBOX_RETAIL_PDB +0x24 (old: TESFileRecordLoader)
 
     NavMeshGrid();
     void GetCellCoords(const NiPoint3& arPos, unsigned int& arRow, unsigned int& arCol);

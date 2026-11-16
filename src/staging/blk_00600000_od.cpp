@@ -1118,7 +1118,7 @@ struct FUN_0061fea0_shell
     void ClearList();
 };
 // pdb: class ZoneEntry, size 0x18 (here 0x4), bases: bhkTTNode<TESObjectREFR>, 1 members
-struct ZoneEntry : FUN_0061fea0_shell
+struct ZoneEntry : FUN_0061fea0_shell // src: EXE (old: FUN_0061fc50)
 {
     virtual ~ZoneEntry();
 };

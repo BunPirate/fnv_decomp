@@ -14,6 +14,6 @@ public:
 
     void LoadGeometry(const char* apFilename);
 
-    NiPointer<NiNode> spStars;
+    NiPointer<NiNode> spStars; // src: XBOX_RETAIL_PDB +0x8 (old: m_pStarsNode)
     float fAlpha;
 };

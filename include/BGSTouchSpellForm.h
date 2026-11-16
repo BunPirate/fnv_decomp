@@ -32,7 +32,7 @@ public:
     unsigned short GetFormTouchSpellAnimation();
     void SetFormTouchSpellAnimation(unsigned short animation);
 
-    MagicItemForm* pFormTouchSpell;
-    unsigned short iTouchSpellAnimation;
+    MagicItemForm* pFormTouchSpell; // src: XBOX_RETAIL_PDB +0x4 (old: m_pMagicItem)
+    unsigned short iTouchSpellAnimation; // src: XBOX_RETAIL_PDB +0x8 (old: m_usTouchSpellType)
     unsigned char layoutPaddingA[2];
 };

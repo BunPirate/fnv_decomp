@@ -19,6 +19,6 @@ public:
     void UpdateDoorSpawn(unsigned int UpdateData);
     void TargetIsRequiredType();
 
-    unsigned int fCheckDistance;
-    void (__cdecl* pfnCallback)(void*);
+    unsigned int fCheckDistance; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
+    void (__cdecl* pfnCallback)(void*); // src: XBOX_RETAIL_PDB +0x38 (old: m_callback)
 };

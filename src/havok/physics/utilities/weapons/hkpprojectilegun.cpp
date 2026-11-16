@@ -63,9 +63,9 @@ class hkpGunProjectile : public hkReferencedObject, public hkpContactListener
 {
 public:
     hkFlagsE44<ProjectileFlagsE44, unsigned char> m_flags;
-    hkpRigidBody* m_body;
-    float m_existanceTime;
-    void* m_gun;
+    hkpRigidBody* m_body; // src: XBOX_RETAIL_PDB +0x10 (old: m_kCollisionBody)
+    float m_existanceTime; // src: XBOX_RETAIL_PDB +0x14 (old: m_fDamage)
+    void* m_gun; // src: XBOX_RETAIL_PDB +0x18 (old: m_pGun)
 
     hkpGunProjectile(void* gun, hkpRigidBody* body);
     virtual ~hkpGunProjectile() throw();
@@ -90,12 +90,12 @@ public:
 class hkpProjectileGun : public hkpFirstPersonGun
 {
   public:
-    hkInt32 m_maxProjectiles;
-    hkReal m_reloadTime;
-    hkReal m_reload;
-    hkArray<hkpGunProjectile*> m_projectiles;
-    void* m_world;
-    void* m_destructionWorld;
+    hkInt32 m_maxProjectiles; // src: XBOX_RETAIL_PDB +0x20 (old: m_iMaxProjectiles)
+    hkReal m_reloadTime; // src: XBOX_RETAIL_PDB +0x24 (old: m_fReloadTime)
+    hkReal m_reload; // src: XBOX_RETAIL_PDB +0x28 (old: m_fTimeSinceLastShot)
+    hkArray<hkpGunProjectile*> m_projectiles; // src: XBOX_RETAIL_PDB +0x2c (old: m_kRigidBodies)
+    void* m_world; // src: XBOX_RETAIL_PDB +0x38 (old: m_pOwningWorld)
+    void* m_destructionWorld; // src: XBOX_RETAIL_PDB +0x3c (old: m_pBroadPhaseRegionData)
     hkpProjectileGun(void* flag);
     __declspec(noinline) virtual ~hkpProjectileGun() throw();
     virtual void trigger(int, int);

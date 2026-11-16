@@ -452,7 +452,7 @@ UpdateObject* NiObject_DynamicCast(void*, unsigned);
 bool FixNormals(UpdateObject*, UpdateObject*, float, bool, unsigned);
 void BSFaceGenManager_PrepareHeadForShaders(UpdateObject*, UpdatePacket&);
 extern unsigned DAT_0101f5f8;
-extern unsigned NiMaterialProperty_ms_RTTI;
+extern unsigned NiMaterialProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a5c (old: DAT_011f4a5c/g_011f4a5c)
 extern char DAT_0104a7bc;
 extern float DAT_01016248;
 extern "C" int __cdecl strncmp_r006056f0(const char*, const char*, unsigned);

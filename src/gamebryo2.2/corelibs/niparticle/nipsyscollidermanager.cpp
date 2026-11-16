@@ -10,7 +10,7 @@
 #include "../../../../include/NiPSysColliderManager.h"
 #include "../../../../include/NiPSysData.h"
 
-extern "C" void* NiPSysColliderManager_ms_RTTI;
+extern "C" void* NiPSysColliderManager_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202780 (old: g_01202780)
 extern int DAT_010c008c;
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);

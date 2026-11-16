@@ -179,7 +179,7 @@ bool FUN_0081eb50_shell::ClearIfMatches(int apCaster)
 }
 
 extern Setting DAT_011d1890, DAT_011d1bd4, DAT_011d19f0;
-extern NiRTTI DAT_012024e0, NiPSysSpawnModifier_ms_RTTI, DAT_01202540;
+extern NiRTTI DAT_012024e0, NiPSysSpawnModifier_ms_RTTI, DAT_01202540; // src: XBOX_RETAIL_PDB 0x01202550 (old: DAT_01202550/g_01202550)
 bool NiObject_IsKindOf(const NiRTTI*, NiObject*);
 void* NiObject_DynamicCast(const NiRTTI*, NiObject*);
 struct Emitter

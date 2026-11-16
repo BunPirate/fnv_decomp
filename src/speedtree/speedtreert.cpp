@@ -868,8 +868,8 @@ struct FUN_00b053e0_shell
 
 // @fnv 0x00b053e0
 // src: XBOX_PDB 0x00b053e0
-// pdb: CSpeedTreeRT::~CSpeedTreeRT | SpeedTreeRT.obj | retail, string-set bridge, high, not renamed: the public Xbox 360 symbol already names it; the code is probably folded with another original
-// pdb locals: iFind
+// pdb: CSpeedTreeRT::~CSpeedTreeRT | SpeedTreeRT.obj | retail, string-set bridge, disputed (was high), not renamed: the public Xbox 360 symbol already names it; the code is probably folded with another original; the Xbox debug build loads this function's message in CSpeedTreeRT::DeleteTransientData, which supports the existing name
+// pdb locals (of the disputed candidate, unverified): iFind
 void FUN_00b053e0_shell::CSpeedTreeRT_DeleteTransientData()
 {
     unsigned char bFlag = ((unsigned char*)*(void**)((char*)this))[0x21];

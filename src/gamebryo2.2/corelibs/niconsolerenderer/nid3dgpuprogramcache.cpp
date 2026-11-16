@@ -79,7 +79,7 @@ const char* __cdecl NiD3DGPUProgramCache_GetPlatformSpecificCodeID()
     return "hlsl";
 }
 
-extern "C" void* NiGPUProgramCache_ms_RTTI;
+extern "C" void* NiGPUProgramCache_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01270920 (old: g_01270920)
 
 // @fnv 0x00e8ea10
 // src: COMMUNITY 0x00e8ea10
@@ -609,8 +609,8 @@ struct ShaderLibrary8e
 };
 ShaderLibrary8e* __stdcall NiD3DShaderProgramFactory_GetInstance(ShaderProgram8e* pkProgram);
 long __stdcall D3DXCreateBuffer_0(unsigned int uiNumBytes, ShaderBuffer8e** ppkBuffer);
-extern const char* NiD3DHLSLVertexShader_ms_RTTI;
-extern const char* NiD3DHLSLPixelShader_ms_RTTI;
+extern const char* NiD3DHLSLVertexShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa48 (old: DAT_0126fa48/g_0126fa48)
+extern const char* NiD3DHLSLPixelShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa40 (old: DAT_0126fa40/g_0126fa40)
 extern ShaderFactory8e* DAT_0126fa3c;
 
 struct ShaderLoader8e

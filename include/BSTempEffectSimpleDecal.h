@@ -75,57 +75,57 @@ class BSTempEffectSimpleDecal : public BSTempEffect
                                   NiPoint3* apOutNormal);
     static NiPointer<QueuedFile> ms_pPreloadDecalDataFile;
 
-    bool bFinished;
-    bool bFinalize;
-    bool bOcclusionQuery;
-    bool bClearQueryTexture;
-    RenderQuery* pOcclusionQuery;
-    NiPointer<BSRenderedTexture> spQueryTexture;
-    unsigned int iCurrentOcclusionResult;
-    NiPointer<NiAVObject> sp3D;
+    bool bFinished; // src: XBOX_RETAIL_PDB +0x18 (old: bWasPlaying)
+    bool bFinalize; // src: XBOX_RETAIL_PDB +0x19 (old: m_bTextureDirty)
+    bool bOcclusionQuery; // src: XBOX_RETAIL_PDB +0x1a (old: m_bNeedsManagerUpdate)
+    bool bClearQueryTexture; // src: XBOX_RETAIL_PDB +0x1b (old: m_bDecalRenderingEnabled)
+    RenderQuery* pOcclusionQuery; // src: XBOX_RETAIL_PDB +0x1c (old: m_pRenderQuery)
+    NiPointer<BSRenderedTexture> spQueryTexture; // src: XBOX_RETAIL_PDB +0x20 (old: m_pDecalRenderTexture)
+    unsigned int iCurrentOcclusionResult; // src: XBOX_RETAIL_PDB +0x24 (old: m_uiTextureReferenceCount)
+    NiPointer<NiAVObject> sp3D; // src: XBOX_RETAIL_PDB +0x28 (old: m_pSceneObject)
     bool bPermanent;
-    bool bValidDecal;
-    bool bForceFade;
+    bool bValidDecal; // src: XBOX_RETAIL_PDB +0x2d (old: m_bSecondObjectFlag)
+    bool bForceFade; // src: XBOX_RETAIL_PDB +0x2e (old: TexturedObjectPlacementInfo)
     unsigned char layoutPadding2F[1];
-    BGSTextureSet* pTextureSet;
+    BGSTextureSet* pTextureSet; // src: XBOX_RETAIL_PDB +0x30 (old: m_pTextureSet)
     NiPoint3 pOrigin;
-    NiPoint3 pVector;
-    NiPoint3 pDecalCenter;
-    NiPoint3 pDecalNormal;
-    NiPlane pClippingPlanes[6];
-    int iDecalVertexCount;
-    int iDecalTriangleCount;
-    NiPoint3* pTempVertexArray;
-    NiPoint3* pFinalVertexArray;
-    NiPoint3* pTempNormalArray;
-    NiPoint3* pFinalNormalArray;
-    NiPoint2* pTempTexcoordArray;
-    NiPoint2* pFinalTexcoordArray;
-    NiColorA* pTempColorArray;
-    NiColorA* pFinalColorArray;
-    unsigned short* pTempIndexArray;
-    unsigned short* pFinalIndexArray;
-    short* pOldToNewIndexArray;
+    NiPoint3 pVector; // src: XBOX_RETAIL_PDB +0x40 (old: m_kSecondVertex)
+    NiPoint3 pDecalCenter; // src: XBOX_RETAIL_PDB +0x4c (old: m_kThirdPoint)
+    NiPoint3 pDecalNormal; // src: XBOX_RETAIL_PDB +0x58 (old: m_kFourthPoint)
+    NiPlane pClippingPlanes[6]; // src: XBOX_RETAIL_PDB +0x64 (old: m_akFacePlanes)
+    int iDecalVertexCount; // src: XBOX_RETAIL_PDB +0xc4 (old: m_iFirstValueAfterPlanes)
+    int iDecalTriangleCount; // src: XBOX_RETAIL_PDB +0xc8 (old: m_iSecondValueAfterPlanes)
+    NiPoint3* pTempVertexArray; // src: XBOX_RETAIL_PDB +0xcc (old: m_pFirstPoint3Array)
+    NiPoint3* pFinalVertexArray; // src: XBOX_RETAIL_PDB +0xd0 (old: m_pVertexNormals)
+    NiPoint3* pTempNormalArray; // src: XBOX_RETAIL_PDB +0xd4 (old: m_pThirdPoint3Array)
+    NiPoint3* pFinalNormalArray; // src: XBOX_RETAIL_PDB +0xd8 (old: m_pVertexBitangents)
+    NiPoint2* pTempTexcoordArray; // src: XBOX_RETAIL_PDB +0xdc (old: m_pPrimaryTextureCoordinates)
+    NiPoint2* pFinalTexcoordArray; // src: XBOX_RETAIL_PDB +0xe0 (old: m_pSecondaryTextureCoordinates)
+    NiColorA* pTempColorArray; // src: XBOX_RETAIL_PDB +0xe4 (old: m_pFirstElementArray)
+    NiColorA* pFinalColorArray; // src: XBOX_RETAIL_PDB +0xe8 (old: NavMeshGeometryBuffers)
+    unsigned short* pTempIndexArray; // src: XBOX_RETAIL_PDB +0xec (old: m_pFirstUnsignedShortArray)
+    unsigned short* pFinalIndexArray; // src: XBOX_RETAIL_PDB +0xf0 (old: m_pSecondUnsignedShortArray)
+    short* pOldToNewIndexArray; // src: XBOX_RETAIL_PDB +0xf4 (old: m_pSignedShortArray)
     // A single collection retains array decay for buffer access.
-    BSSimpleArray<DecalPointRecord*> pNewIndexMap[1];
-    BGSDecalNode* pParentNode;
-    NiPointer<NiAVObject> spTargetNode;
+    BSSimpleArray<DecalPointRecord*> pNewIndexMap[1]; // src: XBOX_RETAIL_PDB +0xf8 (old: m_aucByteBuffer)
+    BGSDecalNode* pParentNode; // src: XBOX_RETAIL_PDB +0x108 (old: m_pDecalNode)
+    NiPointer<NiAVObject> spTargetNode; // src: XBOX_RETAIL_PDB +0x10c (old: m_pTargetNode)
     float fScale;
-    float fRotation;
-    float fWidth;
-    float fHeight;
-    float fDepth;
-    unsigned char cSubTexture;
-    bool bUseParallaxOcclusion;
+    float fRotation; // src: XBOX_RETAIL_PDB +0x114 (old: fPathHeading)
+    float fWidth; // src: XBOX_RETAIL_PDB +0x118 (old: m_fGlyphWidthInPixels)
+    float fHeight; // src: XBOX_RETAIL_PDB +0x11c (old: m_fGlyphExtent)
+    float fDepth; // src: XBOX_RETAIL_PDB +0x120 (old: m_fProjectionDepth)
+    unsigned char cSubTexture; // src: XBOX_RETAIL_PDB +0x124 (old: m_ucByteAfterFloats)
+    bool bUseParallaxOcclusion; // src: XBOX_RETAIL_PDB +0x125 (old: m_bFlagBeforeFloat)
     unsigned char layoutPadding126[2];
-    float fParallaxOcclusionScale;
-    unsigned char ucParallaxOcclusionMaxPasses;
-    bool bUseAlphaTesting;
-    bool bUseAlphaBlending;
+    float fParallaxOcclusionScale; // src: XBOX_RETAIL_PDB +0x128 (old: m_fFloatBeforeScalarFlagState)
+    unsigned char ucParallaxOcclusionMaxPasses; // src: XBOX_RETAIL_PDB +0x12c (old: ScalarFlagState)
+    bool bUseAlphaTesting; // src: XBOX_RETAIL_PDB +0x12d (old: m_bFirstBooleanFlag)
+    bool bUseAlphaBlending; // src: XBOX_RETAIL_PDB +0x12e (old: m_bSecondBooleanFlag)
     unsigned char layoutPadding12F[1];
-    float fSpecular;
-    NiColor fVertexColor;
-    bool bModelSpace;
-    bool bTwoSided;
+    float fSpecular; // src: XBOX_RETAIL_PDB +0x130 (old: m_fSpecularStrength)
+    NiColor fVertexColor; // src: XBOX_RETAIL_PDB +0x134 (old: m_kSurfaceColor)
+    bool bModelSpace; // src: XBOX_RETAIL_PDB +0x140 (old: m_bTextureFlag)
+    bool bTwoSided; // src: XBOX_RETAIL_PDB +0x141 (old: m_bDecalTextureCreated)
     unsigned char layoutPadding142[2];
 };

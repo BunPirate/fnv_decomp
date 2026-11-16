@@ -6,7 +6,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 #include "../../../include/NiRTTI.h"
 #include "../../../include/bhkCharacterProxy.h"
-extern const NiRTTI bhkCharacterProxy_ms_RTTI;
+extern const NiRTTI bhkCharacterProxy_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268344 (old: g_01268344)
 struct FUN_00806f10_shell
 {
     unsigned int bhkCharacterController_GetCinfoSize();

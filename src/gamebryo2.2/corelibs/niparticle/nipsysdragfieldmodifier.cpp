@@ -16,7 +16,7 @@ extern "C"
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiPSysDragFieldModifier_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiPSysDragFieldModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202770 (old: g_01202770)
 
 // @fnv 0x00c2c800
 // src: COMMUNITY 0x00c2c800
@@ -315,7 +315,7 @@ struct GlobalObjectO2_00a7b610
 {
     void* object;
 };
-extern GlobalObjectO2_00a7b610 NiPSysDragFieldModifier_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiPSysDragFieldModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202770 (old: g_01202770)
 extern char UNK_010bffd0;
 extern char UNK_01044b44;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* object);

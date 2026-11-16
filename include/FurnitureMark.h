@@ -8,11 +8,11 @@ class NiPoint3;
 class FurnitureMark
 {
 public:
-    float Position;
+    float Position; // src: XBOX_RETAIL_PDB +0x0 (old: fX)
     float fY;
     float fZ;
-    unsigned short sHeading;
-    unsigned char cNumber;
+    unsigned short sHeading; // src: XBOX_RETAIL_PDB +0xc (old: usHeading)
+    unsigned char cNumber; // src: XBOX_RETAIL_PDB +0xe (old: cMarkerType)
 
     unsigned int QNumber();
     void SetNumber(unsigned int);

@@ -61,16 +61,16 @@ class BEB3890Base
 };
 
 // pdb: class NiBoxCapsuleIntersector, size 0x50, bases: NiIntersector, 4 members
-class NiBoxCapsuleIntersector : public BEB3890Base
+class NiBoxCapsuleIntersector : public BEB3890Base // src: EXE (old: FUN_00eb3890_cls)
 {
   public:
     NiBoxCapsuleIntersector(BEB3890Body* kBox, BEB3890Body* kCapsule, float fMaxTime, float fDerivativeTimeStep, float fPseudodistanceThreshold, int iMaxIterations);
     virtual ~NiBoxCapsuleIntersector();
 
-    BEB3890Body* m_kBox;
-    BEB3890Body* m_kCapsule;
-    float m_fInvRadiusSqr;
-    float m_afParameter;
+    BEB3890Body* m_kBox; // src: XBOX_RETAIL_PDB +0x38 (old: m_pkBodyA)
+    BEB3890Body* m_kCapsule; // src: XBOX_RETAIL_PDB +0x3c (old: m_pkBodyB)
+    float m_fInvRadiusSqr; // src: XBOX_RETAIL_PDB +0x40 (old: m_fInvRadiusSq)
+    float m_afParameter; // src: XBOX_RETAIL_PDB +0x44 (old: m_fVectorY)
     float m_fVectorZ;
     float m_fScalarPart;
 };

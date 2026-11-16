@@ -68,7 +68,7 @@ public:
         BkDisplayList displays;
     };
 
-    int pTiles;
+    int pTiles; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     int unk2C;
     int unk30;
     int unk34;
@@ -118,17 +118,17 @@ public:
         BkGroup m_groups[9];
         BookGroup groups[9];
     };
-    int spAVValues[10];
+    int spAVValues[10]; // src: XBOX_RETAIL_PDB +0x180 (old: m180)
     int m1a8[5];
-    int spNextPageButtonImage;
+    int spNextPageButtonImage; // src: XBOX_RETAIL_PDB +0x1bc (old: m1bc)
     int m1c0;
-    int spPreviousPageButtonImage;
+    int spPreviousPageButtonImage; // src: XBOX_RETAIL_PDB +0x1c4 (old: m1c4)
     int m1c8;
-    int spOpenCloseBookButtonImage;
+    int spOpenCloseBookButtonImage; // src: XBOX_RETAIL_PDB +0x1cc (old: m1cc)
     int m1d0;
-    int spAVLeftArrowButtonImage;
+    int spAVLeftArrowButtonImage; // src: XBOX_RETAIL_PDB +0x1d4 (old: m1d4)
     int m1d8;
-    int spAVRightArrowButtonImage;
+    int spAVRightArrowButtonImage; // src: XBOX_RETAIL_PDB +0x1dc (old: m1dc)
     int m1e0;
 
     bool HandleInput(int aiKey);

@@ -27,10 +27,10 @@ public:
     void QueueMe();
     bool __thiscall FormatDescription(char* apDescription, unsigned int aiBufferSize);
 
-    unsigned char pBlock[8];
+    unsigned char pBlock[8]; // src: XBOX_RETAIL_PDB +0x30 (old: unk30)
     int iX;
     int iY;
     int iLevel;
-    bool bCanceled;
-    bool bFileExists;
+    bool bCanceled; // src: XBOX_RETAIL_PDB +0x44 (old: m_bCancelled)
+    bool bFileExists; // src: XBOX_RETAIL_PDB +0x45 (old: m_bLoadComplete)
 };

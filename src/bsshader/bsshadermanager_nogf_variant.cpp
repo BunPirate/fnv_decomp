@@ -321,9 +321,9 @@ struct RTTIStub
 {
     int unk00;
 };
-extern RTTIStub TileShader_ms_RTTI;
-extern RTTIStub TallGrassShader_ms_RTTI;
-extern RTTIStub BSShaderNoLighting_ms_RTTI;
+extern RTTIStub TileShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012021b8 (old: g_012021b8)
+extern RTTIStub TallGrassShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01200508 (old: DAT_01200508/g_01200508)
+extern RTTIStub BSShaderNoLighting_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202040 (old: g_01202040)
 struct ShProp;
 struct PropPtr
 {

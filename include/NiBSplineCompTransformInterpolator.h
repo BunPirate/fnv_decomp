@@ -12,5 +12,5 @@ public:
     void CopyMemberData(NiBSplineCompTransformInterpolator* destination, CloningProcess& cloningProcess);
     bool Update(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue);
 
-    float m_afCompScalars[6];
+    float m_afCompScalars[6]; // src: XBOX_RETAIL_PDB +0x48 (old: m_afOffsetAndHalfRange)
 };

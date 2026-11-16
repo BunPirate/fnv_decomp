@@ -50,10 +50,10 @@ public:
     void SetMoveMode_00996e20(int);
     void ClearMoveMode();
 
-    unsigned int eState;
-    TimeoutTimer CheckDestinationTimer;
-    TimeoutTimer LookingTimer;
-    TimeoutTimer CheckSearchDoorTimer;
-    Location InvestigateLocation;
-    TESObjectREFR* pSearchDoor;
+    unsigned int eState; // src: XBOX_RETAIL_PDB +0x10 (old: state)
+    TimeoutTimer CheckDestinationTimer; // src: XBOX_RETAIL_PDB +0x14 (old: timer14)
+    TimeoutTimer LookingTimer; // src: XBOX_RETAIL_PDB +0x1c (old: timer1c)
+    TimeoutTimer CheckSearchDoorTimer; // src: XBOX_RETAIL_PDB +0x24 (old: timer24)
+    Location InvestigateLocation; // src: XBOX_RETAIL_PDB +0x2c (old: location)
+    TESObjectREFR* pSearchDoor; // src: XBOX_RETAIL_PDB +0x3c (old: m_pReference)
 };

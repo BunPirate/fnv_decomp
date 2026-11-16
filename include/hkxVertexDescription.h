@@ -35,7 +35,7 @@ public:
         HKX_DU_USERDATA = 256
     };
 
-    hkArray<hkxVertexDescriptionElementDecl> m_decls;
+    hkArray<hkxVertexDescriptionElementDecl> m_decls; // src: XBOX_RETAIL_PDB +0x0 (old: m_kElementDeclarations)
 
     hkxVertexDescription(FinishingFlag flag) throw();
     bool Equals(const hkxVertexDescription& other) const throw();

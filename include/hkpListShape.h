@@ -34,11 +34,11 @@ public:
                                const hkUint32_S* filterInfoArray = 0,
                                hkpShapeContainer::ReferencePolicy ref = hkpShapeContainer::REFERENCE_POLICY_INCREMENT);
 
-    hkArray<hkpListShapeChildInfo> m_childInfo;
+    hkArray<hkpListShapeChildInfo> m_childInfo; // src: XBOX_RETAIL_PDB +0x18 (old: m_kChildInfoList)
     hkUint16 m_flags;
-    hkUint16 m_numDisabledChildren;
+    hkUint16 m_numDisabledChildren; // src: XBOX_RETAIL_PDB +0x26 (old: m_usNumDisabledChildren)
     char pad28[8];
-    hkVector4 m_aabbHalfExtents;
-    hkVector4 m_aabbCenter;
-    hkUint32_S m_enabledChildren[8];
+    hkVector4 m_aabbHalfExtents; // src: XBOX_RETAIL_PDB +0x30 (old: m_kAabbHalfExtents)
+    hkVector4 m_aabbCenter; // src: XBOX_RETAIL_PDB +0x40 (old: m_kAabbCenter)
+    hkUint32_S m_enabledChildren[8]; // src: XBOX_RETAIL_PDB +0x50 (old: m_uiChildEnabledFlags)
 };

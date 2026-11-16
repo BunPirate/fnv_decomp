@@ -66,7 +66,7 @@ inline bool NiPoint3::operator==(const NiPoint3& other) const
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
-extern "C" void* BSPSysStripUpdateModifier_ms_RTTI;
+extern "C" void* BSPSysStripUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01204388 (old: g_01204388)
 struct FUN_00c600f0_Class
 {
     void* __thiscall BSPSysStripUpdateModifier_GetRTTI();
@@ -164,7 +164,7 @@ struct FUN_00c63950_class
     void __thiscall ForwardToOther(int a);
 };
 struct GlobalObject_00a7b610;
-extern GlobalObject_00a7b610 BSParentVelocityModifier_ms_RTTI;
+extern GlobalObject_00a7b610 BSParentVelocityModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012043c8 (old: g_012043c8)
 struct FUN_00c63aa0_class
 {
     GlobalObject_00a7b610* BSParentVelocityModifier_GetRTTI();
@@ -1255,7 +1255,7 @@ struct MaterialSource
     virtual int getMaterial(unsigned int shapeKey);
 };
 MaterialSource* __cdecl bhkUtilFunctions_FindbhkShapeCollection(const hkpCdBody* arBody);
-extern bool(__cdecl* bhkCharacterController_pfGetMaterialStairCallback)(int material);
+extern bool(__cdecl* bhkCharacterController_pfGetMaterialStairCallback)(int material); // src: XBOX_RETAIL_PDB 0x01267bc8 (old: DAT_01267bc8)
 inline bool IsSpecialMaterial(int material)
 {
     if (!bhkCharacterController_pfGetMaterialStairCallback)
@@ -1908,7 +1908,7 @@ struct FxRTTI
     const char* m_pcName;
     const FxRTTI* m_pBaseRTTI;
 };
-extern const FxRTTI DAT_012043f8, bhkLimitedHingeConstraint_ms_RTTI, DAT_01268310, DAT_0126864c;
+extern const FxRTTI DAT_012043f8, bhkLimitedHingeConstraint_ms_RTTI, DAT_01268310, DAT_0126864c; // src: XBOX_RETAIL_PDB 0x0126831c (old: DAT_0126831c/g_0126831c)
 extern const float DAT_01011d78, DAT_01017718, DAT_01016248;
 extern const double DAT_0102f248, DAT_01066808, DAT_01020758, DAT_0102fc70, DAT_01023128;
 extern const char* DAT_0109b220;

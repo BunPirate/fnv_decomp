@@ -98,8 +98,8 @@ typedef NiTArray<char*, NiTMallocInterface<char*> > C27A30StringArray;
 struct NiPSysTurbulenceFieldModifier : NiPSysFieldModifier
 {
     float m_fFrequency;
-    float m_fFrequencyUpdateTime;
-    float m_fLastUpdateTime;
+    float m_fFrequencyUpdateTime; // src: XBOX_RETAIL_PDB +0x34 (old: m_fFieldMagnitude)
+    float m_fLastUpdateTime; // src: XBOX_RETAIL_PDB +0x38 (old: m_fFieldDistance)
     bool __thiscall IsEqual_00c27390(NiObject* pkObject);
     static C27A30RTTI ms_kRTTI;
     void FieldViewerStrings(C27A30StringArray* pkStrings);

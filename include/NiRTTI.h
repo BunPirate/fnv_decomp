@@ -13,5 +13,5 @@ public:
     bool IsExactly(const NiRTTI* type) const;
 
     const char* m_pcName;
-    const NiRTTI* m_pkBaseRTTI;
+    const NiRTTI* m_pkBaseRTTI; // src: XBOX_RETAIL_PDB +0x4 (old: m_pBaseRTTI)
 };

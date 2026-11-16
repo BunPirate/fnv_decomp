@@ -93,24 +93,24 @@ public:
     virtual void InitLoadGameTES();
     virtual bool IsPackageDoneForActor(Actor* actor = 0);
 
-    unsigned long ePROCEDURE_TYPE;
-    unsigned long PackData;
+    unsigned long ePROCEDURE_TYPE; // src: XBOX_RETAIL_PDB +0x18 (old: procedureArrayIndex)
+    unsigned long PackData; // src: XBOX_RETAIL_PDB +0x1c (old: packageFlags)
     unsigned char type;
     unsigned char pad021[1];
     unsigned short behaviorFlags;
     unsigned long specificFlags;
-    TESPackageData* pPackData;
-    LocationData* pPackLoc;
-    TargetData* pPackTarg;
-    unsigned long pIdleCollection;
-    PackageTime packSched;
-    unsigned long packConditions;
+    TESPackageData* pPackData; // src: XBOX_RETAIL_PDB +0x28 (old: packageData)
+    LocationData* pPackLoc; // src: XBOX_RETAIL_PDB +0x2c (old: location)
+    TargetData* pPackTarg; // src: XBOX_RETAIL_PDB +0x30 (old: target)
+    unsigned long pIdleCollection; // src: XBOX_RETAIL_PDB +0x34 (old: unk034)
+    PackageTime packSched; // src: XBOX_RETAIL_PDB +0x38 (old: time)
+    unsigned long packConditions; // src: XBOX_RETAIL_PDB +0x40 (old: unk040)
     unsigned long unk044;
-    unsigned long pCombatStyle;
-    PackageAction OnBegin;
-    PackageAction OnEnd;
-    PackageAction OnChange;
-    unsigned long uiRefCount;
+    unsigned long pCombatStyle; // src: XBOX_RETAIL_PDB +0x48 (old: unk048)
+    PackageAction OnBegin; // src: XBOX_RETAIL_PDB +0x4c (old: onBeginAction)
+    PackageAction OnEnd; // src: XBOX_RETAIL_PDB +0x5c (old: onEndAction)
+    PackageAction OnChange; // src: XBOX_RETAIL_PDB +0x6c (old: onChangeAction)
+    unsigned long uiRefCount; // src: XBOX_RETAIL_PDB +0x7c (old: unk07C)
 
     Script* GetNextScript();
     TESObjectREFR* ComputeInitialTarget(MobileObject* apMob);

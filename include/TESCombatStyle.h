@@ -11,7 +11,7 @@ class TESCombatStyle : public TESForm
 public:
     UnsignedIntArray16 m_kUnsignedIntArray16;
     StatsChunkData Data;
-    UInt32ChunkData AdvancedData;
+    UInt32ChunkData AdvancedData; // src: XBOX_RETAIL_PDB +0xb4 (old: m_kUInt32ChunkData)
 
     TESCombatStyle();
     void ResetFormData();

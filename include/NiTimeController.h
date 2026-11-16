@@ -127,8 +127,8 @@ public:
     };
     float m_fStartTime;
     float m_fLastTime;
-    float m_fWeightedLastTime;
-    float m_fScaledTime;
+    float m_fWeightedLastTime; // src: XBOX_RETAIL_PDB +0x24 (old: m_fWeightAdjustedLastTime)
+    float m_fScaledTime; // src: XBOX_RETAIL_PDB +0x28 (old: m_fControllerTime)
     NiObjectNET* m_pkTarget;
-    NiPointer<NiTimeController> m_spNext;
+    NiPointer<NiTimeController> m_spNext; // src: XBOX_RETAIL_PDB +0x30 (old: m_spNextController)
 };

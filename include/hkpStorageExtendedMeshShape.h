@@ -30,9 +30,9 @@ public:
     {
         virtual ~ShapeSubpartStorage() throw();
 
-        hkArray<unsigned char> m_materialIndices;
-        hkArray<Material> m_materials;
-        hkArray<unsigned short> m_materialIndices16;
+        hkArray<unsigned char> m_materialIndices; // src: XBOX_RETAIL_PDB +0x8 (old: m_kMaterialIndices8)
+        hkArray<Material> m_materials; // src: XBOX_RETAIL_PDB +0x14 (old: m_kMaterials)
+        hkArray<unsigned short> m_materialIndices16; // src: XBOX_RETAIL_PDB +0x20 (old: m_kMaterialIndices16)
     };
 
     hkpStorageExtendedMeshShape(FinishingFlag flag) throw();
@@ -63,7 +63,7 @@ public:
     int m_iNumTriangles;
     hkReal m_fSphereRadius;
     unsigned char unkE8[0x8];
-    hkArray<hkpStorageExtendedMeshShapeMeshSubpartStorage*> m_meshstorage;
-    hkArray<hkpStorageExtendedMeshShapeShapeSubpartStorage*> m_shapestorage;
+    hkArray<hkpStorageExtendedMeshShapeMeshSubpartStorage*> m_meshstorage; // src: XBOX_RETAIL_PDB +0xf0 (old: m_kMeshSubparts)
+    hkArray<hkpStorageExtendedMeshShapeShapeSubpartStorage*> m_shapestorage; // src: XBOX_RETAIL_PDB +0xfc (old: m_kShapeSubparts)
     unsigned char unk108[0x8];
 };

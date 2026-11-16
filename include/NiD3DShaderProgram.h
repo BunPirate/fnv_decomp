@@ -76,12 +76,12 @@ public:
     void SetVertexShaderConstant(int, int, float*);
     void SetPixelShaderConstant(int, int, float*);
 
-    char* m_pszName;
-    char* m_pszShaderProgramName;
-    unsigned int m_uiCodeSize;
-    void* m_pvCode;
-    NiD3DShaderProgramCreator* m_pkCreator;
-    Direct3DDeviceInterface* m_pkD3DDevice;
-    GraphicsRenderer* m_pkD3DRenderer;
-    ShaderPassRenderer* m_pkD3DRenderState;
+    char* m_pszName; // src: XBOX_RETAIL_PDB +0xc (old: m_pcProgramName)
+    char* m_pszShaderProgramName; // src: XBOX_RETAIL_PDB +0x10 (old: m_pcProfile)
+    unsigned int m_uiCodeSize; // src: XBOX_RETAIL_PDB +0x14 (old: m_uiProgramCodeSize)
+    void* m_pvCode; // src: XBOX_RETAIL_PDB +0x18 (old: m_pProgramCode)
+    NiD3DShaderProgramCreator* m_pkCreator; // src: XBOX_RETAIL_PDB +0x1c (old: m_pCreator)
+    Direct3DDeviceInterface* m_pkD3DDevice; // src: XBOX_RETAIL_PDB +0x20 (old: m_pD3DDevice)
+    GraphicsRenderer* m_pkD3DRenderer; // src: XBOX_RETAIL_PDB +0x24 (old: m_pShaderObject)
+    ShaderPassRenderer* m_pkD3DRenderState; // src: XBOX_RETAIL_PDB +0x28 (old: m_pRenderState)
 };

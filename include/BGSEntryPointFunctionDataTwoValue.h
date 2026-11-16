@@ -8,8 +8,8 @@ class BGSEntryPointFunctionDataTwoValue : public BGSEntryPointFunctionData
 public:
     BGSEntryPointFunctionDataTwoValue();
 
-    float fValue1;
-    float fValue2;
+    float fValue1; // src: XBOX_RETAIL_PDB +0x4 (old: EntryPointTwoValueFunctionData)
+    float fValue2; // src: XBOX_RETAIL_PDB +0x8 (old: fSecondFunctionValue)
 
     float ReadValueA();
     float ReadValueB();

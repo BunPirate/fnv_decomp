@@ -25,8 +25,8 @@ public:
         static const hkClass& __cdecl staticClass();
         struct DefaultStruct;
 
-        hkVector4 m_start;
-        hkVector4 m_end;
+        hkVector4 m_start; // src: XBOX_RETAIL_PDB +0x0 (old: m_kRayStart)
+        hkVector4 m_end; // src: XBOX_RETAIL_PDB +0x10 (old: m_kRayEnd)
     };
 
     hkpMultiRayShape(const Ray* Rays, int nRays, hkReal rayPenetrationDistance = 0.0f);
@@ -35,6 +35,6 @@ public:
     const hkArray<Ray>& getRays() const { return m_rays; }
     hkReal getRayPenetrationDistance() const { return m_rayPenetrationDistance; }
 
-    hkArray<Ray> m_rays;
-    hkReal m_rayPenetrationDistance;
+    hkArray<Ray> m_rays; // src: XBOX_RETAIL_PDB +0x10 (old: m_kRays)
+    hkReal m_rayPenetrationDistance; // src: XBOX_RETAIL_PDB +0x1c (old: m_fRayRadius)
 };

@@ -17,7 +17,7 @@ public:
 
     bool bFlag150;
     unsigned char unk151[0x1f];
-    bool bCollisionGroupReset;
+    bool bCollisionGroupReset; // src: XBOX_RETAIL_PDB +0x170 (old: m_bProximityTriggered)
     unsigned char layoutPadding171[15];
 
     void InitProjectileFlags();

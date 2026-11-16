@@ -26,7 +26,7 @@ void NiQuaternionInterpolator::GuaranteeTimeRange_00a48960(float m_fStartTime, f
         p->GuaranteeKeysAtStartAndEnd(m_fStartTime, m_fMaximumDistance);
 }
 
-extern "C" const void* NiQuaternionInterpolator_ms_RTTI;
+extern "C" const void* NiQuaternionInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f60 (old: g_011f3f60)
 
 // @fnv 0x00a48ab0
 // src: COMMUNITY 0x00a48ab0

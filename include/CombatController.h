@@ -100,9 +100,9 @@ public:
         CombatState* combat;
     };
     union { CombatPlan* m_pCombatPlan; CombatPlan* unkA0; }; // 0xA0
-    int pCombatPlannerData;                                          // 0xA4
+    int pCombatPlannerData;                                          // 0xA4 // src: XBOX_RETAIL_PDB +0xa4 (old: unkA4)
     union { BSThread* m_pCombatThread; BSThread* unkA8; }; // 0xA8
-    int pCurrentGoal;                                          // 0xAC
+    int pCurrentGoal;                                          // 0xAC // src: XBOX_RETAIL_PDB +0xac (old: unkAC)
     union { int unkB0; int ib0; };                       // 0xB0
     CombatTimer unkB4;                                  // 0xB4
     union
@@ -112,7 +112,7 @@ public:
         Actor* pActor;
     };
     union { Actor* pTarget; Actor* field_c0; Actor* unkC0; }; // 0xC0
-    unsigned char bForceCombat;                                // 0xC4
+    unsigned char bForceCombat;                                // 0xC4 // src: XBOX_RETAIL_PDB +0xc4 (old: byteC4)
     union { unsigned char byteC5; char cc5; };            // 0xC5
     union { unsigned char byteC6; char cc6; };            // 0xC6
     union { unsigned char byteC7; char cc7; };            // 0xC7
@@ -123,25 +123,25 @@ public:
         int ic8;
     };
     float floatCC;                                      // 0xCC
-    float fAttackerSneakHeight;                                      // 0xD0
-    bool bAttackerCanSneak;                                        // 0xD4
-    bool bAttackerCanMove;                                        // 0xD5
+    float fAttackerSneakHeight;                                      // 0xD0 // src: XBOX_RETAIL_PDB +0xd0 (old: floatD0)
+    bool bAttackerCanSneak;                                        // 0xD4 // src: XBOX_RETAIL_PDB +0xd4 (old: byteD4)
+    bool bAttackerCanMove;                                        // 0xD5 // src: XBOX_RETAIL_PDB +0xd5 (old: byteD5)
     char unkD6[2];                                      // 0xD6
     union { float floatD8; int id8; };                   // 0xD8
     union { float floatDC; int idc; };                   // 0xDC
-    float fCombatPosition;                                      // 0xE0
+    float fCombatPosition;                                      // 0xE0 // src: XBOX_RETAIL_PDB +0xe0 (old: floatE0)
     union { unsigned char byteE4; char ce4; bool equipmentChanged; };            // 0xE4
     char unkE5[3];                                      // 0xE5
     NiPointer<AnimIdle> unkE8;                           // 0xE8
-    NiPointer<AnimIdle> spCellDebugGeometry;                           // 0xEC
-    int pCurrentWeapon;                                          // 0xF0
-    int pCurrentCombatStyle;                                          // 0xF4
-    unsigned char bDestructing;                                // 0xF8
-    unsigned char bDeterminedPowerAttackDeltas;                                // 0xF9
+    NiPointer<AnimIdle> spCellDebugGeometry;                           // 0xEC // src: XBOX_RETAIL_PDB +0xec (old: unkEC)
+    int pCurrentWeapon;                                          // 0xF0 // src: XBOX_RETAIL_PDB +0xf0 (old: unkF0)
+    int pCurrentCombatStyle;                                          // 0xF4 // src: XBOX_RETAIL_PDB +0xf4 (old: unkF4)
+    unsigned char bDestructing;                                // 0xF8 // src: XBOX_RETAIL_PDB +0xf8 (old: byteF8)
+    unsigned char bDeterminedPowerAttackDeltas;                                // 0xF9 // src: XBOX_RETAIL_PDB +0xf9 (old: byteF9)
     char unkFA[2];                                      // 0xFA
     Struct14A unkFC;                                    // 0xFC
-    Struct14B fPowerAttackHitTimes;                                   // 0x110
-    unsigned char bHasForwardAttacks;                               // 0x124
+    Struct14B fPowerAttackHitTimes;                                   // 0x110 // src: XBOX_RETAIL_PDB +0x110 (old: unk110)
+    unsigned char bHasForwardAttacks;                               // 0x124 // src: XBOX_RETAIL_PDB +0x124 (old: byte124)
     union { unsigned char byte125; bool byte_125; char c125; }; // 0x125
     union { unsigned char byte126; bool byte_126; char c126; }; // 0x126
     char unk127;                                        // 0x127

@@ -329,7 +329,7 @@ void __fastcall LoadActiveObject(NiLightColorController* self, void*, NiStream* 
         source->ReleaseObject();
 }
 
-extern float NiInterpController_INVALID_TIME;
+extern float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 extern NiColor DAT_011f4998;
 extern NiRTTI g_011f4a28;
 

@@ -903,7 +903,7 @@ extern float DAT_011ad7f8;
 extern float DAT_011f63a0;
 extern int DAT_011f9138;
 extern FadeQueueHolder* DAT_011f4748;
-extern int BSShaderAccumulator_ms_RTTI;
+extern int BSShaderAccumulator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa000 (old: DAT_011fa000/g_011fa000)
 extern char DAT_011f4288[];
 
 float BSMIN(float a, float b);

@@ -17,7 +17,7 @@ public:
 
 extern "C"
 {
-    extern void* NiPSysResetOnLoopCtlr_ms_RTTI;
+    extern void* NiPSysResetOnLoopCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026a8 (old: g_012026a8)
 }
 
 // @fnv 0x00c28400

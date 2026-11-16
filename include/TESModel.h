@@ -50,7 +50,7 @@ public:
     static const char* GetModelFilePath(TESObject* object);
 
     BSStringT<char> m_kModelFilePath;
-    FileEntryList TextureList;
+    FileEntryList TextureList; // src: XBOX_RETAIL_PDB +0xc (old: m_pTextureSwapData)
     unsigned char cFlags;
     unsigned char unk15[3];
 };

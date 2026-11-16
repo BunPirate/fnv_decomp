@@ -16,9 +16,9 @@ public:
         MusicTrack(const char* apFilename);
     };
 
-    float fAttenuation;
-    BSSimpleList<MusicTrack*> pMusicFileList;
-    unsigned int iLastSelection;
+    float fAttenuation; // src: XBOX_RETAIL_PDB +0x24 (old: fVolumeScale)
+    BSSimpleList<MusicTrack*> pMusicFileList; // src: XBOX_RETAIL_PDB +0x28 (old: m_kMusicFiles)
+    unsigned int iLastSelection; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiSelectedSoundIndex)
 
     BGSMusicType();
     virtual ~BGSMusicType();

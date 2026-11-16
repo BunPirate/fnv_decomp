@@ -26,6 +26,6 @@ public:
 
     Actor* pActor;
     TESPackage* pPackage;
-    const TESEscortPackageData* pPackageData;
-    BSSimpleList<Actor*> EscortedActors;
+    const TESEscortPackageData* pPackageData; // src: XBOX_RETAIL_PDB +0xc (old: m_pEscortPackageData)
+    BSSimpleList<Actor*> EscortedActors; // src: XBOX_RETAIL_PDB +0x10 (old: m_kActorList)
 };

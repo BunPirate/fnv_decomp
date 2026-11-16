@@ -27,7 +27,7 @@ public:
 
 extern "C"
 {
-    extern const void* NiGeomMorpherUpdateTask_ms_RTTI;
+    extern const void* NiGeomMorpherUpdateTask_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4100 (old: g_011f4100)
 }
 
 // @fnv 0x00a56c00

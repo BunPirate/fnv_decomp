@@ -19,6 +19,6 @@ public:
     unsigned char GetFormQuality();
     void SetFormQuality(unsigned char quality);
 
-    unsigned char cQuality;
+    unsigned char cQuality; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucFormQuality)
     char _pad_5[3];
 };

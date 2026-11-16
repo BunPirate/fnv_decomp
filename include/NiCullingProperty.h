@@ -17,6 +17,6 @@ class NiCullingProperty : public NiProperty
     void NiFogProperty_CopyMembers(void* pkDest, CloningProcess& kCloning);
     void NiShadeProperty_CopyMembers(void* pDest, CloningProcess& kCloning);
 
-    unsigned short m_uFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_usFlags)
     unsigned short unk1A;
 };

@@ -10,8 +10,8 @@ class MiddleLowProcess : public LowProcess
 public:
     virtual bool vf519(Actor*, float); // RTTI slot 519 = 0x0091dd30, ret 8, AL result
 
-    int iHourPackageEvaluated;
-    ActorValueModifierList pTemporaryModifiers;
+    int iHourPackageEvaluated; // src: XBOX_RETAIL_PDB +0xb4 (old: m_iValueB4)
+    ActorValueModifierList pTemporaryModifiers; // src: XBOX_RETAIL_PDB +0xb8 (old: m_kProcessModifierList)
 
     virtual int GetProcessInteger() const;
     void SetProcessInteger(int);

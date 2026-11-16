@@ -9,5 +9,5 @@ class BSRoomNode;
 class ExtraRoom : public BSExtraData
 {
 public:
-    NiPointer<BSRoomNode> spRoom;
+    NiPointer<BSRoomNode> spRoom; // src: XBOX_RETAIL_PDB +0xc (old: m_pRoomNode)
 };

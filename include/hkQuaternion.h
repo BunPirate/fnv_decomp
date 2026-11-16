@@ -14,7 +14,7 @@ class hkVector4H;
 class hkQuaternion
 {
 public:
-    int m_vec;
+    int m_vec; // src: XBOX_RETAIL_PDB +0x0 (old: unk00)
     unsigned short unk04;
     unsigned short unk06;
     int unk08;

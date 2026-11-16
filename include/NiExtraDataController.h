@@ -12,6 +12,6 @@ public:
 
     void PostLinkObject_00a57400(NiStream& kStream);
 
-    NiFixedString m_kExtraDataName;
-    NiPointer<NiExtraData> m_spExtraData;
+    NiFixedString m_kExtraDataName; // src: XBOX_RETAIL_PDB +0x38 (old: m_kDataName)
+    NiPointer<NiExtraData> m_spExtraData; // src: XBOX_RETAIL_PDB +0x3c (old: m_pExtraData)
 };

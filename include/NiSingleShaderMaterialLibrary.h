@@ -18,6 +18,6 @@ public:
     virtual void* vf05();
     virtual void* vf06();
 
-    int m_pkLastLibrary;
-    int m_uiLastDesc;
+    int m_pkLastLibrary; // src: XBOX_RETAIL_PDB +0xc (old: _c)
+    int m_uiLastDesc; // src: XBOX_RETAIL_PDB +0x10 (old: _d)
 };

@@ -12,7 +12,7 @@ struct ChangedFormRecord;
 class BGSReconstructFormsInAllFilesMap : public NiTMap<TESFile*, BGSReconstructFormsInFileMap*>
 {
 public:
-    FormChangeMap ReconstructedForms;
+    FormChangeMap ReconstructedForms; // src: XBOX_RETAIL_PDB +0x10 (old: m_kFormChangeMap)
     unsigned int iCount;
 
     BGSReconstructFormsInAllFilesMap();

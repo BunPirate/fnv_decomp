@@ -27,11 +27,11 @@ struct RefBase_cls
 };
 
 // pdb: class hkpSerializedDisplayMarkerList, size 0x14, bases: hkReferencedObject, 1 members
-class hkpSerializedDisplayMarkerList : public RefBase_cls
+class hkpSerializedDisplayMarkerList : public RefBase_cls // src: EXE (old: FUN_00dff010_cls)
 {
   public:
     int m_i04;
-    RefElem_t** m_markers;
+    RefElem_t** m_markers; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppData)
     int m_iArrayLength;
     unsigned int m_uCapacity;
 

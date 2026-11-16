@@ -47,5 +47,5 @@ public:
         return pDirectories[auiIndex].m_uiCount;
     }
 
-    ArchiveEntry* pDirectories;  // +0x24 folder records (0x10 each)
+    ArchiveEntry* pDirectories;  // +0x24 folder records (0x10 each) // src: XBOX_RETAIL_PDB +0x24 (old: pEntries)
 };

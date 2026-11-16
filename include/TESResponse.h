@@ -37,9 +37,9 @@ class TESResponse
 {
   public:
     DialogueResponseData Data;        // +0x00
-    BSStringT<char> cResponseText;  // +0x18
-    TESIdleForm* pSpeakerIdle;    // +0x20 speaker idle
-    TESIdleForm* pListenerIdle;   // +0x24 listener idle
+    BSStringT<char> cResponseText;  // +0x18 // src: XBOX_RETAIL_PDB +0x18 (old: m_kResponseText)
+    TESIdleForm* pSpeakerIdle;    // +0x20 speaker idle // src: XBOX_RETAIL_PDB +0x20 (old: m_pFirstIdleForm)
+    TESIdleForm* pListenerIdle;   // +0x24 listener idle // src: XBOX_RETAIL_PDB +0x24 (old: m_pSecondIdleForm)
     TESResponse* pNext;               // +0x28
 
     TESResponse();                                                 // 0x00616ce0

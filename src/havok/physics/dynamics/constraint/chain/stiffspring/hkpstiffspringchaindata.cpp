@@ -60,11 +60,11 @@ class hkpStiffSpringChainData : public hkpConstraintChainData
 public:
     virtual ~hkpStiffSpringChainData() throw();
 
-    hkpBridgeAtoms m_atoms;
-    hkArray<hkpStiffSpringChainDataConstraintInfo> m_infos;
-    hkReal m_tau;
-    hkReal m_damping;
-    hkReal m_cfm;
+    hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0xc (old: m_kBridgeAtoms)
+    hkArray<hkpStiffSpringChainDataConstraintInfo> m_infos; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintInfo)
+    hkReal m_tau; // src: XBOX_RETAIL_PDB +0x24 (old: m_fTau)
+    hkReal m_damping; // src: XBOX_RETAIL_PDB +0x28 (old: m_fMotorDamping)
+    hkReal m_cfm; // src: XBOX_RETAIL_PDB +0x2c (old: m_fMaxErrorDistance)
 
     void getRuntimeInfo_00e3af80(bool bFlag, unsigned int* pOut);
     void getConstraintInfo_00e3af40(::ConstraintInfo& info);

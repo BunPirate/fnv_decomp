@@ -22,5 +22,5 @@ public:
     void ResetData();
     void InitializeData_00617e80();
 
-    unsigned char data[0x34];
+    unsigned char data[0x34]; // src: XBOX_RETAIL_PDB +0x2c (old: formData)
 };

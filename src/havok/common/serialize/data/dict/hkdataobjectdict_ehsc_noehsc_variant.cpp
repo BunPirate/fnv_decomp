@@ -207,7 +207,7 @@ struct hkDataClassCinfoX
 class hkDataClass
 {
   public:
-    hkDataClassImpl* m_impl;
+    hkDataClassImpl* m_impl; // src: XBOX_RETAIL_PDB +0x0 (old: m_pClassImpl)
 
     hkDataClass(hkDataClassImpl* impl) throw();
     ~hkDataClass() throw();
@@ -381,7 +381,7 @@ class hkDataWorldDict
                          int tupleCount) throw();
     hkDataClassImpl* copyClassFromWorld(const char* name, const hkDataWorldDict& worldFrom);
     int m_referenceCounts;
-    hkTrackerDC82* m_tracker;
+    hkTrackerDC82* m_tracker; // src: XBOX_RETAIL_PDB +0x8 (old: m_pTracker)
 
     hkDataClassDict* FindTrackedClass(const char* name)
     {

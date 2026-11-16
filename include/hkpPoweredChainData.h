@@ -56,13 +56,13 @@ public:
     void addConstraintInfoInBodySpace(const V4* frameA, const V4* frameB, const V4* frameC,
                     Body* motorA, Body* motorB, Body* motorC);
 
-    hkpBridgeAtoms m_atoms;
-    hkArray<hkpPoweredChainDataConstraintInfo> m_infos;
-    hkReal m_tau;
-    hkReal m_damping;
-    hkReal m_cfmLinAdd;
-    hkReal m_cfmLinMul;
-    hkReal m_cfmAngAdd;
-    hkReal m_cfmAngMul;
-    hkReal m_maxErrorDistance;
+    hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0xc (old: m_kBridgeAtoms)
+    hkArray<hkpPoweredChainDataConstraintInfo> m_infos; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintInfo)
+    hkReal m_tau; // src: XBOX_RETAIL_PDB +0x24 (old: m_fTau)
+    hkReal m_damping; // src: XBOX_RETAIL_PDB +0x28 (old: m_fMotorDamping)
+    hkReal m_cfmLinAdd; // src: XBOX_RETAIL_PDB +0x2c (old: m_fMaximumErrorDistance)
+    hkReal m_cfmLinMul; // src: XBOX_RETAIL_PDB +0x30 (old: m_fMaximumLinearImpulse)
+    hkReal m_cfmAngAdd; // src: XBOX_RETAIL_PDB +0x34 (old: m_fBreachImpulse)
+    hkReal m_cfmAngMul; // src: XBOX_RETAIL_PDB +0x38 (old: m_fInertiaStabilizationFactor)
+    hkReal m_maxErrorDistance; // src: XBOX_RETAIL_PDB +0x3c (old: m_fMaximumAngularImpulse)
 };

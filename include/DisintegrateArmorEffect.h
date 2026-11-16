@@ -21,5 +21,5 @@ public:
     float GetFloatAtOffset1C(int);
     float GetFloatAtOffset1C();
 
-    InventoryItem* pArmor;
+    InventoryItem* pArmor; // src: XBOX_RETAIL_PDB +0x48 (old: m_pItem)
 };

@@ -224,7 +224,7 @@ extern "C" InitFuncD2B DAT_011b3de8;
 
 class FUN_00d2b850;
 
-class ReaderAdapter : public hkReferencedObject
+class ReaderAdapter : public hkReferencedObject // src: EXE (old: PartAD2B)
 {
   public:
     ReaderAdapter() throw() : m_pOwnerObject(0)
@@ -234,7 +234,7 @@ class ReaderAdapter : public hkReferencedObject
     FUN_00d2b850* m_pOwnerObject;
 };
 
-class WriterAdapter : public hkReferencedObject
+class WriterAdapter : public hkReferencedObject // src: EXE (old: PartBD2B)
 {
   public:
     WriterAdapter() throw() : m_pOwnerObject(0)

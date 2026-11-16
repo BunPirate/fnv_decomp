@@ -37,5 +37,5 @@ public:
     void LoadComponent(TESForm* form, TESFile* file);
     void AddPathToList(const char* path);
 
-    BSSimpleList<const char*> kfFilenames;
+    BSSimpleList<const char*> kfFilenames; // src: XBOX_RETAIL_PDB +0x4 (old: m_kKFFileList)
 };

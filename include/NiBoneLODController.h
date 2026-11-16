@@ -53,7 +53,7 @@ public:
 
     int m_iLOD;
     unsigned int m_uiNumLODs;
-    NiTPrimitiveArray<BoneSet*> m_kBoneArray;
-    NiTPrimitiveArray<SkinInfoSet*> m_kSkinArray;
-    NiTPrimitiveSet<NiTriBasedGeom*> m_kSkinSet;
+    NiTPrimitiveArray<BoneSet*> m_kBoneArray; // src: XBOX_RETAIL_PDB +0x3c (old: m_kBoneSetArray)
+    NiTPrimitiveArray<SkinInfoSet*> m_kSkinArray; // src: XBOX_RETAIL_PDB +0x4c (old: m_kSkinInfoSets)
+    NiTPrimitiveSet<NiTriBasedGeom*> m_kSkinSet; // src: XBOX_RETAIL_PDB +0x5c (old: m_kShapeGroups)
 };

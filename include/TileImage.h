@@ -38,7 +38,7 @@ class TileImage : public Tile
 
     float fScale;
     NiPointer<NiTexture> spTexture;
-    NiPointer<TileShaderProperty> spTSP;
-    bool bIsScissor;
+    NiPointer<TileShaderProperty> spTSP; // src: XBOX_RETAIL_PDB +0x40 (old: m_spShaderProperty)
+    bool bIsScissor; // src: XBOX_RETAIL_PDB +0x44 (old: m_bTextureLoaded)
     unsigned char unk45[3];
 };

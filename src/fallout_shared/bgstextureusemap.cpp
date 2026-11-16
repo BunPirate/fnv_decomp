@@ -13,7 +13,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // pdb: class BGSTextureUseMap, size 0x14 (here 0x1), 2 members
-struct BGSTextureUseMap
+struct BGSTextureUseMap // src: XBOX_RETAIL_PDB (old: FUN_004aa3d0_shell)
 {
     void BGSTextureUseMap_CollectTexUseDataRecursive(int a, char b);
     void CollectTexUseData(int apNode, int apDefaultUser, char abCheckActors);
@@ -240,7 +240,7 @@ struct LLD_Cell
 // pdb: structure GridCell, size 0x4, 1 members
 struct GridCell
 {
-    LLD_Cell* pCell;
+    LLD_Cell* pCell; // src: XBOX_RETAIL_PDB +0x0 (old: m0)
 };
 
 struct GlobalObject_0045cfe0

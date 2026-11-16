@@ -5,7 +5,7 @@
 #include "../../include/NiRenderer.h"
 
 // pdb: class BSRenderState, size 0x1, 0 members
-class BSRenderState
+class BSRenderState // src: XBOX_RETAIL_PDB (old: BSRenderStateManager_bsrenderstate_h_unit)
 {
 public:
     static void __cdecl SetDepthBufferEnabled(bool, BSRENDERSTATE_LOCK);

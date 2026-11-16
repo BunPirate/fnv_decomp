@@ -16,10 +16,10 @@ public:
     virtual void Start();
     virtual void Finish();
 
-    NiPointer<NiAVObject> spBoltNode;
-    NiPointer<NiAVObject> spSource;
-    NiPointer<NiAVObject> spTarget;
-    NiPointer<NiAVObject> spBoltProperty;
+    NiPointer<NiAVObject> spBoltNode; // src: XBOX_RETAIL_PDB +0x4c (old: spBolt)
+    NiPointer<NiAVObject> spSource; // src: XBOX_RETAIL_PDB +0x50 (old: spNode50)
+    NiPointer<NiAVObject> spTarget; // src: XBOX_RETAIL_PDB +0x54 (old: spNode54)
+    NiPointer<NiAVObject> spBoltProperty; // src: XBOX_RETAIL_PDB +0x58 (old: m_spTargetObject)
 
     AbsorbEffect(MagicCaster* caster, MagicItem* apSpell, EffectItem* effect);
     void __thiscall Start3D();

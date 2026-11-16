@@ -16,5 +16,5 @@ public:
     float getEarlyOutDistance() const;
     static void* __cdecl operator new(std::size_t nbytes);
 
-    float m_earlyOutDistance;
+    float m_earlyOutDistance; // src: XBOX_RETAIL_PDB +0x4 (old: m_fEarlyOutDistance)
 };

@@ -7,5 +7,5 @@
 class hkpMountedBallGun : public hkpBallGun
 {
 public:
-    hkVector4 m_position;
+    hkVector4 m_position; // src: XBOX_RETAIL_PDB +0x60 (old: m_vContactPosition)
 };

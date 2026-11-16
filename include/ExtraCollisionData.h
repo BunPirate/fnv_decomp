@@ -17,5 +17,5 @@ public:
     void* FUN_00421130(unsigned int flags);
     void ReleaseStorage();
 
-    CollisionData* pCollisionData;
+    CollisionData* pCollisionData; // src: XBOX_RETAIL_PDB +0xc (old: m_pCollisionData)
 };

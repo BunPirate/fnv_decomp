@@ -5,9 +5,9 @@
 // pdb: structure FUNCTION_DATA, size 0xc, 2 members
 struct FUNCTION_DATA
 {
-    unsigned short iFunction;
+    unsigned short iFunction; // src: XBOX_RETAIL_PDB +0x0 (old: function)
     unsigned short pad;
-    TESObjectREFR* pParam;
+    TESObjectREFR* pParam; // src: XBOX_RETAIL_PDB +0x4 (old: param)
     void* param2;
 };
 template <class T> class BSSimpleList;

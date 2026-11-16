@@ -12,5 +12,5 @@ public:
     bool Compare(BSExtraData* apCompare) override;
     bool FUN_0040f000(BSExtraData* apCompare);
 
-    BGSAcousticSpace* pSpace;
+    BGSAcousticSpace* pSpace; // src: XBOX_RETAIL_PDB +0xc (old: m_pPathingCell)
 };

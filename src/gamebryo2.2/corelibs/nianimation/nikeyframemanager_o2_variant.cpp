@@ -7,7 +7,7 @@
 #include "../../../../include/MemoryManager.h"
 #include "../../../../include/NiBinaryStream.h"
 
-extern "C" void* NiKeyframeManager_ms_RTTI;
+extern "C" void* NiKeyframeManager_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3fb4 (old: g_011f3fb4)
 
 // @fnv 0x00a4da80
 // src: COMMUNITY 0x00a4da80

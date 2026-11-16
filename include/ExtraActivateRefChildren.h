@@ -14,6 +14,6 @@ public:
     void __thiscall FUN_00433830();
     void* __thiscall FUN_00433800(unsigned int flags);
 
-    SL ChildList;
+    SL ChildList; // src: XBOX_RETAIL_PDB +0xc (old: m)
     float f;
 };

@@ -1538,7 +1538,7 @@ struct ViewerRTTI
     const char* m_pcName;
     void* m_pBaseRTTI;
 };
-extern ViewerRTTI BSShaderNoLightingProperty_ms_RTTI;
+extern ViewerRTTI BSShaderNoLightingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa05c (old: g_011fa05c/g_kFalloffRTTI)
 
 struct ViewerTexture;
 ViewerTexture* ViewerTextureCast(void* apTexture);

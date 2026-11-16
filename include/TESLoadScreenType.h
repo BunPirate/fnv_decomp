@@ -15,5 +15,5 @@ public:
 
     bool Load(TESFile* file);
 
-    unsigned char data[0x58];
+    unsigned char data[0x58]; // src: XBOX_RETAIL_PDB +0x18 (old: formData)
 };

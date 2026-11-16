@@ -27,5 +27,5 @@ public:
     void RemoveAndDeleteBuffer(NiGeometryData*);
 
     unsigned int m_uiRefCount;
-    void* m_pkD3DDevice;
+    void* m_pkD3DDevice; // src: XBOX_RETAIL_PDB +0x8 (old: m_pD3DDevice)
 };

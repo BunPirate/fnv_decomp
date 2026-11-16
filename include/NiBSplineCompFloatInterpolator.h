@@ -8,5 +8,5 @@ class NiBSplineCompFloatInterpolator : public NiBSplineFloatInterpolator
   public:
     virtual void LoadBinary(NiStream&);
 
-    float m_afCompScalars[2];
+    float m_afCompScalars[2]; // src: XBOX_RETAIL_PDB +0x24 (old: m_afOffsetAndHalfRange)
 };

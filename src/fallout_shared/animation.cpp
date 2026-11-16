@@ -293,42 +293,42 @@ int Warning(const char*, ...);
 class Animation
 {
   public:
-    unsigned char m_uFlags;  // +0x0, 1 bytes
+    unsigned char m_uFlags;  // +0x0, 1 bytes // src: XBOX_RETAIL_PDB +0x0 (old: m_uiObjectFlags)
     unsigned char layoutPadding1[3];
-    TESObjectREFR* pActorRef;           // +0x4, 4 bytes
-    AnimationPointer<NiNode> pAnimRoot;        // +0x8, 4 bytes
-    NiNode* pAccumRoot;                 // +0xC, 4 bytes
-    AnimationVector movementDelta;             // +0x10, 12 bytes
-    AnimationVector AccumRootTranslate;        // +0x1C, 12 bytes
-    NiAVObject* pSoundPriorityBone[8];  // +0x28, 32 bytes
-    float m_fLooking;                   // +0x48, 4 bytes
+    TESObjectREFR* pActorRef;           // +0x4, 4 bytes // src: XBOX_RETAIL_PDB +0x4 (old: m_pAttachedReference)
+    AnimationPointer<NiNode> pAnimRoot;        // +0x8, 4 bytes // src: XBOX_RETAIL_PDB +0x8 (old: m_acHeaderData)
+    NiNode* pAccumRoot;                 // +0xC, 4 bytes // src: XBOX_RETAIL_PDB +0xc (old: m_pObjectNode)
+    AnimationVector movementDelta;             // +0x10, 12 bytes // src: XBOX_RETAIL_PDB +0x10 (old: m_kNodeTranslation)
+    AnimationVector AccumRootTranslate;        // +0x1C, 12 bytes // src: XBOX_RETAIL_PDB +0x1c (old: m_kRootTranslation)
+    NiAVObject* pSoundPriorityBone[8];  // +0x28, 32 bytes // src: XBOX_RETAIL_PDB +0x28 (old: m_acNodeName)
+    float m_fLooking;                   // +0x48, 4 bytes // src: XBOX_RETAIL_PDB +0x48 (old: m_fAnimationAmount)
     unsigned short group[8];            // +0x4C, 16 bytes
     ANIM_GROUP_ACTION action[8];        // +0x5C, 32 bytes
-    int loopCount[8];                   // +0x7C, 32 bytes
-    unsigned short nextGroup[8];        // +0x9C, 16 bytes
-    int nextLoops[8];                   // +0xAC, 32 bytes
-    char cSkipUpdate;                   // +0xCC, 1 bytes
-    bool bShutDown;                     // +0xCD, 1 bytes
+    int loopCount[8];                   // +0x7C, 32 bytes // src: XBOX_RETAIL_PDB +0x7c (old: m_acTargetName)
+    unsigned short nextGroup[8];        // +0x9C, 16 bytes // src: XBOX_RETAIL_PDB +0x9c (old: usReloadGroup)
+    int nextLoops[8];                   // +0xAC, 32 bytes // src: XBOX_RETAIL_PDB +0xac (old: m_acAnimationName)
+    char cSkipUpdate;                   // +0xCC, 1 bytes // src: XBOX_RETAIL_PDB +0xcc (old: m_cState)
+    bool bShutDown;                     // +0xCD, 1 bytes // src: XBOX_RETAIL_PDB +0xcd (old: m_bIsPlaying)
     unsigned char layoutPaddingCE[2];
     float time;                                                          // +0xD0, 4 bytes
-    float fLipTime;                                                      // +0xD4, 4 bytes
-    AnimationPointer<NiControllerManager> spManager;                            // +0xD8, 4 bytes
-    AnimationSequenceMap<unsigned short, AnimSequenceBase*>* pAnimSequenceMap;  // +0xDC, 4 bytes
-    BSAnimGroupSequence* pCurrentSequence[8];                            // +0xE0, 32 bytes
-    BSAnimGroupSequence* pLastMovementSequence;                          // +0x100, 4 bytes
+    float fLipTime;                                                      // +0xD4, 4 bytes // src: XBOX_RETAIL_PDB +0xd4 (old: m_fTimeOffset)
+    AnimationPointer<NiControllerManager> spManager;                            // +0xD8, 4 bytes // src: XBOX_RETAIL_PDB +0xd8 (old: m_acReservedBytes)
+    AnimationSequenceMap<unsigned short, AnimSequenceBase*>* pAnimSequenceMap;  // +0xDC, 4 bytes // src: XBOX_RETAIL_PDB +0xdc (old: m_pOwnerReference)
+    BSAnimGroupSequence* pCurrentSequence[8];                            // +0xE0, 32 bytes // src: XBOX_RETAIL_PDB +0xe0 (old: m_pChildTile)
+    BSAnimGroupSequence* pLastMovementSequence;                          // +0x100, 4 bytes // src: XBOX_RETAIL_PDB +0x100 (old: m_pCurrentSequence)
     AnimationList<KFModel*> kfModelList;                                  // +0x104, 8 bytes
-    float m_fMoveSpeed;                                                  // +0x10C, 4 bytes
-    float m_fAttackSpeed;                                                // +0x110, 4 bytes
-    float m_fGlobalTimeMultiplier;                                       // +0x114, 4 bytes
-    float m_fReloadModifier;                                             // +0x118, 4 bytes
-    float m_fEquipModifier;                                              // +0x11C, 4 bytes
-    char cSkipNextBlend;                                                 // +0x120, 1 bytes
+    float m_fMoveSpeed;                                                  // +0x10C, 4 bytes // src: XBOX_RETAIL_PDB +0x10c (old: m_fMovementRate)
+    float m_fAttackSpeed;                                                // +0x110, 4 bytes // src: XBOX_RETAIL_PDB +0x110 (old: m_fCombatAnimationRate)
+    float m_fGlobalTimeMultiplier;                                       // +0x114, 4 bytes // src: XBOX_RETAIL_PDB +0x114 (old: m_fEquipAnimationRate)
+    float m_fReloadModifier;                                             // +0x118, 4 bytes // src: XBOX_RETAIL_PDB +0x118 (old: m_fReloadAnimationRate)
+    float m_fEquipModifier;                                              // +0x11C, 4 bytes // src: XBOX_RETAIL_PDB +0x11c (old: m_fAnimationTimeScale)
+    char cSkipNextBlend;                                                 // +0x120, 1 bytes // src: XBOX_RETAIL_PDB +0x120 (old: m_cSkipNextBlend)
     unsigned char layoutPadding121[1];
-    unsigned short sQueuedReloadGroup;                    // +0x122, 2 bytes
-    AnimationPointer<LocalAnimIdle> spAnimIdle;                       // +0x124, 4 bytes
-    AnimationPointer<LocalAnimIdle> spAnimIdleQueued;                 // +0x128, 4 bytes
-    AnimationPointer<LocalAnimIdle> spAnimIdleFreeWhenInactiveA[2];   // +0x12C, 8 bytes
-    AnimationList<IdleReplayDelayEntry*> replayDelayList;  // +0x134, 8 bytes
+    unsigned short sQueuedReloadGroup;                    // +0x122, 2 bytes // src: XBOX_RETAIL_PDB +0x122 (old: m_usQueuedGroup)
+    AnimationPointer<LocalAnimIdle> spAnimIdle;                       // +0x124, 4 bytes // src: XBOX_RETAIL_PDB +0x124 (old: LocalInput)
+    AnimationPointer<LocalAnimIdle> spAnimIdleQueued;                 // +0x128, 4 bytes // src: XBOX_RETAIL_PDB +0x128 (old: LocalStateValue)
+    AnimationPointer<LocalAnimIdle> spAnimIdleFreeWhenInactiveA[2];   // +0x12C, 8 bytes // src: XBOX_RETAIL_PDB +0x12c (old: LocalOutput)
+    AnimationList<IdleReplayDelayEntry*> replayDelayList;  // +0x134, 8 bytes // src: XBOX_RETAIL_PDB +0x134 (old: m_acTrailingData)
 
     Animation();
     bool Init(AnimationList<const char*>*, NiNode*, TESObjectREFR*, bool);
@@ -1377,7 +1377,7 @@ struct FUN_00496280_shell : public Animation
 void __fastcall Animation_ClearAccumRootTranslate(void*);
 void* __cdecl DynamicCastByRTTI(const void*, void*);
 extern char const* const g_011f36ec_arg1;
-extern int NiBlendAccumTransformInterpolator_ms_RTTI;
+extern int NiBlendAccumTransformInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f371c (old: g_011f371c)
 
 
 
@@ -7581,7 +7581,7 @@ struct ResetManager
     void Start(void*, int, int, float, float, int);
 };
 ResetPalette* __cdecl CastPalette(const void*, void*);
-extern int NiDefaultAVObjectPalette_ms_RTTI, resetControllerRTTI, resetOtherRTTI;
+extern int NiDefaultAVObjectPalette_ms_RTTI, resetControllerRTTI, resetOtherRTTI; // src: XBOX_RETAIL_PDB 0x011f4a04 (old: DAT_011f4a04/g_011f4a04/resetPaletteRTTI)
 template <class T> struct ResetPointer
 {
     T* value;

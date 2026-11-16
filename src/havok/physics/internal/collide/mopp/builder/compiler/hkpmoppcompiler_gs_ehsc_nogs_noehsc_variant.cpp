@@ -296,10 +296,10 @@ struct PrimitiveSource
 // pdb: class hkpMoppCodeGenerator, size 0x20, bases: hkReferencedObject, 4 members
 struct hkpMoppCodeGenerator : hkReferencedObject
 {
-    int m_size;
-    int m_pos;
-    unsigned char* m_code;
-    MergeArray<int> m_jumpCommands;
+    int m_size; // src: XBOX_RETAIL_PDB +0x8 (old: byteCapacity)
+    int m_pos; // src: XBOX_RETAIL_PDB +0xc (old: byteSize)
+    unsigned char* m_code; // src: XBOX_RETAIL_PDB +0x10 (old: byteData)
+    MergeArray<int> m_jumpCommands; // src: XBOX_RETAIL_PDB +0x14 (old: state)
     hkpMoppCodeGenerator(int) throw();
     hkpMoppCode* hkpMoppCodeGenerator_compileCode() throw();
     ~hkpMoppCodeGenerator() throw();
@@ -315,7 +315,7 @@ struct hkpMoppCostFunction
     void* vfptr;
     unsigned short memSizeAndFlags;
     short referenceCount;
-    float m_userScaling, plane, primitive, split, balance, scale;
+    float m_userScaling, plane, primitive, split, balance, scale; // src: XBOX_RETAIL_PDB +0x8 (old: axis)
     hkpMoppCostFunction(CostSettings*) throw();
     ~hkpMoppCostFunction() throw()
     {
@@ -363,12 +363,12 @@ struct AssemblerInterface
 struct hkpMoppDefaultAssembler : AssemblerInterface
 {
     unsigned short memoryFlags, referenceCount;
-    int m_mediator, m_nodeMgr, m_code;
-    ChunkList* m_chunkInfo;
-    int m_minDepthToBuild, m_halfTreeDepth, m_depthTopDownScale, m_minAssembledElems, m_numNodesAssembled, unk2C, m_codeInfo, unk34, unk38, unk3C;
-    int m_directions, unk44, unk48;
+    int m_mediator, m_nodeMgr, m_code; // src: XBOX_RETAIL_PDB m_mediator +0x8 (old: unk08); m_nodeMgr +0xc (old: unk0C); m_code +0x10 (old: unk10)
+    ChunkList* m_chunkInfo; // src: XBOX_RETAIL_PDB +0x14 (old: chunks)
+    int m_minDepthToBuild, m_halfTreeDepth, m_depthTopDownScale, m_minAssembledElems, m_numNodesAssembled, unk2C, m_codeInfo, unk34, unk38, unk3C; // src: XBOX_RETAIL_PDB m_minDepthToBuild +0x18 (old: unk18); m_halfTreeDepth +0x1c (old: unk1C); m_depthTopDownScale +0x20 (old: unk20); m_minAssembledElems +0x24 (old: unk24); m_numNodesAssembled +0x28 (old: unk28); m_codeInfo +0x30 (old: unk30)
+    int m_directions, unk44, unk48; // src: XBOX_RETAIL_PDB +0x40 (old: unk40)
     int unk4C;
-    float m_params, unk54, unk58, unk5C;
+    float m_params, unk54, unk58, unk5C; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
     PacketCallLocal_00dd4cb0 unk60;
     int unk70, unk74, unk78, unk7C;
     hkpMoppDefaultAssembler(AssemblerSettings*, hkpMoppCodeGenerator*, PrimitiveSource*) throw();
@@ -385,11 +385,11 @@ struct hkpMoppDefaultSplitter
 {
     void* vtbl;
     int unk04;
-    int m_compileParams, m_maxList, m_freeNodes, unk14, m_freeTerminals, unk1C;
-    hkpMoppCostFunction* m_costFunction;
-    hkpMoppDefaultAssembler* m_assembler;
-    PrimitiveSource* m_mediator;
-    int m_rootNode, m_numPlaneDirections, m_planeDirections, m_optimalDepth;
+    int m_compileParams, m_maxList, m_freeNodes, unk14, m_freeTerminals, unk1C; // src: XBOX_RETAIL_PDB m_compileParams +0x8 (old: unk08); m_maxList +0xc (old: unk0C); m_freeNodes +0x10 (old: unk10); m_freeTerminals +0x18 (old: unk18)
+    hkpMoppCostFunction* m_costFunction; // src: XBOX_RETAIL_PDB +0x20 (old: costFunction)
+    hkpMoppDefaultAssembler* m_assembler; // src: XBOX_RETAIL_PDB +0x24 (old: assembler)
+    PrimitiveSource* m_mediator; // src: XBOX_RETAIL_PDB +0x28 (old: source)
+    int m_rootNode, m_numPlaneDirections, m_planeDirections, m_optimalDepth; // src: XBOX_RETAIL_PDB m_optimalDepth +0x38 (old: treeDepth); m_rootNode +0x2c (old: unk2C); m_numPlaneDirections +0x30 (old: unk30); m_planeDirections +0x34 (old: unk34)
     void FUN_00e09ba0() throw();
     void Hkpmoppdefaultsplitter_UpdateState_00e09bd0() throw();
     hkpMoppDefaultSplitter() throw()

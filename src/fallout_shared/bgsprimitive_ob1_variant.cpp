@@ -352,7 +352,7 @@ bool CenteredPointBounds::BSMultiBoundAABB_QPointWithin(const Pt& kpoint)
            !(PtAbs(kDiff.z) - m_kExtent.z > 0.01f);
 }
 
-extern int BSMultiBoundOBB_ms_RTTI;
+extern int BSMultiBoundOBB_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202818 (old: g_01202818)
 extern void fnv_stub_grow(unsigned int, unsigned int);
 
 struct Obj_0096a610
@@ -1653,7 +1653,7 @@ struct FUN_00c47660
     static void operator delete(void* p);
 };
 // pdb: class BSPortalSharedNode, size 0xf0 (here 0xc4), bases: NiNode, 3 members
-struct BSPortalSharedNode : FUN_00a5ecb0
+struct BSPortalSharedNode : FUN_00a5ecb0 // src: EXE (old: C4F460_Node)
 {
     FUN_00c47660* m_pChildAtom;
     FUN_00c3a220 m_kMemberDescriptor;

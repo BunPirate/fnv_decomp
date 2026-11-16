@@ -27,7 +27,7 @@ public:
         NiPoint3 row2;
     };
 
-    NiPoint3 m_box;
+    NiPoint3 m_box; // src: XBOX_RETAIL_PDB +0x4 (old: center)
     BoundsMatrix matrix;
     NiPoint3 extent;
     NiPoint3 m_kCenter;
@@ -48,9 +48,9 @@ public:
         int unk7c;
         OBBShape* m_pkShape;
     };
-    int m_pLeft;
-    int m_pRight;
-    int m_uiChangeStamp;
+    int m_pLeft; // src: XBOX_RETAIL_PDB +0x80 (old: m_0x80)
+    int m_pRight; // src: XBOX_RETAIL_PDB +0x84 (old: m_0x84)
+    int m_uiChangeStamp; // src: XBOX_RETAIL_PDB +0x88 (old: m_0x88)
 
     char* GetBoundsData()
     {

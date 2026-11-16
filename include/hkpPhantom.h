@@ -37,6 +37,6 @@ public:
     void removePhantomOverlapListener(hkpPhantomOverlapListener* listener) throw();
     void firePhantomRemoved();
 
-    hkArray<void*> m_overlapListeners;
-    hkArray<void*> m_phantomListeners;
+    hkArray<void*> m_overlapListeners; // src: XBOX_RETAIL_PDB +0x8c (old: m_kPhantomOverlapListeners)
+    hkArray<void*> m_phantomListeners; // src: XBOX_RETAIL_PDB +0x98 (old: m_kPhantomListeners)
 };

@@ -8,8 +8,8 @@ class hkpAgentNnSector;
 class hkpAgentNnTrack
 {
 public:
-    unsigned int m_bytesUsedInLastSector;
-    hkInplaceArray<hkpAgentNnSector*, 1> m_sectors;
+    unsigned int m_bytesUsedInLastSector; // src: XBOX_RETAIL_PDB +0x0 (old: m_iBytesUsedInLastSector)
+    hkInplaceArray<hkpAgentNnSector*, 1> m_sectors; // src: XBOX_RETAIL_PDB +0x4 (old: m_kSectors)
 
     hkpAgentNnTrack()
     {

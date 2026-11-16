@@ -36,8 +36,8 @@ class Tile3D : public Tile
     NiNodeV* GetModel_0056c7f0();
     bool Tile3D_PlaySequence(const char* sequenceName);
 
-    void* pAniManager;
-    void* pCurrentSequence;            // +0x3c, zeroed by the constructor 0x00a0bc80
-    BSStringT<char> strCurrentName;       // +0x40, cleared by SetTraitValue 0x00a20c50 (trait 0xfc4)
+    void* pAniManager; // src: XBOX_RETAIL_PDB +0x38 (old: m_pParent)
+    void* pCurrentSequence;            // +0x3c, zeroed by the constructor 0x00a0bc80 // src: XBOX_RETAIL_PDB +0x3c (old: m_pChildTile)
+    BSStringT<char> strCurrentName;       // +0x40, cleared by SetTraitValue 0x00a20c50 (trait 0xfc4) // src: XBOX_RETAIL_PDB +0x40 (old: m_kName)
     BSStringT<char> strFilename;   // +0x48; the destructor 0x00a20650 frees +0x48 then +0x40
 };

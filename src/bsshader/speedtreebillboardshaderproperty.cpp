@@ -64,7 +64,7 @@ FUN_00ba8630::FUN_00ba8630() : unk58(1)
     unk1C = 0xb;
 }
 
-extern int SpeedTreeBillboardShaderProperty_ms_RTTI;
+extern int SpeedTreeBillboardShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120043c (old: DAT_0120043c/g_0120043c)
 
 // @fnv 0x00ba8680
 // src: COMMUNITY 0x00ba8680
@@ -266,7 +266,7 @@ int* SpawnerHost::SpeedTreeBillboardShaderProperty_CreateClone(int kCloning)
     return (int*)p;
 }
 
-extern int SpeedTreeBillboardShaderProperty_ms_RTTI;
+extern int SpeedTreeBillboardShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120043c (old: DAT_0120043c/g_0120043c)
 void __stdcall BSShaderPPLightingProperty_GetViewerStrings(void* p);
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(int v);
 

@@ -10,7 +10,7 @@ struct S_008d6a80_Holder
     void bhkBlendCollisionObjectAddRotation_SetAdditionalRotation(void* data);
 };
 extern void* DAT_011e00e0[];
-extern char bhkBlendCollisionObjectAddRotation_ms_RTTI;
+extern char bhkBlendCollisionObjectAddRotation_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012681cc (old: DAT_012681cc/g_012681cc)
 extern char DAT_011a9448;
 S_008d6a80_Obj* BSUtilities_GetObjectByName(void* root, void* name);
 void* NiObject_DynamicCast(void* rtti, void* obj);

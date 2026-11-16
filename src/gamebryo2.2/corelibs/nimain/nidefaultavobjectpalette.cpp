@@ -596,7 +596,7 @@ void __cdecl NiCollisionObject_CopyMembers()
 extern MemoryManager g_viewerMemoryManager;
 extern "C" int __cdecl sprintf(char*, const char*, ...);
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcName);
-extern const char* NiDefaultAVObjectPalette_ms_RTTI;
+extern const char* NiDefaultAVObjectPalette_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a04 (old: DAT_011f4a04/g_011f4a04/resetPaletteRTTI)
 extern char* g_nullFixedStringHandle;
 struct ViewerStrings
 {

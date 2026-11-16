@@ -350,7 +350,7 @@ protected:
 __forceinline hkpCapsuleCapsuleAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);
 static hkpCollisionAgent*__cdecl createCapsuleCapsuleAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);
 protected:
-hkContactPointId m_contactPointId[3];
+hkContactPointId m_contactPointId[3]; // src: XBOX_RETAIL_PDB +0xc (old: m_usContactPointId)
 };
 
 __forceinline const hkVector4*hkpCapsuleShape::GetIndexedVertices()const

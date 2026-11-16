@@ -158,7 +158,7 @@ template <> class ListBoxItem<unsigned int>
   public:
     Tile* pTile;
     unsigned int data;
-    bool bFiltered;
+    bool bFiltered; // src: XBOX_RETAIL_PDB +0x8 (old: m_bFiltered)
 };
 float FUN_004bd510(float value, float step);
 int Tile_TextToTrait(const char* name);

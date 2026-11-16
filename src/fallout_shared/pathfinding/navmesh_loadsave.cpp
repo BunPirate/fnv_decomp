@@ -84,8 +84,8 @@ class EdgeExtraInfo
 class NavMeshTriangleDoorPortal
 {
   public:
-    TESObjectREFR* pDoorForm;
-    unsigned short iOwningTriangleIndex;
+    TESObjectREFR* pDoorForm; // src: XBOX_RETAIL_PDB +0x0 (old: NavMeshDoorPortalData)
+    unsigned short iOwningTriangleIndex; // src: XBOX_RETAIL_PDB +0x4 (old: m_usDoorPortalIndex)
     unsigned char layoutPadding6[2];
 };
 

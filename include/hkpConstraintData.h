@@ -68,7 +68,7 @@ public:
             (*reinterpret_cast<void***>(this))[9])(this, wantRuntime, runtimeInfo);
     }
 
-    unsigned long m_userData;
+    unsigned long m_userData; // src: XBOX_RETAIL_PDB +0x8 (old: m_ulUserData)
 
     friend class ConstraintInstance;
 };

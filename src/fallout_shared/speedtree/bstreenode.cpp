@@ -179,7 +179,7 @@ struct FUN_0066d510_shell
     const void* bhkMultiSphereShape_GetRTTI();
 };
 
-extern const void* bhkMultiSphereShape_ms_RTTI;
+extern const void* bhkMultiSphereShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012683e0 (old: DAT_012683e0/g_012683e0)
 
 // @fnv 0x0066d510
 // src: COMMUNITY 0x0066d510

@@ -108,7 +108,7 @@ bool NiScreenElementsData::SetRectangleBounds(int iPolygonIndex, unsigned short 
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiScreenElementsData_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiScreenElementsData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b50 (old: g_011f5b50)
 
 // @fnv 0x00a87a90
 // src: COMMUNITY 0x00a87a90

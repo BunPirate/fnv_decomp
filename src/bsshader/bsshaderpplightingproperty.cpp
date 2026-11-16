@@ -1156,7 +1156,7 @@ struct FUN_00bb4540 : NiMemObject
 extern unsigned char DAT_011f94a6;
 extern char DAT_011f9422;
 extern int DAT_012007b0;
-extern int NiGeomMorpherController_ms_RTTI;
+extern int NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 bool __cdecl NiObject_IsExactKindOf(void*, void*);
 __pragma(comment(
     linker,
@@ -2198,7 +2198,7 @@ struct CallerArg
     NiAlphaProperty* FUN_00a59d30(int);
 };
 extern NiRefObject* DAT_011f9528;
-extern char BSPackedAdditionalGeometryData_ms_RTTI;
+extern char BSPackedAdditionalGeometryData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4aac (old: DAT_011f4aac/g_011f4aac)
 extern int DAT_011f91c0;
 extern char DAT_010ae238;
 extern char DAT_010ae1f0;

@@ -42,13 +42,13 @@ class NiTransformInterpolator : public NiKeyBasedInterpolator
     void CopyMemberData(int);
     bool Update(float, NiObjectNET*, NiQuatTransform&);
 
-    NiQuatTransform m_kTransformValue;
-    NiPointer<NiTransformData> m_spData;
-    unsigned short m_usLastTransIdx;
-    unsigned short m_usLastRotIdx;
-    unsigned short m_usLastScaleIdx;
+    NiQuatTransform m_kTransformValue; // src: XBOX_RETAIL_PDB +0xc (old: m_kDefaultTransform)
+    NiPointer<NiTransformData> m_spData; // src: XBOX_RETAIL_PDB +0x2c (old: m_spTransformData)
+    unsigned short m_usLastTransIdx; // src: XBOX_RETAIL_PDB +0x30 (old: m_usLastRotationKeyIndex)
+    unsigned short m_usLastRotIdx; // src: XBOX_RETAIL_PDB +0x32 (old: m_usLastPositionKeyIndex)
+    unsigned short m_usLastScaleIdx; // src: XBOX_RETAIL_PDB +0x34 (old: m_usLastScaleKeyIndex)
     unsigned char layoutPadding36[2];
-    NiPoint3 m_origTranslate;
-    bool bPose;
+    NiPoint3 m_origTranslate; // src: XBOX_RETAIL_PDB +0x38 (old: m_kDefaultTranslation)
+    bool bPose; // src: XBOX_RETAIL_PDB +0x44 (old: m_bPoseValid)
     unsigned char layoutPadding45[3];
 };

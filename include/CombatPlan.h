@@ -9,12 +9,12 @@ class CombatController;
 class CombatPlan
 {
 public:
-    int pPlanSteps;
-    int iLength;
-    int iCurrentAction;
-    int pGoal;
-    int iCombatLocation;
-    int pCombatController;
+    int pPlanSteps; // src: XBOX_RETAIL_PDB +0x0 (old: unk00)
+    int iLength; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int iCurrentAction; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    int pGoal; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
+    int iCombatLocation; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    int pCombatController; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
 
     CombatPlan(CombatController* controller);
     ~CombatPlan();

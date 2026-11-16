@@ -30,8 +30,8 @@ public:
     void LoadGame_009cad00(BGSLoadFormBuffer* apLoadGameBuffer);
     void InitLoadGame_009cad70(unsigned int apLoadGameBuffer);
 
-    TESObjectREFR* pTargetRef;
-    TESBoundObject* pBoundObject;
+    TESObjectREFR* pTargetRef; // src: XBOX_RETAIL_PDB +0x10 (old: m_pReference)
+    TESBoundObject* pBoundObject; // src: XBOX_RETAIL_PDB +0x14 (old: m_pBaseObject)
     union
     {
         char m_cValue24;

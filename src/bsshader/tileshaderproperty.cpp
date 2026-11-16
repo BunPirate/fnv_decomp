@@ -8,7 +8,7 @@
 #include "../../include/NiStream.h"
 #include "../../include/NiBinaryStream.h"
 
-extern "C" void* TileShaderProperty_ms_RTTI;
+extern "C" void* TileShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007d8 (old: DAT_012007d8/g_012007d8)
 
 // @fnv 0x00bb7d60
 // src: XBOX_PDB 0x00bb7d60

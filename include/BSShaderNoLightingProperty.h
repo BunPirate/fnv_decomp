@@ -28,10 +28,10 @@ class BSShaderNoLightingProperty : public BSShaderProperty
     void CopyMembers(BSShaderNoLightingProperty* dest, CloningProcess& process);    // 0x00b6f540
     static NiObject* CreateObject();                                                // 0x00b6fe80
 
-    NiPointer<NiTexture> spBaseMap;          // +0x60
-    BSStringT<char> TextureFilename;            // +0x64
-    NiTexturingProperty::ClampMode TextureClampMode;   // +0x6c
-    float FalloffData;                    // +0x70
+    NiPointer<NiTexture> spBaseMap;          // +0x60 // src: XBOX_RETAIL_PDB +0x60 (old: spBaseTexture)
+    BSStringT<char> TextureFilename;            // +0x64 // src: XBOX_RETAIL_PDB +0x64 (old: kBaseTextureName)
+    NiTexturingProperty::ClampMode TextureClampMode;   // +0x6c // src: XBOX_RETAIL_PDB +0x6c (old: eClampMode)
+    float FalloffData;                    // +0x70 // src: XBOX_RETAIL_PDB +0x70 (old: fFalloffStartAngle)
     float fFalloffStopAngle;                     // +0x74
     float fFalloffStartOpacity;                  // +0x78
     float fFalloffStopOpacity;                   // +0x7c

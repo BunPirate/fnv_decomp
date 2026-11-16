@@ -115,7 +115,7 @@ public:
     hkxVertexBuffer(FinishingFlag f) throw();
     virtual ~hkxVertexBuffer();
     hkxVertexBufferVertexData m_data;
-    hkxVertexDescription m_desc;
+    hkxVertexDescription m_desc; // src: XBOX_RETAIL_PDB +0x5c (old: m_kCreateDesc)
     void setNumVertices(int n, const hkxVertexDescription& format) throw();
     void copyVertex(const hkxVertexBuffer* other, int vertFrom, int vertTo);
     void CopyFrom(const hkxVertexBuffer& src, bool resize) throw();

@@ -424,10 +424,10 @@ inline void* hkReferencedObject::operator new(std::size_t nbytes)
 
 // Vtable 0x010d1c2c belongs to a 20-byte referenced array owner (8-byte base plus 12-byte array).
 // pdb: class hkpUserShapePhantomTypeIdentifier, size 0x14, bases: hkReferencedObject, hkSingleton<hkpUserShapePhantomTypeIdentifier>, 1 members
-class hkpUserShapePhantomTypeIdentifier : public hkReferencedObject
+class hkpUserShapePhantomTypeIdentifier : public hkReferencedObject // src: EXE (old: ReferencedArrayOwner)
 {
   public:
-    hkArray<void*> m_shapePhantomTypes;
+    hkArray<void*> m_shapePhantomTypes; // src: XBOX_RETAIL_PDB +0x8 (old: m_items)
     virtual ~hkpUserShapePhantomTypeIdentifier();
 };
 

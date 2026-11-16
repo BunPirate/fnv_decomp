@@ -11,12 +11,12 @@ extern TESDataHandler* g_dataHandler;
 // Save/load form-ID remapping table: forward map (formID -> save index),
 // reverse map (save index -> formID) and the next index to hand out.
 // pdb: class BGSSaveLoadFormIDMap, size 0x24, 3 members
-class BGSSaveLoadFormIDMap
+class BGSSaveLoadFormIDMap // src: XBOX_RETAIL_PDB (old: FormIDConverter)
 {
   public:
-    NiTPointerMap<unsigned int, unsigned int> FormIDToIndexMap;  // +0x0
-    NiTPointerMap<unsigned int, unsigned int> IndexToFormIDMap;  // +0x10
-    unsigned int iCurrentIndex;                                          // +0x20
+    NiTPointerMap<unsigned int, unsigned int> FormIDToIndexMap;  // +0x0 // src: XBOX_RETAIL_PDB +0x0 (old: m_kSourceToTargetFormIDMap)
+    NiTPointerMap<unsigned int, unsigned int> IndexToFormIDMap;  // +0x10 // src: XBOX_RETAIL_PDB +0x10 (old: m_kTargetToSourceFormIDMap)
+    unsigned int iCurrentIndex;                                          // +0x20 // src: XBOX_RETAIL_PDB +0x20 (old: m_uiFormIDCount)
 
     BGSSaveLoadFormIDMap(unsigned int iBucketCount);
     ~BGSSaveLoadFormIDMap();

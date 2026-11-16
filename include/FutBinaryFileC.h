@@ -29,7 +29,7 @@ public:
     template <class String>
     char ProcessAndReturnValue_00ac3fe0(const String& path);
 
-    std::string m_fname;
-    std::string fileId;
-    unsigned int fptr;
+    std::string m_fname; // src: XBOX_RETAIL_PDB +0x4 (old: signature)
+    std::string fileId; // src: XBOX_RETAIL_PDB +0x20 (old: path)
+    unsigned int fptr; // src: XBOX_RETAIL_PDB +0x3c (old: unk3c)
 };

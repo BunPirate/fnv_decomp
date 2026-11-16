@@ -60,7 +60,7 @@ class hkpPhysicsSystemWithContacts : public hkpPhysicsSystem
 {
   public:
     virtual ~hkpPhysicsSystemWithContacts() throw();
-    hkArray<hkpSerializedAgentNnEntry*> m_contacts;
+    hkArray<hkpSerializedAgentNnEntry*> m_contacts; // src: XBOX_RETAIL_PDB +0x44 (old: m_kSerializedAgentEntries)
     void addContact(hkpSerializedAgentNnEntry* c);
 };
 

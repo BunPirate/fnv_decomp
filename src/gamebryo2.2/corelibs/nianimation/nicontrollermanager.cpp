@@ -479,7 +479,7 @@ struct GlobalObjectO2_00a7b610
 {
     int x;
 };
-extern GlobalObjectO2_00a7b610 NiDefaultAVObjectPalette_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiDefaultAVObjectPalette_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a04 (old: DAT_011f4a04/g_011f4a04/resetPaletteRTTI)
 // @fnv 0x00a2ede0
 // src: COMMUNITY 0x00a2ede0
 GlobalObjectO2_00a7b610* __cdecl NiDefaultAVObjectPalette_GetRTTI()

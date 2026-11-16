@@ -141,7 +141,7 @@ struct E40FA0Array
 
 struct FUN_00e40fa0 : E40FA0ReferencedObject
 {
-    E40FA0Array m_previewInfo;
+    E40FA0Array m_previewInfo; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppData)
 
     FUN_00e40fa0();
     virtual ~FUN_00e40fa0();

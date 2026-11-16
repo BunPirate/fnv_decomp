@@ -8,7 +8,7 @@ class SpellItem;
 class BGSAbilityPerkEntry : public BGSPerkEntry
 {
 public:
-    SpellItem* pAbility;
+    SpellItem* pAbility; // src: XBOX_RETAIL_PDB +0x8 (old: m_pSpell)
 
     BGSAbilityPerkEntry();
     BGSAbilityPerkEntry* Initialize();

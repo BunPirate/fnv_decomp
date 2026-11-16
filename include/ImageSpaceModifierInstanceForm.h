@@ -25,9 +25,9 @@ class ImageSpaceModifierInstanceForm : public ImageSpaceModifierInstance
     bool Blend(TESImageSpaceModifier*, float, float, NiAVObject*);
     void SetPad5(float);
 
-    TESImageSpaceModifier* pImageSpaceMod;
-    TESImageSpaceModifier* pLastImageSpaceMod;
-    float fLastStrength;
-    NiPointer<NiAVObject> spLastTarget;
-    float fTransitionTime;
+    TESImageSpaceModifier* pImageSpaceMod; // src: XBOX_RETAIL_PDB +0x1c (old: m_pPreviousImageSpaceModifier)
+    TESImageSpaceModifier* pLastImageSpaceMod; // src: XBOX_RETAIL_PDB +0x20 (old: m_pImageSpaceModifier)
+    float fLastStrength; // src: XBOX_RETAIL_PDB +0x24 (old: m_fBlendWeight)
+    NiPointer<NiAVObject> spLastTarget; // src: XBOX_RETAIL_PDB +0x28 (old: m_pTargetNode)
+    float fTransitionTime; // src: XBOX_RETAIL_PDB +0x2c (old: m_fElapsedTime)
 };

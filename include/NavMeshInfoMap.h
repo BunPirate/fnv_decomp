@@ -27,12 +27,12 @@ public:
     virtual void InitItem(void);
     virtual void SetQuestItem(bool set);
 
-    bool bUpdateAll;
+    bool bUpdateAll; // src: XBOX_RETAIL_PDB +0x18 (old: m_bNavMeshInfoArraysValid)
     unsigned char pad19[3];
-    NiTPointerMap<unsigned int, NavMeshInfo*> InfoMap;
+    NiTPointerMap<unsigned int, NavMeshInfo*> InfoMap; // src: XBOX_RETAIL_PDB +0x1c (old: m_kNavMeshInfosByFormID)
     NiTPointerMap<unsigned int, NiTPointerMap<unsigned int, NavMeshInfoArray*>*>
         m_kNavMeshInfoArraysByWorldspace;
-    bool bInit;
+    bool bInit; // src: XBOX_RETAIL_PDB +0x3c (old: m_bKeepNavMeshLoaded)
     unsigned char pad3D[3];
 
     NavMeshInfoMap();

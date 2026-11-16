@@ -1309,8 +1309,8 @@ struct FUN_0043a9a0_class
 
 // @fnv 0x0043a9a0
 // src: GUESS 0x0043a9a0 (confidence: medium)
-// pdb: DoorTeleportData::LoadGame | TeleportData.obj | retail, object-file run extension, high, not renamed: the debug build links this name to 0x0043aaa0
-// pdb locals: ilinkedDoorID
+// pdb: DoorTeleportData::LoadGame | TeleportData.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x0043aaa0
+// pdb locals (of the disputed candidate, unverified): ilinkedDoorID
 void __thiscall FUN_0043a9a0_class::LoadFields()
 {
     g_TESSaveLoadGame->ReadTypedData((char*)this + 4, 0xc);
@@ -3675,7 +3675,7 @@ struct ExtraList436
 };
 
 // pdb: class ExtraCreatureMovementSound, size 0x18 (here 0x10), bases: BSExtraData, 1 members
-class ExtraCreatureMovementSound : public BSExtraData
+class ExtraCreatureMovementSound : public BSExtraData // src: EXE (old: FUN_00436300)
 {
   public:
     ExtraCreatureMovementSound(ListArg436 kList);
@@ -3703,9 +3703,9 @@ struct Value436540
 };
 
 // pdb: class ExtraWeaponAttackSound, size 0x18, bases: BSExtraData, 1 members
-struct ExtraWeaponAttackSound : BSExtraData
+struct ExtraWeaponAttackSound : BSExtraData // src: EXE (old: FUN_00436540)
 {
-    Value436540 pHandle;
+    Value436540 pHandle; // src: XBOX_RETAIL_PDB +0xc (old: m_uiFilterValue)
     ExtraWeaponAttackSound(Value436540 value);
 };
 

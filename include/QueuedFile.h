@@ -38,8 +38,8 @@ public:
     void DecRefCount();
     bool QueuedFile_GetAllChildrenFinished();
 
-    MEM_CONTEXT eContext;        // 0x18
-    NiPointer<QueuedFile> spParent;     // 0x1C
+    MEM_CONTEXT eContext;        // 0x18 // src: XBOX_RETAIL_PDB +0x18 (old: aeMemoryContext)
+    NiPointer<QueuedFile> spParent;     // 0x1C // src: XBOX_RETAIL_PDB +0x1c (old: m_pParent)
     QueuedChildren* pChildren;          // 0x20
     QueuedParents* pAdditionalParents;  // 0x24
 };

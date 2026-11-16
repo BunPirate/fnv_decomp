@@ -10,10 +10,10 @@ class NiMatrix3;
 class NiPlane
 {
 public:
-    float m_kNormal;
+    float m_kNormal; // src: XBOX_RETAIL_PDB +0x0 (old: x)
     float y;
     float z;
-    float m_fConstant;
+    float m_fConstant; // src: XBOX_RETAIL_PDB +0xc (old: c)
 
     NiPlane();
     NiPlane(const NiPoint3& normal, float constant);

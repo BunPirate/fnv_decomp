@@ -13,5 +13,5 @@ public:
 
     bool IsDifferentFrom(BSExtraData* extra);
 
-    void* pImageSpace;
+    void* pImageSpace; // src: XBOX_RETAIL_PDB +0xc (old: m_pImageSpace)
 };

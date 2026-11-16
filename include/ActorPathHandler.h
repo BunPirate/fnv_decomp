@@ -79,7 +79,7 @@ public:
     void* FUN_009dfe10(unsigned int flags);
 
     Actor* pActor;
-    ActorMover* pActorMover;
+    ActorMover* pActorMover; // src: XBOX_RETAIL_PDB +0x8 (old: m_pActorMover)
     NiPointer<PathingSolution> pCurrentPathingSolution;
-    NiPointer<PathingRequest> spRequest;
+    NiPointer<PathingRequest> spRequest; // src: XBOX_RETAIL_PDB +0x10 (old: m_pPathingRequest)
 };

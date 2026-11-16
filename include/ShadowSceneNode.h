@@ -39,7 +39,7 @@ class BSCompoundFrustum
     ~BSCompoundFrustum();
     void FUN_00c47770();
 
-    unsigned char bPrethreaded[164];
+    unsigned char bPrethreaded[164]; // src: XBOX_RETAIL_PDB +0x0 (old: unk00)
 };
 
 // pdb: class ShadowSceneNode, size 0x230 (here 0x200), bases: NiNode, 28 members

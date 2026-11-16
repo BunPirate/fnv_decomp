@@ -3,17 +3,17 @@
 class GameTimerRecord
 {
 public:
-    unsigned char cDisableCounter;
+    unsigned char cDisableCounter; // src: XBOX_RETAIL_PDB +0x0 (old: m_ucFirstTimerByte)
     unsigned char layoutPadding1;
     unsigned short layoutPadding2;
-    float fClamp;
-    float fClampRemainder;
-    float fDelta;
-    float fDeltaUnmodified;
-    unsigned int iLastTime;
-    unsigned int iFirstTime;
-    bool bUseGlobalTimeMultiplierTarget;
-    bool bZeroDelta;
+    float fClamp; // src: XBOX_RETAIL_PDB +0x4 (old: m_fFirstTimerValue)
+    float fClampRemainder; // src: XBOX_RETAIL_PDB +0x8 (old: m_fSecondTimerValue)
+    float fDelta; // src: XBOX_RETAIL_PDB +0xc (old: fTimeSinceScaleStart)
+    float fDeltaUnmodified; // src: XBOX_RETAIL_PDB +0x10 (old: m_fFourthTimerValue)
+    unsigned int iLastTime; // src: XBOX_RETAIL_PDB +0x14 (old: m_uiFirstTimerValue)
+    unsigned int iFirstTime; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiSecondTimerValue)
+    bool bUseGlobalTimeMultiplierTarget; // src: XBOX_RETAIL_PDB +0x1c (old: m_bFirstTimerFlag)
+    bool bZeroDelta; // src: XBOX_RETAIL_PDB +0x1d (old: m_bSecondTimerFlag)
     unsigned short layoutPadding1E;
 
     void Update();

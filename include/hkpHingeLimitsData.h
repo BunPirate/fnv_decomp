@@ -56,5 +56,5 @@ public:
     hkReal getMinAngularLimit() const;
 
     char padC[0x4];
-    hkpHingeLimitsDataAtoms m_atoms;
+    hkpHingeLimitsDataAtoms m_atoms; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 };

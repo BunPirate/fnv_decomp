@@ -110324,7 +110324,7 @@
     },
     {
      "address": "0x0078b9b0",
-     "symbol": "?CalcLoadScreenTypeTextWindowVerts@LoadingMenu@@QAEXPAX@Z",
+     "symbol": "?CalcLoadScreenTypeTextWindowFaces@LoadingMenu@@QAEXPAX@Z",
      "size": 391
     },
     {
@@ -110737,7 +110737,7 @@
     "?UpdateObjectiveTilesVisibilities@LoadingMenu@@QAEX_N@Z": "0x0078b6a0",
     "?UpdateTipTilesVisibilities@LoadingMenu@@QAEX_N@Z": "0x0078b6f0",
     "?UpdateXPProgressTilesVisibilities@LoadingMenu@@QAEX_N@Z": "0x0078b7c0",
-    "?CalcLoadScreenTypeTextWindowVerts@LoadingMenu@@QAEXH@Z": "0x0078b9b0",
+    "?CalcLoadScreenTypeTextWindowFaces@LoadingMenu@@QAEXH@Z": "0x0078b9b0",
     "?UpdatePlayerTileSettings@LoadingMenu@@QAEXH@Z": "0x0078bb60",
     "?TESLoadScreen_GetTypeData@PerkEntryX@fnv_0078bb60@@QAEHXZ": "0x0078bc60",
     "?FadeIn@LoadingMenu@@QAEXXZ": "0x0078cc50",
@@ -576581,7 +576581,7 @@
     "??_7FUN_0078e0f0@@6B@": "0x0107439c",
     "??_L@YGXPAXIHP6EX0@Z1@Z": "0x00ec782f",
     "?AddHead@?$BSSimpleList@PAVTESBoundObject@@@@QAEXAAPAVTESBoundObject@@@Z": "0x005ae3d0",
-    "?Apply@FUN_00788440@@QAEXPAX@Z": "0x0078b9b0",
+    "?CalcLoadScreenTypeTextWindowFaces@FUN_00788440@@QAEXPAX@Z": "0x0078b9b0",
     "?CloseLoveTester@@YAXXZ": "0x007037e0",
     "?ConstructElems@FUN_007883b0@@QAEXPAXI@Z": "0x00788260",
     "?GamePlayFormulas_GetRequiredExperiencePoints@ActorValueUtility_blk_00780000_od@@SAHH@Z": "0x00648b50",

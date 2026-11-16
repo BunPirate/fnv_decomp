@@ -3,7 +3,7 @@
 // src/gamebryo2.2/corelibs/niparticle/nipsysinitialrotspeedctlr.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/niparticle/nipsysinitialrotspeedctlr.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* NiPSysInitialRotSpeedCtlr_ms_RTTI;
+extern "C" void* NiPSysInitialRotSpeedCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026e0 (old: g_012026e0)
 
 // @fnv 0x00c29f90
 // src: COMMUNITY 0x00c29f90
@@ -13,7 +13,7 @@ void* __cdecl NiPSysInitialRotSpeedCtlr_GetRTTI()
 }
 
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(const void*);
-extern void* NiPSysInitialRotSpeedCtlr_ms_RTTI;
+extern void* NiPSysInitialRotSpeedCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026e0 (old: g_012026e0)
 // pdb: class NiPSysInitialRotSpeedCtlr, size 0x40 (here 0x1), bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysInitialRotSpeedCtlr
 {

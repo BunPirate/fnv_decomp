@@ -30,7 +30,7 @@ public:
     NavMeshPtr m_spWorkingNavMesh;
     BSSimpleArray<ObstacleTask, 1024> Operations;
     ParentChildLinks m_kParentChildLinks;
-    bool bPortalModified;
+    bool bPortalModified; // src: XBOX_RETAIL_PDB +0x54 (old: bForce)
 
     bool AddOperation(const NiPointer<ObstacleData>&, OBSTACLE_TASK_TYPE);
     void vfn_04();

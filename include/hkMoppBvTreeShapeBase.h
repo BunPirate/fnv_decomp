@@ -15,8 +15,8 @@ public:
 
     int queryAabbImpl(const hkAabb& aabbIn, unsigned int* hits, int maxNumKeys) const;
 
-    const hkpMoppCode* m_code;
-    unsigned char* m_moppData;
-    int m_moppDataSize;
-    hkVector4_X m_codeInfoCopy;
+    const hkpMoppCode* m_code; // src: XBOX_RETAIL_PDB +0x14 (old: m_pMoppCode)
+    unsigned char* m_moppData; // src: XBOX_RETAIL_PDB +0x18 (old: m_pMoppData)
+    int m_moppDataSize; // src: XBOX_RETAIL_PDB +0x1c (old: m_uiMoppDataSize)
+    hkVector4_X m_codeInfoCopy; // src: XBOX_RETAIL_PDB +0x20 (old: m_kMoppCodeInfo)
 };

@@ -5,13 +5,13 @@
 #include "../../../../include/NiD3DShaderProgramFactory.h"
 #include "../../../../include/NiTStringPointerMap.h"
 struct Program;
-extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 Program* NiD3DShaderProgramFactory_GetInstance();
 struct Program
 {
     virtual void Destroy(int);
 };
-extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 void DestroyProgram();
 struct Nd
 {

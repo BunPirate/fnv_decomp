@@ -1766,11 +1766,11 @@ struct Ray
 // pdb: structure hkpWorldRayCastCommand, size 0x40, 6 members
 struct hkpWorldRayCastCommand
 {
-    Ray m_rayInput;
-    void* m_results;
-    int m_resultsCapacity;
-    int m_numResultsOut;
-    hkBool m_useCollector, m_stopAfterFirstHit;
+    Ray m_rayInput; // src: XBOX_RETAIL_PDB +0x0 (old: input)
+    void* m_results; // src: XBOX_RETAIL_PDB +0x30 (old: results)
+    int m_resultsCapacity; // src: XBOX_RETAIL_PDB +0x34 (old: capacity)
+    int m_numResultsOut; // src: XBOX_RETAIL_PDB +0x38 (old: count)
+    hkBool m_useCollector, m_stopAfterFirstHit; // src: XBOX_RETAIL_PDB m_stopAfterFirstHit +0x3d (old: stop); m_useCollector +0x3c (old: useCollector)
     hkpWorldRayCastCommand()
     {
         m_useCollector = false;

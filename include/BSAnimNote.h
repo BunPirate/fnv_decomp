@@ -14,6 +14,6 @@ class BSAnimNote : public NiObject
 
     void BaseGetViewerStrings(NiViewerStringsArray* pStrings);
 
-    unsigned char eType[4];
+    unsigned char eType[4]; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     float fTime;
 };

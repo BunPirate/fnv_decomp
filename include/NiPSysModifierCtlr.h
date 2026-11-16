@@ -16,6 +16,6 @@ public:
     void CopyMemberData(NiPSysModifierCtlr* destination, CloningProcess& process);
     void CopyMemberData(NiPSysModifierCtlr* source, void* process);
 
-    NiFixedString m_kModifierName;
-    NiPSysModifier* m_pkModifier;
+    NiFixedString m_kModifierName; // src: XBOX_RETAIL_PDB +0x38 (old: m_kTargetModifierName)
+    NiPSysModifier* m_pkModifier; // src: XBOX_RETAIL_PDB +0x3c (old: m_pkTargetModifier)
 };

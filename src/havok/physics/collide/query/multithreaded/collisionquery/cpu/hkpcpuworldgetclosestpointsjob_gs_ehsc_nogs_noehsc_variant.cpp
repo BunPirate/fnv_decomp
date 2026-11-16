@@ -852,11 +852,11 @@ virtual hkBool ReportHit(hkPrimitiveId primId);
 virtual hkBool DidHit();
 virtual hkReal GetHitFraction();
 public:
-const hkpGroupFilter*m_filter;
-hkpFixedBufferCdPointCollector*m_castCollector;
-const hkpCollidable*m_collidable;
-hkpShapeType m_shapeType;
-ShapeSweepParameters m_input;};struct RootContactPoint;
+const hkpGroupFilter*m_filter; // src: XBOX_RETAIL_PDB +0xc (old: m_iFilter)
+hkpFixedBufferCdPointCollector*m_castCollector; // src: XBOX_RETAIL_PDB +0x10 (old: m_pPointCollector)
+const hkpCollidable*m_collidable; // src: XBOX_RETAIL_PDB +0x14 (old: m_kCollidable)
+hkpShapeType m_shapeType; // src: XBOX_RETAIL_PDB +0x18 (old: m_iType)
+ShapeSweepParameters m_input;};struct RootContactPoint; // src: XBOX_RETAIL_PDB +0x20 (old: m_pRayCastInput)
 
 struct CollisionQueryJobHeader
 {

@@ -17,7 +17,7 @@ template <class T> inline NiPointer<T>::operator T*() const { return m_pObject; 
 #include "../../../include/Transform.h"
 
 extern const NiRTTI g_011f3fd4;
-extern const NiRTTI NiTexturingProperty_ms_RTTI;
+extern const NiRTTI NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 extern const NiRTTI g_011f4428;
 struct FUN_00a4f300_shell
 {

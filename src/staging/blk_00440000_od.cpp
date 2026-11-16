@@ -2450,7 +2450,7 @@ void bhkCharacterController_SetMultipleStepSpeed(float value)
     DAT_011b0150 = value;
 }
 
-extern float bhkCharacterController_fMinHurtfulMass;
+extern float bhkCharacterController_fMinHurtfulMass; // src: XBOX_RETAIL_PDB 0x01267bc0 (old: DAT_01267bc0)
 
 // @fnv 0x00450690
 // src: COMMUNITY 0x00450690
@@ -5031,7 +5031,7 @@ struct Target_00458440;
 // pdb: structure GridCell, size 0x4, 1 members
 struct GridCell
 {
-    Target_00458440* pCell;
+    Target_00458440* pCell; // src: XBOX_RETAIL_PDB +0x0 (old: unk00)
 };
 
 struct GlobalObject2_0045cfe0

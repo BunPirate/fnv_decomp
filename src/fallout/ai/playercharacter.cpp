@@ -60158,7 +60158,7 @@ extern int DAT_0118a838[];
 extern char DAT_0102cb10;
 extern char DAT_01020594;
 extern char DAT_01267e64;
-extern char bhkBlendCollisionObjectAddRotation_ms_RTTI;
+extern char bhkBlendCollisionObjectAddRotation_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012681cc (old: DAT_012681cc/g_012681cc)
 int __cdecl BSUtilities_GetObjectByName(int handle, void* resource);
 void* __cdecl GetGunWobble(int aeWeaponType, float afTime, FloatMatrix3* apReturnWobble);
 double __cdecl FUN_00408840(float x);

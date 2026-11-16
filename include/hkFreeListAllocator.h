@@ -126,7 +126,7 @@ public:
         int m_24;
         int unk24;
     };
-    unsigned char m_server[0xC0];
+    unsigned char m_server[0xC0]; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     union { int m_e8; unsigned int m_total; int unkE8; };
     union
     {
@@ -146,8 +146,8 @@ public:
     union { int m_iFreeListCount; int m_uiItemCount; int m_iArrayLength; int m_iPoolCount; int m_234; int count234; };
     union { FreeList* m_238; FreeList* volatile cur238; void* m_kNode; };
     union { FreeList* m_23c; FreeList* end23c; };
-    FreeList m_lastFreeList[41];
+    FreeList m_lastFreeList[41]; // src: XBOX_RETAIL_PDB +0x240 (old: m_items)
     union { int unkA94; int m_a94; unsigned int m_pFreeList; };
     union { int m_a98; int m_iCur; };
-    int m_incrementalFreeListIndex;
+    int m_incrementalFreeListIndex; // src: XBOX_RETAIL_PDB +0xa9c (old: unkA9C)
 };

@@ -35,55 +35,55 @@ public:
         unsigned int control;
     };
 
-    TES_RETURN_CODE m_lastError;
-    TESFile* pThreadSafeParent;
-    NiTPointerMap<unsigned int, TESFile*>* pThreadSafeFileMap;
-    BSFile* m_pLockedFile;
+    TES_RETURN_CODE m_lastError; // src: XBOX_RETAIL_PDB +0x0 (old: m_eReturnCode)
+    TESFile* pThreadSafeParent; // src: XBOX_RETAIL_PDB +0x4 (old: m_pThreadSafeParent)
+    NiTPointerMap<unsigned int, TESFile*>* pThreadSafeFileMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_pThreadSafeFileMap)
+    BSFile* m_pLockedFile; // src: XBOX_RETAIL_PDB +0xc (old: m_pSecondaryFile)
     BSFile* m_pFile;
-    TESBitArrayFile* pFormUserDataBitArray;
-    TESBitArrayFile* pFormVersionBitArray;
-    TESBitArrayFile* pFormIDBitArray;
-    char m_Filename[260];
-    char m_Path[260];
+    TESBitArrayFile* pFormUserDataBitArray; // src: XBOX_RETAIL_PDB +0x14 (old: m_pBitArrayFile1)
+    TESBitArrayFile* pFormVersionBitArray; // src: XBOX_RETAIL_PDB +0x18 (old: m_pBitArrayFile2)
+    TESBitArrayFile* pFormIDBitArray; // src: XBOX_RETAIL_PDB +0x1c (old: m_pBitArrayFile3)
+    char m_Filename[260]; // src: XBOX_RETAIL_PDB +0x20 (old: m_acFilename)
+    char m_Path[260]; // src: XBOX_RETAIL_PDB +0x124 (old: m_acPath)
     char* m_pBuffer;
     unsigned int m_uiBufferAllocSize;
-    unsigned int m_firstCellOffset;
-    unsigned int m_currCellOffset;
-    TESObjectCELL* m_pCurrCell;
-    unsigned int m_currRefOffset;
-    FormRecordHeader m_currentform;
-    CHUNK_ID m_currentchunkID;
-    unsigned int m_actualChunkSize;
-    unsigned int m_filesize;
-    unsigned int m_fileoffset;
-    unsigned int m_formoffset;
-    unsigned int m_chunkoffset;
-    FormRecordHeader m_saveform;
-    unsigned int m_saveformoffset;
-    unsigned int m_savechunkoffset;
-    BSSimpleList<TESFileGroup*> m_grouplist;
-    bool bHasGroups;
-    bool bMustEndianConvert;
-    bool bCloseFileOverride;
+    unsigned int m_firstCellOffset; // src: XBOX_RETAIL_PDB +0x230 (old: m_uiReadPosition)
+    unsigned int m_currCellOffset; // src: XBOX_RETAIL_PDB +0x234 (old: m_uiBufferSize)
+    TESObjectCELL* m_pCurrCell; // src: XBOX_RETAIL_PDB +0x238 (old: m_pCurrentCell)
+    unsigned int m_currRefOffset; // src: XBOX_RETAIL_PDB +0x23c (old: m_uiFormCount)
+    FormRecordHeader m_currentform; // src: XBOX_RETAIL_PDB +0x240 (old: m_kRecordInfo)
+    CHUNK_ID m_currentchunkID; // src: XBOX_RETAIL_PDB +0x258 (old: m_eChunkID)
+    unsigned int m_actualChunkSize; // src: XBOX_RETAIL_PDB +0x25c (old: m_uiChunkSize)
+    unsigned int m_filesize; // src: XBOX_RETAIL_PDB +0x260 (old: m_uiChunkOffset)
+    unsigned int m_fileoffset; // src: XBOX_RETAIL_PDB +0x264 (old: m_uiRecordSize)
+    unsigned int m_formoffset; // src: XBOX_RETAIL_PDB +0x268 (old: m_uiRecordOffset)
+    unsigned int m_chunkoffset; // src: XBOX_RETAIL_PDB +0x26c (old: m_uiCurrentOffset)
+    FormRecordHeader m_saveform; // src: XBOX_RETAIL_PDB +0x270 (old: m_kChunkInfo)
+    unsigned int m_saveformoffset; // src: XBOX_RETAIL_PDB +0x288 (old: m_uiChunkValue1)
+    unsigned int m_savechunkoffset; // src: XBOX_RETAIL_PDB +0x28c (old: m_uiChunkValue2)
+    BSSimpleList<TESFileGroup*> m_grouplist; // src: XBOX_RETAIL_PDB +0x290 (old: m_kRecordList)
+    bool bHasGroups; // src: XBOX_RETAIL_PDB +0x298 (old: m_bIsLoading)
+    bool bMustEndianConvert; // src: XBOX_RETAIL_PDB +0x299 (old: m_bIsSaving)
+    bool bCloseFileOverride; // src: XBOX_RETAIL_PDB +0x29a (old: m_bHasCurrentGroup)
     unsigned char layoutPadding29B;
-    _WIN32_FIND_DATAA m_FileInfo;
-    TESFileHeader fileHeaderInfo;
-    unsigned int m_Flags;
-    BSSimpleList<char*> listMasters;
-    BSSimpleList<_ULARGE_INTEGER*> listMastersData;
-    unsigned int iMasterCount;
-    TESFile** m_pMasterPtrs;
-    _FILETIME DeletedFormTime;
-    unsigned char cCompileIndex;
+    _WIN32_FIND_DATAA m_FileInfo; // src: XBOX_RETAIL_PDB +0x29c (old: m_kFindData)
+    TESFileHeader fileHeaderInfo; // src: XBOX_RETAIL_PDB +0x3dc (old: m_kFileMetadata)
+    unsigned int m_Flags; // src: XBOX_RETAIL_PDB +0x3e8 (old: m_uiFileCount)
+    BSSimpleList<char*> listMasters; // src: XBOX_RETAIL_PDB +0x3ec (old: m_kFilenameList)
+    BSSimpleList<_ULARGE_INTEGER*> listMastersData; // src: XBOX_RETAIL_PDB +0x3f4 (old: m_kFileSizeList)
+    unsigned int iMasterCount; // src: XBOX_RETAIL_PDB +0x3fc (old: m_uiTESFileCount)
+    TESFile** m_pMasterPtrs; // src: XBOX_RETAIL_PDB +0x400 (old: m_ppTESFiles)
+    _FILETIME DeletedFormTime; // src: XBOX_RETAIL_PDB +0x404 (old: m_kLastWriteTime)
+    unsigned char cCompileIndex; // src: XBOX_RETAIL_PDB +0x40c (old: m_ucCompileIndex)
     unsigned char layoutPadding40D;
     unsigned short layoutPadding40E;
-    BSStringT<char> cCreatedBy;
-    BSStringT<char> cSummary;
-    char* pDecompressedFormBuffer;
-    unsigned int iDecompressedFormBufferSize;
-    bool bCached;
-    bool bCaching;
-    bool bDLC;
+    BSStringT<char> cCreatedBy; // src: XBOX_RETAIL_PDB +0x410 (old: m_kCreator)
+    BSStringT<char> cSummary; // src: XBOX_RETAIL_PDB +0x418 (old: m_kSummary)
+    char* pDecompressedFormBuffer; // src: XBOX_RETAIL_PDB +0x420 (old: m_pDecompressedFormBuffer)
+    unsigned int iDecompressedFormBufferSize; // src: XBOX_RETAIL_PDB +0x424 (old: m_uiAuxBufferSize)
+    bool bCached; // src: XBOX_RETAIL_PDB +0x428 (old: m_bIsMaster)
+    bool bCaching; // src: XBOX_RETAIL_PDB +0x429 (old: m_bOptimizedFile)
+    bool bDLC; // src: XBOX_RETAIL_PDB +0x42a (old: m_bIsDLC)
     unsigned char layoutPadding42B;
 
     bool CreateTES(char*, char*, int);

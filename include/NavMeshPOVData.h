@@ -14,6 +14,6 @@ public:
 class NavMeshPOVData
 {
 public:
-    NavMeshTriangleHandle Edge1;
-    NavMeshTriangleHandle Edge2;
+    NavMeshTriangleHandle Edge1; // src: XBOX_RETAIL_PDB +0x0 (old: m_kFirstEdge)
+    NavMeshTriangleHandle Edge2; // src: XBOX_RETAIL_PDB +0x2 (old: m_kSecondEdge)
 };

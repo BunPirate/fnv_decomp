@@ -28,13 +28,13 @@ public:
     void CreateVertexBufferSet(NiPSysCollider* collider, CloningProcess& cloning);
     NiPSysCollider* Clone(CloningProcess& cloning);
 
-    float m_fBounce;
-    bool m_bSpawnOnCollide;
-    bool m_bDieOnCollide;
+    float m_fBounce; // src: XBOX_RETAIL_PDB +0x8 (old: m_fBounceFactor)
+    bool m_bSpawnOnCollide; // src: XBOX_RETAIL_PDB +0xc (old: m_bSpawnOnCollision)
+    bool m_bDieOnCollide; // src: XBOX_RETAIL_PDB +0xd (old: m_bDieOnCollision)
     unsigned char layoutPaddingE[2];
-    NiPSysSpawnModifier* m_pkSpawnModifier;
-    NiPoint3 m_kCollisionPoint;
-    float m_fCollisionTime;
-    NiPSysColliderManager* m_pkManager;
-    NiPointer<NiPSysCollider> m_spNext;
+    NiPSysSpawnModifier* m_pkSpawnModifier; // src: XBOX_RETAIL_PDB +0x10 (old: m_pSpawnModifier)
+    NiPoint3 m_kCollisionPoint; // src: XBOX_RETAIL_PDB +0x14 (old: m_kCollisionPosition)
+    float m_fCollisionTime; // src: XBOX_RETAIL_PDB +0x20 (old: m_fSpawnRate)
+    NiPSysColliderManager* m_pkManager; // src: XBOX_RETAIL_PDB +0x24 (old: m_pColliderManager)
+    NiPointer<NiPSysCollider> m_spNext; // src: XBOX_RETAIL_PDB +0x28 (old: m_spNextController)
 };

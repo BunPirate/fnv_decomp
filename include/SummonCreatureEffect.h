@@ -42,12 +42,12 @@ public:
     void SaveGame_008297a0(int apActor);
     void InitLoadGame_00829900(void* apActor);
 
-    Actor* pSummonedCreature;
-    unsigned char bTargetSet;
+    Actor* pSummonedCreature; // src: XBOX_RETAIL_PDB +0x4c (old: unk4C)
+    unsigned char bTargetSet; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
     unsigned char unk51[3];
-    float fAppearTime;
-    NiPoint3 AppearLocation;
-    NiPoint3 AppearRotation;
-    unsigned char bPlacement;
-    unsigned char bcached;
+    float fAppearTime; // src: XBOX_RETAIL_PDB +0x54 (old: unk54)
+    NiPoint3 AppearLocation; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
+    NiPoint3 AppearRotation; // src: XBOX_RETAIL_PDB +0x64 (old: unk64)
+    unsigned char bPlacement; // src: XBOX_RETAIL_PDB +0x70 (old: unk70)
+    unsigned char bcached; // src: XBOX_RETAIL_PDB +0x71 (old: unk71)
 };

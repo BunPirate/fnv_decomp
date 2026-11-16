@@ -40,6 +40,6 @@ public:
                                   BSSimpleList<float>* apDistancesList);
     static BSSimpleList<TESObjectREFR*> ms_kRadioStations;
 
-    TESObjectREFR* pTempRef;    // 0x90
-    BGSVoiceType* pVoiceType; // 0x94
+    TESObjectREFR* pTempRef;    // 0x90 // src: XBOX_RETAIL_PDB +0x90 (old: m_pTempRef)
+    BGSVoiceType* pVoiceType; // 0x94 // src: XBOX_RETAIL_PDB +0x94 (old: m_kFactionList)
 };

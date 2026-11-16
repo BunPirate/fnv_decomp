@@ -20,10 +20,10 @@ class TileShader : public BSShader
     void RebuildPrograms();
     void NiDX9FragmentShader_RecreateRendererData();
 
-    NiD3DPass* spTileShaderPass;
-    NiD3DVertexShader* spTileVertexShader[3];
-    NiD3DPixelShader* spTilePixelShader[3];
-    void* spShaderDecl[2];
+    NiD3DPass* spTileShaderPass; // src: XBOX_RETAIL_PDB +0x6c (old: m_pTilePass)
+    NiD3DVertexShader* spTileVertexShader[3]; // src: XBOX_RETAIL_PDB +0x70 (old: m_apVertexShaders)
+    NiD3DPixelShader* spTilePixelShader[3]; // src: XBOX_RETAIL_PDB +0x7c (old: m_apPixelShaders)
+    void* spShaderDecl[2]; // src: XBOX_RETAIL_PDB +0x88 (old: m_apDeclarations)
 };
 
 void AddToCounterIfIdle(unsigned int, unsigned int);

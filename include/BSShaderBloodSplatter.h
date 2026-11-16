@@ -14,9 +14,9 @@ class BSShaderBloodSplatter
 {
 public:
     unsigned char unk00[0x6C];
-    NiPointer<NiD3DPass> spPass[2];
-    NiPointer<NiD3DVertexShader> spVertexShader[2];
-    NiPointer<NiD3DPixelShader> spPixelShader[2];
+    NiPointer<NiD3DPass> spPass[2]; // src: XBOX_RETAIL_PDB +0x6c (old: spRenderPass)
+    NiPointer<NiD3DVertexShader> spVertexShader[2]; // src: XBOX_RETAIL_PDB +0x74 (old: m_spTreeVertexShader)
+    NiPointer<NiD3DPixelShader> spPixelShader[2]; // src: XBOX_RETAIL_PDB +0x7c (old: m_spPixelShaderVariants)
 
     BSShaderBloodSplatter();
     ~BSShaderBloodSplatter();

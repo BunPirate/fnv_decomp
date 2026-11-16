@@ -62,18 +62,18 @@ public:
     virtual void vf07(BGSLoadFormBuffer* buffer);
 
     PackageTargetRecord* m_pUseTarget;
-    LocationDescriptor* pTargetLocation;
-    bool bAlwaysHit;
-    bool bDoNoDamage;
-    bool bCrouch;
-    bool bHoldFire;
-    bool bVolleyFire;
-    bool bRepeatFire;
-    unsigned short sBurstCount;
-    unsigned short sVolleyShotsMin;
-    unsigned short sVolleyShotsMax;
-    float fVolleyWaitMin;
-    float fVolleyWaitMax;
+    LocationDescriptor* pTargetLocation; // src: XBOX_RETAIL_PDB +0x8 (old: m_pTargetLocation)
+    bool bAlwaysHit; // src: XBOX_RETAIL_PDB +0xc (old: m_bFlag1)
+    bool bDoNoDamage; // src: XBOX_RETAIL_PDB +0xd (old: m_bFlag2)
+    bool bCrouch; // src: XBOX_RETAIL_PDB +0xe (old: m_bFlag3)
+    bool bHoldFire; // src: XBOX_RETAIL_PDB +0xf (old: m_bFlag4)
+    bool bVolleyFire; // src: XBOX_RETAIL_PDB +0x10 (old: m_bFlag5)
+    bool bRepeatFire; // src: XBOX_RETAIL_PDB +0x11 (old: m_bFlag6)
+    unsigned short sBurstCount; // src: XBOX_RETAIL_PDB +0x12 (old: m_usValue1)
+    unsigned short sVolleyShotsMin; // src: XBOX_RETAIL_PDB +0x14 (old: m_usValue2)
+    unsigned short sVolleyShotsMax; // src: XBOX_RETAIL_PDB +0x16 (old: m_usValue3)
+    float fVolleyWaitMin; // src: XBOX_RETAIL_PDB +0x18 (old: m_fValue1)
+    float fVolleyWaitMax; // src: XBOX_RETAIL_PDB +0x1c (old: m_fValue2)
     TESObjectWEAP* pWeapon;
 
     TESUseWeaponPackageData* __thiscall InitializeFields_0067caa0();

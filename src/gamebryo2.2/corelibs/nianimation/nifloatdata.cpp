@@ -117,7 +117,7 @@ struct GlobalObjectO2_00a7b610
 {
 };
 
-extern GlobalObjectO2_00a7b610* NiFloatData_ms_RTTI;
+extern GlobalObjectO2_00a7b610* NiFloatData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3748 (old: g_011f3748)
 
 void __stdcall AppendCameraPathEntries(StrArr* pStrings);
 char* __cdecl _FUN_00a7d330(GlobalObjectO2_00a7b610* object);

@@ -14,7 +14,7 @@ struct OpacityFadeState;
 class BSCustomSplatterExtraData : public NiExtraData
 {
 public:
-    SplatterWordsView SplatterData;
+    SplatterWordsView SplatterData; // src: XBOX_RETAIL_PDB +0xc (old: q)
 
     BSCustomSplatterExtraData(SplatterWordsView* aSplatterData);
     virtual const NiRTTI* GetRTTI() const override;

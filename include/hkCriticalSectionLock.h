@@ -6,7 +6,7 @@
 class hkCriticalSectionLock
 {
 public:
-    hkCriticalSection* m_section;
+    hkCriticalSection* m_section; // src: XBOX_RETAIL_PDB +0x0 (old: m_kCriticalSection)
 
     hkCriticalSectionLock(hkCriticalSection* pkSection);
     hkCriticalSectionLock(void* section);

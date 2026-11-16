@@ -9,7 +9,7 @@
 #include "../../../../include/StrArr.h"
 #include "../../../../include/NiRTTI.h"
 
-extern int NiPSysAirFieldAirFrictionCtlr_ms_RTTI;
+extern int NiPSysAirFieldAirFrictionCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012027b8 (old: g_012027b8)
 
 // @fnv 0x00c307c0
 // src: COMMUNITY 0x00c307c0

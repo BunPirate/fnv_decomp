@@ -95,9 +95,9 @@ public:
     void __thiscall GetWaterRefractionPassWithinRange(unsigned int a, int b);
     void BSShaderAccumulator_RenderNormals(void* apCamera, BSRenderedTexture* apCurRenderTarget);
 
-    etAccumulationMode eAccumulationMode;
+    etAccumulationMode eAccumulationMode; // src: XBOX_RETAIL_PDB +0x34 (old: _unverified_eAccumulationMode)
     bool bWorldGeometry;
-    bool bCacheGeometry;
+    bool bCacheGeometry; // src: XBOX_RETAIL_PDB +0x39 (old: _unverified_bCacheGeometry)
     bool bDoDepthPasses;
     unsigned char _pad3B[1];
     unsigned int uiSunPixelCount;
@@ -153,8 +153,8 @@ class BSMultiBoundCapsule : public BSMultiBoundShape
 public:
     BSMultiBoundCapsule();
 
-    NiPoint3 PointA;
-    NiPoint3 PointB;
-    float Radius;
+    NiPoint3 PointA; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
+    NiPoint3 PointB; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    float Radius; // src: XBOX_RETAIL_PDB +0x24 (old: unk24)
 };
 #endif

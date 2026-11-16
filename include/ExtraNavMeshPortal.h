@@ -9,5 +9,5 @@ class ExtraNavMeshPortal : public BSExtraData
 public:
     ExtraNavMeshPortal(TwoIntRecord);
 
-    TwoIntRecord Portal;
+    TwoIntRecord Portal; // src: XBOX_RETAIL_PDB +0xc (old: handle)
 };

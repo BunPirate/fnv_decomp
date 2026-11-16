@@ -6,7 +6,7 @@ class TESForm;
 struct BGSChangeFlags
 {
 public:
-    unsigned int iFlags;
+    unsigned int iFlags; // src: XBOX_RETAIL_PDB +0x0 (old: uiFlags)
 
     BGSChangeFlags();
     BGSChangeFlags(unsigned int auiFlags);

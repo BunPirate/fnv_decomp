@@ -213,8 +213,8 @@ KdTreeNode*m_pTreeNode;
 };
 struct WorkingSet
 {
-FieldlessRecord*m_entriesIn;
-FieldlessRecord*m_entriesOut;
+FieldlessRecord*m_entriesIn; // src: XBOX_RETAIL_PDB +0x0 (old: m_pProjectedEntryBegin)
+FieldlessRecord*m_entriesOut; // src: XBOX_RETAIL_PDB +0x4 (old: m_pProjectedEntryEnd)
 };
 struct ProjectedBoundsContext
 {

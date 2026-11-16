@@ -323,13 +323,13 @@ void* __thiscall FUN_0098f280_Class::BSSimpleArray_NavMeshSearchNode_1024_Reallo
 class CombatSearchLocation
 {
 public:
-    int WorldLoc;
+    int WorldLoc; // src: XBOX_RETAIL_PDB +0x0 (old: m_00)
     int m_04;
     int m_08;
     int m_0c;
-    int fTimeStamp;
-    int iTargetID;
-    int fScore;
+    int fTimeStamp; // src: XBOX_RETAIL_PDB +0x10 (old: m_10)
+    int iTargetID; // src: XBOX_RETAIL_PDB +0x14 (old: m_14)
+    int fScore; // src: XBOX_RETAIL_PDB +0x18 (old: m_18)
     CombatSearchLocation();
 };
 
@@ -4589,11 +4589,11 @@ struct CombatClusterStub
 // pdb: class CombatMember, size 0x14, 5 members
 struct CombatMember
 {
-    Actor* pActor;
-    int iGroupStrategyAssignment;
-    int fDamagePerSecond;
-    int fCombatStrength;
-    CombatClusterStub* pCluster;
+    Actor* pActor; // src: XBOX_RETAIL_PDB +0x0 (old: actor)
+    int iGroupStrategyAssignment; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int fDamagePerSecond; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    int fCombatStrength; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
+    CombatClusterStub* pCluster; // src: XBOX_RETAIL_PDB +0x10 (old: cluster)
 };
 
 struct ClusterArrayStub

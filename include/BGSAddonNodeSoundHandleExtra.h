@@ -16,5 +16,5 @@ public:
     void FUN_004f9270();
     void* FUN_004f9240(unsigned int flags);
 
-    BSSoundHandle SoundHandle;
+    BSSoundHandle SoundHandle; // src: XBOX_RETAIL_PDB +0xc (old: m_kData)
 };

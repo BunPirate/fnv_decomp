@@ -224,7 +224,7 @@ struct GlobalObject_00b3f100
 // pdb: class CRegion, size 0x30, 2 members
 struct CRegion
 {
-    GlobalObject_00b3f100 m_cMin, m_cMax;
+    GlobalObject_00b3f100 m_cMin, m_cMax; // src: XBOX_RETAIL_PDB m_cMax +0x18 (old: hi); m_cMin +0x0 (old: lo)
     CRegion();
 // src: GUESS 0x00b3caa0 (confidence: low)
     inline CRegion ComputeValue_00b3caa0(const LocalVec3& p) const

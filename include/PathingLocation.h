@@ -28,12 +28,12 @@ public:
     virtual void LoadGame(BGSLoadFormBuffer*);
 
     NiPoint3 Location;
-    const NavMeshInfo* pNavMesh;
-    const BSSimpleArray<const NavMeshInfo*, 1024>* pNavMeshes;
+    const NavMeshInfo* pNavMesh; // src: XBOX_RETAIL_PDB +0x10 (old: m_pLocationNavMesh)
+    const BSSimpleArray<const NavMeshInfo*, 1024>* pNavMeshes; // src: XBOX_RETAIL_PDB +0x14 (old: pNavMeshInfoArray)
     TESObjectCELL* pCell;
-    TESWorldSpace* pWorldSpace;
-    unsigned int iCellKey;
-    unsigned short usTriangle;
+    TESWorldSpace* pWorldSpace; // src: XBOX_RETAIL_PDB +0x1c (old: m_pContainingWorldspace)
+    unsigned int iCellKey; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiPathingFlags)
+    unsigned short usTriangle; // src: XBOX_RETAIL_PDB +0x24 (old: m_usTriangleID)
     unsigned char uiFlags;
     union
     {

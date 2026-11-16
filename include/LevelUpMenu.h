@@ -104,7 +104,7 @@ public:
             int unk60;
         };
     };
-    Member64 lbSkillsList;
-    Member94 lbPerksList;
-    LevelUpOwnedList<void*> AvailablePerks;
+    Member64 lbSkillsList; // src: XBOX_RETAIL_PDB +0x64 (old: unk64)
+    Member94 lbPerksList; // src: XBOX_RETAIL_PDB +0x94 (old: unk94)
+    LevelUpOwnedList<void*> AvailablePerks; // src: XBOX_RETAIL_PDB +0xc4 (old: unkC4)
 };

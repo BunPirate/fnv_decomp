@@ -6,5 +6,5 @@
 class ExtraHasNoRumors : public BSExtraData
 {
 public:
-    char bNoRumors;
+    char bNoRumors; // src: XBOX_RETAIL_PDB +0xc (old: value)
 };

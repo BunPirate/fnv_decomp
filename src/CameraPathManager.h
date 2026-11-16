@@ -12,7 +12,7 @@
 class CameraPathManager
 {
   public:
-    NiFormArray PathArray;
+    NiFormArray PathArray; // src: XBOX_RETAIL_PDB +0x0 (old: m_kCameraPathArray)
     NiTPrimitiveArray<BGSCameraPath*> m_kCameraPathList;
     void CreateDefaultPath();
     static BGSCameraPath* GetTextureResourcePath();

@@ -11,5 +11,5 @@ class SForm;
 class ExtraItemDropper : public BSExtraData
 {
 public:
-    extra_save::SForm* pDropper;
+    extra_save::SForm* pDropper; // src: XBOX_RETAIL_PDB +0xc (old: dropper)
 };

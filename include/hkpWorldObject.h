@@ -38,12 +38,12 @@ public:
 
     hkpWorld* getWorld() const;
 
-    void* m_world;
-    hkUlong m_userData;
+    void* m_world; // src: XBOX_RETAIL_PDB +0x8 (old: m_pOwningWorld)
+    hkUlong m_userData; // src: XBOX_RETAIL_PDB +0xc (old: m_ulUserData)
     hkpLinkedCollidable m_kCollidable;
-    hkMultiThreadCheck m_multiThreadCheck;
+    hkMultiThreadCheck m_multiThreadCheck; // src: XBOX_RETAIL_PDB +0x6c (old: m_kMultiThreadCheck)
     hkStringPtr m_name;
-    hkArray<hkpProperty> m_properties;
-    void* m_aiData;
-    void* m_treeData;
+    hkArray<hkpProperty> m_properties; // src: XBOX_RETAIL_PDB +0x78 (old: m_kProperties)
+    void* m_aiData; // src: XBOX_RETAIL_PDB +0x84 (old: m_kNextStreamField)
+    void* m_treeData; // src: XBOX_RETAIL_PDB +0x88 (old: m_pWorldObjectOwner)
 };

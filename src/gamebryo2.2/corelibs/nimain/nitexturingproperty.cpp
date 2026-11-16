@@ -436,7 +436,7 @@ const char* const* NiDynamicEffect_GetRTTI()
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
-struct Map
+struct Map // src: EXE (old: FUN_00a69e00)
 {
     unsigned short m_usFlags;
     void* m_spTexture;
@@ -466,7 +466,7 @@ int NiShadeProperty_Type()
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiTexturingProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 // @fnv 0x00a6a140
 // src: COMMUNITY 0x00a6a140
 GlobalObjectO2_00a7b610* NiTexturingProperty_GetRTTI()
@@ -1726,7 +1726,7 @@ struct GlobalObjectO2_00a7b610
 {
     char* m_pcName;
 };
-extern GlobalObjectO2_00a7b610 NiTexturingProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 int __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 char* BuildTextureAddressModeString(const char*, int);
 char* BuildFilterModeString(const char*, int);

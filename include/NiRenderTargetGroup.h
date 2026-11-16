@@ -56,17 +56,17 @@ class NiRenderTargetGroup : public NiObject
         return reinterpret_cast<NiDepthStencilBuffer* const&>(m_aspBuffers[3].m_pObject);
     }
 
-    bool bForceNoMSAASurface;
-    bool bAddDSRestoreSurface;
+    bool bForceNoMSAASurface; // src: XBOX_RETAIL_PDB +0x8 (old: m_bNeedsResolve)
+    bool bAddDSRestoreSurface; // src: XBOX_RETAIL_PDB +0x9 (old: m_bFlagBeforePadding)
     unsigned char layoutPaddingA[2];
-    unsigned int uiDepthBase;
-    bool bResolveDepth;
+    unsigned int uiDepthBase; // src: XBOX_RETAIL_PDB +0xc (old: SystemStateFlags)
+    bool bResolveDepth; // src: XBOX_RETAIL_PDB +0x10 (old: m_bFlagBeforeBuffers)
     unsigned char layoutPadding11[1];
     unsigned short RenderBufferSet;
-    NiPointer<Ni2DBuffer> m_aspBuffers[4];
-    unsigned int m_uiNumBuffers;
-    NiPointer<NiDepthStencilBuffer> m_spDepthStencilBuffer;
-    RendererData* m_pkRendererData;
+    NiPointer<Ni2DBuffer> m_aspBuffers[4]; // src: XBOX_RETAIL_PDB +0x14 (old: m_aspRenderTargetBuffers)
+    unsigned int m_uiNumBuffers; // src: XBOX_RETAIL_PDB +0x24 (old: RenderTargetBufferInfo)
+    NiPointer<NiDepthStencilBuffer> m_spDepthStencilBuffer; // src: XBOX_RETAIL_PDB +0x28 (old: m_spRenderTargetDepthStencilBuffer)
+    RendererData* m_pkRendererData; // src: XBOX_RETAIL_PDB +0x2c (old: m_pTextureRendererData)
 };
 
 #include "NiRenderTargetGroup_RendererData.h"

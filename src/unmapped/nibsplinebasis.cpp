@@ -2,7 +2,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 class GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiBSplineData_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiBSplineData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4034 (old: g_011f4034)
 // @fnv 0x00a52500
 // src: COMMUNITY 0x00a52500
 GlobalObjectO2_00a7b610* NiBSplineData_GetRTTI()

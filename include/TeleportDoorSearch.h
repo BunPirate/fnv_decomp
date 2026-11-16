@@ -25,13 +25,13 @@ public:
     char prefix[0x205c - sizeof(void*)];
     TESWorldSpace* startWorld;
     int pad;
-    PathingLocation StartLocation;
-    bool GoalNode;
+    PathingLocation StartLocation; // src: XBOX_RETAIL_PDB +0x2064 (old: location)
+    bool GoalNode; // src: XBOX_RETAIL_PDB +0x208c (old: exterior)
     TESWorldSpace* world;
     TESObjectCELL* cell;
-    int Restrictions;
-    float fMaxDist;
-    const PathingActorData* pLockData;
-    BSSimpleArray<TESObjectREFR*, 1024> DoorList;
-    int DoorLockDisposition;
+    int Restrictions; // src: XBOX_RETAIL_PDB +0x2098 (old: restriction)
+    float fMaxDist; // src: XBOX_RETAIL_PDB +0x209c (old: maxCost)
+    const PathingActorData* pLockData; // src: XBOX_RETAIL_PDB +0x20a0 (old: lockData)
+    BSSimpleArray<TESObjectREFR*, 1024> DoorList; // src: XBOX_RETAIL_PDB +0x20a4 (old: doors)
+    int DoorLockDisposition; // src: XBOX_RETAIL_PDB +0x20b4 (old: disposition)
 };

@@ -24,5 +24,5 @@ public:
     int bhkShape_QMaterial();
 
     int m_0c;
-    int eMaterial;
+    int eMaterial; // src: XBOX_RETAIL_PDB +0x10 (old: m_10)
 };

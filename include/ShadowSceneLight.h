@@ -28,7 +28,7 @@ class NiTriBasedGeom;
 class ShadowSceneLight : public NiRefObject
 {
 public:
-    int iEnabledPasses;
+    int iEnabledPasses; // src: XBOX_RETAIL_PDB +0x8 (old: _unverified_iEnabledPasses)
     float fLuminance;
     D3DXMATRIX kViewProjection;
     D3DXMATRIX kShadowView;

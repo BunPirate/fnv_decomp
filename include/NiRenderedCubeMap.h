@@ -14,6 +14,6 @@ class NiRenderedCubeMap : public NiRenderedTexture
     static NiRenderedCubeMap* Create_00ee8330(unsigned int uiFaceSize, NiRenderer* pkRenderer,
                                          NiTexture::TextureFormatPreferences& kPrefs);
 
-    int m_eFace;
+    int m_eFace; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
     void* m_ppCubeMapFaces[6];
 };

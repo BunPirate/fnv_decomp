@@ -1643,7 +1643,7 @@ StartMenu::~StartMenu()
 }
 
 
-struct Option
+struct Option // src: XBOX_RETAIL_PDB (old: StartMenu_Option)
 {
     void InitPointer();
     void* FUN_007ce660(unsigned int flags);
@@ -2951,7 +2951,7 @@ void HUDMainMenu_SetVisibilityFlag(int aFlags, int aSet)
 }
 
 // pdb: class BSContentPackage, size 0x138 (here 0x4), 2 members
-struct BSContentPackage
+struct BSContentPackage // src: XBOX_RETAIL_PDB (old: FUN_00b008d0_StandIn)
 {
     void* m_pUnk;
     void* DisplayName();
@@ -3005,7 +3005,7 @@ void FUN_007d1320_Class::PlayerCharacter_SetKillCamMode(int value)
 
 unsigned int __cdecl gm_GetTickCount();
 
-struct IdleTimer
+struct IdleTimer // src: XBOX_RETAIL_PDB (old: FUN_007d5120_Class)
 {
     unsigned int a;
     unsigned int b;

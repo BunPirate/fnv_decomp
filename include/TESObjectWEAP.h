@@ -153,24 +153,24 @@ public:
     void TESObjectWEAP_SetAttackLoop(TESSound* sound);
 
     WeaponProperties data;
-    WeaponCriticalData criticalData;
-    TESModel ShellCasingModel;
-    TESModel ScopeModel;
-    TESModel WorldModel;
-    TESEffectShader* pScopeEffect;
-    TESSound* pAttackSound;
-    TESSound* pAttackSound2;
-    TESSound* pAttackSound2D;
-    TESSound* pAttackLoop;
-    TESSound* pAttackFailSound;
-    TESSound* pMeleeBlockSound;
-    TESSound* pIdleSound;
-    TESSound* pEquipSound;
-    TESSound* pUnEquipSound;
-    TESSound* pModSilencedSound;
-    TESSound* pModSilencedSound2;
-    TESSound* pModSilencedSound2D;
-    BGSImpactDataSet* pImpactDataSet;
+    WeaponCriticalData criticalData; // src: XBOX_RETAIL_PDB +0x1c0 (old: m_kCriticalData)
+    TESModel ShellCasingModel; // src: XBOX_RETAIL_PDB +0x1d0 (old: m_kModel)
+    TESModel ScopeModel; // src: XBOX_RETAIL_PDB +0x1e8 (old: m_kModel1stPerson)
+    TESModel WorldModel; // src: XBOX_RETAIL_PDB +0x200 (old: m_kModel3rdPerson)
+    TESEffectShader* pScopeEffect; // src: XBOX_RETAIL_PDB +0x218 (old: m_pWeaponEffectShader)
+    TESSound* pAttackSound; // src: XBOX_RETAIL_PDB +0x21c (old: m_pWeaponSound1)
+    TESSound* pAttackSound2; // src: XBOX_RETAIL_PDB +0x220 (old: m_pWeaponSound2)
+    TESSound* pAttackSound2D; // src: XBOX_RETAIL_PDB +0x224 (old: m_pWeaponSound3)
+    TESSound* pAttackLoop; // src: XBOX_RETAIL_PDB +0x228 (old: m_pWeaponSound4)
+    TESSound* pAttackFailSound; // src: XBOX_RETAIL_PDB +0x22c (old: m_pWeaponSound5)
+    TESSound* pMeleeBlockSound; // src: XBOX_RETAIL_PDB +0x230 (old: m_pWeaponSound6)
+    TESSound* pIdleSound; // src: XBOX_RETAIL_PDB +0x234 (old: m_pWeaponSound7)
+    TESSound* pEquipSound; // src: XBOX_RETAIL_PDB +0x238 (old: m_pWeaponSound8)
+    TESSound* pUnEquipSound; // src: XBOX_RETAIL_PDB +0x23c (old: m_pWeaponUnequipSound)
+    TESSound* pModSilencedSound; // src: XBOX_RETAIL_PDB +0x240 (old: m_pWeaponEquipSound)
+    TESSound* pModSilencedSound2; // src: XBOX_RETAIL_PDB +0x244 (old: m_pWeaponPickupSound)
+    TESSound* pModSilencedSound2D; // src: XBOX_RETAIL_PDB +0x248 (old: m_pWeaponDropSound)
+    BGSImpactDataSet* pImpactDataSet; // src: XBOX_RETAIL_PDB +0x24c (old: m_pImpactDataSet)
     TESObjectSTAT* p1stPersonObject;
     TESObjectSTAT* p1stPersonMod1Object;
     TESObjectSTAT* p1stPersonMod2Object;
@@ -179,20 +179,20 @@ public:
     TESObjectSTAT* p1stPersonMod23Object;
     TESObjectSTAT* p1stPersonMod13Object;
     TESObjectSTAT* p1stPersonMod123Object;
-    TESModelTextureSwap WorldModelMod1;
-    TESModelTextureSwap WorldModelMod2;
-    TESModelTextureSwap WorldModelMod3;
-    TESModelTextureSwap WorldModelMod12;
-    TESModelTextureSwap WorldModelMod13;
-    TESModelTextureSwap WorldModelMod23;
-    TESModelTextureSwap WorldModelMod123;
-    TESObjectIMOD* pModObjectOne;
-    TESObjectIMOD* pModObjectTwo;
-    TESObjectIMOD* pModObjectThree;
-    BSStringT<char> EmbeddedWeaponNode;
-    SOUND_LEVEL eSoundLevel;
+    TESModelTextureSwap WorldModelMod1; // src: XBOX_RETAIL_PDB +0x270 (old: m_kWeaponModTextureSwap1)
+    TESModelTextureSwap WorldModelMod2; // src: XBOX_RETAIL_PDB +0x290 (old: m_kWeaponModTextureSwap2)
+    TESModelTextureSwap WorldModelMod3; // src: XBOX_RETAIL_PDB +0x2b0 (old: m_kWeaponModTextureSwap3)
+    TESModelTextureSwap WorldModelMod12; // src: XBOX_RETAIL_PDB +0x2d0 (old: m_kWeaponModTextureSwap4)
+    TESModelTextureSwap WorldModelMod13; // src: XBOX_RETAIL_PDB +0x2f0 (old: m_kWeaponModTextureSwap5)
+    TESModelTextureSwap WorldModelMod23; // src: XBOX_RETAIL_PDB +0x310 (old: m_kWeaponModTextureSwap6)
+    TESModelTextureSwap WorldModelMod123; // src: XBOX_RETAIL_PDB +0x330 (old: m_kWeaponModTextureSwap7)
+    TESObjectIMOD* pModObjectOne; // src: XBOX_RETAIL_PDB +0x350 (old: m_pWeaponMod1)
+    TESObjectIMOD* pModObjectTwo; // src: XBOX_RETAIL_PDB +0x354 (old: m_pWeaponMod2)
+    TESObjectIMOD* pModObjectThree; // src: XBOX_RETAIL_PDB +0x358 (old: m_pWeaponMod3)
+    BSStringT<char> EmbeddedWeaponNode; // src: XBOX_RETAIL_PDB +0x35c (old: m_kEmbeddedWeaponNodeName)
+    SOUND_LEVEL eSoundLevel; // src: XBOX_RETAIL_PDB +0x364 (old: m_eSoundLevel)
     BSStringT<char> VATSAttackName;
-    WeaponVATSData specialVATSData;
-    bool bIsLoopingReload;
+    WeaponVATSData specialVATSData; // src: XBOX_RETAIL_PDB +0x370 (old: m_kVATSData)
+    bool bIsLoopingReload; // src: XBOX_RETAIL_PDB +0x384 (old: m_bHasReloadAnimation)
     unsigned char layoutPadding385[3];
 };

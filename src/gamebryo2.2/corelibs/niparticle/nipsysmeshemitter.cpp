@@ -86,10 +86,10 @@ struct Holder31750
 struct NiPSysMeshEmitter
 {
     char _pad0[0x54];
-    void* m_kGeomEmitterArray;
+    void* m_kGeomEmitterArray; // src: XBOX_RETAIL_PDB +0x54 (old: m_54)
     void* m_58;
     char _pad1[0x64 - 0x5C];
-    void* m_kSkinnedEmitterData;
+    void* m_kSkinnedEmitterData; // src: XBOX_RETAIL_PDB +0x64 (old: m_64)
     void* m_68;
     char _pad2[0x88 - 0x6C];
     void* __thiscall Destroy(unsigned int);
@@ -1688,7 +1688,7 @@ struct GeometryRuntimeType
     const GeometryRuntimeType* parent;
 };
 
-extern GeometryRuntimeType NiLines_ms_RTTI;
+extern GeometryRuntimeType NiLines_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a48 (old: DAT_011f4a48/g_011f4a48)
 extern "C" void __cdecl NiPoint3_UnitizeVector(MeshPoint* point);
 
 typedef int(__thiscall* GeometryTestFn)(NiGeometry*);
@@ -2009,7 +2009,7 @@ struct GeometryRuntimeType
     const char* name;
     const GeometryRuntimeType* parent;
 };
-extern GeometryRuntimeType NiLines_ms_RTTI;
+extern GeometryRuntimeType NiLines_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a48 (old: DAT_011f4a48/g_011f4a48)
 extern const double DAT_01099ee0;
 extern "C" void __cdecl NiPoint3_UnitizeVector(MeshPoint* point);
 typedef int(__thiscall* GeometryTestFn)(NiGeometry*);

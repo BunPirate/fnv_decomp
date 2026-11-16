@@ -221,7 +221,7 @@ template <class T> inline bool operator!=(const NiPointer<T>& lhs, const NiPoint
 {
     return lhs.m_pObject != rhs.m_pObject;
 }
-extern "C" void* BSPSysStripUpdateModifier_ms_RTTI;
+extern "C" void* BSPSysStripUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01204388 (old: g_01204388)
 struct FUN_00c600f0_Class
 {
     void* __thiscall BSPSysStripUpdateModifier_GetRTTI();
@@ -313,7 +313,7 @@ struct FUN_00c63950_class
     void __thiscall ForwardToOther(int a);
 };
 struct GlobalObject_00a7b610;
-extern GlobalObject_00a7b610 BSParentVelocityModifier_ms_RTTI;
+extern GlobalObject_00a7b610 BSParentVelocityModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012043c8 (old: g_012043c8)
 void __cdecl BSDecalPlacementVectorExtraData_FindDecalPlacementVectorGroupRecurse(int, int);
 void __cdecl CallWithSameArgumentTwice(int a);
 struct FUN_00c644d0_Class
@@ -2952,7 +2952,7 @@ bool __cdecl BSDecalPlacementVectorExtraData_FindDecalPlacementVectorGroupRecurs
 
 extern int DAT_010c1364;
 // pdb: class BSReference, size 0xc, bases: NiObject, 1 members
-class BSReference : public NiObject
+class BSReference : public NiObject // src: EXE (old: FactoryObject)
 {
   public:
     static void* operator new(unsigned int size)
@@ -2964,7 +2964,7 @@ class BSReference : public NiObject
     {
         pName = 0;
     }
-    int pName;
+    int pName; // src: XBOX_RETAIL_PDB +0x8 (old: value)
 };
 // @fnv 0x00c64810
 // src: EXE 0x00c64810
@@ -3640,7 +3640,7 @@ void FUN_00c62390_cls::BSPSysArrayEmitter_GetPointFromObject(void* pObject, void
 
 extern NiFixedString* DAT_012043ac;
 // pdb: class PArrayPoint, size 0xc, bases: NiExtraData, 0 members
-struct PArrayPoint : NiExtraData
+struct PArrayPoint : NiExtraData // src: EXE (old: ExtraData850)
 {
     PArrayPoint(const NiFixedString& kName) : NiExtraData(kName)
     {}

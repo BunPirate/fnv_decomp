@@ -11,7 +11,7 @@ class SceneAttribute;
 class hkxAttributeHolder : public hkReferencedObject
 {
 public:
-    hkArray<SceneAttribute> m_attributeGroups;
+    hkArray<SceneAttribute> m_attributeGroups; // src: XBOX_RETAIL_PDB +0x8 (old: attributes)
 
     explicit hkxAttributeHolder(FinishingFlag flag) throw();
 };

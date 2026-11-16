@@ -98,7 +98,7 @@ public:
         char* m3c;
         char* m_3c;
     };
-    int eFont;
+    int eFont; // src: XBOX_RETAIL_PDB +0x40 (old: font)
     union
     {
         int align;
@@ -114,7 +114,7 @@ public:
         int y;
         int iY;
     };
-    CreditColor Color;
+    CreditColor Color; // src: XBOX_RETAIL_PDB +0x50 (old: color)
     union
     {
         struct
@@ -132,9 +132,9 @@ public:
             };
         };
     };
-    float fBackgroundSwapInterval;
-    float fBackgroundSwapTimer;
-    unsigned int uiBackgroundIndexCounter;
+    float fBackgroundSwapInterval; // src: XBOX_RETAIL_PDB +0x74 (old: fLineDelay)
+    float fBackgroundSwapTimer; // src: XBOX_RETAIL_PDB +0x78 (old: m_fPackageValue)
+    unsigned int uiBackgroundIndexCounter; // src: XBOX_RETAIL_PDB +0x7c (old: uiLineIndex)
 
     int FUN_0075f1c0();
     void FUN_0075f910();

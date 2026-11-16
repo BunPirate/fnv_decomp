@@ -73,7 +73,7 @@ public:
     };
     class BackgroundLoadProcedure;
 
-    BSStreamHeader m_BSStreamHeader;                                            // +0x004
+    BSStreamHeader m_BSStreamHeader;                                            // +0x004 // src: XBOX_RETAIL_PDB +0x4 (old: m_kHeader)
     NiTPrimitiveArrayStorage<NiObjectGroup*> m_kGroups;                  // +0x0C8
     unsigned int m_uiNifFileVersion;                                     // +0x0D8
     unsigned int m_uiNifFileUserDefinedVersion;                          // +0x0DC
@@ -98,16 +98,16 @@ public:
     ThreadStatus m_eBackgroundLoadStatus;                                // +0x28C
     bool m_bBackgroundLoadExitStatus;                                    // +0x290
     unsigned int m_uiLoad;                                               // +0x294  object being loaded (ChangeObject)
-    unsigned int m_uiLink;                                // +0x298
-    unsigned int m_uiPostLink;                           // +0x29C
+    unsigned int m_uiLink;                                // +0x298 // src: XBOX_RETAIL_PDB +0x298 (old: m_uiBackgroundLoadState)
+    unsigned int m_uiPostLink;                           // +0x29C // src: XBOX_RETAIL_PDB +0x29c (old: m_uiBackgroundLoadThreadInfo)
     NiThread* m_pkThread;                                                // +0x2A0
     BackgroundLoadProcedure* m_pkBGLoadProc;                             // +0x2A4
     int m_ePriority;                                                     // +0x2A8  NiThread::Priority
     ProcessorAffinity m_kAffinity;                                       // +0x2AC
-    char m_acLastLoadedRTTI[260];                                              // +0x2B4
-    unsigned int m_uiLastError;                                     // +0x3B8
+    char m_acLastLoadedRTTI[260];                                              // +0x2B4 // src: XBOX_RETAIL_PDB +0x2b4 (old: m_acLoadPath)
+    unsigned int m_uiLastError;                                     // +0x3B8 // src: XBOX_RETAIL_PDB +0x3b8 (old: m_uiNativeThreadId)
     char m_acLastErrorMessage[260];                                      // +0x3BC
-    char m_acFilePath[260];                                            // +0x4C0  SetStreamPath / GetLastLoadedFilePath
+    char m_acFilePath[260];                                            // +0x4C0  SetStreamPath / GetLastLoadedFilePath // src: XBOX_RETAIL_PDB +0x4c0 (old: m_acStreamPath)
 
     NiStream();
     virtual ~NiStream();

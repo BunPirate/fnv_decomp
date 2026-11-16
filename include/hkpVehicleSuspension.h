@@ -9,5 +9,5 @@ class hkpVehicleSuspensionSuspensionWheelParameters;
 class hkpVehicleSuspension : public hkReferencedObject
 {
 public:
-    hkArray<hkpVehicleSuspensionSuspensionWheelParameters> m_wheelParams;
+    hkArray<hkpVehicleSuspensionSuspensionWheelParameters> m_wheelParams; // src: XBOX_RETAIL_PDB +0x8 (old: m_kWheelParams)
 };

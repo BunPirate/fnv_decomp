@@ -761,7 +761,7 @@ struct GlobalObjectO2_00a7b610
 {
     int x;
 };
-extern GlobalObjectO2_00a7b610 BSShaderNoLighting_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSShaderNoLighting_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202040 (old: g_01202040)
 
 // @fnv 0x00bc7710
 // src: XBOX_PDB 0x00bc7710

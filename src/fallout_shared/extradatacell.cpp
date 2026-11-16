@@ -358,11 +358,11 @@ struct Base_40f
 };
 
 // pdb: class ExtraSeenData, size 0x10, bases: BSExtraData, 1 members
-struct ExtraSeenData : Base_40f
+struct ExtraSeenData : Base_40f // src: EXE (old: FUN_0040f5f0)
 {
     void* pad1;
     void* pad2;
-    Field_40f* pSeenData;
+    Field_40f* pSeenData; // src: XBOX_RETAIL_PDB +0xc (old: m_pField)
     virtual void v00();
     ~ExtraSeenData();
 };

@@ -32,7 +32,7 @@ inline NiPoint3 NiPoint3::operator+(const NiPoint3& kRhs) const
     return NiPoint3(x + kRhs.x, y + kRhs.y, z + kRhs.z);
 }
 
-extern int ParticleShaderProperty_ms_RTTI;
+extern int ParticleShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01200434 (old: g_01200434)
 
 // @fnv 0x00ba7f10
 // src: XBOX_PDB 0x00ba7f10

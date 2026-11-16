@@ -94,8 +94,8 @@ class hkpSimpleMeshShape : public hkpShapeCollection
 public:
     struct Triangle
     {
-        int m_a, m_b, m_c;
-        unsigned short m_weldingInfo;
+        int m_a, m_b, m_c; // src: XBOX_RETAIL_PDB m_c +0x8 (old: m_iThirdValue); m_a +0x0 (old: m_kPointA); m_b +0x4 (old: m_kPointB)
+        unsigned short m_weldingInfo; // src: XBOX_RETAIL_PDB +0xc (old: m_kWeldingInfo)
     };
 
     hkpSimpleMeshShape();
@@ -108,11 +108,11 @@ public:
     void setTriangleWeldingInfo(int index, unsigned short value);
     void setWeldingType(unsigned char type);
 
-    hkArray<hkVector4> m_vertices;
-    hkArray<Triangle> m_triangles;
-    hkArray<unsigned char> m_materialIndices;
-    float m_radius;
-    unsigned char m_weldingType;
+    hkArray<hkVector4> m_vertices; // src: XBOX_RETAIL_PDB +0x18 (old: m_kVertices)
+    hkArray<Triangle> m_triangles; // src: XBOX_RETAIL_PDB +0x24 (old: m_uiTriangleCount)
+    hkArray<unsigned char> m_materialIndices; // src: XBOX_RETAIL_PDB +0x30 (old: m_kMaterialIndices8)
+    float m_radius; // src: XBOX_RETAIL_PDB +0x3c (old: m_fSphereRadius)
+    unsigned char m_weldingType; // src: XBOX_RETAIL_PDB +0x40 (old: m_eWeldingType)
 };
 
 // Its implicit destructor and deleting-destructor thunk cover 0x00dfcfd0 and 0x00dfcfc0/0x00dfd080.

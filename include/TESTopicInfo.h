@@ -26,19 +26,19 @@ enum SPEECH_CHALLENGE_LEVEL;
 class TESTopicInfo : public TESForm
 {
 public:
-    PerkEntryConditionSet objConditions;
-    unsigned short iInfoIndex;
-    bool bSaidOnce;
+    PerkEntryConditionSet objConditions; // src: XBOX_RETAIL_PDB +0x18 (old: m_kInfoConditions)
+    unsigned short iInfoIndex; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiInfoIndex)
+    bool bSaidOnce; // src: XBOX_RETAIL_PDB +0x22 (old: m_bGoodbye)
     TopicInfoData m_Data;
     unsigned char layoutPadding27;
-    BSStringT<char> cPrompt;
-    BSSimpleList<TESTopic*> m_listAddTopics;
-    TESTopicInfoData* m_pConversationData;
-    TESActorBase* pSpeaker;
-    TESForm* pPerkSkillStat;
-    SPEECH_CHALLENGE_LEVEL eDifficulty;
-    TESQuest* pOwnerQuest;
-    unsigned long iFileOffset;
+    BSStringT<char> cPrompt; // src: XBOX_RETAIL_PDB +0x28 (old: m_kPrompt)
+    BSSimpleList<TESTopic*> m_listAddTopics; // src: XBOX_RETAIL_PDB +0x30 (old: m_kAddTopicList)
+    TESTopicInfoData* m_pConversationData; // src: XBOX_RETAIL_PDB +0x38 (old: m_pResponseData)
+    TESActorBase* pSpeaker; // src: XBOX_RETAIL_PDB +0x3c (old: m_pDialogueSpeaker)
+    TESForm* pPerkSkillStat; // src: XBOX_RETAIL_PDB +0x40 (old: m_pPerkSkillStat)
+    SPEECH_CHALLENGE_LEVEL eDifficulty; // src: XBOX_RETAIL_PDB +0x44 (old: m_eDifficultyLevel)
+    TESQuest* pOwnerQuest; // src: XBOX_RETAIL_PDB +0x48 (old: m_pOwnerQuest)
+    unsigned long iFileOffset; // src: XBOX_RETAIL_PDB +0x4c (old: m_ulTopicFlags)
 
     TESTopicInfo(DIALOGUE_TYPE aeType);
     TESTopicInfo(int aeType);

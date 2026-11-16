@@ -63,7 +63,7 @@ class BSTempEffect : public NiObject
 
     float m_fParticleParameter5;
     TESObjectCELL* pCell;
-    float fAge;
+    float fAge; // src: XBOX_RETAIL_PDB +0x10 (old: m_fFirstFloatValue)
     bool bInitialized;
     unsigned char layoutPadding15[3];
 };

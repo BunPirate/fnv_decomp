@@ -221,9 +221,9 @@ extern GlobalObjectO2_00d472a0 g_01268f2c;
 extern GlobalObjectO2_00d472a0 g_01268e24;
 extern GlobalObjectO2_00d472a0 g_01268c5c;
 extern GlobalObjectO2_00d472a0 g_01268bcc;
-extern GlobalObjectO2_00d472a0 hkpStorageMeshShapeClass;
-extern GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeClass;
-extern GlobalObjectO2_00d472a0 hkpStorageSampledHeightFieldShapeClass;
+extern GlobalObjectO2_00d472a0 hkpStorageMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268eb4 (old: g_01268eb4/g_unk01268eb4)
+extern GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268d4c (old: DAT_01268d4c/g_01268d4c)
+extern GlobalObjectO2_00d472a0 hkpStorageSampledHeightFieldShapeClass; // src: XBOX_RETAIL_PDB 0x01268c14 (old: DAT_01268c14/g_01268c14)
 
 struct FUN_00cc08f0_cls
 {

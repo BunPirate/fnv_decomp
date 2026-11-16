@@ -33,11 +33,11 @@ enum BIPED_OBJECT;
 struct InventoryChanges
 {
 public:
-    BSSimpleList<InventoryStackRecord*>* pListofChanges; // 0x00
+    BSSimpleList<InventoryStackRecord*>* pListofChanges; // 0x00 // src: XBOX_RETAIL_PDB +0x0 (old: m_pEntryList)
     TESObjectREFR* pRef;                            // 0x04
-    float fcontainerweight;                          // 0x08
-    float fpreviousContainerWeight;                          // 0x0C
-    bool bcountdirty;                               // 0x10
+    float fcontainerweight;                          // 0x08 // src: XBOX_RETAIL_PDB +0x8 (old: m_fTotalWeight)
+    float fpreviousContainerWeight;                          // 0x0C // src: XBOX_RETAIL_PDB +0xc (old: m_fArmorWeight)
+    bool bcountdirty;                               // 0x10 // src: XBOX_RETAIL_PDB +0x10 (old: m_bChanged)
     unsigned char layoutPadding11;                // 0x11
     unsigned short layoutPadding12;               // 0x12
 

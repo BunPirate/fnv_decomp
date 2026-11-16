@@ -56,12 +56,12 @@ public:
         CONSTRAIN_ORIENTATION_TO_PATH = 3,
         CONSTRAIN_ORIENTATION_MAX_ID = 4
     };
-    hkpBridgeAtoms m_atoms;
+    hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0xc (old: m_kBridgeAtoms)
     hkpParametricCurve* m_path;
-    hkReal m_maxFrictionForce;
-    signed char m_angularConstrainedDOF;
+    hkReal m_maxFrictionForce; // src: XBOX_RETAIL_PDB +0x1c (old: m_fFriction)
+    signed char m_angularConstrainedDOF; // src: XBOX_RETAIL_PDB +0x20 (old: m_cOrientationConstraintType)
     char pad21[15];
-    hkTransform m_transform_OS_KS[2];
+    hkTransform m_transform_OS_KS[2]; // src: XBOX_RETAIL_PDB +0x30 (old: m_kLocalTransforms)
 };
 
 inline hkTransform::hkTransform()

@@ -16,15 +16,15 @@ public:
     int unk1c;
     NiColor color;
     float nearDepth;
-    float fEndDistance;
-    int fStartWaterDistance;
-    int fEndWaterDistance;
-    int kPlane;
+    float fEndDistance; // src: XBOX_RETAIL_PDB +0x30 (old: farDepth)
+    int fStartWaterDistance; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
+    int fEndWaterDistance; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    int kPlane; // src: XBOX_RETAIL_PDB +0x3c (old: unk3c)
     int unk40;
     int unk44;
     int unk48;
-    int fFalloff;
-    int fHeight;
+    int fFalloff; // src: XBOX_RETAIL_PDB +0x4c (old: unk4c)
+    int fHeight; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
     int unk54;
     int unk58;
     int unk5c;

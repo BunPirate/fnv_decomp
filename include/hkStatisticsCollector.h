@@ -18,9 +18,9 @@ public:
     virtual void beginObject(const char* name) throw();
     virtual void endObject() throw();
 
-    int m_clientData;
-    int m_vtblRegistry;
-    char m_includeUnmanagedArrayMemory;
+    int m_clientData; // src: XBOX_RETAIL_PDB +0x8 (old: pad08)
+    int m_vtblRegistry; // src: XBOX_RETAIL_PDB +0xc (old: pad0C)
+    char m_includeUnmanagedArrayMemory; // src: XBOX_RETAIL_PDB +0x10 (old: m_reportInplaceAllocations)
     unsigned char unk11[3];
 
     __forceinline void beginObject(const char* name, const void* obj, const hkClass* cls) throw()

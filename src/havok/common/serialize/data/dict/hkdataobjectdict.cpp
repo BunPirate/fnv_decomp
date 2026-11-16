@@ -3835,8 +3835,8 @@ class FUN_00dc9a50 : public hkBaseDC9A
     FUN_00dc9a50(int iArg) throw();
     virtual ~FUN_00dc9a50() throw();
 
-    hkArray<int> m_data;
-    int m_numReal;
+    hkArray<int> m_data; // src: XBOX_RETAIL_PDB +0xc (old: m_ppData)
+    int m_numReal; // src: XBOX_RETAIL_PDB +0x18 (old: m_18)
 };
 
 // Constructs the object, storing iArg into m_18; the base and array members are default-initialised.
@@ -9054,8 +9054,8 @@ void __cdecl ReleaseDataValues(int typeIn, hkDataValue* u, int n);
 // pdb: class hkDataObjectDict, size 0x1c, bases: hkDataObjectImpl, 2 members
 struct hkDataObjectDict : hkDataObjectImpl
 {
-    hkDataClassDict* m_class;
-    hkArray<hkDataMemberValue> m_memberData;
+    hkDataClassDict* m_class; // src: XBOX_RETAIL_PDB +0xc (old: pClassInfo)
+    hkArray<hkDataMemberValue> m_memberData; // src: XBOX_RETAIL_PDB +0x10 (old: members)
     void selfDestruct();
 };
 // Iterates over each member in the hkArray, releases its data value using the type from the class dictionary, then clears the array.

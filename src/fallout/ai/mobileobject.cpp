@@ -8935,9 +8935,9 @@ void WorkerMobile::MobileObject_RevertTES(unsigned int aiFlags)
 class Conversation
 {
   public:
-    Character* lDialogueItems;
+    Character* lDialogueItems; // src: XBOX_RETAIL_PDB +0x0 (old: conversation)
     PlayerCharacter* listener;
-    TESTopic* pCurrentItem;
+    TESTopic* pCurrentItem; // src: XBOX_RETAIL_PDB +0x8 (old: topic)
     Conversation(Character*, PlayerCharacter*, TESTopic*);
     bool Conversation_FirstItem();
 };

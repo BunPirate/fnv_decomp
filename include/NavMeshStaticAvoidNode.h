@@ -6,7 +6,7 @@
 class NavMeshStaticAvoidNode : public PathingAvoidNode
 {
 public:
-    unsigned short usTriangle;
+    unsigned short usTriangle; // src: XBOX_RETAIL_PDB +0x24 (old: m_usTriangleID)
     unsigned char layoutPadding26[2];
 
     unsigned short GetShortValueAtOffset24();

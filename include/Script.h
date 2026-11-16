@@ -24,15 +24,15 @@ enum COMPILER_NAME;
 class Script : public TESForm
 {
 public:
-    ScriptHeaderData m_header;
-    char* m_text;
+    ScriptHeaderData m_header; // src: XBOX_RETAIL_PDB +0x18 (old: m_kHeader)
+    char* m_text; // src: XBOX_RETAIL_PDB +0x2c (old: m_pText)
     char* m_data;
-    float fProfilerTimer;
-    float fQuestScriptDelay;
-    float fQuestScriptGetSecondsBuffer;
-    TESQuest* pOwnerQuest;
-    BSSimpleList<ScriptReferencedObject*> listRefObjects;
-    BSSimpleList<ScriptVariableInfo*> listVariables;
+    float fProfilerTimer; // src: XBOX_RETAIL_PDB +0x34 (old: m_fValueAtOffset34)
+    float fQuestScriptDelay; // src: XBOX_RETAIL_PDB +0x38 (old: fValueAtOffset38)
+    float fQuestScriptGetSecondsBuffer; // src: XBOX_RETAIL_PDB +0x3c (old: m_fValueAtOffset3C)
+    TESQuest* pOwnerQuest; // src: XBOX_RETAIL_PDB +0x40 (old: m_pOwnerQuest)
+    BSSimpleList<ScriptReferencedObject*> listRefObjects; // src: XBOX_RETAIL_PDB +0x44 (old: m_kReferencedObjectList)
+    BSSimpleList<ScriptVariableInfo*> listVariables; // src: XBOX_RETAIL_PDB +0x4c (old: m_kVariableList)
 
     Script();
     virtual ~Script();

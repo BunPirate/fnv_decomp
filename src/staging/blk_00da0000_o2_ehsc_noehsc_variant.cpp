@@ -56,7 +56,7 @@ struct FUN_00db7cf0_class
 {
     int __thiscall hkVersionPatchManager_UidFromClassVersion_getName(int a, int b);
 };
-extern int hkpPropertyValueClass;
+extern int hkpPropertyValueClass; // src: XBOX_RETAIL_PDB 0x0126958c (old: g_0126958c/g_unk0126958c)
 void* __cdecl Runtime_GetUnk0126958cAddress();
 extern char DAT_012695bc;
 char* __cdecl Runtime_GetDAT012695bcAddress(void);
@@ -70,9 +70,9 @@ struct FUN_00da0720_Class
 };
 void __cdecl Object_InvokeVirtualMethod_00da0720(FUN_00da0720_Class* param_1);
 struct CpuOpaque;
-extern CpuOpaque hkLocalFrameGroupClass;
+extern CpuOpaque hkLocalFrameGroupClass; // src: XBOX_RETAIL_PDB 0x0126967c (old: DAT_0126967c/g_0126967c)
 CpuOpaque* __cdecl Runtime_GetDAT0126967cAddress();
-extern int hkSimpleLocalFrameClass;
+extern int hkSimpleLocalFrameClass; // src: XBOX_RETAIL_PDB 0x012696c4 (old: DAT_012696c4/g_012696c4)
 int* __cdecl Runtime_GetDAT012696c4Address();
 // FUN_00da08a0 : cdecl, 13 bytes
 //   mov ecx, [esp+4]
@@ -89,7 +89,7 @@ struct FUN_00da08a0_cls
 int __cdecl Object_InvokeVirtualMethod_00da08a0(FUN_00da08a0_cls* pObj);
 extern int DAT_0126970c;
 int* __cdecl Runtime_GetDAT0126970cAddress();
-extern int hkpMaxSizeMotionClass;
+extern int hkpMaxSizeMotionClass; // src: XBOX_RETAIL_PDB 0x01269754 (old: DAT_01269754/g_01269754)
 void* __cdecl Runtime_GetDAT01269754Address(void);
 extern int DAT_010c6bec;
 void* __cdecl Runtime_GetDAT010c6becAddress(void);
@@ -293,7 +293,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00da0a20();
 // FUN_00da0a40 : a one-line function - getter
 extern int g_target_00da0a40;
 void* Object_GetGlobalObjectAddress_00da0a40();
-extern int hkSemanticsAttributeClass;
+extern int hkSemanticsAttributeClass; // src: XBOX_RETAIL_PDB 0x012698ec (old: DAT_012698ec/g_012698ec)
 void* __cdecl Object_GetGlobalObjectAddress_00da0a60();
 // FUN_00da0a80 : returns the address of a global data object.
 extern int DAT_0126991c;
@@ -310,7 +310,7 @@ struct FUN_00da0af0_Class
     virtual void vf00(int value);
 };
 void __cdecl Runtime_ForwardCall_00da0af0(FUN_00da0af0_Class* param_1);
-extern int hkpSingleShapeContainerClass;
+extern int hkpSingleShapeContainerClass; // src: XBOX_RETAIL_PDB 0x01269a0c (old: DAT_01269a0c/g_01269a0c)
 void* __cdecl Object_GetGlobalObjectAddress_00da0b00();
 extern int DAT_010c6fd0;
 void* __cdecl Object_GetGlobalObjectAddress_00da0b20();

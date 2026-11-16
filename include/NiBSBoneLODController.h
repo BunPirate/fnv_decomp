@@ -38,7 +38,7 @@ public:
     void __thiscall NiBSBoneLODController_GetViewerStrings(NiTPrimitiveArray_unsigned_int* array);
     bool ProcessEntries_00c53cf0();
 
-    void* m_iLOD;
-    unsigned int m_uiNumLODs;
-    SubObj m_kBoneArray;
+    void* m_iLOD; // src: XBOX_RETAIL_PDB +0x34 (old: m_34)
+    unsigned int m_uiNumLODs; // src: XBOX_RETAIL_PDB +0x38 (old: f38)
+    SubObj m_kBoneArray; // src: XBOX_RETAIL_PDB +0x3c (old: sub)
 };

@@ -16,7 +16,7 @@ __forceinline hkMemoryAllocator& routerHeap(hkMemoryRouter& router)
 
 void __cdecl hkpRigidBodyInertiaViewer_create();
 
-extern int hkpRigidBodyInertiaViewer_m_tag;
+extern int hkpRigidBodyInertiaViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268ffc (old: DAT_01268ffc)
 extern int DAT_01269cd0;
 
 struct FUN_00dd9380_StandIn {
@@ -167,7 +167,7 @@ void S_00d67170::RemoveItem(void* item)
         unk8.removeAt(index);
 }
 
-extern int hkpRigidBodyInertiaViewer_m_tag;
+extern int hkpRigidBodyInertiaViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268ffc (old: DAT_01268ffc)
 // @fnv 0x00d678e0
 // src: GUESS 0x00d678e0 (confidence: low)
 int __cdecl Object_GetDAT_01268ffc_00d678e0()
@@ -369,12 +369,12 @@ public:
 };
 
 // pdb: class hkpRigidBodyInertiaViewer, size 0x48, bases: hkpWorldViewerBase, hkpEntityListener, hkpWorldPostSimulationListener, 2 members
-class hkpRigidBodyInertiaViewer : public D671F0Base, public D671F0ListenerA, public D671F0ListenerB {
+class hkpRigidBodyInertiaViewer : public D671F0Base, public D671F0ListenerA, public D671F0ListenerB { // src: EXE (old: FUN_00d671f0)
 public:
     hkpRigidBodyInertiaViewer(void* contexts);
 
-    hkArray<void*> m_entitiesCreated;
-    hkArray<void*> m_displayBoxes;
+    hkArray<void*> m_entitiesCreated; // src: XBOX_RETAIL_PDB +0x30 (old: m_arrayA)
+    hkArray<void*> m_displayBoxes; // src: XBOX_RETAIL_PDB +0x3c (old: m_arrayB)
 };
 
 // Constructor that forwards info to the D671F0Base base constructor and initializes the two listener arrays.

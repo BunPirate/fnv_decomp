@@ -28,8 +28,8 @@ public:
     void ClearMode(unsigned int auMode);
     unsigned int GetActorStateFlags();
 
-    NiPoint3 SideVec;
-    unsigned int MoveMode;
-    unsigned int LastTurnDir;
-    float fMinTurnTime;
+    NiPoint3 SideVec; // src: XBOX_RETAIL_PDB +0x88 (old: m_kSideVec)
+    unsigned int MoveMode; // src: XBOX_RETAIL_PDB +0x94 (old: ByteAndFlagState)
+    unsigned int LastTurnDir; // src: XBOX_RETAIL_PDB +0x98 (old: m_uiMode)
+    float fMinTurnTime; // src: XBOX_RETAIL_PDB +0x9c (old: m_fValue)
 };

@@ -9,7 +9,7 @@
 // src/gamebryo2.2/corelibs/nianimation/nibooltimelineinterpolator.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nianimation/nibooltimelineinterpolator.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* NiBoolTimelineInterpolator_ms_RTTI;
+extern "C" void* NiBoolTimelineInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4044 (old: g_011f4044)
 
 // @fnv 0x00a52d70
 // src: COMMUNITY 0x00a52d70

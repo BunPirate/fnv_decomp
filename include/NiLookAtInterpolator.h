@@ -36,10 +36,10 @@ class NiLookAtInterpolator : public NiInterpolator
     bool ResolveTargetObject(NiAVObjectPalette* pkPalette);
     void __thiscall GetItemsRange(float* fBeginKeyTime, float* fEndKeyTime);
 
-    unsigned short m_uFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0xc (old: m_usFlags)
     unsigned short unk0E;
     NiAVObject* m_pkLookAt;
-    NiFixedString m_kLookAtName;
-    NiQuatTransform m_kTransformValue;
-    NiInterpolator* m_aspInterpolators[3];
+    NiFixedString m_kLookAtName; // src: XBOX_RETAIL_PDB +0x14 (old: m_kTargetNodeName)
+    NiQuatTransform m_kTransformValue; // src: XBOX_RETAIL_PDB +0x18 (old: m_kTransform)
+    NiInterpolator* m_aspInterpolators[3]; // src: XBOX_RETAIL_PDB +0x38 (old: m_pItems)
 };

@@ -12,7 +12,7 @@ class hkpStiffSpringConstraintData : public hkpConstraintData
 {
   public:
     char padC[0x4];
-    hkpStiffSpringConstraintDataAtoms m_atoms;  // +0x10
+    hkpStiffSpringConstraintDataAtoms m_atoms;  // +0x10 // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpStiffSpringConstraintData[(sizeof(hkpStiffSpringConstraintData) == 0x50) ? 1 : -1];

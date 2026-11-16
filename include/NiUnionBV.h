@@ -9,8 +9,8 @@ class NiObject;
 class NiUnionBV : public NiBoundingVolume
 {
 public:
-    NiTPrimitiveArray<NiBoundingVolume*> m_kBoundingVolume;
-    void* m_uiWhichObjectIntersect;
+    NiTPrimitiveArray<NiBoundingVolume*> m_kBoundingVolume; // src: XBOX_RETAIL_PDB +0x4 (old: m_kBoundingVolumes)
+    void* m_uiWhichObjectIntersect; // src: XBOX_RETAIL_PDB +0x14 (old: m_pkEntry)
 
     NiUnionBV() throw();
 

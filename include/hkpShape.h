@@ -110,6 +110,6 @@ public:
                               hkpRayHitCollector& collector) const;
     static void __cdecl resetShapeFunctions();
 
-    hkUlong m_userData;
+    hkUlong m_userData; // src: XBOX_RETAIL_PDB +0x8 (old: m_ulUserData)
     hkEnum<hkpShapeType, hkUint32> m_type;
 };

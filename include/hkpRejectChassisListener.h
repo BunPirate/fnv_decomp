@@ -10,5 +10,5 @@ public:
     virtual ~hkpRejectChassisListener();
 
     // The hkpPhantomOverlapListener vtable pointer occupies pad8.
-    void* m_chassis;
+    void* m_chassis; // src: XBOX_RETAIL_PDB +0xc (old: m_pChassisCollidable)
 };

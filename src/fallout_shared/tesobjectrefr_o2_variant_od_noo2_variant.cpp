@@ -2011,7 +2011,7 @@ struct ObjectCA06
     ObjectCA06();
 };
 ObjectCA06* __cdecl bhkSphereShape_CreateObject();
-extern const char* bhkSphereShape_ms_RTTI;
+extern const char* bhkSphereShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268288 (old: DAT_01268288/g_01268288/ms_kRTTI)
 struct FUN_00ca0ac0_class : SphereShape
 {
     void bhkSphereShape_GetViewerStrings(ViewerStringArray* apStrings);

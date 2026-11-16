@@ -30,7 +30,7 @@ typedef void(__cdecl* AIThreadFunction)();
 
 
 // pdb: class AILinearTaskThreadManager, size 0x3c (here 0x8c), 3 members
-class AILinearTaskThreadManager
+class AILinearTaskThreadManager // src: XBOX_RETAIL_PDB (old: AIThreadManager)
 {
   public:
     enum AI_THREAD_INDEX

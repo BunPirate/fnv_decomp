@@ -82,17 +82,17 @@ public:
     SearchPackage(float afX, float afY, float afZ, int aiValue, int aiUnused);
     virtual ~SearchPackage();
 
-    float fSearchStageTimer;
-    int iAlertLevel;
-    float fCommentTimer;
-    int iCurrentCover;
-    float fIdleTimer;
-    NiPoint3 LocationCenter;
-    int pThreatObject;
-    char bLocationStart;
+    float fSearchStageTimer; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
+    int iAlertLevel; // src: XBOX_RETAIL_PDB +0x84 (old: unk84)
+    float fCommentTimer; // src: XBOX_RETAIL_PDB +0x88 (old: unk88)
+    int iCurrentCover; // src: XBOX_RETAIL_PDB +0x8c (old: unk8c)
+    float fIdleTimer; // src: XBOX_RETAIL_PDB +0x90 (old: unk90)
+    NiPoint3 LocationCenter; // src: XBOX_RETAIL_PDB +0x94 (old: unk94)
+    int pThreatObject; // src: XBOX_RETAIL_PDB +0xa0 (old: unka0)
+    char bLocationStart; // src: XBOX_RETAIL_PDB +0xa4 (old: unka4)
     unsigned char unkA5[3];
-    CoverRequest coverRequest;
-    BSSimpleArray<PathingCoverLocation, 1024> coverPoints;
+    CoverRequest coverRequest; // src: XBOX_RETAIL_PDB +0xa8 (old: unka8)
+    BSSimpleArray<PathingCoverLocation, 1024> coverPoints; // src: XBOX_RETAIL_PDB +0x194 (old: unk194)
 
     int HasSearchLocation();
     unsigned int Radius(SearchReference*);

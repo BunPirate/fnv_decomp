@@ -6,5 +6,5 @@
 class ExtraRefractionProperty : public BSExtraData
 {
 public:
-    float fRefractionPower;
+    float fRefractionPower; // src: XBOX_RETAIL_PDB +0xc (old: fRefraction)
 };

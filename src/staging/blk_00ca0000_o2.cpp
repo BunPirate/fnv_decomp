@@ -6452,7 +6452,7 @@ FUN_00cb9b80::FUN_00cb9b80(CB9B80Info* pkInfo)
 }
 
 struct CpuOpaque;
-extern CpuOpaque bhkRagdollConstraint_ms_RTTI;
+extern CpuOpaque bhkRagdollConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268610 (old: DAT_01268610/g_01268610)
 // @fnv 0x00cb9c00
 // src: GUESS 0x00cb9c00 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00cb9c00()
@@ -8823,7 +8823,7 @@ template <class T, class TAlloc> inline unsigned int NiTArray<T, TAlloc>::Add(co
 }
 
 typedef NiTArray<char*, NiTMallocInterface<char*> > BCBEA40StringArray;
-extern const char* bhkCollisionBox_ms_RTTI;
+extern const char* bhkCollisionBox_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268444 (old: DAT_01268444/g_01268444/g_kRTTI9C64/g_pcCBEA40Name)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class BCBEA40Owner
 {
@@ -9791,7 +9791,7 @@ struct WalkRTTI
     const char* name;
     WalkRTTI* parent;
 };
-extern WalkRTTI DAT_01267b70, WeaponObject_ms_RTTI;
+extern WalkRTTI DAT_01267b70, WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 extern int DAT_0126818c;
 struct WalkObject
 {
@@ -10677,7 +10677,7 @@ void CBADDynamicArray::BSSimpleArray_NiPointer_bhkRagdollTemplateData_1024_SetSi
 }
 
 class GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 bhkRagdollTemplate_ms_RTTI;
+extern GlobalObjectO2_00a7b610 bhkRagdollTemplate_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268408 (old: g_01268408)
 
 // @fnv 0x00cbaf80
 // src: COMMUNITY 0x00cbaf80
@@ -11489,7 +11489,7 @@ void BufferOwnerC5E0::FreeBuffer(bool abCreated)
 namespace fnv_00cac6b0 {
 // ---- FUN_00cac6b0 candidate ----
 
-extern const NiRTTI bhkCharacterProxy_ms_RTTI;
+extern const NiRTTI bhkCharacterProxy_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268344 (old: g_01268344)
 
 extern float DAT_01267e30;
 extern "C" void __cdecl FUN_00458620(void* pvOut, const void* pkObj);

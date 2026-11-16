@@ -638,7 +638,7 @@ struct CellDisplayNameAccess : public TESObjectCELL
     char* GetCellName();
 };
 
-extern StartMenu TESObjectCELL_sDefaultCellName;
+extern StartMenu TESObjectCELL_sDefaultCellName; // src: XBOX_RETAIL_PDB 0x011ca130 (old: g_011ca130)
 struct CellExtra28
 {
     char* ExtraDataList_GetEditorID();

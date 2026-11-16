@@ -19,5 +19,5 @@ public:
                                  void*& pvCode, unsigned int& uiCodeSize,
                                  ID3DXConstantTable*& pkConstantTable, bool bRecoverable);
 
-    unsigned int m_uiShaderCreationFlags;
+    unsigned int m_uiShaderCreationFlags; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiCompileFlags)
 };

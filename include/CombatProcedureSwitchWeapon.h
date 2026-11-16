@@ -20,5 +20,5 @@ public:
     void UpdateWeaponDraw();
 
     TESForm* pWeapon;
-    bool bEquipQueued;
+    bool bEquipQueued; // src: XBOX_RETAIL_PDB +0x14 (old: m_ucWeaponState)
 };

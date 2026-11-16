@@ -31,6 +31,6 @@ public:
     unsigned char unk08[8];
     CodeInfo m_info;
     hkArray<hkUint8> m_data;
-    hkEnum<BuildType, hkInt8> m_buildType;
+    hkEnum<BuildType, hkInt8> m_buildType; // src: XBOX_RETAIL_PDB +0x2c (old: m_eBuildType)
     unsigned char unk2D[3];
 };

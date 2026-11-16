@@ -34,7 +34,7 @@ public:
 
     bool bIsActive;
     unsigned char layoutPadding99[3];
-    TESTexture faceTexture;
-    TESTexture backTexture;
+    TESTexture faceTexture; // src: XBOX_RETAIL_PDB +0x9c (old: m_kFrontTexture)
+    TESTexture backTexture; // src: XBOX_RETAIL_PDB +0xa8 (old: m_kBackTexture)
     UnsignedValuePair data;
 };

@@ -279,7 +279,7 @@ __forceinline float NiPoint3::operator*(const NiPoint3& pt) const
     return y * pt.y + x * pt.x + z * pt.z;
 }
 
-extern "C" void* BoltShader_ms_RTTI;
+extern "C" void* BoltShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f5c (old: g_01201f5c)
 
 extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 
@@ -868,7 +868,7 @@ struct GlobalObjectO2_00a7b610_2
 {
     char* pData;
 };
-extern GlobalObjectO2_00a7b610_2 BSRefractionFirePeriodController_ms_RTTI;
+extern GlobalObjectO2_00a7b610_2 BSRefractionFirePeriodController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f9c (old: g_01201f9c)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(char*);
 
 // @fnv 0x00bc3450
@@ -2107,10 +2107,10 @@ struct BoltShader
     int unk060;
     int unk064;
     int unk068;
-    int ePass;
-    int pSegmentData;
-    int fTimer;
-    int fTortuosity;
+    int ePass; // src: XBOX_RETAIL_PDB +0x6c (old: unk06c)
+    int pSegmentData; // src: XBOX_RETAIL_PDB +0x70 (old: unk070)
+    int fTimer; // src: XBOX_RETAIL_PDB +0x74 (old: unk074)
+    int fTortuosity; // src: XBOX_RETAIL_PDB +0x78 (old: unk078)
     int unk07c;
     int unk080;
     int unk084;
@@ -2150,11 +2150,11 @@ struct BoltShader
     int unk10c;
     int unk110;
     int unk114;
-    int EyePosition;
+    int EyePosition; // src: XBOX_RETAIL_PDB +0x118 (old: unk118)
     int unk11c;
     int unk120;
     int unk124;
-    int fVars;
+    int fVars; // src: XBOX_RETAIL_PDB +0x128 (old: unk128)
     int unk12c;
     int unk130;
     int unk134;
@@ -2170,17 +2170,17 @@ struct BoltShader
     int unk15c;
     int unk160;
     int unk164;
-    int spBoltPass;
-    int CoreColor;
+    int spBoltPass; // src: XBOX_RETAIL_PDB +0x168 (old: unk168)
+    int CoreColor; // src: XBOX_RETAIL_PDB +0x16c (old: unk16c)
     int unk170;
     int unk174;
     int unk178;
-    int GlowColor;
+    int GlowColor; // src: XBOX_RETAIL_PDB +0x17c (old: unk17c)
     int unk180;
     int unk184;
     int unk188;
-    StagingNiPointer<ShaderObject> spBoltVertexShader;
-    StagingNiPointer<ShaderObject> spBoltPixelShader;
+    StagingNiPointer<ShaderObject> spBoltVertexShader; // src: XBOX_RETAIL_PDB +0x18c (old: m_spTreeVertexShader)
+    StagingNiPointer<ShaderObject> spBoltPixelShader; // src: XBOX_RETAIL_PDB +0x190 (old: m_spPixelShaderVariants)
 
     ShaderObject* CreateVS(char* apFilename, ShaderMacroInfo* apMacro, const char* apTarget, char* apCacheName);
     ShaderObject* CreatePS(char* path, ShaderMacroInfo* info, const char* profile, char* name);
@@ -2470,7 +2470,7 @@ void BC1C10Graph::RemoveFromEnd(int iCount)
 }
 
 // FUN_00bc1f90 : a one-line function - getter
-extern int BoltShaderProperty_ms_RTTI;
+extern int BoltShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f68 (old: g_01201f68/g_target_00bc1f90)
 // @fnv 0x00bc1f90
 // src: XBOX_PDB 0x00bc1f90
 void* BoltShaderProperty_GetRTTI()
@@ -4479,7 +4479,7 @@ FUN_00bc4830::FUN_00bc4830(CountedRef* pSource)
     FUN_00ec61c0(matrix, 0, 0x40);
 }
 
-extern char BeamShader_ms_RTTI;
+extern char BeamShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201fc8 (old: DAT_01201fc8/g_01201fc8)
 
 // @fnv 0x00bc4970
 // src: XBOX_PDB 0x00bc4970
@@ -4777,7 +4777,7 @@ FUN_00bc5320_Class::~FUN_00bc5320_Class()
 }
 
 // FUN_00bc5440 : a one-line function - getter
-extern int VolumetricFogShader_ms_RTTI;
+extern int VolumetricFogShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201fd8 (old: g_01201fd8/g_target_00bc5440)
 // @fnv 0x00bc5440
 // src: XBOX_PDB 0x00bc5440
 void* VolumetricFogShader_GetRTTI()
@@ -4930,7 +4930,7 @@ FUN_00bc58a0::FUN_00bc58a0()
 }
 }  // namespace fnv_00bc58a0
 
-extern int GeometryDecalShader_ms_RTTI;
+extern int GeometryDecalShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202228 (old: DAT_01202228/g_01202228)
 
 // @fnv 0x00bcb450
 // src: XBOX_PDB 0x00bcb450
@@ -5360,7 +5360,7 @@ FUN_00bcd390::FUN_00bcd390(RefObj_bcd* apRefObj) : Base_bcd(apRefObj, 0, 0, 0)
     m_i60 = 0;
 }
 
-extern int ParallaxShader_ms_RTTI;
+extern int ParallaxShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012022b4 (old: DAT_012022b4/g_012022b4)
 // @fnv 0x00bcd490
 // src: COMMUNITY 0x00bcd490
 int* __cdecl ParallaxShader_GetRTTI()
@@ -6715,7 +6715,7 @@ struct GlobalObjectO2_00bd0f60
 {
     char* pData;
 };
-extern GlobalObjectO2_00bd0f60 HairShader_ms_RTTI;
+extern GlobalObjectO2_00bd0f60 HairShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202330 (old: g_01202330)
 
 // @fnv 0x00bd0f60
 // src: COMMUNITY 0x00bd0f60
@@ -6801,7 +6801,7 @@ FUN_00bd2b60_cls::FUN_00bd2b60_cls()
     *(volatile int*)&m_68 = 8;
 }
 
-extern int SpeedTreeFrondShader_ms_RTTI;
+extern int SpeedTreeFrondShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120233c (old: DAT_0120233c/g_0120233c)
 
 // @fnv 0x00bd2c30
 // src: COMMUNITY 0x00bd2c30
@@ -7301,7 +7301,7 @@ FUN_00bd44c0::FUN_00bd44c0(int a) : FUN_00b79b00(a, 0, 0, 0)
 }
 }  // namespace fnv_00bd44c0
 
-extern int SpeedTreeBranchShader_ms_RTTI;
+extern int SpeedTreeBranchShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202348 (old: DAT_01202348/g_01202348)
 
 // @fnv 0x00bd4560
 // src: COMMUNITY 0x00bd4560
@@ -7968,7 +7968,7 @@ FUN_00bd74a0::~FUN_00bd74a0()
 }
 
 // Accessor for the global object at 0x012023e8.
-extern int BSCubeMapCamera_ms_RTTI;
+extern int BSCubeMapCamera_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012023e8 (old: DAT_012023e8/g_012023e8)
 
 // @fnv 0x00bd7610
 // src: XBOX_PDB 0x00bd7610
@@ -9259,7 +9259,7 @@ inline bool NiTimeController::GetManagerControlled() const
     return (bool)(((m_uiObjectFlags & MANAGERCONTROLLED_MASK) >> 5) & 1);
 }
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // @fnv 0x00bc34c0
 void ShaderRefractionController::UpdateFloatController(NiUpdateData& kUpdateData)
@@ -16570,24 +16570,24 @@ class ImageSpaceEffect
   public:
     ImageSpaceEffect();
     virtual ~ImageSpaceEffect();
-    int bIsActive;
-    int pEffectList;
+    int bIsActive; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int pEffectList; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     int unk0C;
     int unk10;
     int unk14;
-    int pEffectParamList;
+    int pEffectParamList; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
     int unk1C;
     int unk20;
     int unk24;
-    int pTextures;
+    int pTextures; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     int unk2C;
     int unk30;
     int unk34;
-    int pEffectInputs;
+    int pEffectInputs; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
     int unk3C;
     int unk40;
     int unk44;
-    int pEffectOutput;
+    int pEffectOutput; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
     int unk4C;
     int unk50;
     int unk54;
@@ -20890,8 +20890,8 @@ inline float NiPoint3::Length()
 // pdb: structure Sphere, size 0x10, 2 members
 struct Sphere
 {
-    float Center[3];
-    float fRadius;
+    float Center[3]; // src: XBOX_RETAIL_PDB +0x0 (old: center)
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: radius)
     Sphere()
     {}
     void Set(const LocalVec3& point, float value)

@@ -185,7 +185,7 @@ NiSingleInterpController* __fastcall ConstructSingleInterpController(NiSingleInt
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiBoolData_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiBoolData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4054 (old: g_011f4054)
 // Returns the address of the global object g_011f4054.
 // @fnv 0x00a537e0
 // src: COMMUNITY 0x00a537e0
@@ -1161,7 +1161,7 @@ struct C630Target
     float offset;
 };
 extern float DAT_01015f5c;
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 extern double DAT_010241b0;
 extern double DAT_01011588;
 extern GlobalObjectO2_00a7b610 DAT_011f407c;

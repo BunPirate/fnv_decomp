@@ -1273,7 +1273,7 @@ extern "C" void __cdecl hkString_memSet(void* dst, int a, int b);
 extern "C" void __cdecl hkString_memCpy(void* dst, void* src, int n);
 extern "C" void __cdecl CopyIfNonEmpty(void* dst, void* src, int n);
 extern "C" void __cdecl hkPackfileWriter_getCurrentVersion(void* dst, int n);
-extern int hkPackfileHeaderClass;
+extern int hkPackfileHeaderClass; // src: XBOX_RETAIL_PDB 0x0126c6c8 (old: DAT_0126c6c8/g_0126c6c8)
 
 // Builds a Dbc860Header and initializes a Dbc860Frame, then calls sink->Call with the value, header, DAT_0126c6c8, and frame.
 // @fnv 0x00dbc860
@@ -1632,7 +1632,7 @@ struct SectionContext
     int trailing;
     void FUN_00e028e0();
 };
-extern int hkPackfileSectionHeaderClass;
+extern int hkPackfileSectionHeaderClass; // src: XBOX_RETAIL_PDB 0x0126c698 (old: DAT_0126c698/g_0126c698)
 struct Serializer
 {
     virtual void v00();

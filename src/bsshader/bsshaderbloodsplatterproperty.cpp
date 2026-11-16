@@ -344,7 +344,7 @@ struct StringOwner
     void BSShaderBloodSplatterProperty_GetViewerStrings(unsigned int apStrings);
 };
 
-extern unsigned int BSShaderBloodSplatterProperty_ms_RTTI;
+extern unsigned int BSShaderBloodSplatterProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011ff0f4 (old: DAT_011ff0f4/g_011ff0f4)
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
 unsigned int __cdecl BSUtilities_GetTextureName(unsigned int apTexture);
 unsigned int __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, unsigned int pcValue);

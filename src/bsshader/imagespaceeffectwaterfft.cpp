@@ -60,19 +60,19 @@ struct ImageSpaceShaderParam : ImageSpaceEffectParam
 
     // Preserve the unmodeled prefix through offset 0x53 after the shared base.
     int unkBaseTail[0x15 - sizeof(ImageSpaceEffectParam) / sizeof(int)];
-    char bUseTexOffset;
+    char bUseTexOffset; // src: XBOX_RETAIL_PDB +0x54 (old: unk54)
     bool bFlag55;
     bool bFlag56;
     char unk57;
-    int pInputTextures;
+    int pInputTextures; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
     int unk5C;
     int unk60;
     int unk64;
-    int pInputFilterModes;
+    int pInputFilterModes; // src: XBOX_RETAIL_PDB +0x68 (old: unk68)
     int unk6C;
     int unk70;
     int unk74;
-    int pRenderStates;
+    int pRenderStates; // src: XBOX_RETAIL_PDB +0x78 (old: unk78)
     int unk7C;
     int unk80;
     int unk84;

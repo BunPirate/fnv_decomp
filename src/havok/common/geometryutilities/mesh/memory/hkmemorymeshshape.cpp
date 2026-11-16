@@ -26,30 +26,30 @@ enum PrimitiveType
 // pdb: structure hkMeshSectionCinfo, size 0x20, 8 members
 struct hkMeshSectionCinfo
 {
-    hkReferencedObject* m_vertexBuffer;
-    hkReferencedObject* m_material;
-    hkEnum<PrimitiveType, unsigned char> m_primitiveType;
-    int m_numPrimitives;
-    bool m_indexType;
-    void* m_indices;
-    int m_vertexStartIndex;
-    int m_transformIndex;
+    hkReferencedObject* m_vertexBuffer; // src: XBOX_RETAIL_PDB +0x0 (old: m_pMeshVertexBuffer)
+    hkReferencedObject* m_material; // src: XBOX_RETAIL_PDB +0x4 (old: m_iMaterialIndex)
+    hkEnum<PrimitiveType, unsigned char> m_primitiveType; // src: XBOX_RETAIL_PDB +0x8 (old: m_ePrimitiveType)
+    int m_numPrimitives; // src: XBOX_RETAIL_PDB +0xc (old: m_iNumPrimitives)
+    bool m_indexType; // src: XBOX_RETAIL_PDB +0x10 (old: m_hasIndices)
+    void* m_indices; // src: XBOX_RETAIL_PDB +0x14 (old: m_ppIndices)
+    int m_vertexStartIndex; // src: XBOX_RETAIL_PDB +0x18 (old: m_iIndexType)
+    int m_transformIndex; // src: XBOX_RETAIL_PDB +0x1c (old: m_iSectionVertexCount)
 };
 
 // include/ has no hkMeshSection header; 0x00e4a040 writes this 0x28-byte section result.
 // pdb: structure hkMeshSection, size 0x28, 10 members
 struct hkMeshSection
 {
-    hkEnum<PrimitiveType, unsigned char> m_primitiveType;
-    int m_numPrimitives;
-    int m_numIndices;
-    int m_vertexStartIndex;
-    int m_transformIndex;
-    bool m_indexType;
-    void* m_indices;
-    hkReferencedObject* m_vertexBuffer;
-    hkReferencedObject* m_material;
-    int m_sectionIndex;
+    hkEnum<PrimitiveType, unsigned char> m_primitiveType; // src: XBOX_RETAIL_PDB +0x0 (old: m_ePrimitiveType)
+    int m_numPrimitives; // src: XBOX_RETAIL_PDB +0x4 (old: m_iNumPrimitives)
+    int m_numIndices; // src: XBOX_RETAIL_PDB +0x8 (old: m_iIndexCount)
+    int m_vertexStartIndex; // src: XBOX_RETAIL_PDB +0xc (old: m_iIndexType)
+    int m_transformIndex; // src: XBOX_RETAIL_PDB +0x10 (old: m_iSectionVertexCount)
+    bool m_indexType; // src: XBOX_RETAIL_PDB +0x14 (old: m_hasIndices)
+    void* m_indices; // src: XBOX_RETAIL_PDB +0x18 (old: m_ppIndices)
+    hkReferencedObject* m_vertexBuffer; // src: XBOX_RETAIL_PDB +0x1c (old: m_pMeshVertexBuffer)
+    hkReferencedObject* m_material; // src: XBOX_RETAIL_PDB +0x20 (old: m_iMaterialIndex)
+    int m_sectionIndex; // src: XBOX_RETAIL_PDB +0x24 (old: m_iVertexOffset)
 };
 
 // The shared collector lacks beginObject(name, object, class), used at slot 3 by 0x00e4a0c0.
@@ -64,8 +64,8 @@ class hkMemoryMeshShape : public hkMeshShape
     virtual void calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const throw();
 
     hkArray<hkMeshSectionCinfo> m_sections;
-    hkArray<unsigned short> m_indices16;
-    hkArray<unsigned int> m_indices32;
+    hkArray<unsigned short> m_indices16; // src: XBOX_RETAIL_PDB +0x14 (old: m_kIndices16)
+    hkArray<unsigned int> m_indices32; // src: XBOX_RETAIL_PDB +0x20 (old: m_kIndices32)
     char* m_name;
 };
 

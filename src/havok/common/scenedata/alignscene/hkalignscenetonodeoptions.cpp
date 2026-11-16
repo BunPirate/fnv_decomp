@@ -56,15 +56,15 @@ inline void hkReferencedObject::operator delete(void* p)
 class hkAlignSceneToNodeOptions : public hkReferencedObject
 {
   public:
-    char m_invert;
-    char m_transformPositionX;
-    char m_transformPositionY;
-    char m_transformPositionZ;
-    char m_transformRotation;
-    char m_transformScale;
-    char m_transformSkew;
-    int m_keyframe;
-    FUN_00cb0c00_class m_nodeName;
+    char m_invert; // src: XBOX_RETAIL_PDB +0x8 (old: m_bOption1)
+    char m_transformPositionX; // src: XBOX_RETAIL_PDB +0x9 (old: m_bOption2)
+    char m_transformPositionY; // src: XBOX_RETAIL_PDB +0xa (old: m_bOption3)
+    char m_transformPositionZ; // src: XBOX_RETAIL_PDB +0xb (old: m_bOption4)
+    char m_transformRotation; // src: XBOX_RETAIL_PDB +0xc (old: m_bOption5)
+    char m_transformScale; // src: XBOX_RETAIL_PDB +0xd (old: m_bOption6)
+    char m_transformSkew; // src: XBOX_RETAIL_PDB +0xe (old: m_bOption7)
+    int m_keyframe; // src: XBOX_RETAIL_PDB +0x10 (old: m_iOptionValue)
+    FUN_00cb0c00_class m_nodeName; // src: XBOX_RETAIL_PDB +0x14 (old: m_kNodeName)
 
     hkAlignSceneToNodeOptions* FUN_00e4afa0(unsigned int uiFlags) throw();
 };

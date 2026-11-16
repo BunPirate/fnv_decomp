@@ -46,5 +46,5 @@ class NiQuaternionInterpolator : public NiKeyBasedInterpolator
 
     NiQuaternion m_kQuaternionValue;
     NiPointer<NiRotData> m_spQuaternionData;
-    unsigned int m_uiLastIdx;
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiLastKeyIndex)
 };

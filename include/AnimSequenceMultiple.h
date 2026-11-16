@@ -21,5 +21,5 @@ public:
     ~AnimSequenceMultiple();
     void* ScalarDeletingDestructor(unsigned int flags);
 
-    void* pSeqList;
+    void* pSeqList; // src: XBOX_RETAIL_PDB +0x4 (old: m_pSingleSequence)
 };

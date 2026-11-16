@@ -49,5 +49,5 @@ public:
     static ClosestPointResult getClosestPointInl(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkContactPoint& kCpoint);
     static ClosestPointResult __cdecl ComputeClosestPoints(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkContactPoint& kCpoint);
 
-    hkContactPointId m_contactPointId;
+    hkContactPointId m_contactPointId; // src: XBOX_RETAIL_PDB +0xc (old: m_usContactPointId)
 };

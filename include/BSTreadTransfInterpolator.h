@@ -36,10 +36,10 @@ class BSTreadTransfInterpolator : public NiKeyBasedInterpolator
     bool GetChannelPosed(int usChannel);
     void* FUN_00a43a50(unsigned int flags);
 
-    TreadTransformEntry* Links;
-    unsigned int uiNumLinks;
-    float fCurrLerp;
-    float fDiffLerp;
-    unsigned int uiLastLerpIdx;
-    NiPointer<NiObject> spLerpData;
+    TreadTransformEntry* Links; // src: XBOX_RETAIL_PDB +0xc (old: entries)
+    unsigned int uiNumLinks; // src: XBOX_RETAIL_PDB +0x10 (old: count)
+    float fCurrLerp; // src: XBOX_RETAIL_PDB +0x14 (old: firstValue)
+    float fDiffLerp; // src: XBOX_RETAIL_PDB +0x18 (old: secondValue)
+    unsigned int uiLastLerpIdx; // src: XBOX_RETAIL_PDB +0x1c (old: unk1c)
+    NiPointer<NiObject> spLerpData; // src: XBOX_RETAIL_PDB +0x20 (old: reference)
 };

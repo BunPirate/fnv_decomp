@@ -81,8 +81,8 @@ public:
         int m3c;
         int unk3c;
     };
-    NiPointer<NiTimeController> m_spPathData;
-    NiPointer<NiTimeController> m_spPctData;
+    NiPointer<NiTimeController> m_spPathData; // src: XBOX_RETAIL_PDB +0x40 (old: m_pPathObject)
+    NiPointer<NiTimeController> m_spPctData; // src: XBOX_RETAIL_PDB +0x44 (old: m_pPathInterp)
     union
     {
         float* m_pfPathLengths;

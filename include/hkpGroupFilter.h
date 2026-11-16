@@ -35,8 +35,8 @@ public:
     void DisableCollisionPair(int iLayerA, int iLayerB);
     void hkpGroupFilter_enableCollisionsUsingBitfield(unsigned int uInfoA, unsigned int uInfoB);
 
-    __declspec(align(16)) int m_nextFreeSystemGroup;
-    unsigned int m_collisionLookupTable[32];
+    __declspec(align(16)) int m_nextFreeSystemGroup; // src: XBOX_RETAIL_PDB +0x30 (old: m_iNextFreeSystemGroup)
+    unsigned int m_collisionLookupTable[32]; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiCollisionGroupMasks)
     char padB4[0xC];
-    hkVector4 m_pad256[4];
+    hkVector4 m_pad256[4]; // src: XBOX_RETAIL_PDB +0xc0 (old: m_kCollisionGroupMaskVectors)
 };

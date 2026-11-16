@@ -52,7 +52,7 @@ struct GlobalObjectO2_00a7b610
 {
     const char* f0;
 };
-extern GlobalObjectO2_00a7b610 BoltShaderProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BoltShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f68 (old: g_01201f68/g_target_00bc1f90)
 // @fnv 0x00bc28f0
 // src: XBOX_PDB 0x00bc28f0
 // pdb: BoltShaderProperty::GetViewerStrings | BoltShaderProperty.obj | retail, upstream name already matches, high

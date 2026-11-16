@@ -339,8 +339,8 @@ extern const float kSphereEpsilon;
 // pdb: structure Sphere, size 0x10, 2 members
 struct Sphere
 {
-    NiPt3 Center;
-    float fRadius;
+    NiPt3 Center; // src: XBOX_RETAIL_PDB +0x0 (old: center)
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: radius)
     void NiBound_Merge(const Sphere& pBound);
 };
 

@@ -132,28 +132,28 @@ public:
             PathingActorData PathingActorState;
         };
     };
-    float fActorRadius;
-    float fActorHeight;
-    float fGoalZDelta;
-    float fTargetRadius;
-    float fCenterRadius;
+    float fActorRadius; // src: XBOX_RETAIL_PDB +0x68 (old: m_fFirstValueAfterActorData)
+    float fActorHeight; // src: XBOX_RETAIL_PDB +0x6c (old: m_fSecondValueAfterActorData)
+    float fGoalZDelta; // src: XBOX_RETAIL_PDB +0x70 (old: PathingActorSpatialData)
+    float fTargetRadius; // src: XBOX_RETAIL_PDB +0x74 (old: fWeaponSpread)
+    float fCenterRadius; // src: XBOX_RETAIL_PDB +0x78 (old: m_fCenterRadius)
     NiPoint3 Center;
-    float fSmoothingRandomness;
-    float fGoalAngle;
-    float fInitialPathHeading;
-    NiPointer<PathingAvoidNodeArray> spAvoidNodeArray;
+    float fSmoothingRandomness; // src: XBOX_RETAIL_PDB +0x88 (old: m_fFloatAfterCenter)
+    float fGoalAngle; // src: XBOX_RETAIL_PDB +0x8c (old: m_fPathingRadius)
+    float fInitialPathHeading; // src: XBOX_RETAIL_PDB +0x90 (old: m_fAvoidanceRadius)
+    NiPointer<PathingAvoidNodeArray> spAvoidNodeArray; // src: XBOX_RETAIL_PDB +0x94 (old: m_pPathingAvoidNodeArray)
     bool bCantOpenDoors;
     bool bFaceTargetAtGoal;
-    bool bDrawDebugGeometry;
+    bool bDrawDebugGeometry; // src: XBOX_RETAIL_PDB +0x9a (old: PathingOptions)
     bool bAllowIncompletePath;
-    bool bSoftGoalRadius;
+    bool bSoftGoalRadius; // src: XBOX_RETAIL_PDB +0x9c (old: m_bAllowDoorTraversal)
     bool bCanSwim;
     bool bCanFly;
-    bool bWaitIfPlayerWaits;
-    bool bFirstTangentUsesHeading;
-    bool bGoDirectIfPathingFails;
-    bool bTryToUseCurvedPath;
-    bool bIgnoreSmoothingIfFails;
+    bool bWaitIfPlayerWaits; // src: XBOX_RETAIL_PDB +0x9f (old: m_bCanWalk)
+    bool bFirstTangentUsesHeading; // src: XBOX_RETAIL_PDB +0xa0 (old: m_bCanJump)
+    bool bGoDirectIfPathingFails; // src: XBOX_RETAIL_PDB +0xa1 (old: m_bCanClimb)
+    bool bTryToUseCurvedPath; // src: XBOX_RETAIL_PDB +0xa2 (old: m_bCanUseDoors)
+    bool bIgnoreSmoothingIfFails; // src: XBOX_RETAIL_PDB +0xa3 (old: m_bCanRun)
     bool bIgnoreLocks;
     struct
     {
@@ -161,8 +161,8 @@ public:
         unsigned char byte1;
         unsigned char byte2;
     } layoutPaddingA5;
-    int iRetryCount;
-    bool bFailIfGoalOccupied;
+    int iRetryCount; // src: XBOX_RETAIL_PDB +0xa8 (old: m_iRequestType)
+    bool bFailIfGoalOccupied; // src: XBOX_RETAIL_PDB +0xac (old: m_bCanOpenDoors)
     struct
     {
         unsigned char byte0;

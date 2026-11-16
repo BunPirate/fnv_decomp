@@ -7,7 +7,7 @@
 #include "../../../../include/NiSortAdjustNode.h"
 #include "../../../../include/NiStream.h"
 
-extern "C" void* NiSortAdjustNode_ms_RTTI;
+extern "C" void* NiSortAdjustNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ed8 (old: g_011f5ed8)
 extern int DAT_010a0384;
 void __fastcall UpdateFields_00c5faa0(void*);
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);

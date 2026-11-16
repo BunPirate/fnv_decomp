@@ -9,10 +9,10 @@ class NiMatrix3;
 class NiQuaternion
 {
 public:
-    float m_fW;
-    float m_fX;
-    float m_fY;
-    float m_fZ;
+    float m_fW; // src: XBOX_RETAIL_PDB +0x0 (old: m_fVectorX)
+    float m_fX; // src: XBOX_RETAIL_PDB +0x4 (old: m_fVectorY)
+    float m_fY; // src: XBOX_RETAIL_PDB +0x8 (old: m_fVectorZ)
+    float m_fZ; // src: XBOX_RETAIL_PDB +0xc (old: m_fScalarPart)
 
     NiQuaternion();
 

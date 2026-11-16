@@ -16,5 +16,5 @@ public:
     void* FUN_006623a0(unsigned int);
     void ApplyMorph_00662460(int, int, float);
 
-    void* pHairMorph;
+    void* pHairMorph; // src: XBOX_RETAIL_PDB +0x8 (old: hairMorph)
 };

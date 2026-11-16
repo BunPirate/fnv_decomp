@@ -92,7 +92,7 @@ class Sphere
 {
   public:
     NiPoint3 Center;
-    float fRadius;
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: Radius)
     Sphere(const NiPoint3&, float);
 };
 class SphereTangent
@@ -157,7 +157,7 @@ bool NavMeshMath_Find2DIntersection_2(const NiPoint3&, const NiPoint3&, const Ni
 class Segment
 {
   public:
-    NiPoint3 Start, End;
+    NiPoint3 Start, End; // src: XBOX_RETAIL_PDB End +0xc (old: end); Start +0x0 (old: start)
     Segment(const NiPoint3&, const NiPoint3&);
 };
 class SphereIntersection

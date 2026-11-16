@@ -94,8 +94,8 @@ class Lighting30Shader : public BSShader
     virtual void InitializePixelShader();
     virtual bool ConfigureShaderPass();
     NiPointer<NiD3DShaderConstantMap> m_spFillColorConstantMap;
-    NiPointer<NiD3DShaderConstantMap> spTexEffectVConstantMap;
-    NiPointer<NiD3DShaderConstantMap> spDefaultPixelConstantMap;
+    NiPointer<NiD3DShaderConstantMap> spTexEffectVConstantMap; // src: XBOX_RETAIL_PDB +0x70 (old: m_spFogConstantMap)
+    NiPointer<NiD3DShaderConstantMap> spDefaultPixelConstantMap; // src: XBOX_RETAIL_PDB +0x74 (old: m_spFirstPassConstantMap)
     NiPointer<NiD3DShaderConstantMap> m_spSecondPassConstantMap;
     NiPointer<NiD3DVertexDeclaration> m_pVertexDeclaration1;
     NiPointer<NiD3DVertexDeclaration> m_pVertexDeclaration2;

@@ -590,15 +590,15 @@ struct S_00eb5e30_Base
     S_00eb5e30_Base(float a, float b, float c, int d);
 };
 // pdb: class NiSphereTriIntersector, size 0x6c, bases: NiIntersector, 5 members
-struct NiSphereTriIntersector : S_00eb5e30_Base
+struct NiSphereTriIntersector : S_00eb5e30_Base // src: EXE (old: FUN_00eb5e30)
 {
-    S_00eb5e30_Obj* m_kSphere;
-    NiPoint3 m_kTri;
+    S_00eb5e30_Obj* m_kSphere; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    NiPoint3 m_kTri; // src: XBOX_RETAIL_PDB +0x3c (old: unk3c)
     NiPoint3 unk48;
     NiPoint3 unk54;
-    float m_fInvRadiusSqr;
-    float m_fParameter0;
-    float m_fParameter1;
+    float m_fInvRadiusSqr; // src: XBOX_RETAIL_PDB +0x60 (old: unk60)
+    float m_fParameter0; // src: XBOX_RETAIL_PDB +0x64 (old: unk64)
+    float m_fParameter1; // src: XBOX_RETAIL_PDB +0x68 (old: unk68)
     NiSphereTriIntersector(S_00eb5e30_Obj* o, const NiPoint3* p0, const NiPoint3* p1, const NiPoint3* p2, float a,
                  float b, float c, int d);
 };
@@ -4122,16 +4122,16 @@ class SpawnedBase
 };
 
 // pdb: class NiCapsuleTriIntersector, size 0x6c, bases: NiIntersector, 5 members
-class NiCapsuleTriIntersector : public SpawnedBase
+class NiCapsuleTriIntersector : public SpawnedBase // src: EXE (old: FUN_00eb3750)
 {
   public:
-    float* m_kCapsule;
-    FloatVec3Local m_kTri;
+    float* m_kCapsule; // src: XBOX_RETAIL_PDB +0x38 (old: m_38)
+    FloatVec3Local m_kTri; // src: XBOX_RETAIL_PDB +0x3c (old: m_3c)
     FloatVec3Local m_48;
     FloatVec3Local m_54;
-    float m_fInvRadiusSqr;
-    float m_fParameter0;
-    float m_fParameter1;
+    float m_fInvRadiusSqr; // src: XBOX_RETAIL_PDB +0x60 (old: m_60)
+    float m_fParameter0; // src: XBOX_RETAIL_PDB +0x64 (old: m_64)
+    float m_fParameter1; // src: XBOX_RETAIL_PDB +0x68 (old: m_68)
     NiCapsuleTriIntersector(float* a1, FloatVec3Local* a2, FloatVec3Local* a3, FloatVec3Local* a4, float a5, float a6, float a7,
                  void* a8);
 };

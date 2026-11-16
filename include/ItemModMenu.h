@@ -10,8 +10,8 @@ class EqEntry;
 class ItemModMenu : public Menu
 {
 public:
-    Tile* pTiles[14];
-    ListBox_ItemChange___ lbItemModList;
+    Tile* pTiles[14]; // src: XBOX_RETAIL_PDB +0x28 (old: m_pTiles)
+    ListBox_ItemChange___ lbItemModList; // src: XBOX_RETAIL_PDB +0x60 (old: m_kItemList)
 
     ItemModMenu();
     Tile* __cdecl Create();

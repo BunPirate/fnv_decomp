@@ -33,5 +33,5 @@ public:
     TESModelTextureSwap* GetModelTextureSwap(int index);
     void* Release(unsigned int flags);
 
-    TESModelTextureSwap anteModels[2];
+    TESModelTextureSwap anteModels[2]; // src: XBOX_RETAIL_PDB +0x8c (old: m_kModelTextureSwaps)
 };

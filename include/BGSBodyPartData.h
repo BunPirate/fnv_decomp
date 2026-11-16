@@ -14,8 +14,8 @@ enum IO_TASK_PRIORITY;
 class BGSBodyPartData : public TESForm, public TESModel, public BGSPreloadable
 {
 public:
-    BGSBodyPart* pPartArray[15];
-    BGSRagdoll* pRagdollData;
+    BGSBodyPart* pPartArray[15]; // src: XBOX_RETAIL_PDB +0x34 (old: m_apBodyParts)
+    BGSRagdoll* pRagdollData; // src: XBOX_RETAIL_PDB +0x70 (old: m_pRagdoll)
 
     BGSBodyPartData();
     virtual ~BGSBodyPartData();

@@ -16,5 +16,5 @@ public:
     void __thiscall FUN_00435ef0();
     void* __thiscall FUN_0042c960(unsigned int flags);
 
-    extra_save::SForm* pheadingtarget;
+    extra_save::SForm* pheadingtarget; // src: XBOX_RETAIL_PDB +0xc (old: target)
 };

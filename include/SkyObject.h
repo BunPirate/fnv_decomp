@@ -22,5 +22,5 @@ public:
     void Update(float, int);
     void __thiscall Update(int, int);
 
-    NiPointer<NiNode> spRoot;
+    NiPointer<NiNode> spRoot; // src: XBOX_RETAIL_PDB +0x4 (old: m_pRootNode)
 };

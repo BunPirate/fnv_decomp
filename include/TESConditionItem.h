@@ -12,7 +12,7 @@ class TESObjectREFR;
 class TESConditionItem
 {
   public:
-    char Data;               // +0x00 comparison operator (bits 5..7), OR, run-on/global bits
+    char Data;               // +0x00 comparison operator (bits 5..7), OR, run-on/global bits // src: XBOX_RETAIL_PDB +0x0 (old: m_flags)
     unsigned char m_pad01[3];
     union
     {

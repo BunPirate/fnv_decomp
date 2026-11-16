@@ -2512,7 +2512,7 @@ struct PropHelper
 };
 extern "C" void* __cdecl DynamicCastByRTTI(void const*, void*);
 extern int DAT_011f49e0;
-extern const char* const SkyShaderProperty_ms_RTTI;
+extern const char* const SkyShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005b8 (old: DAT_012005b8/g_012005b8)
 // @fnv 0x006349e0
 // src: COMMUNITY 0x006349e0
 // pdb: Clouds::RemoveTextures | Clouds.obj | retail, upstream name already matches, high
@@ -2541,7 +2541,7 @@ struct PropHelper
     void* GetProperty(unsigned int);
 };
 SkyShaderProperty* DynamicCastByRTTI(const void* rtti, void* p);
-extern const char* const SkyShaderProperty_ms_RTTI;
+extern const char* const SkyShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005b8 (old: DAT_012005b8/g_012005b8)
 extern int DAT_011f49e0;
 struct FUN_006369a0_Class
 {
@@ -4012,7 +4012,7 @@ class ThisBase_62a190
 };
 
 // pdb: class SpecificItemCollector, size 0x80 (here 0x74), bases: hkpClosestRayHitCollector, 2 members
-class SpecificItemCollector : public ThisBase_62a190
+class SpecificItemCollector : public ThisBase_62a190 // src: EXE (old: FUN_0062a190)
 {
   public:
     ThisMember_62a190 m_70;
@@ -4783,8 +4783,8 @@ void __cdecl FUN_00b57e30(Obj* apObject, int abFaceGenModel, int abSkipPreCache)
 
 extern Rtti DAT_012024e8;
 extern Rtti DAT_01202540;
-extern Rtti NiMeshParticleSystem_ms_RTTI;
-extern Rtti NiPSysMeshUpdateModifier_ms_RTTI;
+extern Rtti NiMeshParticleSystem_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202538 (old: DAT_01202538/g_01202538)
+extern Rtti NiPSysMeshUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202530 (old: DAT_01202530/g_01202530)
 extern Rtti DAT_01202528;
 extern Rtti DAT_011f4acc;
 extern Rtti DAT_011f4a20;

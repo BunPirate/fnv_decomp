@@ -41,7 +41,7 @@ void __stdcall NiStandardAllocator_DeallocateExternal(void* pvMemory, int eEvent
 }
 
 namespace fnv_00aa3430 {
-extern int NiStandardAllocator_ms_pkSmallAlloc;
+extern int NiStandardAllocator_ms_pkSmallAlloc; // src: XBOX_RETAIL_PDB 0x011f622c (old: DAT_011f622c)
 
 struct P03MM
 {
@@ -87,7 +87,7 @@ struct SmallAlloc
 {
     void __thiscall NiSmallObjectAllocator_Deallocate(void* p, unsigned int s);
 };
-extern SmallAlloc* NiStandardAllocator_ms_pkSmallAlloc;
+extern SmallAlloc* NiStandardAllocator_ms_pkSmallAlloc; // src: XBOX_RETAIL_PDB 0x011f622c (old: DAT_011f622c)
 unsigned int __cdecl ReadUInt32(void* p);
 void __cdecl FreeAllocatorBlock(void* p);
 // @fnv 0x00aa3150
@@ -187,7 +187,7 @@ unsigned char* __stdcall NiStandardAllocator_Allocate(unsigned int* stSizeInByte
 
 extern P03MM g_memoryManager;
 
-extern SmallAlloc* NiStandardAllocator_ms_pkSmallAlloc;
+extern SmallAlloc* NiStandardAllocator_ms_pkSmallAlloc; // src: XBOX_RETAIL_PDB 0x011f622c (old: DAT_011f622c)
 
 struct AA3460Pool
 {

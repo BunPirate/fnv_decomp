@@ -6,7 +6,7 @@
 class NiPSysRadialFieldModifier : public NiPSysFieldModifier
 {
 public:
-    float m_fRadialType;
+    float m_fRadialType; // src: XBOX_RETAIL_PDB +0x30 (old: m_fBoundRadius)
 
     virtual ~NiPSysRadialFieldModifier();
 

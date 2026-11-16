@@ -41,9 +41,9 @@ public:
         int m_4c;
         int unk4c;
     };
-    float fSaveTime;
-    unsigned char StartPos[12];
-    unsigned char StartRot[16];
+    float fSaveTime; // src: XBOX_RETAIL_PDB +0x50 (old: m_50)
+    unsigned char StartPos[12]; // src: XBOX_RETAIL_PDB +0x54 (old: m_54)
+    unsigned char StartRot[16]; // src: XBOX_RETAIL_PDB +0x60 (old: m_60)
 
     ReanimateEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect);
     void UpdateReanimation(Actor* apActor);

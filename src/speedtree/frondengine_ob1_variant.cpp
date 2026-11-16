@@ -30,7 +30,7 @@ struct FUN_0064df10_helper
 // pdb: class Date, size 0x4, 2 members
 struct Date
 {
-    void* sDate;
+    void* sDate; // src: XBOX_RETAIL_PDB +0x0 (old: p)
     ~Date();
 };
 struct FUN_0065d6e0_class : Date

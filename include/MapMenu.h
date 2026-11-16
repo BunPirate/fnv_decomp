@@ -68,45 +68,45 @@ public:
     virtual void HandleControllerConnectOrDisconnect(bool);
 
     Tile* m_pTiles[22];
-    int iCurrentPage;
-    Tile* pMapTile;
-    float fWaveformAnimationStartTime;
-    bool bShowingAllNotes;
+    int iCurrentPage; // src: XBOX_RETAIL_PDB +0x80 (old: m_iMapDisplayMode)
+    Tile* pMapTile; // src: XBOX_RETAIL_PDB +0x84 (old: m_pMapTile)
+    float fWaveformAnimationStartTime; // src: XBOX_RETAIL_PDB +0x88 (old: m_fMapRotation)
+    bool bShowingAllNotes; // src: XBOX_RETAIL_PDB +0x8c (old: m_bMapMenuActive)
     char pad8d[3];
     BGSNote* m_pSelectedNote;
-    unsigned int uiNoteEnterStartTime;
+    unsigned int uiNoteEnterStartTime; // src: XBOX_RETAIL_PDB +0x94 (old: m_uiMapState)
     MapSoundList m_kSoundList;
     MapArray<BSStringT<char> > SubtitlesToShow;
     BSSimpleList<BSSoundHandle>* m_pkActiveSoundList;
-    bool bSoundsLoading;
+    bool bSoundsLoading; // src: XBOX_RETAIL_PDB +0xbc (old: m_bMapListUpdatePending)
     char padbd[3];
-    float fSoundDurationMillis;
-    int iSoundPlayStartTime;
-    float fOldPipboyRadioVolume;
-    TESQuest* pDisplayedQuest;
-    RegionObjectEntry* pDisplayedQuestTarget;
-    Tile* pHighlightedMapMarker;
-    BSSimpleList<TESObjectREFR*> WorldMapMarkerList, LocalMapMarkerList;
-    NiPoint2 MapNWCorner, MapSECorner;
-    TESForm* PlayerMarkerSpace;
-    NiPoint3 PlayerMarkerPos;
-    TESForm* pMapSpace;
-    TESWorldSpace* pRootMapSpace;
-    bool bRootSpaceChanged;
+    float fSoundDurationMillis; // src: XBOX_RETAIL_PDB +0xc0 (old: m_fMapZoom)
+    int iSoundPlayStartTime; // src: XBOX_RETAIL_PDB +0xc4 (old: m_iMapSelectionIndex)
+    float fOldPipboyRadioVolume; // src: XBOX_RETAIL_PDB +0xc8 (old: m_fSavedMusicVolume)
+    TESQuest* pDisplayedQuest; // src: XBOX_RETAIL_PDB +0xcc (old: m_pSelectedQuest)
+    RegionObjectEntry* pDisplayedQuestTarget; // src: XBOX_RETAIL_PDB +0xd0 (old: m_pSelectedMapMarkerInfo)
+    Tile* pHighlightedMapMarker; // src: XBOX_RETAIL_PDB +0xd4 (old: m_pSelectedMarkerTile)
+    BSSimpleList<TESObjectREFR*> WorldMapMarkerList, LocalMapMarkerList; // src: XBOX_RETAIL_PDB +0xd8 (old: m_kMapMarkerList)
+    NiPoint2 MapNWCorner, MapSECorner; // src: XBOX_RETAIL_PDB MapSECorner +0xf0 (old: m_kMapMaximumPoint); MapNWCorner +0xe8 (old: m_kMapMinimumPoint)
+    TESForm* PlayerMarkerSpace; // src: XBOX_RETAIL_PDB +0xf8 (old: m_pCurrentMapSpace)
+    NiPoint3 PlayerMarkerPos; // src: XBOX_RETAIL_PDB +0xfc (old: m_kPlayerWorldPosition)
+    TESForm* pMapSpace; // src: XBOX_RETAIL_PDB +0x108 (old: m_pCurrentMapForm)
+    TESWorldSpace* pRootMapSpace; // src: XBOX_RETAIL_PDB +0x10c (old: m_pCurrentWorldspace)
+    bool bRootSpaceChanged; // src: XBOX_RETAIL_PDB +0x110 (old: m_bLocalMapMode)
     char pad111[3];
-    TESObjectREFR* pMapPlayerRef;
-    TESObjectREFR* pFastTravelMarker;
+    TESObjectREFR* pMapPlayerRef; // src: XBOX_RETAIL_PDB +0x114 (old: m_pFirstMapReference)
+    TESObjectREFR* pFastTravelMarker; // src: XBOX_RETAIL_PDB +0x118 (old: m_pSecondMapReference)
     TESObjectCELL* pAdjustNorthRotationCell;
-    NiPoint2 WorldMapDragStart;
-    unsigned int uiNextLocalMapGrid;
-    bool bFogOfWarEnabled;
+    NiPoint2 WorldMapDragStart; // src: XBOX_RETAIL_PDB +0x120 (old: m_kMapOffset)
+    unsigned int uiNextLocalMapGrid; // src: XBOX_RETAIL_PDB +0x128 (old: m_uiMapMarkerCount)
+    bool bFogOfWarEnabled; // src: XBOX_RETAIL_PDB +0x12c (old: m_bNeedsMapUpdate)
     char pad12d[3];
-    ListBox<TESQuest*> lbQuestsList;
-    ListBox<BGSNote*> lbNotesList;
-    ListBox<TESObjectREFR*> lbRadioStationsList;
-    ListBox<BGSQuestObjective*> lbQuestObjectivesList;
-    ListBox<TESChallenge*> lbChallengeList;
-    MapArray<Tile*> debugWaypoints;
+    ListBox<TESQuest*> lbQuestsList; // src: XBOX_RETAIL_PDB +0x130 (old: m_kQuestListBox)
+    ListBox<BGSNote*> lbNotesList; // src: XBOX_RETAIL_PDB +0x160 (old: m_kNoteListBox)
+    ListBox<TESObjectREFR*> lbRadioStationsList; // src: XBOX_RETAIL_PDB +0x190 (old: m_kMapMarkerListBox)
+    ListBox<BGSQuestObjective*> lbQuestObjectivesList; // src: XBOX_RETAIL_PDB +0x1c0 (old: m_kObjectiveListBox)
+    ListBox<TESChallenge*> lbChallengeList; // src: XBOX_RETAIL_PDB +0x1f0 (old: m_kChallengeListBox)
+    MapArray<Tile*> debugWaypoints; // src: XBOX_RETAIL_PDB +0x220 (old: m_kMapMarkerTiles)
 
     void UpdateLocalMap();
     void UpdateWorldMap();

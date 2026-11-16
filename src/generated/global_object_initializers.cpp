@@ -308,7 +308,7 @@ GlobalObject_0044f440 g_011c3bb8(g_011c3bb8_arg0, g_011c3bb8_arg1);
 // @fnv 0x00f37f90
 // @fnv 0x00fc8050
 // pdb: `dynamic initializer for 'LoadedFile::LSAccessCrit'' | ModelLoader.obj | debug, object-file run extension, low
-GlobalObject_0044fae0 LoadedFile_LSAccessCrit;
+GlobalObject_0044fae0 LoadedFile_LSAccessCrit; // src: XBOX_RETAIL_PDB 0x011c3b6c (old: g_011c3b6c)
 // @fnv 0x00f37fb0
 // @fnv 0x00fc8060
 // pdb: `dynamic initializer for 'LSAccessCrit'' | ModelLoader.obj | debug, object-file run extension, low
@@ -11805,15 +11805,15 @@ GlobalObject_0045cf30 g_011dfb68(g_011dfb68_arg0, 0);
 // @fnv 0x00fa56e0
 // @fnv 0x00fd9630
 // pdb: `dynamic initializer for 'UpdatingActors'' | AITaskManager.obj | debug, object-file run extension, low
-GlobalObject_0044fae0 UpdatingActors;
+GlobalObject_0044fae0 UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 // @fnv 0x00fa5700
 // @fnv 0x00fd9640
 // pdb: `dynamic initializer for 'UpdatingDetection'' | AITaskManager.obj | debug, object-file run extension, low
-GlobalObject_0044fae0 UpdatingDetection;
+GlobalObject_0044fae0 UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
 // @fnv 0x00fa5720
 // @fnv 0x00fd9650
 // pdb: `dynamic initializer for 'UpdatingMovement'' | AITaskManager.obj | debug, object-file run extension, low
-GlobalObject_0044fae0 UpdatingMovement;
+GlobalObject_0044fae0 UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 // @fnv 0x00fa5740
 // @fnv 0x00fd9660
 // pdb: `dynamic initializer for 'TaskQueue'' | AITaskManager.obj | debug, object-file run extension, low

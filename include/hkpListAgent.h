@@ -23,5 +23,5 @@ public:
     virtual void vf12();
     virtual void vf13();
 
-    char m_dispatcher[0x10];
+    char m_dispatcher[0x10]; // src: XBOX_RETAIL_PDB +0xc (old: m0)
 };

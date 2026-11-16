@@ -10,5 +10,5 @@ class ExtraRegionList : public BSExtraData
 public:
     ExtraRegionList(RegionList* value);
 
-    RegionList* pList;
+    RegionList* pList; // src: XBOX_RETAIL_PDB +0xc (old: regions)
 };

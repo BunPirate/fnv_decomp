@@ -11,7 +11,7 @@ public:
     void CopyMembers(NiPSysModifier* pkDest, CloningProcess& kProcess);
     void NiPSysEmitter_CopyMembers(NiPSysModifier* pkDest, CloningProcess& kCloning);
 
-    float m_fEmitterWidth;
-    float m_fEmitterHeight;
-    float m_fEmitterDepth;
+    float m_fEmitterWidth; // src: XBOX_RETAIL_PDB +0x58 (old: width)
+    float m_fEmitterHeight; // src: XBOX_RETAIL_PDB +0x5c (old: height)
+    float m_fEmitterDepth; // src: XBOX_RETAIL_PDB +0x60 (old: depth)
 };

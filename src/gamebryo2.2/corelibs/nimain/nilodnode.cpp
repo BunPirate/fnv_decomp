@@ -39,7 +39,7 @@ inline void NiRangeLODData::SetRange(unsigned int i, float fNear, float fFar)
     m_pRanges[i].m_fFarPlane = fFar;
 }
 
-extern "C" const void* NiLODNode_ms_RTTI;
+extern "C" const void* NiLODNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f1c (old: g_011f5f1c)
 
 // @fnv 0x00a994c0
 // src: COMMUNITY 0x00a994c0
@@ -286,7 +286,7 @@ NiLODNode* NiLODNode::CreateCloneLODNode(CloningProcess& process)
     return clone;
 }
 
-extern "C" const void* NiLODNode_ms_RTTI;
+extern "C" const void* NiLODNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f1c (old: g_011f5f1c)
 extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(const void* pvName);
 
 inline unsigned int LODAddViewerString(StrArr* strings, const char* const& value)

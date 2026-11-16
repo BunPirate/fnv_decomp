@@ -15,8 +15,8 @@ public:
     void __thiscall FUN_00437d10();
     void* __thiscall FUN_00437ce0(unsigned int flags);
 
-    int eLeaderState;
-    NiPoint3 LeaderLocation;
-    int LeaderNavMeshID;
-    BSSimpleList<FollowerSwimBreadcrumb*> CrumbList;
+    int eLeaderState; // src: XBOX_RETAIL_PDB +0xc (old: iCount)
+    NiPoint3 LeaderLocation; // src: XBOX_RETAIL_PDB +0x10 (old: kLastPos)
+    int LeaderNavMeshID; // src: XBOX_RETAIL_PDB +0x1c (old: iLastCell)
+    BSSimpleList<FollowerSwimBreadcrumb*> CrumbList; // src: XBOX_RETAIL_PDB +0x20 (old: kBreadcrumbs)
 };

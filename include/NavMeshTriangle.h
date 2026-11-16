@@ -27,5 +27,5 @@ class NavMeshTriangle
 
     unsigned short Vertices[3];     // +0x00
     unsigned short Triangles[3];    // +0x06
-    unsigned int TriangleFlags; // +0x0C
+    unsigned int TriangleFlags; // +0x0C // src: XBOX_RETAIL_PDB +0xc (old: m_uiTriangleFlags)
 };

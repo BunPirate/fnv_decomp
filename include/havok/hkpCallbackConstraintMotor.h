@@ -18,11 +18,11 @@ class hkpCallbackConstraintMotor : public hkpLimitedForceConstraintMotor
         CALLBACK_MOTOR_TYPE_USER_2 = 3,
         CALLBACK_MOTOR_TYPE_USER_3 = 4
     };
-    void* m_callbackFunc;       // +0x14
-    hkUint32 m_callbackType;       // +0x18 (CallbackType)
-    hkUlong m_userData0;         // +0x1C
-    hkUlong m_userData1;             // +0x20
-    hkUlong m_userData2;  // +0x24
+    void* m_callbackFunc;       // +0x14 // src: XBOX_RETAIL_PDB +0x14 (old: m_pCallbackFunction)
+    hkUint32 m_callbackType;       // +0x18 (CallbackType) // src: XBOX_RETAIL_PDB +0x18 (old: m_uiCallbackType)
+    hkUlong m_userData0;         // +0x1C // src: XBOX_RETAIL_PDB +0x1c (old: m_pCallbackData)
+    hkUlong m_userData1;             // +0x20 // src: XBOX_RETAIL_PDB +0x20 (old: m_pUserData)
+    hkUlong m_userData2;  // +0x24 // src: XBOX_RETAIL_PDB +0x24 (old: m_pRefObjectLocalStore)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpCallbackConstraintMotor[(sizeof(hkpCallbackConstraintMotor) == 0x28) ? 1 : -1];

@@ -19,21 +19,21 @@ public:
         void ReleaseMember();
     };
 
-    DummyPointerMap NavMeshToOffsetMap;
+    DummyPointerMap NavMeshToOffsetMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_map)
     union
     {
         char* pTriangleScores;
         char* m_pData;
     };
-    Shell1c NavMeshes;
+    Shell1c NavMeshes; // src: XBOX_RETAIL_PDB +0x1c (old: m_shell1c)
     unsigned char unk20[0x0C];
-    unsigned int iTotalTriangleCount;
-    unsigned char iTotalTrianglesSeen[0x0C];
-    float Center;
+    unsigned int iTotalTriangleCount; // src: XBOX_RETAIL_PDB +0x2c (old: m_uTotalCount)
+    unsigned char iTotalTrianglesSeen[0x0C]; // src: XBOX_RETAIL_PDB +0x30 (old: unk30)
+    float Center; // src: XBOX_RETAIL_PDB +0x3c (old: f3c)
     float f40;
     float f44;
-    float fRadius;
-    unsigned int fSightRadius;
+    float fRadius; // src: XBOX_RETAIL_PDB +0x48 (old: f48)
+    unsigned int fSightRadius; // src: XBOX_RETAIL_PDB +0x4c (old: unk4C)
 
     virtual ~PathingLOSMap();
 

@@ -15,10 +15,10 @@ class NiMorphData : public NiObject
     class MorphTarget : public NiMemObject
     {
       public:
-        NiPoint3* m_aTargetVerts;
+        NiPoint3* m_aTargetVerts; // src: XBOX_RETAIL_PDB +0x0 (old: m_pkVertexPositions)
         NiFixedString m_kName;
-        float m_fLegacyWeight;
-        NiPointer<NiInterpolator> m_spLegacyInterpolator;
+        float m_fLegacyWeight; // src: XBOX_RETAIL_PDB +0x8 (old: m_fMorphWeight)
+        NiPointer<NiInterpolator> m_spLegacyInterpolator; // src: XBOX_RETAIL_PDB +0xc (old: m_spTargetInterpolator)
 
         const NiFixedString& GetName();
         void SetTargetInterpolator(NiInterpolator*);
@@ -30,7 +30,7 @@ class NiMorphData : public NiObject
 
     unsigned int m_uiNumTargets;
     unsigned int m_uiNumVertsPerTarget;
-    MorphTarget* m_aMorphTargets;
-    bool m_bRelativeTargets;
+    MorphTarget* m_aMorphTargets; // src: XBOX_RETAIL_PDB +0x10 (old: m_pMorphTargets)
+    bool m_bRelativeTargets; // src: XBOX_RETAIL_PDB +0x14 (old: m_bTargetsAreRelative)
     unsigned char m_aucPad[3];
 };

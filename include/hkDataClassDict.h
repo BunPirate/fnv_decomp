@@ -52,8 +52,8 @@ public:
         int unk14;
         int m_version;
     };
-    hkDataClassDict* m_parent;
-    int m_enums;
+    hkDataClassDict* m_parent; // src: XBOX_RETAIL_PDB +0x18 (old: parent)
+    int m_enums; // src: XBOX_RETAIL_PDB +0x1c (old: unk1c)
     int unk20;
     int unk24;
     union
@@ -67,7 +67,7 @@ public:
         int unk2c;
     };
     int unk30;
-    int m_hiddenMemberInfo;
+    int m_hiddenMemberInfo; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
     int unk38;
     int unk3c;
 };

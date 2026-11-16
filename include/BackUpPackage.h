@@ -19,7 +19,7 @@ public:
     virtual unsigned short SaveGameTESAlt();
     virtual unsigned short LoadGameTESAlt();
 
-    int pBackUpPoint;
+    int pBackUpPoint; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
     int unk84;
     int unk88;
 

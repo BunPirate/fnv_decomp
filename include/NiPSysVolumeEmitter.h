@@ -31,5 +31,5 @@ public:
     void CopyMemberData(NiPSysVolumeEmitter* pkDest, CloningProcess& kCloning);
     void* DestroyIfFlagged(unsigned int flags);
 
-    NiAVObject* m_pkEmitterObj;
+    NiAVObject* m_pkEmitterObj; // src: XBOX_RETAIL_PDB +0x54 (old: m_pkEmitterObject)
 };

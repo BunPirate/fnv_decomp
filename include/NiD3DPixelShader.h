@@ -30,5 +30,5 @@ public:
     void* __thiscall DestroyPixelShader(unsigned int flags);
     int CanRecreate();
 
-    GeometryRelatedType* m_hShader;
+    GeometryRelatedType* m_hShader; // src: XBOX_RETAIL_PDB +0x2c (old: m_pD3DPixelShader)
 };

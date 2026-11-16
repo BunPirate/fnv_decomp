@@ -66,11 +66,11 @@ __forceinline void hkVector4::SetAllComponents(float r)
 struct hkDisplaySphere : hkDisplayGeometry
 {
     hkSphere m_pSphere;
-    int m_sphere;
+    int m_sphere; // src: XBOX_RETAIL_PDB +0x60 (old: m_iXResolution)
     int m_iYResolution;
     int unk68;
     int unk6C;
-    int m_xRes;
+    int m_xRes; // src: XBOX_RETAIL_PDB +0x70 (old: unk70)
     hkDisplaySphere(const hkSphere& sphere, int xRes, int yRes);
 };
 
@@ -79,7 +79,7 @@ struct hkDisplaySphere : hkDisplayGeometry
 struct hkDisplayBox : hkDisplayGeometry
 {
     hkVector4 m_vHalfExtents;
-    int m_halfExtents;
+    int m_halfExtents; // src: XBOX_RETAIL_PDB +0x60 (old: unk60)
     hkDisplayBox(const hkVector4& halfExtents);
 };
 
@@ -88,8 +88,8 @@ struct hkDisplayBox : hkDisplayGeometry
 struct hkDisplayAABB : hkDisplayGeometry
 {
     hkVector4 m_kMinimumCorner;
-    hkVector4 m_minExtent;
-    int m_maxExtent;
+    hkVector4 m_minExtent; // src: XBOX_RETAIL_PDB +0x60 (old: m_kMaximumCorner)
+    int m_maxExtent; // src: XBOX_RETAIL_PDB +0x70 (old: unk70)
     hkDisplayAABB(const hkVector4& min, const hkVector4& max);
 };
 
@@ -98,12 +98,12 @@ struct hkDisplayAABB : hkDisplayGeometry
 struct hkDisplayCone : hkDisplayGeometry
 {
     hkVector4 m_kStartPosition;
-    hkVector4 m_startPos;
-    hkReal m_coneAxis;
+    hkVector4 m_startPos; // src: XBOX_RETAIL_PDB +0x60 (old: m_kAxisEndPoints)
+    hkReal m_coneAxis; // src: XBOX_RETAIL_PDB +0x70 (old: m_fConeAngle)
     hkReal m_height;
     int m_iNumSegments;
     int unk7C;
-    int m_numSegments;
+    int m_numSegments; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
     hkDisplayCone(hkReal coneAngle, hkReal coneHeight, int numSegments, const hkVector4& coneAxis,
                    const hkVector4& startPos);
 };
@@ -113,10 +113,10 @@ struct hkDisplayCone : hkDisplayGeometry
 struct hkDisplayPlane : hkDisplayGeometry
 {
     hkVector4 m_vHitNormal;
-    hkVector4 m_normal;
-    hkVector4 m_center;
-    hkVector4 m_perpToNormal;
-    int m_extent;
+    hkVector4 m_normal; // src: XBOX_RETAIL_PDB +0x60 (old: m_kPerpendicularToNormal)
+    hkVector4 m_center; // src: XBOX_RETAIL_PDB +0x70 (old: m_kCenterPosition)
+    hkVector4 m_perpToNormal; // src: XBOX_RETAIL_PDB +0x80 (old: m_fExtents)
+    int m_extent; // src: XBOX_RETAIL_PDB +0x90 (old: unk90)
     hkDisplayPlane(const hkVector4& normal, const hkVector4& perpToNormal, const hkVector4& center,
                     const hkVector4& extent);
 };
@@ -128,12 +128,12 @@ struct hkDisplayPlane : hkDisplayGeometry
 struct hkDisplayCylinder : hkDisplayGeometry
 {
     hkVector4 m_fMinimumV;
-    hkVector4 m_top;
-    hkReal m_bottom;
+    hkVector4 m_top; // src: XBOX_RETAIL_PDB +0x60 (old: m_fMaximumV)
+    hkReal m_bottom; // src: XBOX_RETAIL_PDB +0x70 (old: m_fSphereRadius)
     int m_iNumSides;
     int m_iNumHeightSegments;
     int unk7C;
-    int m_radius;
+    int m_radius; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
     hkDisplayCylinder(const hkVector4& top, const hkVector4& bottom, hkReal radius, int numSides,
                        int numHeightSegments);
 };

@@ -7292,7 +7292,7 @@ FUN_00c6d1e0::FUN_00c6d1e0(int a, int b)
     Init(a, b);
 }
 
-extern int bhkCollisionBox_ms_RTTI;
+extern int bhkCollisionBox_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268444 (old: DAT_01268444/g_01268444/g_kRTTI9C64/g_pcCBEA40Name)
 
 // @fnv 0x00c6d250
 // src: COMMUNITY 0x00c6d250
@@ -12436,7 +12436,7 @@ void FUN_00c7b130_cls::UpdateState_00c7b130()
 struct NiRTTI;
 
 extern const NiRTTI g_C7B140CollisionRTTI;
-extern const NiRTTI WeaponObject_ms_RTTI;
+extern const NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 extern const NiRTTI g_C7B140BodyRTTI;
 extern const NiRTTI g_C7B140NodeRTTI;
 
@@ -16890,7 +16890,7 @@ struct FUN_00c6d7e0_Parent
 };
 
 unsigned int __stdcall bhkShape_GetSubshapeMaterial(int aiKey);
-extern unsigned int bhkCharacterController_pfGetMaterialStairCallback;
+extern unsigned int bhkCharacterController_pfGetMaterialStairCallback; // src: XBOX_RETAIL_PDB 0x01267bc8 (old: DAT_01267bc8)
 
 // With a set and a child object, returns whether DAT_01267bc8 gave 0 for c (or child m_uiValue1 & 0x1f); otherwise 1 if a or b is set, else 0.
 // @fnv 0x00c6d7e0
@@ -17003,7 +17003,7 @@ class FUN_00c6def0_obj
     unsigned char m_e8;
 };
 
-extern float bhkCharacterController_fMinHurtfulMass;
+extern float bhkCharacterController_fMinHurtfulMass; // src: XBOX_RETAIL_PDB 0x01267bc0 (old: DAT_01267bc0)
 extern "C" bool __cdecl bhkRigidBody_IsMotionTypeDynamic(unsigned int* areMotion);
 // Returns true if p is non-null and either FUN_00c8cce0 accepts m_e8 and m_e0.FUN_00c86430() exceeds DAT_01267bc0, or (m_2c & 0x7f) == 6.
 // @fnv 0x00c6def0

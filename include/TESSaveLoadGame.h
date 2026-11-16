@@ -33,50 +33,50 @@ template <class T> class NiTLargePrimitiveArray;
 class TESSaveLoadGame
 {
 public:
-    ChangesMap* m_pChanges;                                         // 0x000 new ChangesMap (0x00854ea0)
-    ChangesMap* m_pNewChanges;                                // 0x004
-    InteriorCellNewReferencesMap* m_pInteriorCellMap;     // 0x008
-    ExteriorCellNewReferencesMap* m_pExteriorCellMap;    // 0x00c
-    ExteriorCellNewReferencesMap* m_pCreatedExteriorCells;    // 0x010
+    ChangesMap* m_pChanges;                                         // 0x000 new ChangesMap (0x00854ea0) // src: XBOX_RETAIL_PDB +0x0 (old: m_pChangesMap)
+    ChangesMap* m_pNewChanges;                                // 0x004 // src: XBOX_RETAIL_PDB +0x4 (old: m_pAlternateChangesMap)
+    InteriorCellNewReferencesMap* m_pInteriorCellMap;     // 0x008 // src: XBOX_RETAIL_PDB +0x8 (old: m_pInteriorCellNewReferencesMap)
+    ExteriorCellNewReferencesMap* m_pExteriorCellMap;    // 0x00c // src: XBOX_RETAIL_PDB +0xc (old: m_pExteriorCellNewReferencesMap1)
+    ExteriorCellNewReferencesMap* m_pCreatedExteriorCells;    // 0x010 // src: XBOX_RETAIL_PDB +0x10 (old: m_pExteriorCellNewReferencesMap2)
     char* m_pBuffer;                                                   // 0x014
-    unsigned int m_iSaveLoadStates;                                       // 0x018
-    bool m_bAllowChanges;                                                   // 0x01c
-    void* m_pInitArray;                                            // 0x020
-    BSSimpleList<unsigned int> m_MovedReferencesList;              // 0x024 CreateChangedReference removes its form id
-    BSSimpleList<TESForm*> m_CreatedBaseObjectsList;                   // 0x02c AddCreatedBaseObject
-    BSSimpleList<TESForm*> m_DeferredDeleteList;                    // 0x034 AddFormToDeferredDeletionsList
-    BSSimpleList<void*> m_DeferredInitActorPackageList;                                     // 0x03c element type unknown (ctor/dtor only)
-    void* m_pSaveLoadStats;                                            // 0x044
+    unsigned int m_iSaveLoadStates;                                       // 0x018 // src: XBOX_RETAIL_PDB +0x18 (old: m_uiBufferSize)
+    bool m_bAllowChanges;                                                   // 0x01c // src: XBOX_RETAIL_PDB +0x1c (old: m_bLoading)
+    void* m_pInitArray;                                            // 0x020 // src: XBOX_RETAIL_PDB +0x20 (old: m_pInitFormArray)
+    BSSimpleList<unsigned int> m_MovedReferencesList;              // 0x024 CreateChangedReference removes its form id // src: XBOX_RETAIL_PDB +0x24 (old: m_kChangedReferenceIDList)
+    BSSimpleList<TESForm*> m_CreatedBaseObjectsList;                   // 0x02c AddCreatedBaseObject // src: XBOX_RETAIL_PDB +0x2c (old: m_kCreatedBaseObjectList)
+    BSSimpleList<TESForm*> m_DeferredDeleteList;                    // 0x034 AddFormToDeferredDeletionsList // src: XBOX_RETAIL_PDB +0x34 (old: m_kDeferredDeletionList)
+    BSSimpleList<void*> m_DeferredInitActorPackageList;                                     // 0x03c element type unknown (ctor/dtor only) // src: XBOX_RETAIL_PDB +0x3c (old: m_kList3C)
+    void* m_pSaveLoadStats;                                            // 0x044 // src: XBOX_RETAIL_PDB +0x44 (old: m_pSaveGameEntry)
     int m_iRevertState;                                                // 0x048
-    unsigned char m_iSavedPluginCount;                                     // 0x04c
-    unsigned char* m_pFileIndexArray;                                 // 0x050 freed by the destructor
-    unsigned int m_iQueuedRemoveChanges;                               // 0x054 QueueRemoveChange 0x0060e680
-    NumericIDBufferMap* m_pAnimationMap;                         // 0x058
-    NumericIDBufferMap* m_pAttachedAnimationMap;                 // 0x05c QueueAttachedAnimationLoad
-    NumericIDBufferMap* m_pCharControllerMap;                    // 0x060 QueueCharControllerLoad
-    NumericIDBufferMap* m_pHavokDataMap;                         // 0x064 QueueHavokDataLoad
-    BSSimpleList<TESForm*> m_QueuedFormList;                     // 0x068 QueueFormForFinalization
+    unsigned char m_iSavedPluginCount;                                     // 0x04c // src: XBOX_RETAIL_PDB +0x4c (old: m_ucSaveVersion)
+    unsigned char* m_pFileIndexArray;                                 // 0x050 freed by the destructor // src: XBOX_RETAIL_PDB +0x50 (old: m_pNumericIDBuffer)
+    unsigned int m_iQueuedRemoveChanges;                               // 0x054 QueueRemoveChange 0x0060e680 // src: XBOX_RETAIL_PDB +0x54 (old: m_uiQueuedRemoveChange)
+    NumericIDBufferMap* m_pAnimationMap;                         // 0x058 // src: XBOX_RETAIL_PDB +0x58 (old: m_pAnimationBufferMap)
+    NumericIDBufferMap* m_pAttachedAnimationMap;                 // 0x05c QueueAttachedAnimationLoad // src: XBOX_RETAIL_PDB +0x5c (old: m_pAttachedAnimationBufferMap)
+    NumericIDBufferMap* m_pCharControllerMap;                    // 0x060 QueueCharControllerLoad // src: XBOX_RETAIL_PDB +0x60 (old: m_pCharControllerBufferMap)
+    NumericIDBufferMap* m_pHavokDataMap;                         // 0x064 QueueHavokDataLoad // src: XBOX_RETAIL_PDB +0x64 (old: m_pHavokDataBufferMap)
+    BSSimpleList<TESForm*> m_QueuedFormList;                     // 0x068 QueueFormForFinalization // src: XBOX_RETAIL_PDB +0x68 (old: m_kQueuedFinalizeForms)
     void* m_pSaveGameList;                                             // 0x070
-    unsigned char m_cMajorVersion;                                  // 0x074 ResetVersions: 0
-    unsigned char m_cMinorVersion;                                         // 0x075 ResetVersions: 0x7d
-    NiTLargePrimitiveArray<unsigned int>* m_pNumericIDArray;              // 0x078 new (100, 50)
+    unsigned char m_cMajorVersion;                                  // 0x074 ResetVersions: 0 // src: XBOX_RETAIL_PDB +0x74 (old: m_ucMinimumVersion)
+    unsigned char m_cMinorVersion;                                         // 0x075 ResetVersions: 0x7d // src: XBOX_RETAIL_PDB +0x75 (old: m_ucVersion)
+    NiTLargePrimitiveArray<unsigned int>* m_pNumericIDArray;              // 0x078 new (100, 50) // src: XBOX_RETAIL_PDB +0x78 (old: m_pFormIDArray)
     NiTLargePrimitiveArray<unsigned int>* m_pWorldSpaceIDArray;        // 0x07c new (5, 1)
-    unsigned char m_cCurrentVersion;                                  // 0x080 ResetCurrentVersion copies +0x75
-    bool m_bUseNumericIDArray;                                         // 0x081 ctor: 1
-    unsigned int m_pCurrentlyLoadingFormHeader;                                          // 0x084
-    unsigned int m_pCurrentlySavingFormHeader;                                          // 0x088
-    unsigned int m_iNextSaveNumber;                                   // 0x08c GetNextSaveNumber
-    unsigned int m_iFileStartPosition;                                          // 0x090
-    unsigned int m_iSimulationFileSize;                                          // 0x094
-    char m_OriginalSaveTime[16];                                    // 0x098 ctor memset 0x10
-    unsigned int m_iOriginalSaveVersion;                           // 0x0a8
-    bool m_bReconstructedAllObjects;                                            // 0x0ac
-    bool m_bLoadingFromMainMenu;                                           // 0x0ad
-    bool m_bAutosaveDisabledDueToLackOfSpace;                                         // 0x0ae
-    bool m_bQuickloading;                              // 0x0af
-    void* m_pInitItemArray;                                         // 0x0b0
-    char m_SavedPlayerData[272];                                        // 0x0b4
-    _FILETIME* m_pMostRecentSaveGame;                                  // 0x1c4 GetMostRecentSaveGame; freed by the dtor
+    unsigned char m_cCurrentVersion;                                  // 0x080 ResetCurrentVersion copies +0x75 // src: XBOX_RETAIL_PDB +0x80 (old: m_ucCurrentVersion)
+    bool m_bUseNumericIDArray;                                         // 0x081 ctor: 1 // src: XBOX_RETAIL_PDB +0x81 (old: m_bUseSaveGameBlocks)
+    unsigned int m_pCurrentlyLoadingFormHeader;                                          // 0x084 // src: XBOX_RETAIL_PDB +0x84 (old: m_uiValue84)
+    unsigned int m_pCurrentlySavingFormHeader;                                          // 0x088 // src: XBOX_RETAIL_PDB +0x88 (old: m_uiValue88)
+    unsigned int m_iNextSaveNumber;                                   // 0x08c GetNextSaveNumber // src: XBOX_RETAIL_PDB +0x8c (old: m_uiNextSaveNumber)
+    unsigned int m_iFileStartPosition;                                          // 0x090 // src: XBOX_RETAIL_PDB +0x90 (old: m_uiValue90)
+    unsigned int m_iSimulationFileSize;                                          // 0x094 // src: XBOX_RETAIL_PDB +0x94 (old: m_uiValue94)
+    char m_OriginalSaveTime[16];                                    // 0x098 ctor memset 0x10 // src: XBOX_RETAIL_PDB +0x98 (old: m_acSaveGameSignature)
+    unsigned int m_iOriginalSaveVersion;                           // 0x0a8 // src: XBOX_RETAIL_PDB +0xa8 (old: m_uiCurrentFormRecordCount)
+    bool m_bReconstructedAllObjects;                                            // 0x0ac // src: XBOX_RETAIL_PDB +0xac (old: m_bSaveGameLoaded)
+    bool m_bLoadingFromMainMenu;                                           // 0x0ad // src: XBOX_RETAIL_PDB +0xad (old: m_bSaveGameCorrupt)
+    bool m_bAutosaveDisabledDueToLackOfSpace;                                         // 0x0ae // src: XBOX_RETAIL_PDB +0xae (old: m_bHasPendingChanges)
+    bool m_bQuickloading;                              // 0x0af // src: XBOX_RETAIL_PDB +0xaf (old: m_bNeedsReferenceReconstruction)
+    void* m_pInitItemArray;                                         // 0x0b0 // src: XBOX_RETAIL_PDB +0xb0 (old: m_pSaveGameListData)
+    char m_SavedPlayerData[272];                                        // 0x0b4 // src: XBOX_RETAIL_PDB +0xb4 (old: m_acSaveGamePath)
+    _FILETIME* m_pMostRecentSaveGame;                                  // 0x1c4 GetMostRecentSaveGame; freed by the dtor // src: XBOX_RETAIL_PDB +0x1c4 (old: m_pMostRecentSaveTime)
 
     TESSaveLoadGame();
     ~TESSaveLoadGame();

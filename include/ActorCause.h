@@ -11,15 +11,15 @@ class DetectionViewData;
 class ActorCause
 {
 public:
-    Actor* pActor;
-    BSSimpleList<DetectionViewData*>* pWitnesses;
-    NiPoint3 kOrigin;
+    Actor* pActor; // src: XBOX_RETAIL_PDB +0x0 (old: m_00)
+    BSSimpleList<DetectionViewData*>* pWitnesses; // src: XBOX_RETAIL_PDB +0x4 (old: m_04)
+    NiPoint3 kOrigin; // src: XBOX_RETAIL_PDB +0x8 (old: m_08)
     union
     {
         unsigned int m_14;
         int m_iFadeIndex;
     };
-    int iRefCount;
+    int iRefCount; // src: XBOX_RETAIL_PDB +0x18 (old: m_18)
 
     ActorCause(Actor* actor);
     ~ActorCause();

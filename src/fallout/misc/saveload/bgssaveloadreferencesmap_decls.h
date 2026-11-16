@@ -18,9 +18,9 @@ class BGSReconstructFormsInAllFilesMap;
 class BGSSaveLoadReferencesMap
 {
   public:
-    NiTPointerMap<unsigned int, unsigned int> MovedReferencesMap;
-    BGSCellNumericIDArrayMap InteriorReferencesMap;
-    NiTPointerMap<unsigned int, BGSCellNumericIDArrayMap*> WorldspaceReferencesMap;
+    NiTPointerMap<unsigned int, unsigned int> MovedReferencesMap; // src: XBOX_RETAIL_PDB +0x0 (old: m_kReferenceIDMap)
+    BGSCellNumericIDArrayMap InteriorReferencesMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_kCellReferences)
+    NiTPointerMap<unsigned int, BGSCellNumericIDArrayMap*> WorldspaceReferencesMap; // src: XBOX_RETAIL_PDB +0x20 (old: m_kWorldspaceCellReferenceMaps)
 
     void Clear();
     void LoadCellReferences(TESObjectCELL* cell, BGSReconstructFormsInAllFilesMap* forms);

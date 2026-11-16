@@ -16,5 +16,5 @@ public:
 
     const hkpConvexShape* GetShapeForKey() const;
 
-    hkTransform m_transform;
+    hkTransform m_transform; // src: XBOX_RETAIL_PDB +0x20 (old: m_kMotionTransform)
 };

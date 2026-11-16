@@ -17,9 +17,9 @@ class TESReputation : public TESForm, public TESFullName, public TESIcon, public
 {
 public:
     ReputationLimitData data;
-    float fPositiveValue;
-    float fNegativeValue;
-    ReputationType rSound;
+    float fPositiveValue; // src: XBOX_RETAIL_PDB +0x44 (old: m_fFirstReputationValue)
+    float fNegativeValue; // src: XBOX_RETAIL_PDB +0x48 (old: m_fSecondReputationValue)
+    ReputationType rSound; // src: XBOX_RETAIL_PDB +0x4c (old: m_eReputationType)
 
     TESReputation();
     virtual ~TESReputation();

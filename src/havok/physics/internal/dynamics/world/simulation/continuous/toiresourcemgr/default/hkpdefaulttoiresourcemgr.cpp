@@ -28,14 +28,14 @@ struct hkpToiEvent;
 // pdb: structure hkpToiResources, size 0x20, 8 members
 struct hkpToiResources
 {
-    int m_minPriorityToProcess;
-    int m_maxNumEntities;
-    int m_maxNumActiveEntities;
-    int m_maxNumConstraints;
-    int m_numToiSolverIterations;
-    int m_numForcedToiFinalSolverIterations;
-    char* m_scratchpad;
-    int m_scratchpadSize;
+    int m_minPriorityToProcess; // src: XBOX_RETAIL_PDB +0x0 (old: m_iFirstValue)
+    int m_maxNumEntities; // src: XBOX_RETAIL_PDB +0x4 (old: m_iSecondInteger)
+    int m_maxNumActiveEntities; // src: XBOX_RETAIL_PDB +0x8 (old: m_iThirdValue)
+    int m_maxNumConstraints; // src: XBOX_RETAIL_PDB +0xc (old: m_iFourthValue)
+    int m_numToiSolverIterations; // src: XBOX_RETAIL_PDB +0x10 (old: m_iFifthInteger)
+    int m_numForcedToiFinalSolverIterations; // src: XBOX_RETAIL_PDB +0x14 (old: m_numRequiredStepsForSolver)
+    char* m_scratchpad; // src: XBOX_RETAIL_PDB +0x18 (old: m_pCharacterBuffer)
+    int m_scratchpadSize; // src: XBOX_RETAIL_PDB +0x1c (old: m_iCharacterBufferSize)
 };
 
 // Local until include/hkpDefaultToiResourceMgr.h exists; reflected size is 0x10.
@@ -47,8 +47,8 @@ class hkpDefaultToiResourceMgr
     virtual ~hkpDefaultToiResourceMgr();
     unsigned short m_usMemSizeAndFlags;
     short m_sReferenceCount;
-    int m_scratchPadCapacity;
-    int m_defaultScratchpadSize;
+    int m_scratchPadCapacity; // src: XBOX_RETAIL_PDB +0x8 (old: m_iNumToiResources)
+    int m_defaultScratchpadSize; // src: XBOX_RETAIL_PDB +0xc (old: m_iMaxNumToiResources)
 
     void* AllocateMemory(int, int, hkpToiResources*);
     void* FUN_00d9fc70(unsigned char flag);
@@ -120,7 +120,7 @@ int __cdecl hkpDefaultToiResourceMgr_ReturnOne()
 // Returns the address of the global registration object that lives at
 // DAT_0126955c.  The startup code fills that object (13 dwords) through a
 // constructor call, and this getter hands out its address.
-extern int hkpDefaultToiResourceMgrClass;
+extern int hkpDefaultToiResourceMgrClass; // src: XBOX_RETAIL_PDB 0x0126955c (old: DAT_0126955c/g_0126955c)
 
 // @fnv 0x00d9fc60
 // src: GUESS 0x00d9fc60 (confidence: low)

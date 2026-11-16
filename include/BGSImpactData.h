@@ -16,10 +16,10 @@ class BGSImpactData : public TESForm, public TESModel
 {
 public:
     BGSImpactData__IMPACT_DATA_DATA Data;
-    BGSTextureSet* pDecalTextureSet;
-    TESSound* pSound1;
-    TESSound* pSound2;
-    DecalData DData;
+    BGSTextureSet* pDecalTextureSet; // src: XBOX_RETAIL_PDB +0x48 (old: m_pDecalTextureSet)
+    TESSound* pSound1; // src: XBOX_RETAIL_PDB +0x4c (old: m_pPrimaryImpactSound)
+    TESSound* pSound2; // src: XBOX_RETAIL_PDB +0x50 (old: m_pSecondaryImpactSound)
+    DecalData DData; // src: XBOX_RETAIL_PDB +0x54 (old: ImpactDecalInfo)
 
     BGSImpactData();
     virtual ~BGSImpactData();

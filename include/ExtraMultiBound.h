@@ -9,5 +9,5 @@ class BSMultiBoundNode;
 class ExtraMultiBound : public BSExtraData
 {
 public:
-    NiPointer<BSMultiBoundNode> spBound;
+    NiPointer<BSMultiBoundNode> spBound; // src: XBOX_RETAIL_PDB +0xc (old: m_kMultiBoundNode)
 };

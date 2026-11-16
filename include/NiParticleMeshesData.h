@@ -29,7 +29,7 @@ class NiParticleMeshesData : public NiParticlesData
     void RemoveParticleMesh(unsigned short);
     void UpdateParticleMeshes();
 
-    NiPointer<NiNode> m_spParticleMeshes;
-    bool m_bNeedsPropertyEffectUpdate;
+    NiPointer<NiNode> m_spParticleMeshes; // src: XBOX_RETAIL_PDB +0x70 (old: m_spRootNode)
+    bool m_bNeedsPropertyEffectUpdate; // src: XBOX_RETAIL_PDB +0x74 (old: m_bModifierActive)
     unsigned char unk75[3];
 };

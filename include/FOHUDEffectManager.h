@@ -18,21 +18,21 @@ class NiRefObject;
 class FOHUDEffectManager
 {
 public:
-    NiPointer<NiRefObject> spPartialScreenGeometry;              // 0x00 pointee type not established
-    BGSMenuPacker Packer;                    // 0x04
+    NiPointer<NiRefObject> spPartialScreenGeometry;              // 0x00 pointee type not established // src: XBOX_RETAIL_PDB +0x0 (old: spEffect)
+    BGSMenuPacker Packer;                    // 0x04 // src: XBOX_RETAIL_PDB +0x4 (old: kMenuPacker)
     bool bShudderActive;                          // 0x28
     float fShudderStartTime;                      // 0x2c
-    NiPoint2 ShudderDuration;                    // 0x30
-    NiPoint2 ShudderIntensity;                    // 0x38
-    NiPoint2 ShudderFrequency;                   // 0x40
-    NiPoint2 ShudderCurrentPosition;                      // 0x48
-    ImageSpaceShaderParam* pUnpackShaderParams;          // 0x50
-    bool bHideHUD;                                 // 0x54
+    NiPoint2 ShudderDuration;                    // 0x30 // src: XBOX_RETAIL_PDB +0x30 (old: kShudderDuration)
+    NiPoint2 ShudderIntensity;                    // 0x38 // src: XBOX_RETAIL_PDB +0x38 (old: kShudderStrength)
+    NiPoint2 ShudderFrequency;                   // 0x40 // src: XBOX_RETAIL_PDB +0x40 (old: kShudderFrequency)
+    NiPoint2 ShudderCurrentPosition;                      // 0x48 // src: XBOX_RETAIL_PDB +0x48 (old: kShudderOffset)
+    ImageSpaceShaderParam* pUnpackShaderParams;          // 0x50 // src: XBOX_RETAIL_PDB +0x50 (old: pShaderParam)
+    bool bHideHUD;                                 // 0x54 // src: XBOX_RETAIL_PDB +0x54 (old: bFlag54)
     bool bFlag55;                                 // 0x55
     bool bFlag56;                                 // 0x56
-    float fCurrentBlurRadiusHUD;                            // 0x58
-    float fCurrentScanlineFrequencyHUD;                     // 0x5c
-    float fCurrentBlurIntensityHUD;                         // 0x60
+    float fCurrentBlurRadiusHUD;                            // 0x58 // src: XBOX_RETAIL_PDB +0x58 (old: fBlurRadius)
+    float fCurrentScanlineFrequencyHUD;                     // 0x5c // src: XBOX_RETAIL_PDB +0x5c (old: fScanlineFrequency)
+    float fCurrentBlurIntensityHUD;                         // 0x60 // src: XBOX_RETAIL_PDB +0x60 (old: fBlurIntensity)
 
     FOHUDEffectManager();                         // 0x007f7610
     void OnIdle();                                // 0x007f7830

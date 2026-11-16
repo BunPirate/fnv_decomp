@@ -10,7 +10,7 @@ class BSFaceGenModelMap
 public:
     virtual void vf00();
 
-    char Map[0x20];
+    char Map[0x20]; // src: XBOX_RETAIL_PDB +0x4 (old: pad)
 
     BSFaceGenModelMap();
     bool GetModel(void* key, SolPtr* result);

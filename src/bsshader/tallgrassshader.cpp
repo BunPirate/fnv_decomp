@@ -514,7 +514,7 @@ void* __fastcall TallGrassShader_ScalarDtor(void* self, int, unsigned int flags)
 
 struct NiTexture;
 
-extern ImageSpaceTexture ImageSpaceEffectHDR_spAdaptedLight;
+extern ImageSpaceTexture ImageSpaceEffectHDR_spAdaptedLight; // src: XBOX_RETAIL_PDB 0x012005a4 (old: DAT_012005a4)
 // @fnv 0x00bad4a0
 // src: COMMUNITY 0x00bad4a0
 // pdb: ImageSpaceEffectHDR::ClearAdaptedLight | ImageSpaceEffectHDR.obj | retail, upstream name already matches, high

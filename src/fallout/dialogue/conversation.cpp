@@ -15,8 +15,8 @@
 class Conversation
 {
   public:
-    BSSimpleList<DialogueItem*> lDialogueItems;
-    BSSimpleList<DialogueItem*>* pCurrentItem;
+    BSSimpleList<DialogueItem*> lDialogueItems; // src: XBOX_RETAIL_PDB +0x0 (old: m_kDialogueItems)
+    BSSimpleList<DialogueItem*>* pCurrentItem; // src: XBOX_RETAIL_PDB +0x8 (old: m_pCurrentDialogueNode)
 
     Conversation(Character*, PlayerCharacter*, TESTopic*);
     short GetDialogueItemIndex(DialogueItem* apDialogueItem);

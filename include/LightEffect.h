@@ -25,5 +25,5 @@ public:
     void FUN_0080f030(Actor* apActor);
     void DetachLight();
 
-    NiPointer<NiPointLight> spPointLight;
+    NiPointer<NiPointLight> spPointLight; // src: XBOX_RETAIL_PDB +0x48 (old: m_spLight)
 };

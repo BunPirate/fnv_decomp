@@ -55,10 +55,10 @@ public:
 
     BSStringT<char> NodeName;
     BSStringT<char> TargetName;
-    BSStringT<char> IKStartNodeName;
-    BSStringT<char> PartName;
-    BSStringT<char> GoreObjectName;
-    TESModel ExplosionSpecialDebris;
-    TESModelPSA PSAModel;
+    BSStringT<char> IKStartNodeName; // src: XBOX_RETAIL_PDB +0x14 (old: m_kVATSNodeName)
+    BSStringT<char> PartName; // src: XBOX_RETAIL_PDB +0x1c (old: m_kPartName)
+    BSStringT<char> GoreObjectName; // src: XBOX_RETAIL_PDB +0x24 (old: m_kGoreName)
+    TESModel ExplosionSpecialDebris; // src: XBOX_RETAIL_PDB +0x2c (old: m_kModel)
+    TESModelPSA PSAModel; // src: XBOX_RETAIL_PDB +0x44 (old: m_kRagdollModel)
     BodyPartInfo Data;
 };

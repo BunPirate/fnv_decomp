@@ -12,7 +12,7 @@ class NiFogProperty : public NiProperty
 
     void SetColor(const NiColor& color);
 
-    unsigned short m_uFlags;
-    float m_fDepth;
-    NiColor m_kColor;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiObjectFlags)
+    float m_fDepth; // src: XBOX_RETAIL_PDB +0x1c (old: m_fFogDepth)
+    NiColor m_kColor; // src: XBOX_RETAIL_PDB +0x20 (old: m_kFogTint)
 };

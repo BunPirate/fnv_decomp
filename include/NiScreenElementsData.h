@@ -38,6 +38,6 @@ class NiScreenElementsData : public NiTriShapeData
     unsigned short m_usVGrowBy;
     unsigned short m_usMaxIQuantity;
     unsigned short m_usIGrowBy;
-    bool m_bBoundNeedsUpdate;
+    bool m_bBoundNeedsUpdate; // src: XBOX_RETAIL_PDB +0x6e (old: m_bGeometryInitialized)
     unsigned char layoutPadding6F[1];
 };

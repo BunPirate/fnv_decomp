@@ -73,7 +73,7 @@ float __cdecl ComputeItemValue(float afItemValue, float afItemHealthPercent)
     return fabsf_00408860(fvalue) >= 1.0 ? InventoryStackRecord::RoundToNearestStep(fvalue, 1.0f) : fvalue;
 }
 
-extern SettingT_GameSettingCollection_ fMoveRunMult;
+extern SettingT_GameSettingCollection_ fMoveRunMult; // src: XBOX_RETAIL_PDB 0x011d0898 (old: originalRuntimeFloatSetting830)
 float __cdecl GamePlayFormulas_GetActorWalkSpeed(void*, void*, void*, bool, bool, bool, bool);
 
 // @fnv 0x00647f00

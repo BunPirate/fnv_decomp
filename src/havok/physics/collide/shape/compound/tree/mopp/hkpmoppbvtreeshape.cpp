@@ -399,13 +399,13 @@ struct Vector4Comparison
 // pdb: class hkpMoppRayBundleVirtualMachine, size 0xe0, bases: hkpMoppVirtualMachine, 12 members
 struct hkpMoppRayBundleVirtualMachine
 {
-    int m_00, m_04, m_08, m_0c, m_code, m_14, m_18, m_1c;
-    int m_ItoFScale, m_24, m_28, m_2c, m_rays, m_34, m_38, m_3c;
-    int m_to, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c;
-    int m_60, m_64, m_68, m_6c, m_from, m_74, m_78, m_7c;
+    int m_00, m_04, m_08, m_0c, m_code, m_14, m_18, m_1c; // src: XBOX_RETAIL_PDB +0x10 (old: m_10)
+    int m_ItoFScale, m_24, m_28, m_2c, m_rays, m_34, m_38, m_3c; // src: XBOX_RETAIL_PDB m_ItoFScale +0x20 (old: m_20); m_rays +0x30 (old: m_30)
+    int m_to, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c; // src: XBOX_RETAIL_PDB +0x40 (old: m_40)
+    int m_60, m_64, m_68, m_6c, m_from, m_74, m_78, m_7c; // src: XBOX_RETAIL_PDB +0x70 (old: m_70)
     int m_80, m_84, m_88, m_8c, m_90, m_94, m_98, m_9c;
-    int m_hitsFound, m_a4, m_a8, m_ac, m_earlyOutHitFraction, m_b4, m_b8, m_bc;
-    int m_rayResultPtr, m_collector, m_body, m_collection, m_reindexingMask, m_d4, m_d8, m_dc;
+    int m_hitsFound, m_a4, m_a8, m_ac, m_earlyOutHitFraction, m_b4, m_b8, m_bc; // src: XBOX_RETAIL_PDB m_hitsFound +0xa0 (old: m_a0); m_earlyOutHitFraction +0xb0 (old: m_b0)
+    int m_rayResultPtr, m_collector, m_body, m_collection, m_reindexingMask, m_d4, m_d8, m_dc; // src: XBOX_RETAIL_PDB m_rayResultPtr +0xc0 (old: m_c0); m_collector +0xc4 (old: m_c4); m_body +0xc8 (old: m_c8); m_collection +0xcc (old: m_cc); m_reindexingMask +0xd0 (old: m_d0)
     Vector4Comparison UpdateState_00dd4870(const hkpShapeContainer* pkCollection, const hkpMoppCode* pkCode,
                                          const ShapeRayBundleCastInput& kInput,
                                          ShapeRayCastOutputArray& kResults,

@@ -554,7 +554,7 @@ FUN_007e9130_cls::~FUN_007e9130_cls()
     g_mgrB = 0;
 }
 
-extern unsigned int* NiPoint3_ms_pSqrtTable;
+extern unsigned int* NiPoint3_ms_pSqrtTable; // src: XBOX_RETAIL_PDB 0x011f4aa8 (old: DAT_011f4aa8)
 // Computes the squared length of a 3-component vector and returns its approximate square root via a bit-manipulation lookup table.
 // @fnv 0x007eb7f0
 float __cdecl FastSqrt(const float* v)

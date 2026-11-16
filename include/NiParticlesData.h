@@ -30,10 +30,10 @@ class NiParticlesData : public NiGeometryData
     NiPoint3* GetRotationAxes();
     NiParticlesData& operator=(const NiParticlesData&);
 
-    bool m_bIsOldRotatingParticlesObject;
+    bool m_bIsOldRotatingParticlesObject; // src: XBOX_RETAIL_PDB +0x40 (old: m_bHasRadii)
     unsigned char layoutPadding41[3];
-    unsigned short* m_ausRenderOrder;
-    float* m_afDepths;
+    unsigned short* m_ausRenderOrder; // src: XBOX_RETAIL_PDB +0x44 (old: m_pusParticleIndices)
+    float* m_afDepths; // src: XBOX_RETAIL_PDB +0x48 (old: m_pfSortValues)
     float* m_pfRadii;
     unsigned short m_usActive;
     unsigned char layoutPadding52[2];

@@ -15,7 +15,7 @@ void NiColorExtraData::SetColor(NiColorA kColor)
     m_kColorA = kColor;
 }
 
-extern void* NiColorExtraData_ms_RTTI;
+extern void* NiColorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b68 (old: g_011f5b68)
 
 // @fnv 0x00a893f0
 // src: COMMUNITY 0x00a893f0
@@ -123,7 +123,7 @@ bool __fastcall EqualColorExtraData(NiColorExtraData* self, void*, NiColorExtraD
     return true;
 }
 
-extern void* NiColorExtraData_ms_RTTI;
+extern void* NiColorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b68 (old: g_011f5b68)
 
 struct StreamShell
 {

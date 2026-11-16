@@ -17,7 +17,7 @@ public:
 
     SkyTask& operator=(const SkyTask& other);
 
-    NiPointer<NiTexture>* pspTexture;
+    NiPointer<NiTexture>* pspTexture; // src: XBOX_RETAIL_PDB +0x30 (old: apTextureOutput)
     unsigned char layoutPadding34[4];
 };
 #pragma pack(pop)

@@ -11,8 +11,8 @@ class BGSPerkEntry
 {
 public:
     BGSPerkEntry();  // 0x005e9530: vftable 0x01046b48, m_ucRank = m_ucRegionPriority = 0
-    unsigned char cRank;
-    unsigned char cPriority;
+    unsigned char cRank; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucRank)
+    unsigned char cPriority; // src: XBOX_RETAIL_PDB +0x5 (old: m_ucRegionPriority)
     unsigned short unk06;
 
     virtual bool CheckConditionFilters(unsigned int count, TESForm** subjects);

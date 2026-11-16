@@ -371,7 +371,7 @@ FUN_00a8ae80_cls* FUN_00a8ae80_cls::FUN_00a8ae80(unsigned char acFlags)
 }
 }  // namespace fnv_00a8ae80
 
-extern int NiPixelData_ms_RTTI;
+extern int NiPixelData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a90 (old: DAT_011f4a90/g_011f4a90)
 
 struct Node
 {

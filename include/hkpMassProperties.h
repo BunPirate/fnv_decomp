@@ -9,10 +9,10 @@ typedef float hkReal;
 class hkpMassProperties
 {
 public:
-    hkReal m_volume;
-    hkReal m_mass;
-    hkVector4 m_centerOfMass;
-    hkMatrix3 m_inertiaTensor;
+    hkReal m_volume; // src: XBOX_RETAIL_PDB +0x0 (old: m_iBufferSize)
+    hkReal m_mass; // src: XBOX_RETAIL_PDB +0x4 (old: m_fViscosityFriction)
+    hkVector4 m_centerOfMass; // src: XBOX_RETAIL_PDB +0x10 (old: m_kCenterOfMass1)
+    hkMatrix3 m_inertiaTensor; // src: XBOX_RETAIL_PDB +0x20 (old: m_kInertiaTensor)
 
     hkpMassProperties();
 };

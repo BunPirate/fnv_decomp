@@ -13,5 +13,5 @@ public:
     hkpBroadPhaseHandle() : m_id(0) {}
     hkpBroadPhaseHandle(FinishingFlag flag);
 
-    unsigned int m_id;
+    unsigned int m_id; // src: XBOX_RETAIL_PDB +0x0 (old: m_iOwnerObjectOffset)
 };

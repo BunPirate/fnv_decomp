@@ -19,6 +19,6 @@ public:
     void FUN_00a56bb0();
     static void* operator new[](size_t size, unsigned int count);
 
-    MorphController* m_spMorphController;
-    FakeGeo* m_spTarget;
+    MorphController* m_spMorphController; // src: XBOX_RETAIL_PDB +0xc (old: m_pkMorphController)
+    FakeGeo* m_spTarget; // src: XBOX_RETAIL_PDB +0x10 (old: m_spReferencedObject)
 };

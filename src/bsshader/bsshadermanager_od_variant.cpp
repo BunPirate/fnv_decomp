@@ -96,7 +96,7 @@ extern float DAT_011adcc8;
 extern unsigned int DAT_011f91b8;
 extern void (*DAT_011f9f38)(), (*DAT_011f9f3c)();
 extern void (*DAT_011f9f40[16])(), (*DAT_011f9f80[16])();
-extern unsigned int (*BSShaderManager_pObjectTypeCallback)(NiAVObject*);
+extern unsigned int (*BSShaderManager_pObjectTypeCallback)(NiAVObject*); // src: XBOX_RETAIL_PDB 0x011f91ec (old: DAT_011f91ec)
 extern ShadowSceneNode* DAT_011f91c8[4];
 #pragma intrinsic(sin, cos)
 // The shipped setter was built without optimization.
@@ -186,7 +186,7 @@ struct TGTexturingProperty
     TGTextureInfo* GetDecalMap(unsigned int auiIndex, TGGeometry* apGeom, const char* apName, int aiArg, bool abAlpha);
 };
 
-extern TGRTTI NiTexturingProperty_ms_RTTI;
+extern TGRTTI NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 TGTexturingProperty* __cdecl TGDynamicCast(const TGRTTI* apRTTI, TGProperty* apProperty);
 
 struct TGGatherer

@@ -340,7 +340,7 @@ void* __cdecl NiVertexColorProperty_GetRTTI()
     return &g_011f4430;
 }
 
-extern "C" int NiZBufferProperty_ms_RTTI;
+extern "C" int NiZBufferProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f443c (old: DAT_011f443c/g_011f443c)
 
 // @fnv 0x00a5f4f0
 // src: COMMUNITY 0x00a5f4f0
@@ -694,7 +694,7 @@ unsigned int __fastcall NiDX9Renderer_GetStencilClear(NiDX9Renderer* self, void*
 }
 }  // namespace fnv_00e75a30
 
-extern "C" void* NiShaderDeclaration_ms_RTTI;
+extern "C" void* NiShaderDeclaration_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01270900 (old: g_01270900)
 
 // @fnv 0x00e766f0
 // src: COMMUNITY 0x00e766f0
@@ -5550,7 +5550,7 @@ bool RendererBridge::InitializeRendererResources() {
 }
 
 extern "C" __declspec(dllimport) long __stdcall fnv_InterlockedDecrement(long volatile*);
-extern char NiRenderedCubeMap_ms_RTTI;
+extern char NiRenderedCubeMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012708e4 (old: DAT_012708e4/g_012708e4/g_sentinel_012708e4)
 
 class PktRefCounted {
 public:

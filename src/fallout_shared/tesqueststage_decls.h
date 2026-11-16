@@ -82,7 +82,7 @@ class Date
 {
   public:
     Date(short asDay, CALENDAR_MONTH asMonth, unsigned int asYear);
-    unsigned int sDate;
+    unsigned int sDate; // src: XBOX_RETAIL_PDB +0x0 (old: value)
 };
 
 extern Calendar g_calendar;

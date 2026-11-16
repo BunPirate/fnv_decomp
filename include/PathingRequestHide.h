@@ -20,6 +20,6 @@ public:
     void FUN_006e55e0();
     void CopyTo_006e56f0(PathingRequest* apDest);
 
-    PathingLocation ThreatLocation;
-    float fMinHideDistance;
+    PathingLocation ThreatLocation; // src: XBOX_RETAIL_PDB +0xb0 (old: m_Location)
+    float fMinHideDistance; // src: XBOX_RETAIL_PDB +0xd8 (old: m_fHideDistance)
 };

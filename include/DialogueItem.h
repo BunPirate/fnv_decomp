@@ -14,12 +14,12 @@ class TESObjectREFR;
 class DialogueItem
 {
 public:
-    BSSimpleList<DialogueResponse*> lResponses;
-    BSSimpleList<DialogueResponse*>* pCurrentResponse;
+    BSSimpleList<DialogueResponse*> lResponses; // src: XBOX_RETAIL_PDB +0x0 (old: m_kResponseList)
+    BSSimpleList<DialogueResponse*>* pCurrentResponse; // src: XBOX_RETAIL_PDB +0x8 (old: m_pCurrentResponseList)
     TESTopicInfo* pInfo;
     TESTopic* pTopic;
     TESQuest* pQuest;
-    TESObjectREFR* pSpeaker;
+    TESObjectREFR* pSpeaker; // src: XBOX_RETAIL_PDB +0x18 (old: m_pDialogueSpeaker)
 
     DialogueItem();
     DialogueItem(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, TESObjectREFR* speaker);

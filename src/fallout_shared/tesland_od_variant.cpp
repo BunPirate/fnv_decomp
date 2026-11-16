@@ -372,7 +372,7 @@ void FUN_00540800_Class::ForwardCall_00537ce0()
     UpdateFields_00540800();
 }
 
-extern "C" void* BSPackedAdditionalGeometryData_ms_RTTI;
+extern "C" void* BSPackedAdditionalGeometryData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4aac (old: DAT_011f4aac/g_011f4aac)
 
 struct FUN_00537d00_Class {
     void* __thiscall BSPackedAdditionalGeometryData_GetRTTI();

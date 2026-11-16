@@ -7,8 +7,8 @@ class NiMemStream : public NiBinaryStream
 {
 public:
     // +0x04..+0x0F are the NiBinaryStream members (SetEndianSwap 0x00aa2f80 installs the reader/writer).
-    char* m_pBuffer;
-    unsigned int m_uiPos;
+    char* m_pBuffer; // src: XBOX_RETAIL_PDB +0x10 (old: m_kRayStart)
+    unsigned int m_uiPos; // src: XBOX_RETAIL_PDB +0x14 (old: m_pos)
     union
     {
         unsigned int m_kRayEnd;

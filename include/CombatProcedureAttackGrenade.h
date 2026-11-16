@@ -52,5 +52,5 @@ public:
     bool Validate(void* object, NiPoint3* point, float value);
     void Reset();
 
-    unsigned char eState[0x2C];
+    unsigned char eState[0x2C]; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
 };

@@ -85,7 +85,7 @@ hkpMousePickingViewer* hkpMousePickingViewer::Initialize(int contexts)
 }
 
 extern int DAT_01269cd0;
-extern int hkpMousePickingViewer_m_tag;
+extern int hkpMousePickingViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268ff8 (old: DAT_01268ff8)
 void __cdecl hkpMousePickingViewer_create();
 // @fnv 0x00d66c90
 // src: XBOX_RETAIL_PDB 0x00d66c90
@@ -96,7 +96,7 @@ void* __cdecl hkpMousePickingViewer_registerViewer()
     return (void*)hkpMousePickingViewer_m_tag;
 }
 
-extern int hkpMousePickingViewer_m_tag;
+extern int hkpMousePickingViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268ff8 (old: DAT_01268ff8)
 
 // @fnv 0x00d66ed0
 // src: GUESS 0x00d66ed0 (confidence: low)

@@ -14,7 +14,7 @@ public:
 
     float xi;
     float* sx;
-    float* sfx;
+    float* sfx; // src: XBOX_RETAIL_PDB +0xc (old: m_pYValues)
     bool NotReady;
     unsigned char layoutPadding11[3];
 };

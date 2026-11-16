@@ -520,7 +520,7 @@ class Event9C64
     unsigned int m_uiData;
 };
 
-extern NiRTTI bhkCollisionBox_ms_RTTI;
+extern NiRTTI bhkCollisionBox_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268444 (old: DAT_01268444/g_01268444/g_kRTTI9C64/g_pcCBEA40Name)
 
 Ref9C64* __cdecl GetReferenceFromObject(void* pvObject);
 NiPoint3& __cdecl FUN_00458620(NiPoint3& kOut, const hkVector4& kIn);

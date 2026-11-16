@@ -7,6 +7,6 @@
 class hkaInterleavedUncompressedAnimation : public hkaAnimation
 {
 public:
-    hkArray<hkQsTransform> m_transforms;
-    hkArray<hkReal> m_floats;
+    hkArray<hkQsTransform> m_transforms; // src: XBOX_RETAIL_PDB +0x28 (old: m_kTransforms)
+    hkArray<hkReal> m_floats; // src: XBOX_RETAIL_PDB +0x34 (old: m_kFloats)
 };

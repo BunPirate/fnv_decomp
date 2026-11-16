@@ -29,9 +29,9 @@ public:
         UNMARKED = 0xfffffff1
     };
 
-    unsigned int m_threadId;
-    unsigned short m_markCount;
-    unsigned short m_markBitStack;
+    unsigned int m_threadId; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiThreadId)
+    unsigned short m_markCount; // src: XBOX_RETAIL_PDB +0x4 (old: m_usMarkedForWrite)
+    unsigned short m_markBitStack; // src: XBOX_RETAIL_PDB +0x6 (old: m_usMarkCount)
 
     hkMultiThreadCheck();
     hkMultiThreadCheck(hkFinishLoadedObjectFlagCD2C flag);

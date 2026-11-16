@@ -421,7 +421,7 @@ void __stdcall Runtime_UpdateState_00e8b490(int* paiValues, int iFirst, int iSec
 }
 
 
-extern NiTStringTemplateMap<NiTPointerMap<const char*, NiD3DShaderProgramCreator*>, NiD3DShaderProgramCreator*>* NiD3DShaderProgramFactory_ms_pkShaderCreators;
+extern NiTStringTemplateMap<NiTPointerMap<const char*, NiD3DShaderProgramCreator*>, NiD3DShaderProgramCreator*>* NiD3DShaderProgramFactory_ms_pkShaderCreators; // src: XBOX_RETAIL_PDB 0x0126fa14 (old: DAT_0126fa14)
 // Calls RemoveAll on DAT_0126fa14, invokes its first virtual method with 1, then clears the pointer.
 // @fnv 0x00e933d0
 // src: GAMEBRYO_LIB 0x00e933d0
@@ -1377,7 +1377,7 @@ struct Program {
     NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiD3DVertexShader*>* m_map;
 };
 
-Program* NiD3DShaderProgramFactory_ms_pkFactory;
+Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 
 // If both the global Program and the given program are non-null, gets the program's name and removes it from the global Program's map.
 // @fnv 0x00e937c0
@@ -9454,7 +9454,7 @@ bool __cdecl NiBoundingVolume_TestIntersect(float fTime, FUN_00e9c8c0_obj* kBV0,
 
 typedef int (__cdecl *FUN_00e9c950_handler)(float, void*, int, void*, int, int, int, int, int, int);
 
-extern FUN_00e9c950_handler* NiBoundingVolume_ms_pfnFindFuncTable;
+extern FUN_00e9c950_handler* NiBoundingVolume_ms_pfnFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa98 (old: DAT_0126fa98)
 
 class FUN_00e9c950_cls_key
 {
@@ -9495,7 +9495,7 @@ struct DispatchObj_b4010 {
 
 typedef void (__cdecl *DispatchFn_b4010)(float, DispatchObj_b4010*, int, int, int, int, int);
 
-extern DispatchFn_b4010* NiBoundingVolume_ms_pfnTriTestFuncTable;
+extern DispatchFn_b4010* NiBoundingVolume_ms_pfnTriTestFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa9c (old: DAT_0126fa9c)
 
 // Looks up a dispatch function from DAT_0126fa9c using the object's virtual index and calls it with the forwarded arguments.
 // @fnv 0x00e9ca10
@@ -11970,7 +11970,7 @@ typedef void (__cdecl *FUN_00e9ca50_Entry)(
     int,
     int);
 
-extern void **NiBoundingVolume_ms_pfnTriFindFuncTable;
+extern void **NiBoundingVolume_ms_pfnTriFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126faa0 (old: DAT_0126faa0)
 
 // Looks up a function pointer in DAT_0126faa0 using the object's index and calls it with the forwarded value and arguments.
 // @fnv 0x00e9ca50

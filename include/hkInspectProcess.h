@@ -18,10 +18,10 @@ public:
 
     virtual void init();
 
-    int m_autoUpdateList;
+    int m_autoUpdateList; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
     int unk24;
     int unk28;
-    ProcessContext* m_vdb;
+    ProcessContext* m_vdb; // src: XBOX_RETAIL_PDB +0x2c (old: context)
 
     int addTopLevelObject(void* ptr, const hkClass* klass, unsigned int tag);
     void addTopLevelObject(void* ptr, int klass, int tag);

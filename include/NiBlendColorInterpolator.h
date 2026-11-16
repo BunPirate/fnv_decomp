@@ -36,5 +36,5 @@ public:
     bool IsEqual_00a564a0(void* other);
 
     NiColorA m_kColorValue;
-    bool m_bValidValue;
+    bool m_bValidValue; // src: XBOX_RETAIL_PDB +0x40 (old: m_bValueValid)
 };

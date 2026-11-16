@@ -117,14 +117,14 @@ struct __declspec(novtable) S_00d42790_Agent : S_00d42790_RefObj
 };
 
 // pdb: class hkpPhantomAgent, size 0x24, bases: hkpCollisionAgent, 6 members
-struct hkpPhantomAgent : S_00d42790_Agent
+struct hkpPhantomAgent : S_00d42790_Agent // src: EXE (old: FUN_00d42790)
 {
-    const S_00d42790_CdBody* m_collidableA;
-    const S_00d42790_CdBody* m_collidableB;
-    int m_shapeA;
-    int m_shapeB;
-    int m_bodyTypeA;
-    int m_bodyTypeB;
+    const S_00d42790_CdBody* m_collidableA; // src: XBOX_RETAIL_PDB +0xc (old: m_pBodyA)
+    const S_00d42790_CdBody* m_collidableB; // src: XBOX_RETAIL_PDB +0x10 (old: m_pBodyB)
+    int m_shapeA; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
+    int m_shapeB; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    int m_bodyTypeA; // src: XBOX_RETAIL_PDB +0x1c (old: m_iAgentTypeA)
+    int m_bodyTypeB; // src: XBOX_RETAIL_PDB +0x20 (old: m_iAgentTypeB)
 
     hkpPhantomAgent(const S_00d42790_CdBody& bodyA, const S_00d42790_CdBody& bodyB, void* mgr);
     virtual void v00();

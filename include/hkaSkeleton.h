@@ -21,8 +21,8 @@ class hkaSkeleton : public hkReferencedObject
 public:
     struct LocalFrameOnBone
     {
-        hkLocalFrame* m_localFrame;  // hkRefPtr<hkLocalFrame>
-        int m_boneIndex;
+        hkLocalFrame* m_localFrame;  // hkRefPtr<hkLocalFrame> // src: XBOX_RETAIL_PDB +0x0 (old: m_pLocalFrame)
+        int m_boneIndex; // src: XBOX_RETAIL_PDB +0x4 (old: m_iBoneIndex)
     };
 
     // Havok's hkArray() is m_data(HK_NULL), m_size(0), m_capacityAndFlags(DONT_DEALLOCATE_FLAG) for each array.
@@ -39,11 +39,11 @@ public:
     HavokArray<BoneName>& getBones();
 
     hkStringPtr m_name;                          // +0x08
-    hkArray<short> m_parentIndices;             // +0x0c
-    hkArray<hkaBone> m_bones;                   // +0x18
-    hkArray<hkQsTransform> m_referencePose;     // +0x24
-    hkArray<hkStringPtr> m_floatSlots;          // +0x30
-    hkArray<LocalFrameOnBone> m_localFrames;    // +0x3c
+    hkArray<short> m_parentIndices;             // +0x0c // src: XBOX_RETAIL_PDB +0xc (old: m_kParentIndices)
+    hkArray<hkaBone> m_bones;                   // +0x18 // src: XBOX_RETAIL_PDB +0x18 (old: m_kBones)
+    hkArray<hkQsTransform> m_referencePose;     // +0x24 // src: XBOX_RETAIL_PDB +0x24 (old: m_kReferencePose)
+    hkArray<hkStringPtr> m_floatSlots;          // +0x30 // src: XBOX_RETAIL_PDB +0x30 (old: m_kFloatSlots)
+    hkArray<LocalFrameOnBone> m_localFrames;    // +0x3c // src: XBOX_RETAIL_PDB +0x3c (old: m_kLocalFrames)
 };
 
 typedef char hkaSkeleton_size_check[(sizeof(hkaSkeleton) == 0x48) ? 1 : -1];

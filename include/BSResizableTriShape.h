@@ -31,7 +31,7 @@ class BSResizableTriShape : public NiTriShape
     static NiObject* CreateObject();
 
     char unkC4[44];
-    unsigned int uiNumPrimitives;
+    unsigned int uiNumPrimitives; // src: XBOX_RETAIL_PDB +0xf0 (old: m_uiValueBeforeLocalBound)
     char LocalBound[16];
     char _pad_104[12];
 };

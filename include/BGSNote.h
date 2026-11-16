@@ -25,10 +25,10 @@ class BGSNote : public TESBoundObject,
 {
 public:
     void* m_pText;
-    void* pSpeaker;
-    BSSimpleList<TESQuest*> OwnerQuests;
+    void* pSpeaker; // src: XBOX_RETAIL_PDB +0x70 (old: m_pDialogueSpeaker)
+    BSSimpleList<TESQuest*> OwnerQuests; // src: XBOX_RETAIL_PDB +0x74 (old: ownerQuests)
     signed char cType;
-    bool bHasBeenRead;
+    bool bHasBeenRead; // src: XBOX_RETAIL_PDB +0x7d (old: m_bIsRead)
     char padding7e[2];
 
     BGSNote();

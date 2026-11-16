@@ -44,7 +44,7 @@ inline NiObject** NiObject::Children() const
 // src/gamebryo2.2/corelibs/niparticle/nimeshparticlesystem.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/niparticle/nimeshparticlesystem.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* NiMeshParticleSystem_ms_RTTI;
+extern "C" void* NiMeshParticleSystem_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202538 (old: DAT_01202538/g_01202538)
 
 // @fnv 0x00c21e10
 // src: COMMUNITY 0x00c21e10
@@ -463,7 +463,7 @@ void FUN_00c21c60_cls::CopySourceToOutput()
 }
 
 extern "C" NiRTTI DAT_01202500;
-extern "C" NiRTTI NiPSysMeshUpdateModifier_ms_RTTI;
+extern "C" NiRTTI NiPSysMeshUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202530 (old: DAT_01202530/g_01202530)
 struct NiObjectNode
 {
     NiObjectNode* next;
@@ -564,7 +564,7 @@ NiParticleSystem* NiParticleSystem::NiParticleSystem_00c1b5c0()
     return this;
 }
 
-extern "C" NiRTTI NiPSysUpdateCtlr_ms_RTTI;
+extern "C" NiRTTI NiPSysUpdateCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202690 (old: DAT_01202690/g_01202690)
 struct FUN_00c21a80_obj;
 struct FUN_00c21a80_node
 {

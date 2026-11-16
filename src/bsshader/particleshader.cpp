@@ -85,7 +85,7 @@ void* __fastcall AssignNiD3DPass(void* pThis, int, void* param)
     return pThis;
 }
 
-extern "C" void* ParticleShader_ms_RTTI;
+extern "C" void* ParticleShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012003f8 (old: g_012003f8)
 
 // @fnv 0x00ba5730
 // src: XBOX_PDB 0x00ba5730

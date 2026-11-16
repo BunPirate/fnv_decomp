@@ -18,12 +18,12 @@ extern MemoryManager g_memoryManager;
 class ImageSpaceTexture
 {
   public:
-    bool bForceAniso;                                  // +0x00
-    bool bIsRenderedTexture;                                  // +0x01 pTexture is a BSRenderedTexture
-    bool bIsTextureBorrowed;                                  // +0x02 rendered texture owned by BSTextureManager
+    bool bForceAniso;                                  // +0x00 // src: XBOX_RETAIL_PDB +0x0 (old: m_bTextureFlag1)
+    bool bIsRenderedTexture;                                  // +0x01 pTexture is a BSRenderedTexture // src: XBOX_RETAIL_PDB +0x1 (old: m_bTextureFlag2)
+    bool bIsTextureBorrowed;                                  // +0x02 rendered texture owned by BSTextureManager // src: XBOX_RETAIL_PDB +0x2 (old: m_bTextureFlag3)
     NiPointer<NiObject> pTexture;                          // +0x04
-    NiTexturingProperty::FilterMode iFilterMode;  // +0x08
-    NiTexturingProperty::ClampMode iClampMode;           // +0x0C
+    NiTexturingProperty::FilterMode iFilterMode;  // +0x08 // src: XBOX_RETAIL_PDB +0x8 (old: m_eTextureFilterMode)
+    NiTexturingProperty::ClampMode iClampMode;           // +0x0C // src: XBOX_RETAIL_PDB +0xc (old: m_eClampMode)
 
     // inline (0x004ebb70 is the /Od copy): flags false, NiPointer(0), FILTER_NEAREST, CLAMP_S_CLAMP_T
     inline ImageSpaceTexture()

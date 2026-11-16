@@ -35,7 +35,7 @@ void __fastcall DestroyNiProperty(NiProperty* property)
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiAlphaProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiAlphaProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4408 (old: g_011f4408)
 
 struct FUN_004392e0_shell
 {

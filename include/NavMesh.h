@@ -166,19 +166,19 @@ public:
     NavMesh* NavMeshPtr_NavMeshPtr_00464ff0(int);
     bool NavMesh_GetObstacleForTriangle(unsigned short);
 
-    TESObjectCELL* pParentCell; // 0x24
+    TESObjectCELL* pParentCell; // 0x24 // src: XBOX_RETAIL_PDB +0x24 (old: m_pOwningCell)
     BSSimpleArray<NavMeshVertex, 1024> Vertices; // 0x28
     BSSimpleArray<NavMeshTriangle, 1024> Triangles; // 0x38
-    BSSimpleArray<EdgeExtraInfo, 1024> ExtraEdgeInfo; // 0x48
-    BSSimpleArray<NavMeshTriangleDoorPortal, 1024> DoorPortals; // 0x58
-    BSSimpleArray<NavMeshClosedDoorInfo, 1024> ClosedDoors; // 0x68
-    BSSimpleArray<unsigned short, 1024> CoverArray; // 0x78
-    NiTMap<unsigned short, NavMeshPOVData> POVs; // 0x88
-    BSSimpleArray<unsigned short, 1024> ClosestPOVs; // 0x98
-    NavMeshGrid MeshGrid; // 0xA8
-    BSSimpleArray<NiPointer<ObstacleUndoData>, 1024> Obstacles; // 0xD0
+    BSSimpleArray<EdgeExtraInfo, 1024> ExtraEdgeInfo; // 0x48 // src: XBOX_RETAIL_PDB +0x48 (old: m_kEdgeExtraInfo)
+    BSSimpleArray<NavMeshTriangleDoorPortal, 1024> DoorPortals; // 0x58 // src: XBOX_RETAIL_PDB +0x58 (old: m_kDoorPortals)
+    BSSimpleArray<NavMeshClosedDoorInfo, 1024> ClosedDoors; // 0x68 // src: XBOX_RETAIL_PDB +0x68 (old: m_kClosedDoorInfo)
+    BSSimpleArray<unsigned short, 1024> CoverArray; // 0x78 // src: XBOX_RETAIL_PDB +0x78 (old: m_kIndexList)
+    NiTMap<unsigned short, NavMeshPOVData> POVs; // 0x88 // src: XBOX_RETAIL_PDB +0x88 (old: POVPointerArray)
+    BSSimpleArray<unsigned short, 1024> ClosestPOVs; // 0x98 // src: XBOX_RETAIL_PDB +0x98 (old: m_kAdditionalIndexList)
+    NavMeshGrid MeshGrid; // 0xA8 // src: XBOX_RETAIL_PDB +0xa8 (old: m_kGrid)
+    BSSimpleArray<NiPointer<ObstacleUndoData>, 1024> Obstacles; // 0xD0 // src: XBOX_RETAIL_PDB +0xd0 (old: m_kObstacleUndoData)
     NiTMap<unsigned short, NiPointer<ObstacleData> >* pTriangleToObstacleMap; // 0xE0
-    BSSimpleArray<unsigned short, 1024> ObstaclePOVs; // 0xE4
-    BSSimpleArray<NavMeshStaticAvoidNode, 1024> StaticAvoidNodes; // 0xF4
-    NavMeshInfo* pNavMeshInfo; // 0x104
+    BSSimpleArray<unsigned short, 1024> ObstaclePOVs; // 0xE4 // src: XBOX_RETAIL_PDB +0xe4 (old: m_kAdditionalData)
+    BSSimpleArray<NavMeshStaticAvoidNode, 1024> StaticAvoidNodes; // 0xF4 // src: XBOX_RETAIL_PDB +0xf4 (old: m_kStaticAvoidNodes)
+    NavMeshInfo* pNavMeshInfo; // 0x104 // src: XBOX_RETAIL_PDB +0x104 (old: m_pNavigationMesh)
 };

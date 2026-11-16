@@ -22,7 +22,7 @@ public:
     void UpdateHitEffect(bool abDamaging);
     int FUN_0055b980();
 
-    float fGlowEffect;
-    bool bHitEffectApplied;
-    bool bDoNotTakeDamageNextUpdate;
+    float fGlowEffect; // src: XBOX_RETAIL_PDB +0x48 (old: fValue)
+    bool bHitEffectApplied; // src: XBOX_RETAIL_PDB +0x4c (old: bFlag4C)
+    bool bDoNotTakeDamageNextUpdate; // src: XBOX_RETAIL_PDB +0x4d (old: bFlag4D)
 };

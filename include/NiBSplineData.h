@@ -13,8 +13,8 @@ class NiBSplineData : public NiObject
     void ReadGroup(NiStream& stream);
     void CalculateSplineValue(float, float*, unsigned int, NiBSplineBasisData*, unsigned int, float, float);
 
-    float* m_pafControlPoints;
-    short* m_pasCompactControlPoints;
+    float* m_pafControlPoints; // src: XBOX_RETAIL_PDB +0x8 (old: m_pfControlPoints)
+    short* m_pasCompactControlPoints; // src: XBOX_RETAIL_PDB +0xc (old: m_psCompactControlPoints)
     unsigned int m_uiControlPointCount;
     unsigned int m_uiCompactControlPointCount;
 };

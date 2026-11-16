@@ -111,7 +111,7 @@ struct GlobalObjectO2_00a7b610
 {
     int pad;
 };
-extern GlobalObjectO2_00a7b610 NiPixelData_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiPixelData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a90 (old: DAT_011f4a90/g_011f4a90)
 // @fnv 0x00a7c020
 const NiRTTI* NiPixelData::GetRTTI() const
 {

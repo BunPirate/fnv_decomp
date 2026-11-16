@@ -52,8 +52,8 @@ public:
         return body < 0 ? 0 : static_cast<hkpRigidBody*>(m_rigidBodies.m_data[body]);
     }
 
-    hkArray<void*> m_rigidBodies;
-    hkArray<hkpConstraintInstance*> m_constraints;
-    hkArray<hkInt32> m_boneToRigidBodyMap;
-    hkaSkeleton* m_skeleton;
+    hkArray<void*> m_rigidBodies; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppRigidBodies)
+    hkArray<hkpConstraintInstance*> m_constraints; // src: XBOX_RETAIL_PDB +0x14 (old: m_ppConstraints)
+    hkArray<hkInt32> m_boneToRigidBodyMap; // src: XBOX_RETAIL_PDB +0x20 (old: m_kBoneMap)
+    hkaSkeleton* m_skeleton; // src: XBOX_RETAIL_PDB +0x2c (old: m_pSkeleton)
 };

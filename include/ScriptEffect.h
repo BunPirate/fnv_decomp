@@ -22,7 +22,7 @@ public:
     virtual void Finish();
 
     Script* pScript;
-    ScriptLocals* pEffectLocals;
+    ScriptLocals* pEffectLocals; // src: XBOX_RETAIL_PDB +0x4c (old: m_pScriptLocals)
 
     ScriptEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect);
     void Destroy(bool);

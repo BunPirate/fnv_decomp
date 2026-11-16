@@ -19,5 +19,5 @@ public:
     static void* operator new(unsigned int);
     static void operator delete(void*);
 
-    unsigned char bTurned;
+    unsigned char bTurned; // src: XBOX_RETAIL_PDB +0x48 (old: m_bDemoralized)
 };

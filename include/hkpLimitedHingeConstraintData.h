@@ -29,5 +29,5 @@ public:
     static void operator delete(void* p);
 
     char padC[0x4];
-    hkpLimitedHingeConstraintDataAtoms m_atoms;
+    hkpLimitedHingeConstraintDataAtoms m_atoms; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 };

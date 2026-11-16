@@ -755,7 +755,7 @@ __forceinline void* hkReferencedObject::operator new(std::size_t nbytes)
 }
 
 class hkClass;
-extern const hkClass hkpStorageExtendedMeshShapeMaterialClass;
+extern const hkClass hkpStorageExtendedMeshShapeMaterialClass; // src: XBOX_RETAIL_PDB 0x01268c8c (old: DAT_01268c8c/g_01268c8c/g_kHkpMeshMaterialClass)
 
 struct StorageMaterial : hkpMeshMaterial
 {

@@ -33,7 +33,7 @@ NiDepthStencilBuffer* NiDepthStencilBuffer::Create(unsigned int width, unsigned 
     return buffer;
 }
 
-extern "C" void* NiSingleShaderMaterial_ms_RTTI;
+extern "C" void* NiSingleShaderMaterial_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f6048 (old: g_011f6048)
 
 // @fnv 0x00aa06e0
 // src: GUESS 0x00aa06e0 (confidence: low)

@@ -1753,13 +1753,13 @@ struct hkOrientHingedBodyAction {
     int unk00, unk04, unk08, unk0c, unk10, unk14;
     hkpRigidBody* m_pEntity;
     int unk1c;
-    hkVecQ HingeAxisLS;
-    hkVecQ ForwardLS;
-    hkVecQ TargetDirWS;
-    float fStrength;
-    float fDamping;
-    float fAngleDiff;
-    bool bEnabled;
+    hkVecQ HingeAxisLS; // src: XBOX_RETAIL_PDB +0x20 (old: m_vHingeAxisLS)
+    hkVecQ ForwardLS; // src: XBOX_RETAIL_PDB +0x30 (old: m_forwardAxisLS)
+    hkVecQ TargetDirWS; // src: XBOX_RETAIL_PDB +0x40 (old: m_targetForwardWS)
+    float fStrength; // src: XBOX_RETAIL_PDB +0x50 (old: m_fSpringStrength)
+    float fDamping; // src: XBOX_RETAIL_PDB +0x54 (old: m_fMotorDamping)
+    float fAngleDiff; // src: XBOX_RETAIL_PDB +0x58 (old: m_fConeAngle)
+    bool bEnabled; // src: XBOX_RETAIL_PDB +0x5c (old: m_bSlotEnabled)
 
     void __thiscall applyAction_00d2ad50(const hkStepInfo& stepInfo);
 };

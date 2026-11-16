@@ -18,9 +18,9 @@ class TESFileFormVersion
 class ContainerItemExtra
 {
   public:
-    unsigned int pOwnerForm;
+    unsigned int pOwnerForm; // src: XBOX_RETAIL_PDB +0x0 (old: opaque0)
     unsigned int opaque4;
-    unsigned int fHealthMult;
+    unsigned int fHealthMult; // src: XBOX_RETAIL_PDB +0x8 (old: opaque8)
     ContainerItemExtra();
     bool Load(TESFile*);
 };

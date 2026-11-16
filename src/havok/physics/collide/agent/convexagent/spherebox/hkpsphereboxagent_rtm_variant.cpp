@@ -477,7 +477,7 @@ hkpSphereBoxAgent(hkpContactMgr*mgr);
 public:
 static __forceinline hkBool ComputeClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkContactPoint&contactOut,hkReal& scalarScratch);
 protected:
-hkContactPointId m_contactPointId;
+hkContactPointId m_contactPointId; // src: XBOX_RETAIL_PDB +0xc (old: m_usContactPointId)
 };
 
 namespace hkVector4Util_S

@@ -4609,9 +4609,9 @@ class NavMeshInfo_
 // pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
-    int bWorldSpace;
-    int pWorldSpace;
-    bool pInteriorCell;
+    int bWorldSpace; // src: XBOX_RETAIL_PDB +0x0 (old: iStart)
+    int pWorldSpace; // src: XBOX_RETAIL_PDB +0x4 (old: iEnd)
+    bool pInteriorCell; // src: XBOX_RETAIL_PDB +0x8 (old: bNew)
 };
 
 struct OutNodes

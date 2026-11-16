@@ -20,10 +20,10 @@ public:
         RESPONSE_MAX_ID = 4
     };
 
-    hkEnum<ResponseType, hkInt8> m_responseType;
+    hkEnum<ResponseType, hkInt8> m_responseType; // src: XBOX_RETAIL_PDB +0x0 (old: m_eResponseType)
     char pad1[3];
-    hkReal m_friction;
-    hkReal m_restitution;
+    hkReal m_friction; // src: XBOX_RETAIL_PDB +0x4 (old: m_fSlipAngle)
+    hkReal m_restitution; // src: XBOX_RETAIL_PDB +0x8 (old: m_fElasticity)
 
     hkpMaterial(FinishingFlag flag);
     static void* __cdecl operator new(hk_size_t nbytes);

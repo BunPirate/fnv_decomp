@@ -207,7 +207,7 @@ class DialogueResponse
 class Conversation
 {
   public:
-    char lDialogueItems[12];
+    char lDialogueItems[12]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ~Conversation();
     Conversation(Character*, PlayerCharacter*, TESTopic*);
     bool FirstItem();

@@ -26,7 +26,7 @@ public:
     };
 
     int unk04;
-    PairArray m_hits;
+    PairArray m_hits; // src: XBOX_RETAIL_PDB +0x8 (old: m8)
 
     hkpAllCdBodyPairCollector();
     virtual ~hkpAllCdBodyPairCollector();

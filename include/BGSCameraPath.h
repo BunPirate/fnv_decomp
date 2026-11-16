@@ -16,12 +16,12 @@ class BGSCameraPath : public TESForm
 {
 public:
     PerkEntryConditionSet Conditions;
-    BSSimpleList<BGSCameraShot*> ShotList;
+    BSSimpleList<BGSCameraShot*> ShotList; // src: XBOX_RETAIL_PDB +0x20 (old: m_kCameraShotList)
     CameraShotData data;
     unsigned char layoutPadding29[3];
-    NiFormArray* pChildPaths;
-    BGSCameraPath* pParentPath;
-    BGSCameraPath* pPrevPath;
+    NiFormArray* pChildPaths; // src: XBOX_RETAIL_PDB +0x2c (old: m_pPathArray)
+    BGSCameraPath* pParentPath; // src: XBOX_RETAIL_PDB +0x30 (old: m_pFirstCameraPath)
+    BGSCameraPath* pPrevPath; // src: XBOX_RETAIL_PDB +0x34 (old: m_pSecondCameraPath)
 
     BGSCameraPath();
     virtual ~BGSCameraPath();

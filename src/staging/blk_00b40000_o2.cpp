@@ -911,7 +911,7 @@ FUN_00b57f90::FUN_00b57f90() : FUN_00b7c000_Base()
 }
 
 // FUN_00b57fd0 : a one-line function - getter
-extern int DistantLODShaderProperty_ms_RTTI;
+extern int DistantLODShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f9648 (old: g_011f9648/g_target_00b57fd0)
 // @fnv 0x00b57fd0
 // src: XBOX_PDB 0x00b57fd0
 void* DistantLODShaderProperty_GetRTTI()
@@ -1901,7 +1901,7 @@ extern int DAT_011f91e4;
 extern int DAT_011f91e0;
 extern int DAT_011f91d8;
 extern int DAT_011f91f0;
-extern int BSShaderManager_pObjectTypeCallback;
+extern int BSShaderManager_pObjectTypeCallback; // src: XBOX_RETAIL_PDB 0x011f91ec (old: DAT_011f91ec)
 extern int DAT_011f91c0;
 extern int DAT_011f91bc;
 extern int DAT_011f9178;

@@ -5062,20 +5062,20 @@ VertexList m_kVertices;
 TriangleList m_uiTriangleCount;};class hkgpConvexHullImpl
 {
 public:
-struct Plane { int m_c[3]; hkInt64 m_d; int m_index; };
+struct Plane { int m_c[3]; hkInt64 m_d; int m_index; }; // src: XBOX_RETAIL_PDB m_d +0x10 (old: m_iFourthElementInteger); m_c +0x0 (old: m_iThirdValue); m_index +0x18 (old: m_uiEdgeIndex)
 struct Vertex : AllocatedLinkedList::Vertex<Vertex, hkgpConvexHull::Vertex>
 {
-hkVector4 m_source;
-int m_x[3];
-float m_scratch;
+hkVector4 m_source; // src: XBOX_RETAIL_PDB +0x10 (old: m_pObservedSource)
+int m_x[3]; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiX)
+float m_scratch; // src: XBOX_RETAIL_PDB +0x2c (old: m_vCenterOfMass)
 int m_refs;
-int m_index;
+int m_index; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiEdgeIndex)
 };
 struct Triangle : AllocatedLinkedList::Triangle<Triangle, hkgpConvexHull::Triangle, Vertex*>
 {
-Plane m_plane;
-int m_pid;
-int m_index;
+Plane m_plane; // src: XBOX_RETAIL_PDB +0x20 (old: m_kTriangleNormal)
+int m_pid; // src: XBOX_RETAIL_PDB +0x40 (old: m_iTriangleIndex)
+int m_index; // src: XBOX_RETAIL_PDB +0x44 (old: m_uiEdgeIndex)
 };
 struct Edge : TriangleEdgeTopology::Edge<Edge, Vertex, Triangle, Vertex*> { };
 typedef hkgpAbstractMesh<Edge, Vertex, Triangle, hkContainerHeapAllocator> Mesh;
@@ -5120,27 +5120,27 @@ w.sub(q);
 inertia.addMul(mass, w);
 }
 hkResult hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform();
-hkgpConvexHull::ConvexHullRecord m_config;
-Mesh m_mesh;
-hkArray<Vertex> m_pendings;
-hkArray<hkVector4> m_planes;
-hkArray<hkGeometryProcessing::VectorBasis> m_supportCache;
-hkVector4 m_centroids[2];
-hkAabb m_boundingBoxes[2];
-hkVector4 m_projectionAxis;
-hkVector4 m_projectionPlane;
-hkVector4 m_origin;
-hkVector4 m_scale;
-hkVector4 m_scaleInv;
-hkTransform m_localTransform;
-hkVector4 m_inertia;
-hkMatrix3 m_inertiaMatrix;
-float m_volume;
-float m_surface;
-int m_dimensions;
-int m_pid;
-unsigned int m_uid;
-bool m_hasMassProperties;};
+hkgpConvexHull::ConvexHullRecord m_config; // src: XBOX_RETAIL_PDB +0x0 (old: m_pConfiguration)
+Mesh m_mesh; // src: XBOX_RETAIL_PDB +0x10 (old: m_pMesh)
+hkArray<Vertex> m_pendings; // src: XBOX_RETAIL_PDB +0x48 (old: m_kVertexArray)
+hkArray<hkVector4> m_planes; // src: XBOX_RETAIL_PDB +0x54 (old: m_kPlaneArray)
+hkArray<hkGeometryProcessing::VectorBasis> m_supportCache; // src: XBOX_RETAIL_PDB +0x60 (old: m_kGeometryRecordArray)
+hkVector4 m_centroids[2]; // src: XBOX_RETAIL_PDB +0x70 (old: m_vVectorPair)
+hkAabb m_boundingBoxes[2]; // src: XBOX_RETAIL_PDB +0x90 (old: m_kAabbPair)
+hkVector4 m_projectionAxis; // src: XBOX_RETAIL_PDB +0xd0 (old: m_kVectorAtOffsetD0)
+hkVector4 m_projectionPlane; // src: XBOX_RETAIL_PDB +0xe0 (old: m_kVectorAtOffsetE0)
+hkVector4 m_origin; // src: XBOX_RETAIL_PDB +0xf0 (old: m_vRayOrigins)
+hkVector4 m_scale; // src: XBOX_RETAIL_PDB +0x100 (old: m_vScale)
+hkVector4 m_scaleInv; // src: XBOX_RETAIL_PDB +0x110 (old: m_vVertexScale)
+hkTransform m_localTransform; // src: XBOX_RETAIL_PDB +0x120 (old: m_kLocalTransform)
+hkVector4 m_inertia; // src: XBOX_RETAIL_PDB +0x160 (old: m_vOffset)
+hkMatrix3 m_inertiaMatrix; // src: XBOX_RETAIL_PDB +0x170 (old: m_kTransformMatrix)
+float m_volume; // src: XBOX_RETAIL_PDB +0x1a0 (old: m_iBufferSize)
+float m_surface; // src: XBOX_RETAIL_PDB +0x1a4 (old: m_fVertexStride)
+int m_dimensions; // src: XBOX_RETAIL_PDB +0x1a8 (old: m_eVertexFloatDimensions)
+int m_pid; // src: XBOX_RETAIL_PDB +0x1ac (old: m_iTriangleIndex)
+unsigned int m_uid; // src: XBOX_RETAIL_PDB +0x1b0 (old: m_uiUniqueId)
+bool m_hasMassProperties;}; // src: XBOX_RETAIL_PDB +0x1b4 (old: m_bFirstImplementationFlag)
 
 // Updates center, area, volume, and inertia-related state based on vertex dimensionality.
 // @fnv 0x00d7b600

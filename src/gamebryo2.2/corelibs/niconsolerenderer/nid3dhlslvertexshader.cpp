@@ -80,17 +80,17 @@ unsigned int __fastcall GetConstants(NiD3DHLSLVertexShader* pkShader, void*)
 struct _D3DXCONSTANT_DESC
 {
     const char* Name;
-    unsigned int RegisterSet;
-    unsigned int RegisterIndex;
-    unsigned int RegisterCount;
-    unsigned int Class;
-    unsigned int Type;
-    unsigned int Rows;
-    unsigned int Columns;
-    unsigned int Elements;
-    unsigned int StructMembers;
-    unsigned int Bytes;
-    unsigned int DefaultValue;
+    unsigned int RegisterSet; // src: XBOX_RETAIL_PDB +0x4 (old: f0)
+    unsigned int RegisterIndex; // src: XBOX_RETAIL_PDB +0x8 (old: f1)
+    unsigned int RegisterCount; // src: XBOX_RETAIL_PDB +0xc (old: f2)
+    unsigned int Class; // src: XBOX_RETAIL_PDB +0x10 (old: f3)
+    unsigned int Type; // src: XBOX_RETAIL_PDB +0x14 (old: f4)
+    unsigned int Rows; // src: XBOX_RETAIL_PDB +0x18 (old: f5)
+    unsigned int Columns; // src: XBOX_RETAIL_PDB +0x1c (old: f6)
+    unsigned int Elements; // src: XBOX_RETAIL_PDB +0x20 (old: f7)
+    unsigned int StructMembers; // src: XBOX_RETAIL_PDB +0x24 (old: f8)
+    unsigned int Bytes; // src: XBOX_RETAIL_PDB +0x28 (old: f9)
+    unsigned int DefaultValue; // src: XBOX_RETAIL_PDB +0x2c (old: f10)
 };
 struct ConstTable
 {

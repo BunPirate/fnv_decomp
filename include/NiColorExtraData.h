@@ -12,5 +12,5 @@ class NiColorExtraData : public NiExtraData
     void SaveBinary_00a893d0(NiStream& kStream);
     void SetColor(NiColorA kColor);
 
-    NiColorA m_kColorA;
+    NiColorA m_kColorA; // src: XBOX_RETAIL_PDB +0xc (old: m_kFogTint)
 };

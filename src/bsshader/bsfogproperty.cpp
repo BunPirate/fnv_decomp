@@ -74,7 +74,7 @@ void __fastcall DestroyProperty(NiProperty* property)
     property->NiRefObject::~NiRefObject();
 }
 
-extern int BSFogProperty_ms_RTTI;
+extern int BSFogProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007e0 (old: gSetting/g_012007e0)
 
 // @fnv 0x00bb8170
 // src: XBOX_PDB 0x00bb8170

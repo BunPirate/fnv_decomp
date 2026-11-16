@@ -519,7 +519,7 @@ struct S_00e9c490_Node
 };
 extern char DAT_0126fa64;
 extern char DAT_0126fa65;
-extern int NiLines_ms_RTTI;
+extern int NiLines_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a48 (old: DAT_011f4a48/g_011f4a48)
 extern int DAT_011f5f64;
 static const float DAT_01011d78 = 0.0f;
 bool __cdecl RayIntersectsBound(S_00e9c490_Node* node, NiPoint3* p1, NiPoint3* p2);

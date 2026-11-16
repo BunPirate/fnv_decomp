@@ -9,7 +9,7 @@ public:
     ExtraTerminalState();
     bool __thiscall IsLockedState();
 
-    unsigned char cState;
-    char cLockOverride;
+    unsigned char cState; // src: XBOX_RETAIL_PDB +0xc (old: padC)
+    char cLockOverride; // src: XBOX_RETAIL_PDB +0xd (old: m_cTerminalState)
     unsigned char unk0E[2];
 };

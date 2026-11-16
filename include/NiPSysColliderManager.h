@@ -24,5 +24,5 @@ public:
     void* ReleaseCollider(unsigned int flags);
     using NiPSysModifier::GetViewerStrings;
 
-    NiPSysCollider* m_spColliders;
+    NiPSysCollider* m_spColliders; // src: XBOX_RETAIL_PDB +0x18 (old: m_pFirstCollider)
 };

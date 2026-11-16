@@ -2424,7 +2424,7 @@ struct HostB50
 };
 char* __cdecl GetHairName(char*, int);
 void __cdecl BSFaceGenManager_AttachHairToHead(NodeB50**, NodeB50**, SnapshotB50*, bool);
-extern unsigned NiDefaultAVObjectPalette_ms_RTTI;
+extern unsigned NiDefaultAVObjectPalette_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a04 (old: DAT_011f4a04/g_011f4a04/resetPaletteRTTI)
 ObjectB50* __cdecl NiObject_DynamicCast(unsigned*, void*);
 void __cdecl FUN_00b57e30(NodeB50*, int, int);
 unsigned __cdecl BSstrlen(const char*);
@@ -2805,7 +2805,7 @@ B3CA0SliderOption* B3CA0Menu::RaceSexMenu_MenuOptionList_AddSliderOption(int apD
 // pdb: class Date, size 0x4, 2 members
 struct Date
 {
-    Tile* sDate;
+    Tile* sDate; // src: XBOX_RETAIL_PDB +0x0 (old: tile)
     ~Date();
     int FUN_00726070();
 };

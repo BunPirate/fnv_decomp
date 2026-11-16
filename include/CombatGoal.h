@@ -47,8 +47,8 @@ public:
     BSSimpleList<UnsignedIdHandle*>* GetWorldStateList();
     static CombatGoal* CreateCombatGoal(COMBAT_GOAL aeCombatGoal);
 
-    CombatWorldStateListNode ActivationConditions;
-    CombatWorldStateListNode GoalStates;
+    CombatWorldStateListNode ActivationConditions; // src: XBOX_RETAIL_PDB +0x4 (old: m_kFirstWorldStateNode)
+    CombatWorldStateListNode GoalStates; // src: XBOX_RETAIL_PDB +0xc (old: m_kCombatWorldStateListNode)
     COMBAT_GOAL eType;
-    unsigned int iGroupStrategyAssignment;
+    unsigned int iGroupStrategyAssignment; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiGoalFlags)
 };

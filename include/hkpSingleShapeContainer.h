@@ -20,5 +20,5 @@ public:
         return m_childShape;
     }
 
-    const hkpShape* m_childShape;
+    const hkpShape* m_childShape; // src: XBOX_RETAIL_PDB +0x4 (old: m_pContainedShape)
 };

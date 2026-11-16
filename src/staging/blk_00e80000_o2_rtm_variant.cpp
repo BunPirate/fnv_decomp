@@ -253,7 +253,7 @@ struct FUN_00e936f0_Class {
 };
 void __cdecl _NiFree(void* p);
 struct Program;
-extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 void __cdecl NiD3DShaderProgramFactory_ReleasePixelShader(Program* pkShader);
 struct FUN_00e94070_Class {
     void* m_obj;
@@ -2499,7 +2499,7 @@ public:
 extern FNV_CondFn_e9c8c0* DAT_0126fa94;
 bool __cdecl NiBoundingVolume_TestIntersect(float fTime, FUN_00e9c8c0_obj* kBV0, unsigned int kVel0, FUN_00e9c8c0_obj* kBV1, unsigned int kVel1);
 typedef int (__cdecl *FUN_00e9c950_handler)(float, void*, int, void*, int, int, int, int, int, int);
-extern FUN_00e9c950_handler* NiBoundingVolume_ms_pfnFindFuncTable;
+extern FUN_00e9c950_handler* NiBoundingVolume_ms_pfnFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa98 (old: DAT_0126fa98)
 class FUN_00e9c950_cls_key
 {
 public:
@@ -2516,7 +2516,7 @@ struct DispatchObj_b4010 {
     virtual int v3();
 };
 typedef void (__cdecl *DispatchFn_b4010)(float, DispatchObj_b4010*, int, int, int, int, int);
-extern DispatchFn_b4010* NiBoundingVolume_ms_pfnTriTestFuncTable;
+extern DispatchFn_b4010* NiBoundingVolume_ms_pfnTriTestFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa9c (old: DAT_0126fa9c)
 void __cdecl NiBoundingVolume_TestTriIntersect(float fTime, DispatchObj_b4010* kBV0, int kVel0, int kVert0, int kVert1, int kVert2, int kVel1);
 struct FUN_00e9e840_Class
 {
@@ -3686,7 +3686,7 @@ typedef void (__cdecl *FUN_00e9ca50_Entry)(
     int,
     int,
     int);
-extern void **NiBoundingVolume_ms_pfnTriFindFuncTable;
+extern void **NiBoundingVolume_ms_pfnTriFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126faa0 (old: DAT_0126faa0)
 void __cdecl NiBoundingVolume_FindTriIntersect( float fTime, FUN_00e9ca50_Object *kBV0, int kVel0, int kVert0, int kVert1, int kVert2, int kVel1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
 struct FUN_00e9ec90 {
     void* m_pData;

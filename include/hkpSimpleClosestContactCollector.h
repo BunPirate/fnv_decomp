@@ -15,6 +15,6 @@ public:
     void addContactPoint(const Contact228& point);
     void Reset();
 
-    unsigned char m_hasHit;
-    Contact228 m_hitPoint;
+    unsigned char m_hasHit; // src: XBOX_RETAIL_PDB +0x8 (old: m_bOk)
+    Contact228 m_hitPoint; // src: XBOX_RETAIL_PDB +0x10 (old: contact)
 };

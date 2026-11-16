@@ -23,6 +23,6 @@ public:
     static const NiRTTI ms_kRTTI;
 
     short m_usUpdateSkip;
-    unsigned short m_usUpdateCount;
+    unsigned short m_usUpdateCount; // src: XBOX_RETAIL_PDB +0x1a (old: m_usUpdateSkipCounter)
     NiBound* m_pkBounds;
 };

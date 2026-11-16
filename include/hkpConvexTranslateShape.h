@@ -18,5 +18,5 @@ public:
     const hkpConvexShape* GetShapeForKey() const;
     hkpConvexTranslateShape* init(const hkpConvexShape* child, const hkVector4& translation);
 
-    hkVector4 m_translation;
+    hkVector4 m_translation; // src: XBOX_RETAIL_PDB +0x20 (old: m_vTranslation)
 };

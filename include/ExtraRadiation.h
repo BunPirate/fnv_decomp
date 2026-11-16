@@ -13,5 +13,5 @@ public:
     ExtraRadiation(float afRadiation);
     bool Compare_00436c40(BSExtraData* apCompare);
 
-    float fRadiation;
+    float fRadiation; // src: XBOX_RETAIL_PDB +0xc (old: m_fRadiation)
 };

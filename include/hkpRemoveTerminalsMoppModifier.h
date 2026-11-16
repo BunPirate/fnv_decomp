@@ -27,6 +27,6 @@ protected:
     virtual void addTerminalRemoveInfo(int relativeMoppAddress) throw();
 
 public:
-    hkArray<hkUint32> m_removeInfo;           // +0x0c m_removeInfo
-    const hkArray<hkUint32>* m_tempShapesToRemove;  // +0x18 m_tempShapesToRemove
+    hkArray<hkUint32> m_removeInfo;           // +0x0c m_removeInfo // src: XBOX_RETAIL_PDB +0xc (old: m_kRemovedTerminalIds)
+    const hkArray<hkUint32>* m_tempShapesToRemove;  // +0x18 m_tempShapesToRemove // src: XBOX_RETAIL_PDB +0x18 (old: m_pTerminalIdsToRemove)
 };

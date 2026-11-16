@@ -32,10 +32,10 @@ public:
     static const char* GetDecayTypeName(int type);
     static const char* GetSymmTypeName(int type);
 
-    NiObject* m_pkBombObj;
-    NiPoint3 m_kBombAxis;
-    float m_fDecay;
-    float m_fDeltaV;
-    int m_eDecayType;
-    int m_eSymmType;
+    NiObject* m_pkBombObj; // src: XBOX_RETAIL_PDB +0x18 (old: m_pkBombObject)
+    NiPoint3 m_kBombAxis; // src: XBOX_RETAIL_PDB +0x1c (old: m_kBombDirection)
+    float m_fDecay; // src: XBOX_RETAIL_PDB +0x28 (old: m_fDistanceDecay)
+    float m_fDeltaV; // src: XBOX_RETAIL_PDB +0x2c (old: m_fDeltaVelocity)
+    int m_eDecayType; // src: XBOX_RETAIL_PDB +0x30 (old: m_eBombDecayType)
+    int m_eSymmType; // src: XBOX_RETAIL_PDB +0x34 (old: m_eSymmetryType)
 };

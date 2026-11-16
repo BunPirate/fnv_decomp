@@ -720,16 +720,16 @@ __forceinline hkpCollidable::hkpCollidable(const hkpShape* shape, const hkTransf
 // pdb: structure hkpPairLinearCastCommand, size 0x40, 10 members
 struct hkpPairLinearCastCommand
 {
-    hkVector4 m_from;
-    hkVector4 m_to;
-    const hkpCollidable* m_collidableA;
-    const hkpCollidable* m_collidableB;
-    hkpRootCdPoint* m_results;
-    int m_resultsCapacity;
-    int m_numResultsOut;
-    hkpRootCdPoint* m_startPointResults;
-    int m_startPointResultsCapacity;
-    int m_startPointNumResultsOut;
+    hkVector4 m_from; // src: XBOX_RETAIL_PDB +0x0 (old: m_vFrom)
+    hkVector4 m_to; // src: XBOX_RETAIL_PDB +0x10 (old: m_vTo)
+    const hkpCollidable* m_collidableA; // src: XBOX_RETAIL_PDB +0x20 (old: m_pCollidableA)
+    const hkpCollidable* m_collidableB; // src: XBOX_RETAIL_PDB +0x24 (old: m_pCollidableB)
+    hkpRootCdPoint* m_results; // src: XBOX_RETAIL_PDB +0x28 (old: m_pResultBuffer)
+    int m_resultsCapacity; // src: XBOX_RETAIL_PDB +0x2c (old: m_iResultCount)
+    int m_numResultsOut; // src: XBOX_RETAIL_PDB +0x30 (old: m_iResultCapacity)
+    hkpRootCdPoint* m_startPointResults; // src: XBOX_RETAIL_PDB +0x34 (old: m_pStartPointResultBuffer)
+    int m_startPointResultsCapacity; // src: XBOX_RETAIL_PDB +0x38 (old: m_iStartPointResultCount)
+    int m_startPointNumResultsOut; // src: XBOX_RETAIL_PDB +0x3c (old: m_iStartPointResultCapacity)
 };
 
 // Fills one linear cast command for each collidable overlapping each wheel's phantom, creating a collidable per wheel, and returns the command count.

@@ -26,11 +26,11 @@ public:
     void* __vecDelDtor(unsigned int);
 #endif
 
-    unsigned char cTextureCount;
+    unsigned char cTextureCount; // src: XBOX_RETAIL_PDB +0x0 (old: m_ucFileEntryCount)
     union
     {
         unsigned char layoutPadding1[3];
     };
-    BSFileEntry** pTextureOffsetArray;
+    BSFileEntry** pTextureOffsetArray; // src: XBOX_RETAIL_PDB +0x4 (old: m_ppFileEntries)
 };
 

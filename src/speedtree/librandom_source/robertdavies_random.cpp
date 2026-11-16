@@ -9,7 +9,7 @@
 extern "C" double __cdecl fabs(double);
 extern "C" double __cdecl exp(double);
 extern double RandomSeed;
-extern "C" int Normal_count;
+extern "C" int Normal_count; // src: XBOX_RETAIL_PDB 0x011f912c (old: randomInitCount)
 extern "C" float randomXi;
 extern "C" float* randomSx;
 extern "C" float* randomSfx;

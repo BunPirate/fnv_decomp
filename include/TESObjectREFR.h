@@ -60,12 +60,12 @@ enum RADIO_RANGE_TYPE;
 class TESObjectREFR : public TESForm, public TESChildCell
 {
 public:
-    TESSound* pRandomSound;          // +0x1C
+    TESSound* pRandomSound;          // +0x1C // src: XBOX_RETAIL_PDB +0x1c (old: m_pSoundForm)
     PlacedObjectInfo data;           // +0x20
-    float fRefScale;            // +0x3C
-    TESObjectCELL* pParentCell;    // +0x40
-    ExtraDataList m_Extra;  // +0x44
-    CellDataNode* pLoadedData;     // +0x64
+    float fRefScale;            // +0x3C // src: XBOX_RETAIL_PDB +0x3c (old: m_fObjectScale)
+    TESObjectCELL* pParentCell;    // +0x40 // src: XBOX_RETAIL_PDB +0x40 (old: m_pOwningCell)
+    ExtraDataList m_Extra;  // +0x44 // src: XBOX_RETAIL_PDB +0x44 (old: m_kExtraDataCollection)
+    CellDataNode* pLoadedData;     // +0x64 // src: XBOX_RETAIL_PDB +0x64 (old: m_pRenderData)
 
     virtual bool GetStartingPosition(NiPoint3* location, NiPoint3* angle, TESForm** space, TESForm* defaultSpace);  // 0x4E
     virtual ScriptAnimation::ResultList PlayIdle(ScriptAnimation::Idle* idle, Actor* target, int, int, int, int, bool);  // 0x4F

@@ -48,16 +48,16 @@ public:
         SetFlag(oFlags, 0x100, false);
     }
 
-    unsigned int iTag;                   // +0x00 0x00415342 ('BSA')
-    unsigned int iVersion;               // +0x04 (0x68 here; the loader accepts <= 0x68)
-    unsigned int iHeaderSize;            // +0x08 (0x24)
+    unsigned int iTag;                   // +0x00 0x00415342 ('BSA') // src: XBOX_RETAIL_PDB +0x0 (old: m_uiTag)
+    unsigned int iVersion;               // +0x04 (0x68 here; the loader accepts <= 0x68) // src: XBOX_RETAIL_PDB +0x4 (old: m_uiVersion)
+    unsigned int iHeaderSize;            // +0x08 (0x24) // src: XBOX_RETAIL_PDB +0x8 (old: m_uiHeaderSize)
     // +0x0c archive flags: 1 directory names, 2 file names, 8/0x10/0x20 per-type cache requests,
     // 0x80 always cache, 0x100 (version 0x68 only)
-    unsigned int oFlags;
-    unsigned int iDirectories;        // +0x10
-    unsigned int iFiles;             // +0x14
-    unsigned int iDirectoryNamesLength;  // +0x18
-    unsigned int iFileNamesLength;       // +0x1c
-    unsigned short iArchiveType;               // +0x20 archive type flags (1 << ARCHIVE_TYPE)
+    unsigned int oFlags; // src: XBOX_RETAIL_PDB +0xc (old: m_uiArchiveFlags)
+    unsigned int iDirectories;        // +0x10 // src: XBOX_RETAIL_PDB +0x10 (old: m_uiDirectoryCount)
+    unsigned int iFiles;             // +0x14 // src: XBOX_RETAIL_PDB +0x14 (old: m_uiFileCount)
+    unsigned int iDirectoryNamesLength;  // +0x18 // src: XBOX_RETAIL_PDB +0x18 (old: m_uiDirectoryNamesLength)
+    unsigned int iFileNamesLength;       // +0x1c // src: XBOX_RETAIL_PDB +0x1c (old: m_uiFileNamesLength)
+    unsigned short iArchiveType;               // +0x20 archive type flags (1 << ARCHIVE_TYPE) // src: XBOX_RETAIL_PDB +0x20 (old: m_usFlags)
     unsigned short m_usReserved;            // +0x22
 };

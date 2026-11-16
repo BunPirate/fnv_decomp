@@ -75,7 +75,7 @@ class ParticleShader : public BSShader
     static void operator delete(void*);
     virtual void vfn_13c();
     virtual void vfn_140();
-    char ePass[0xc0];
+    char ePass[0xc0]; // src: XBOX_RETAIL_PDB +0x6c (old: data)
 };
 
 class FUN_00ba53f0 : public ParticleShader

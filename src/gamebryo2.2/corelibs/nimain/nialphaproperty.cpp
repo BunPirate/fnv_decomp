@@ -248,7 +248,7 @@ struct GlobalObjectO2_00a7b610
 {
     const char* m_name;
 };
-extern GlobalObjectO2_00a7b610 NiAlphaProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiAlphaProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4408 (old: g_011f4408)
 
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 char* __cdecl NiGetViewerString(const char*, bool);

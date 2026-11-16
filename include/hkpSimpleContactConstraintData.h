@@ -16,13 +16,13 @@ struct PhysicsMaterial;
 class hkpSimpleContactConstraintData : public hkpConstraintData
 {
 public:
-    hkArray<unsigned char> m_idMgrA;
+    hkArray<unsigned char> m_idMgrA; // src: XBOX_RETAIL_PDB +0xc (old: m_kAtoms)
     int unk18;
     int unk1C;
-    int m_clientData;
-    hkpConstraintInstance* m_constraint;
-    hkpSimpleContactConstraintAtom* m_atom;
-    int m_atomSize;
+    int m_clientData; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
+    hkpConstraintInstance* m_constraint; // src: XBOX_RETAIL_PDB +0x24 (old: m_pHavokConstraint)
+    hkpSimpleContactConstraintAtom* m_atom; // src: XBOX_RETAIL_PDB +0x28 (old: m_pAtom)
+    int m_atomSize; // src: XBOX_RETAIL_PDB +0x2c (old: m_iAtomSize)
 
     hkpContactPointPropertiesCFD* GetContactPointProperties(unsigned short id);
     int freeContactPoint(hkpConstraintOwner& constraintOwner, unsigned short id);

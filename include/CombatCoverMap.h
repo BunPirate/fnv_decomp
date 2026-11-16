@@ -26,7 +26,7 @@ public:
         unsigned int m_uiWriterThreadId;
     };
 
-    CoverMapPointer<CoverMapOwnerEx> spCoverSearchDebugGeometry;
+    CoverMapPointer<CoverMapOwnerEx> spCoverSearchDebugGeometry; // src: XBOX_RETAIL_PDB +0x10 (old: m_spOwner)
     ReadWriteLock Lock;
 
 

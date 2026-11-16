@@ -41,31 +41,31 @@ public:
             void operator=(E value) { m_kStorage = static_cast<hkUint8>(value); }
         };
 
-        hkReal m_rotationTolerance;
-        hkReal m_translationTolerance;
-        hkReal m_scaleTolerance;
-        hkReal m_floatingTolerance;
-        unsigned short m_rotationDegree;
-        unsigned short m_translationDegree;
-        unsigned short m_scaleDegree;
-        unsigned short m_floatingDegree;
-        Quantization<RotationQuantization> m_rotationQuantizationType;
-        Quantization<ScalarQuantization> m_translationQuantizationType;
-        Quantization<ScalarQuantization> m_scaleQuantizationType;
-        Quantization<ScalarQuantization> m_floatQuantizationType;
+        hkReal m_rotationTolerance; // src: XBOX_RETAIL_PDB +0x0 (old: m_fRotationTolerance)
+        hkReal m_translationTolerance; // src: XBOX_RETAIL_PDB +0x4 (old: m_fTranslationTolerance)
+        hkReal m_scaleTolerance; // src: XBOX_RETAIL_PDB +0x8 (old: m_fScaleTolerance)
+        hkReal m_floatingTolerance; // src: XBOX_RETAIL_PDB +0xc (old: m_fFloatingTolerance)
+        unsigned short m_rotationDegree; // src: XBOX_RETAIL_PDB +0x10 (old: m_iRotationDegree)
+        unsigned short m_translationDegree; // src: XBOX_RETAIL_PDB +0x12 (old: m_iTranslationDegree)
+        unsigned short m_scaleDegree; // src: XBOX_RETAIL_PDB +0x14 (old: m_iScaleDegree)
+        unsigned short m_floatingDegree; // src: XBOX_RETAIL_PDB +0x16 (old: m_iFloatingDegree)
+        Quantization<RotationQuantization> m_rotationQuantizationType; // src: XBOX_RETAIL_PDB +0x18 (old: m_eRotationQuantizationType)
+        Quantization<ScalarQuantization> m_translationQuantizationType; // src: XBOX_RETAIL_PDB +0x19 (old: m_eTranslationQuantizationType)
+        Quantization<ScalarQuantization> m_scaleQuantizationType; // src: XBOX_RETAIL_PDB +0x1a (old: m_eScaleQuantizationType)
+        Quantization<ScalarQuantization> m_floatQuantizationType; // src: XBOX_RETAIL_PDB +0x1b (old: m_eFloatQuantizationType)
     };
 
     struct PerTrackCompressionParams
     {
-        hkArray<TrackCompressionParams> m_parameterPalette;
-        hkArray<hkInt32> m_trackIndexToPaletteIndex;
-        hkArray<hkInt32> m_floatTrackIndexToPaletteIndex;
+        hkArray<TrackCompressionParams> m_parameterPalette; // src: XBOX_RETAIL_PDB +0x0 (old: m_kTrackParams)
+        hkArray<hkInt32> m_trackIndexToPaletteIndex; // src: XBOX_RETAIL_PDB +0xc (old: m_kFirstIntArray)
+        hkArray<hkInt32> m_floatTrackIndexToPaletteIndex; // src: XBOX_RETAIL_PDB +0x18 (old: m_kSecondIntArray)
     };
 
     struct AnimationCompressionParams
     {
-        unsigned short m_maxFramesPerBlock;
-        hkBool m_enableSampleSingleTracks;
+        unsigned short m_maxFramesPerBlock; // src: XBOX_RETAIL_PDB +0x0 (old: m_iMaxFramesPerBlock)
+        hkBool m_enableSampleSingleTracks; // src: XBOX_RETAIL_PDB +0x2 (old: m_bEnableSampleSingleTracks)
     };
 
     typedef TrackCompressionParams::RotationQuantization RotationQuantization;
@@ -122,19 +122,19 @@ public:
     static void Object_ProcessEntries_00e31180(const hkReal* floats, int numTracks, int numFrames,
                              int first, int track, hkArray<hkVector4>& values);
 
-    hkInt32 m_numFrames;
-    hkInt32 m_numBlocks;
-    hkInt32 m_maxFramesPerBlock;
-    hkInt32 m_maskAndQuantizationSize;
-    hkReal m_blockDuration;
-    hkReal m_blockInverseDuration;
-    hkReal m_frameDuration;
-    hkArray<hkUint32> m_blockOffsets;
-    hkArray<hkUint32> m_floatBlockOffsets;
-    hkArray<hkUint32> m_transformOffsets;
-    hkArray<hkUint32> m_floatOffsets;
+    hkInt32 m_numFrames; // src: XBOX_RETAIL_PDB +0x28 (old: m_iFrameCount)
+    hkInt32 m_numBlocks; // src: XBOX_RETAIL_PDB +0x2c (old: m_iBlockCount)
+    hkInt32 m_maxFramesPerBlock; // src: XBOX_RETAIL_PDB +0x30 (old: m_iMaxFramesPerBlock)
+    hkInt32 m_maskAndQuantizationSize; // src: XBOX_RETAIL_PDB +0x34 (old: m_iMaskAndQuantizationSize)
+    hkReal m_blockDuration; // src: XBOX_RETAIL_PDB +0x38 (old: m_fBlockDuration)
+    hkReal m_blockInverseDuration; // src: XBOX_RETAIL_PDB +0x3c (old: m_fBlockInverseDuration)
+    hkReal m_frameDuration; // src: XBOX_RETAIL_PDB +0x40 (old: m_fPerFrameDuration)
+    hkArray<hkUint32> m_blockOffsets; // src: XBOX_RETAIL_PDB +0x44 (old: m_kFirstUInt32Array)
+    hkArray<hkUint32> m_floatBlockOffsets; // src: XBOX_RETAIL_PDB +0x50 (old: m_kFloatBlockOffsets)
+    hkArray<hkUint32> m_transformOffsets; // src: XBOX_RETAIL_PDB +0x5c (old: m_kTransformOffsets)
+    hkArray<hkUint32> m_floatOffsets; // src: XBOX_RETAIL_PDB +0x68 (old: m_kFloatOffsets)
     hkArray<hkUint8> m_data;
-    hkInt32 m_endian;
+    hkInt32 m_endian; // src: XBOX_RETAIL_PDB +0x80 (old: m_iEndian)
 };
 
 typedef hkaSplineCompressedAnimation::TrackCompressionParams

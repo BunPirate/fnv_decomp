@@ -38,10 +38,10 @@ public:
                          FleePath* apReturnNodeArray, unsigned int apReturnLinkArray);
 
     unsigned int pad0[0x2054 / 4];
-    PathingRequest* pCurrentRequest;
-    unsigned int StartNode[5];
-    NiPoint3 AvoidNodeCenter;
-    float fDistanceUpperBound;
-    bool bFavorGoingTowardsGoal;
-    NiPoint3 GoalLocation;
+    PathingRequest* pCurrentRequest; // src: XBOX_RETAIL_PDB +0x2058 (old: pRequest)
+    unsigned int StartNode[5]; // src: XBOX_RETAIL_PDB +0x205c (old: pad205c)
+    NiPoint3 AvoidNodeCenter; // src: XBOX_RETAIL_PDB +0x2070 (old: kAvoidVector)
+    float fDistanceUpperBound; // src: XBOX_RETAIL_PDB +0x207c (old: fFleeRange)
+    bool bFavorGoingTowardsGoal; // src: XBOX_RETAIL_PDB +0x2080 (old: bHasDestination)
+    NiPoint3 GoalLocation; // src: XBOX_RETAIL_PDB +0x2084 (old: kDestination)
 };

@@ -717,7 +717,7 @@ void __fastcall BSShaderLightingProperty_ClearLights_Thunk(char* self, int unuse
 }  // namespace fnv_00b65570
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 BSShaderAccumulator_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSShaderAccumulator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa000 (old: DAT_011fa000/g_011fa000)
 // @fnv 0x00b65a80
 // src: XBOX_PDB 0x00b65a80
 GlobalObjectO2_00a7b610* __cdecl BSShaderAccumulator_GetRTTI()

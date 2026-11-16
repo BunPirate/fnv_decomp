@@ -135,7 +135,7 @@ void* __fastcall FUN_00a50e50(void* pThis, int, unsigned int flags)
     return pThis;
 }
 
-extern int NiBSplineCompTransformInterpolator_ms_RTTI;
+extern int NiBSplineCompTransformInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4004 (old: g_011f4004)
 
 // @fnv 0x00a50e40
 // src: COMMUNITY 0x00a50e40
@@ -167,7 +167,7 @@ bool __fastcall IsEqualCompTransform(NiBSplineCompTransformInterpolator* self, i
     return true;
 }
 
-extern int NiBSplineCompTransformInterpolator_ms_RTTI;
+extern int NiBSplineCompTransformInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4004 (old: g_011f4004)
 char* _FUN_00a7d330(const char*);
 struct Holder
 {

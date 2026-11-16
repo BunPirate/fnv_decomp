@@ -12,7 +12,7 @@ class hkpRotationalConstraintData : public hkpConstraintData
 {
   public:
     char padC[0x4];
-    hkpRotationalConstraintDataAtoms m_atoms;  // +0x10
+    hkpRotationalConstraintDataAtoms m_atoms;  // +0x10 // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpRotationalConstraintData[(sizeof(hkpRotationalConstraintData) == 0x90) ? 1 : -1];

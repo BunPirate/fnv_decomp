@@ -34,7 +34,7 @@ struct S_00a981d0_Mem
     S_00a981d0_Mem() throw();
     char b[0x44];
 };
-struct RendererData : S_00a981d0_Base
+struct RendererData : S_00a981d0_Base // src: EXE (old: S_00a981d0_Mid)
 {
     int unk08, unk0c, unk10;
     S_00a981d0_Mem m14;

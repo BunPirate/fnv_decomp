@@ -45,7 +45,7 @@ class ContainerItemExtra
   public:
     ContainerItemExtra();
     bool Load(TESFile*);
-    unsigned char pOwnerForm[12];
+    unsigned char pOwnerForm[12]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
 };
 class LeveledObject
 {

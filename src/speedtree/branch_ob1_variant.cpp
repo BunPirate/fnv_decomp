@@ -587,9 +587,9 @@ struct BranchPoint
     }
 };
 // pdb: class CRotTransform, size 0x24, 1 members
-struct CRotTransform
+struct CRotTransform // src: XBOX_RETAIL_PDB (old: BranchMatrix)
 {
-    float m_afData, m01, m02, m10, m11, m12, m20, m21, m22;
+    float m_afData, m01, m02, m10, m11, m12, m20, m21, m22; // src: XBOX_RETAIL_PDB +0x0 (old: m00)
     CRotTransform()
     {
         m_afData = 1.0f;
@@ -821,7 +821,7 @@ inline BranchPoint* __cdecl VecInterpolate(BranchPoint* out, const BranchPoint* 
     return out;
 }
 // pdb: class CIdvBranch, size 0x40 (here 0x50), 10 members
-struct CIdvBranch
+struct CIdvBranch // src: XBOX_RETAIL_PDB (old: FUN_00b10dc0)
 {
     int unk00;
     float time;

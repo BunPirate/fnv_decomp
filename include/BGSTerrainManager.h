@@ -24,22 +24,22 @@ class BGSTerrainManager
 {
 public:
     TESWorldSpace* pWorld;                                      // 0x00
-    BGSTerrainNode* pRootNode;                           // 0x04
+    BGSTerrainNode* pRootNode;                           // 0x04 // src: XBOX_RETAIL_PDB +0x4 (old: pRootTerrainNode)
     NiPointer<NiNode> spLODRoot;                                // 0x08
-    NiPointer<NiNode> spLODWaterRoot;                           // 0x0c
-    short sMinCellX;                                                // 0x10 north-west cell
-    short sMinCellY;                                                // 0x12
-    short sMaxCellX;                                                // 0x14 south-east cell
-    short sMaxCellY;                                                // 0x16
-    unsigned int iMaxLevel;                                    // 0x18
-    unsigned int iMinLevel;                                    // 0x1c
-    unsigned int iRootLevel;                                      // 0x20
-    unsigned int iBlockLevel;                                    // 0x24
+    NiPointer<NiNode> spLODWaterRoot;                           // 0x0c // src: XBOX_RETAIL_PDB +0xc (old: spWaterLODRoot)
+    short sMinCellX;                                                // 0x10 north-west cell // src: XBOX_RETAIL_PDB +0x10 (old: sMinX)
+    short sMinCellY;                                                // 0x12 // src: XBOX_RETAIL_PDB +0x12 (old: sMinY)
+    short sMaxCellX;                                                // 0x14 south-east cell // src: XBOX_RETAIL_PDB +0x14 (old: sMaxX)
+    short sMaxCellY;                                                // 0x16 // src: XBOX_RETAIL_PDB +0x16 (old: sMaxY)
+    unsigned int iMaxLevel;                                    // 0x18 // src: XBOX_RETAIL_PDB +0x18 (old: uiMaxLevel)
+    unsigned int iMinLevel;                                    // 0x1c // src: XBOX_RETAIL_PDB +0x1c (old: uiMinLevel)
+    unsigned int iRootLevel;                                      // 0x20 // src: XBOX_RETAIL_PDB +0x20 (old: uiStride)
+    unsigned int iBlockLevel;                                    // 0x24 // src: XBOX_RETAIL_PDB +0x24 (old: uiLODLevel)
     bool bNeedsImmediateUpdate;                                 // 0x28
-    bool bHasLOD;                                               // 0x29 ctor: 0
+    bool bHasLOD;                                               // 0x29 ctor: 0 // src: XBOX_RETAIL_PDB +0x29 (old: bFlag29)
     bool bFlag2A;                                               // 0x2a
     bool bFlag2B;                                               // 0x2b
-    BSSimpleArray<TESObjectREFR*, 1024> TreesQueuedToHide;     // 0x2c AddTerrainReference / RemoveTerrainReference
+    BSSimpleArray<TESObjectREFR*, 1024> TreesQueuedToHide;     // 0x2c AddTerrainReference / RemoveTerrainReference // src: XBOX_RETAIL_PDB +0x2c (old: kTerrainReferences)
 
     BGSTerrainManager(TESWorldSpace* apWorld);                    // 0x006fc490
     ~BGSTerrainManager();                                       // 0x006fc980

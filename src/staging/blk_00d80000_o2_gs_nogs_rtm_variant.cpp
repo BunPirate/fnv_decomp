@@ -157,7 +157,7 @@ struct S_00d85af0_Cls : S_00d85af0_Base {
     S_00d85af0_Cls* AssignFrom(const S_00d85af0_Cls* o);
 };
 struct CpuOpaque;
-extern CpuOpaque hkpSimulationClass;
+extern CpuOpaque hkpSimulationClass; // src: XBOX_RETAIL_PDB 0x01269514 (old: DAT_01269514/g_01269514)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00d9f6c0();
 extern int DAT_010cc4f4;
 unsigned int __cdecl Object_ComputeValue_00d9f6e0();

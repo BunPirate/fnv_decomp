@@ -93,12 +93,12 @@ struct QueryResultSchema;
 class hkpBallSocketChainData : public hkpConstraintChainData
 {
 public:
-    hkpBridgeAtoms m_atoms;
-    hkArray<hkpBallSocketChainDataConstraintInfo> m_infos;
-    float m_tau;
-    float m_damping;
-    float m_cfm;
-    float m_maxErrorDistance;
+    hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0xc (old: m_kBridgeAtoms)
+    hkArray<hkpBallSocketChainDataConstraintInfo> m_infos; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintInfo)
+    float m_tau; // src: XBOX_RETAIL_PDB +0x24 (old: m_fTau)
+    float m_damping; // src: XBOX_RETAIL_PDB +0x28 (old: m_fMotorDamping)
+    float m_cfm; // src: XBOX_RETAIL_PDB +0x2c (old: m_fMaxErrorDistance)
+    float m_maxErrorDistance; // src: XBOX_RETAIL_PDB +0x30 (old: m_fMaximumAngularImpulse)
 
     hkpBallSocketChainData();
     hkpBallSocketChainData(FinishingFlag f);

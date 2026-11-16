@@ -1147,7 +1147,7 @@ int __cdecl Runtime_EvaluateValue_00e01450(void* p)
     return (*(Vfn*)*(void**)p)(p, 0);
 }
 
-extern int hkMemoryMeshShapeClass;
+extern int hkMemoryMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126e330 (old: DAT_0126e330/g_0126e330)
 
 // @fnv 0x00e01460
 // src: GUESS 0x00e01460 (confidence: low)
@@ -1497,7 +1497,7 @@ void FUN_00e00000_cls::ReleaseBothArrays()
     *(volatile int*)&m_vptr00 = (int)&DAT_0102e388;
 }
 
-extern int hkpGenericConstraintDataClass;
+extern int hkpGenericConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126d9a0 (old: DAT_0126d9a0/g_0126d9a0)
 
 // @fnv 0x00e000b0
 // src: GUESS 0x00e000b0 (confidence: low)
@@ -1521,7 +1521,7 @@ void __cdecl Object_ProcessState_00e000c0(FUN_00d50c00_cls* pOwner, int value)
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkpFixedRigidMotionClass;
+extern CpuOpaque hkpFixedRigidMotionClass; // src: XBOX_RETAIL_PDB 0x0126d9e8 (old: DAT_0126d9e8/g_0126d9e8)
 // @fnv 0x00e00110
 // src: GUESS 0x00e00110 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126d9e8Address()
@@ -1538,7 +1538,7 @@ int* Runtime_GetDAT010c6cdcAddress()
     return &DAT_010c6cdc;
 }
 
-extern int hkpDefaultWorldMemoryWatchDogClass;
+extern int hkpDefaultWorldMemoryWatchDogClass; // src: XBOX_RETAIL_PDB 0x0126da30 (old: DAT_0126da30/g_0126da30)
 
 // @fnv 0x00e00170
 // src: GUESS 0x00e00170 (confidence: low)
@@ -1556,7 +1556,7 @@ void* __cdecl Runtime_GetDAT010e81a4Address()
     return &DAT_010e81a4;
 }
 
-extern int hkpConstraintChainInstanceActionClass;
+extern int hkpConstraintChainInstanceActionClass; // src: XBOX_RETAIL_PDB 0x0126da78 (old: DAT_0126da78/g_0126da78)
 
 // @fnv 0x00e001b0
 // src: GUESS 0x00e001b0 (confidence: low)
@@ -1577,7 +1577,7 @@ void __cdecl Object_InvokeVirtualMethod_00e00220(FUN_00e00220_Class* param_1)
     param_1->VF00(0);
 }
 
-extern int hkpConstraintChainInstanceClass;
+extern int hkpConstraintChainInstanceClass; // src: XBOX_RETAIL_PDB 0x0126dac0 (old: g_0126dac0/g_unk0126dac0)
 
 // @fnv 0x00e00230
 // src: GUESS 0x00e00230 (confidence: low)
@@ -1587,7 +1587,7 @@ void* __cdecl Runtime_GetUnk0126dac0Address()
 }
 
 // FUN_00e002e0 : a one-line function - getter
-extern int hkpCharacterMotionClass;
+extern int hkpCharacterMotionClass; // src: XBOX_RETAIL_PDB 0x0126db08 (old: g_0126db08/g_target_00e002e0)
 // @fnv 0x00e002e0
 // src: GUESS 0x00e002e0 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e002e0()
@@ -1595,7 +1595,7 @@ void* Object_GetGlobalObjectAddress_00e002e0()
     return &hkpCharacterMotionClass;
 }
 
-extern int hkpCallbackConstraintMotorClass;
+extern int hkpCallbackConstraintMotorClass; // src: XBOX_RETAIL_PDB 0x0126db50 (old: g_0126db50/g_unk0126db50)
 
 // @fnv 0x00e00340
 // src: GUESS 0x00e00340 (confidence: low)
@@ -1613,7 +1613,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00360()
     return &DAT_010e83b4;
 }
 
-extern unsigned char hkpCachingShapePhantomClass;
+extern unsigned char hkpCachingShapePhantomClass; // src: XBOX_RETAIL_PDB 0x0126db98 (old: DAT_0126db98/g_0126db98)
 
 // @fnv 0x00e00380
 // src: GUESS 0x00e00380 (confidence: low)
@@ -1790,7 +1790,7 @@ void __cdecl Runtime_ForwardCall_00e00490(S_00e00490_vt* p)
     p->m(0);
 }
 
-extern int hkpAabbPhantomClass;
+extern int hkpAabbPhantomClass; // src: XBOX_RETAIL_PDB 0x0126dc28 (old: DAT_0126dc28/g_0126dc28)
 // @fnv 0x00e004a0
 // src: GUESS 0x00e004a0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e004a0()
@@ -1813,7 +1813,7 @@ void __cdecl Runtime_ProcessState_00e004b0(FUN_00e004f0_class* object, int value
     }
 }
 
-extern int hkpTriangleShapeClass;
+extern int hkpTriangleShapeClass; // src: XBOX_RETAIL_PDB 0x0126dc70 (old: DAT_0126dc70/g_0126dc70)
 
 // @fnv 0x00e00560
 // src: GUESS 0x00e00560 (confidence: low)
@@ -1831,7 +1831,7 @@ int* Object_GetGlobalObjectAddress_00e005a0()
     return &DAT_010c749c;
 }
 
-extern int hkpTriSampledHeightFieldCollectionClass;
+extern int hkpTriSampledHeightFieldCollectionClass; // src: XBOX_RETAIL_PDB 0x0126dcb8 (old: DAT_0126dcb8/g_0126dcb8)
 
 // @fnv 0x00e005c0
 // src: GUESS 0x00e005c0 (confidence: low)
@@ -1908,7 +1908,7 @@ FUN_00e00610::FUN_00e00610(int flag) : S_00e00610_Mid(flag)
     }
 }
 
-extern int hkpTriSampledHeightFieldBvTreeShapeClass;
+extern int hkpTriSampledHeightFieldBvTreeShapeClass; // src: XBOX_RETAIL_PDB 0x0126dd00 (old: DAT_0126dd00/g_0126dd00)
 
 // @fnv 0x00e00680
 // src: GUESS 0x00e00680 (confidence: low)
@@ -1979,7 +1979,7 @@ FUN_00e006d0::FUN_00e006d0(int flag) : S_00e006d0_B(flag)
     }
 }
 
-extern int hkpTransformShapeClass;
+extern int hkpTransformShapeClass; // src: XBOX_RETAIL_PDB 0x0126dd48 (old: DAT_0126dd48/g_0126dd48)
 
 // @fnv 0x00e00730
 // src: GUESS 0x00e00730 (confidence: low)
@@ -1997,7 +1997,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00780()
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkpSphereShapeClass;
+extern CpuOpaque hkpSphereShapeClass; // src: XBOX_RETAIL_PDB 0x0126dd90 (old: DAT_0126dd90/g_0126dd90)
 // @fnv 0x00e007a0
 // src: GUESS 0x00e007a0 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e007a0()
@@ -2014,7 +2014,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e007e0()
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkpShapeInfoClass;
+extern CpuOpaque hkpShapeInfoClass; // src: XBOX_RETAIL_PDB 0x0126ddd8 (old: DAT_0126ddd8/g_0126ddd8)
 // @fnv 0x00e00800
 // src: GUESS 0x00e00800 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e00800()
@@ -2144,7 +2144,7 @@ FUN_00e00830::~FUN_00e00830() throw()
 {}
 
 // FUN_00e00940 : a one-line function - getter
-extern int hkpRemoveTerminalsMoppModifierClass;
+extern int hkpRemoveTerminalsMoppModifierClass; // src: XBOX_RETAIL_PDB 0x0126de20 (old: g_0126de20/g_target_00e00940)
 // @fnv 0x00e00940
 // src: GUESS 0x00e00940 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e00940()
@@ -2321,7 +2321,7 @@ FUN_00e00a80_cls::FUN_00e00a80_cls(int iEnabled)
         m_iEnabled = 1;
 }
 
-extern char hkpMultiSphereShapeClass;
+extern char hkpMultiSphereShapeClass; // src: XBOX_RETAIL_PDB 0x0126def8 (old: DAT_0126def8/g_0126def8)
 
 // @fnv 0x00e00af0
 // src: GUESS 0x00e00af0 (confidence: low)
@@ -2339,7 +2339,7 @@ void* Runtime_GetDAT010ce4bcAddress()
     return &DAT_010ce4bc;
 }
 
-extern int hkpGroupFilterClass;
+extern int hkpGroupFilterClass; // src: XBOX_RETAIL_PDB 0x0126df40 (old: g_0126df40/g_unk0126df40)
 
 // @fnv 0x00e00b50
 // src: GUESS 0x00e00b50 (confidence: low)
@@ -2418,7 +2418,7 @@ FUN_00e00ba0::FUN_00e00ba0(int flag)
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkpFastMeshShapeClass;
+extern CpuOpaque hkpFastMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126df88 (old: DAT_0126df88/g_0126df88)
 // @fnv 0x00e00c80
 // src: GUESS 0x00e00c80 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e00c80()
@@ -2426,7 +2426,7 @@ CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e00c80()
     return &hkpFastMeshShapeClass;
 }
 
-extern int hkpDefaultConvexListFilterClass;
+extern int hkpDefaultConvexListFilterClass; // src: XBOX_RETAIL_PDB 0x0126dfd0 (old: DAT_0126dfd0/g_0126dfd0)
 // @fnv 0x00e00d00
 // src: GUESS 0x00e00d00 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e00d00()
@@ -2444,7 +2444,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00d20()
     return &DAT_010c63cc;
 }
 
-extern int hkpCylinderShapeClass;
+extern int hkpCylinderShapeClass; // src: XBOX_RETAIL_PDB 0x0126e018 (old: DAT_0126e018/g_0126e018)
 
 // @fnv 0x00e00d40
 // src: GUESS 0x00e00d40 (confidence: low)
@@ -2466,7 +2466,7 @@ void __cdecl hkpCylinderShape_hkpCylinderShape_00d57b20_ProcessState_00e00d50(FU
         pObject->hkpCylinderShape_hkpCylinderShape_00d57b20(value);
 }
 
-extern int hkpConvexVerticesConnectivityClass;
+extern int hkpConvexVerticesConnectivityClass; // src: XBOX_RETAIL_PDB 0x0126e060 (old: DAT_0126e060/g_0126e060)
 
 // @fnv 0x00e00da0
 // src: GUESS 0x00e00da0 (confidence: low)
@@ -2484,7 +2484,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00dc0()
     return &DAT_010e8d8c;
 }
 
-extern int hkpConvexTranslateShapeClass;
+extern int hkpConvexTranslateShapeClass; // src: XBOX_RETAIL_PDB 0x0126e0a8 (old: DAT_0126e0a8/g_0126e0a8)
 
 // @fnv 0x00e00e80
 // src: GUESS 0x00e00e80 (confidence: low)
@@ -2512,7 +2512,7 @@ void __cdecl Object_InvokeVirtualMethod_00e00ee0(S_00e00ee0_vt* p)
     p->m0(0);
 }
 
-extern int hkpConvexTransformShapeClass;
+extern int hkpConvexTransformShapeClass; // src: XBOX_RETAIL_PDB 0x0126e0f0 (old: DAT_0126e0f0/g_0126e0f0)
 
 // @fnv 0x00e00ef0
 // src: GUESS 0x00e00ef0 (confidence: low)
@@ -2544,7 +2544,7 @@ void __cdecl Runtime_ForwardCall_00e00f50(FUN_00e00f50_cls* pObj)
     pObj->m_fn(0);
 }
 
-extern int hkpConvexPieceMeshShapeClass;
+extern int hkpConvexPieceMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126e138 (old: DAT_0126e138/g_0126e138)
 // @fnv 0x00e00f60
 // src: GUESS 0x00e00f60 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e00f60()
@@ -2625,7 +2625,7 @@ void __cdecl Runtime_ForwardCall_00e01050(VirtualSlotObject* p)
     p->unk00(0);
 }
 
-extern int hkpConvexListShapeClass;
+extern int hkpConvexListShapeClass; // src: XBOX_RETAIL_PDB 0x0126e180 (old: DAT_0126e180/g_0126e180)
 
 // @fnv 0x00e01060
 // src: GUESS 0x00e01060 (confidence: low)
@@ -2674,7 +2674,7 @@ void* __cdecl Runtime_GetDAT010d10c4Address()
     return &DAT_010d10c4;
 }
 
-extern int hkpCompressedSampledHeightFieldShapeClass;
+extern int hkpCompressedSampledHeightFieldShapeClass; // src: XBOX_RETAIL_PDB 0x0126e1c8 (old: DAT_0126e1c8/g_0126e1c8)
 
 // @fnv 0x00e010d0
 // src: GUESS 0x00e010d0 (confidence: low)
@@ -2692,7 +2692,7 @@ void* __cdecl Runtime_GetDAT010e901cAddress()
     return &DAT_010e901c;
 }
 
-extern int hkpCollisionFilterListClass;
+extern int hkpCollisionFilterListClass; // src: XBOX_RETAIL_PDB 0x0126e210 (old: DAT_0126e210/g_0126e210)
 
 // @fnv 0x00e01200
 // src: GUESS 0x00e01200 (confidence: low)
@@ -2771,7 +2771,7 @@ void __cdecl Object_InvokeVirtualMethod_00e01320(FUN_00e01320_cls* pObject)
     pObject->m_v00(0);
 }
 
-extern int hkpCapsuleShapeClass;
+extern int hkpCapsuleShapeClass; // src: XBOX_RETAIL_PDB 0x0126e258 (old: DAT_0126e258/g_0126e258)
 // @fnv 0x00e01330
 // src: GUESS 0x00e01330 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e258Address(void)
@@ -2787,7 +2787,7 @@ int* __cdecl Runtime_GetDAT010ce25cAddress()
     return &DAT_010ce25c;
 }
 
-extern int hkpBvShapeClass;
+extern int hkpBvShapeClass; // src: XBOX_RETAIL_PDB 0x0126e2a0 (old: DAT_0126e2a0/g_0126e2a0)
 
 // @fnv 0x00e01390
 // src: GUESS 0x00e01390 (confidence: low)
@@ -2803,7 +2803,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00e013e0()
     return &DAT_010c6ff8;
 }
 
-extern int hkpBoxShapeClass;
+extern int hkpBoxShapeClass; // src: XBOX_RETAIL_PDB 0x0126e2e8 (old: DAT_0126e2e8/g_0126e2e8)
 
 // @fnv 0x00e01400
 // src: GUESS 0x00e01400 (confidence: low)
@@ -2822,7 +2822,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e01440()
 }
 
 // FUN_00e01520 : a one-line function - getter
-extern int hkxVertexVectorDataChannelClass;
+extern int hkxVertexVectorDataChannelClass; // src: XBOX_RETAIL_PDB 0x0126e378 (old: g_0126e378/g_target_00e01520)
 // @fnv 0x00e01520
 // src: GUESS 0x00e01520 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e01520()
@@ -2839,7 +2839,7 @@ int* Object_GetGlobalObjectAddress_00e01540()
     return &DAT_010e9300;
 }
 
-extern int hkxVertexSelectionChannelClass;
+extern int hkxVertexSelectionChannelClass; // src: XBOX_RETAIL_PDB 0x0126e3c0 (old: DAT_0126e3c0/g_0126e3c0)
 
 // @fnv 0x00e01560
 // src: GUESS 0x00e01560 (confidence: low)
@@ -2867,7 +2867,7 @@ void __cdecl Runtime_ForwardCall_00e01590(FnvCpu_FUN_00e01590_CpuInterface* obje
     object->Invoke(0);
 }
 
-extern int hkxVertexIntDataChannelClass;
+extern int hkxVertexIntDataChannelClass; // src: XBOX_RETAIL_PDB 0x0126e408 (old: DAT_0126e408/g_0126e408)
 
 // @fnv 0x00e015a0
 // src: GUESS 0x00e015a0 (confidence: low)
@@ -2886,7 +2886,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00e015c0()
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkxVertexFloatDataChannelClass;
+extern CpuOpaque hkxVertexFloatDataChannelClass; // src: XBOX_RETAIL_PDB 0x0126e450 (old: DAT_0126e450/g_0126e450)
 // @fnv 0x00e01650
 // src: GUESS 0x00e01650 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126e450Address()
@@ -2915,7 +2915,7 @@ int __cdecl Object_InvokeVirtualMethod_00e01680(CallerVtbl* p)
     return p->v0(0);
 }
 
-extern int hkxTriangleSelectionChannelClass;
+extern int hkxTriangleSelectionChannelClass; // src: XBOX_RETAIL_PDB 0x0126e498 (old: DAT_0126e498/g_0126e498)
 
 // @fnv 0x00e01690
 // src: GUESS 0x00e01690 (confidence: low)
@@ -2948,7 +2948,7 @@ void __cdecl Object_InvokeVirtualMethod_00e016c0(FUN_00e016c0_cls* pObject)
     pObject->m0(0);
 }
 
-extern int hkxTextureInplaceClass;
+extern int hkxTextureInplaceClass; // src: XBOX_RETAIL_PDB 0x0126e4e0 (old: DAT_0126e4e0/g_0126e4e0)
 
 // @fnv 0x00e016d0
 // src: GUESS 0x00e016d0 (confidence: low)
@@ -3048,7 +3048,7 @@ FUN_00e01750::~FUN_00e01750() throw()
 {}
 }  // namespace fnv_00e01750
 
-extern int hkxTextureFileClass;
+extern int hkxTextureFileClass; // src: XBOX_RETAIL_PDB 0x0126e528 (old: DAT_0126e528/g_0126e528)
 
 // @fnv 0x00e017e0
 // src: GUESS 0x00e017e0 (confidence: low)
@@ -3057,7 +3057,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e017e0()
     return &hkxTextureFileClass;
 }
 
-extern int hkxSparselyAnimatedStringClass;
+extern int hkxSparselyAnimatedStringClass; // src: XBOX_RETAIL_PDB 0x0126e570 (old: DAT_0126e570/g_0126e570)
 
 // @fnv 0x00e018d0
 // src: GUESS 0x00e018d0 (confidence: low)
@@ -3093,7 +3093,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00e01a00()
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkxSparselyAnimatedBoolClass;
+extern CpuOpaque hkxSparselyAnimatedBoolClass; // src: XBOX_RETAIL_PDB 0x0126e600 (old: DAT_0126e600/g_0126e600)
 // @fnv 0x00e01a20
 // src: GUESS 0x00e01a20 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e01a20()
@@ -3171,7 +3171,7 @@ FUN_00e01a50::~FUN_00e01a50() throw()
 {}
 }  // namespace fnv_00e01a50
 
-extern int hkxSkinBindingClass;
+extern int hkxSkinBindingClass; // src: XBOX_RETAIL_PDB 0x0126e648 (old: g_0126e648/g_unk0126e648)
 
 // @fnv 0x00e01b00
 // src: GUESS 0x00e01b00 (confidence: low)
@@ -3303,7 +3303,7 @@ FUN_00e01b30::~FUN_00e01b30() throw()
 {}
 }  // namespace fnv_00e01b30
 
-extern int hkxSceneClass;
+extern int hkxSceneClass; // src: XBOX_RETAIL_PDB 0x0126e690 (old: DAT_0126e690/g_0126e690)
 
 // @fnv 0x00e01c20
 // src: GUESS 0x00e01c20 (confidence: low)
@@ -3312,7 +3312,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00e01c20()
     return &hkxSceneClass;
 }
 
-extern int hkxNodeSelectionSetClass;
+extern int hkxNodeSelectionSetClass; // src: XBOX_RETAIL_PDB 0x0126e6d8 (old: g_0126e6d8/g_unkGlobal)
 
 // @fnv 0x00e01ce0
 // src: GUESS 0x00e01ce0 (confidence: low)
@@ -3333,7 +3333,7 @@ void __cdecl Object_InvokeVirtualMethod_00e01e00(FUN_00e01e00_vt* p)
     p->m(0);
 }
 
-extern int hkxMeshUserChannelInfoClass;
+extern int hkxMeshUserChannelInfoClass; // src: XBOX_RETAIL_PDB 0x0126e720 (old: DAT_0126e720/g_0126e720)
 
 // @fnv 0x00e01e10
 // src: GUESS 0x00e01e10 (confidence: low)
@@ -3360,7 +3360,7 @@ void __cdecl CallHandleIfNotNull(FUN_00e01e20_cls* pObject, int aiValue)
     }
 }
 
-extern int hkxMeshClass;
+extern int hkxMeshClass; // src: XBOX_RETAIL_PDB 0x0126e768 (old: DAT_0126e768/g_0126e768)
 // @fnv 0x00e01e70
 // src: GUESS 0x00e01e70 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e768Address()
@@ -3396,7 +3396,7 @@ void __cdecl Object_UpdateFields_00e01e80(FUN_00e01e80_obj* pObj, int aiValue)
     }
 }
 
-extern int hkxMeshSectionClass;
+extern int hkxMeshSectionClass; // src: XBOX_RETAIL_PDB 0x0126e7b0 (old: DAT_0126e7b0/g_0126e7b0)
 
 // @fnv 0x00e01f40
 // src: GUESS 0x00e01f40 (confidence: low)
@@ -3429,7 +3429,7 @@ void __cdecl Object_ProcessState_00e020c0(FUN_00e4ae80_Obj* pObj, int iValue)
     }
 }
 
-extern int hkxMaterialShaderSetClass;
+extern int hkxMaterialShaderSetClass; // src: XBOX_RETAIL_PDB 0x0126e7f8 (old: g_0126e7f8/g_unk0126e7f8)
 
 // @fnv 0x00e02110
 // src: GUESS 0x00e02110 (confidence: low)
@@ -3453,7 +3453,7 @@ void Object_InvokeVirtualMethod_00e02120(FUN_00e02120_cls* obj)
     obj->v00(0);
 }
 
-extern int hkxMaterialShaderClass;
+extern int hkxMaterialShaderClass; // src: XBOX_RETAIL_PDB 0x0126e840 (old: g_0126e840/g_unk0126e840)
 
 // @fnv 0x00e02130
 // src: GUESS 0x00e02130 (confidence: low)
@@ -3523,7 +3523,7 @@ struct GlobalObject
 {
     int unk00;
 };
-extern GlobalObject hkxMaterialEffectClass;
+extern GlobalObject hkxMaterialEffectClass; // src: XBOX_RETAIL_PDB 0x0126e888 (old: g_0126e888/g_global)
 
 // @fnv 0x00e02270
 // src: GUESS 0x00e02270 (confidence: high)
@@ -3533,7 +3533,7 @@ GlobalObject* __cdecl Runtime_GetGlobalAddress_00e02270()
 }
 
 struct Data_0126e8d0;
-extern Data_0126e8d0 hkxLightClass;
+extern Data_0126e8d0 hkxLightClass; // src: XBOX_RETAIL_PDB 0x0126e8d0 (old: DAT_0126e8d0/g_0126e8d0)
 
 // @fnv 0x00e02350
 // src: GUESS 0x00e02350 (confidence: low)
@@ -3551,7 +3551,7 @@ void* __cdecl Runtime_GetDAT010e9e74Address()
     return &DAT_010e9e74;
 }
 
-extern int hkxIndexBufferClass;
+extern int hkxIndexBufferClass; // src: XBOX_RETAIL_PDB 0x0126e918 (old: DAT_0126e918/g_0126e918)
 
 // @fnv 0x00e02390
 // src: GUESS 0x00e02390 (confidence: low)
@@ -3641,7 +3641,7 @@ void Object_Destroy_Thunk_00e02460(E02460Object* pkObject)
     pkObject->Destroy(false);
 }
 
-extern int hkxEdgeSelectionChannelClass;
+extern int hkxEdgeSelectionChannelClass; // src: XBOX_RETAIL_PDB 0x0126e960 (old: DAT_0126e960/g_0126e960)
 
 // @fnv 0x00e02470
 // src: GUESS 0x00e02470 (confidence: low)
@@ -3660,7 +3660,7 @@ void* __cdecl Runtime_GetDAT010e9fa4Address()
 }
 
 // FUN_00e024b0 : a one-line function - getter
-extern int hkxCameraClass;
+extern int hkxCameraClass; // src: XBOX_RETAIL_PDB 0x0126e9a8 (old: g_0126e9a8/g_target_00e024b0)
 // @fnv 0x00e024b0
 // src: GUESS 0x00e024b0 (confidence: low)
 void* Runtime_GetTarget00e024b0Address()
@@ -3703,7 +3703,7 @@ struct GlobalObject
 {
     int unk00;
 };
-extern GlobalObject hkxAnimatedVectorClass;
+extern GlobalObject hkxAnimatedVectorClass; // src: XBOX_RETAIL_PDB 0x0126ea38 (old: g_0126ea38/g_global)
 
 // @fnv 0x00e02530
 // src: GUESS 0x00e02530 (confidence: high)
@@ -3785,7 +3785,7 @@ FUN_00e025a0_cls* FUN_00e025a0_cls::FUN_00e025a0(unsigned char acFlags)
 }
 }  // namespace fnv_00e025a0
 
-extern int hkxAnimatedMatrixClass;
+extern int hkxAnimatedMatrixClass; // src: XBOX_RETAIL_PDB 0x0126eac8 (old: DAT_0126eac8/g_0126eac8)
 
 // @fnv 0x00e02620
 // src: GUESS 0x00e02620 (confidence: low)
@@ -3803,7 +3803,7 @@ int __cdecl Object_ComputeValue_00e02640()
     return reinterpret_cast<int>(&DAT_010ea188);
 }
 
-extern unsigned char hkxAnimatedFloatClass;
+extern unsigned char hkxAnimatedFloatClass; // src: XBOX_RETAIL_PDB 0x0126eb10 (old: DAT_0126eb10/g_0126eb10)
 // @fnv 0x00e026d0
 // src: GUESS 0x00e026d0 (confidence: low)
 unsigned char* __cdecl Runtime_GetDAT0126eb10Address()
@@ -3834,7 +3834,7 @@ void __cdecl Object_ProcessState_00e02700(E02700Object* pkObject, void* pvData)
         pkObject->Process(pvData);
 }
 
-extern int hkAlignSceneToNodeOptionsClass;
+extern int hkAlignSceneToNodeOptionsClass; // src: XBOX_RETAIL_PDB 0x0126eb58 (old: g_0126eb58)
 
 // @fnv 0x00e02750
 // src: GUESS 0x00e02750 (confidence: low)
@@ -3843,7 +3843,7 @@ int* __cdecl Runtime_GetField0126eb58Address()
     return &hkAlignSceneToNodeOptionsClass;
 }
 
-extern int hkOstreamClass;
+extern int hkOstreamClass; // src: XBOX_RETAIL_PDB 0x0126eba0 (old: DAT_0126eba0/g_0126eba0)
 
 // @fnv 0x00e02770
 // src: GUESS 0x00e02770 (confidence: low)

@@ -175,8 +175,8 @@ Stars::~Stars()
 class Model
 {
   public:
-    unsigned int pFilename, iRefCount, iManualRefCount;
-    NiNode* spObject3D;
+    unsigned int pFilename, iRefCount, iManualRefCount; // src: XBOX_RETAIL_PDB pFilename +0x0 (old: unk00); iRefCount +0x4 (old: unk04); iManualRefCount +0x8 (old: unk08)
+    NiNode* spObject3D; // src: XBOX_RETAIL_PDB +0xc (old: object)
     Model(const char*, BSStream*, bool, bool);
     ~Model();
     NiNode* GetObject3D();

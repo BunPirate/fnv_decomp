@@ -998,8 +998,8 @@ struct HkMapperParams
 // pdb: structure Match, size 0x8, 2 members
 struct Match
 {
-    int m_indexA;
-    int m_indexB;
+    int m_indexA; // src: XBOX_RETAIL_PDB +0x0 (old: m_sBoneA)
+    int m_indexB; // src: XBOX_RETAIL_PDB +0x4 (old: m_sBoneB)
 };
 
 __declspec(nothrow) short __cdecl FUN_00cdd390(const HkSkeleton& skeleton, const char* name,

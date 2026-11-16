@@ -97,19 +97,19 @@ public:
             unsigned char m_ucField02;
         };
     };
-    unsigned char cHandReach;
+    unsigned char cHandReach; // src: XBOX_RETAIL_PDB +0x130 (old: m_ucCreatureType)
     unsigned char layoutPadding131[3];
-    float fTurnSpeed;
-    float fFootWeight;
-    float fBaseScale;
-    TESCombatStyle* pCombatStyle;
-    BGSBodyPartData* pBodyPartData;
-    BGSImpactDataSet__IMPACT_MATERIAL_TYPE eBloodImpactMaterial;
-    BGSImpactDataSet* pImpactDataSet;
-    bool bEmbeddedWeaponChecked;
+    float fTurnSpeed; // src: XBOX_RETAIL_PDB +0x134 (old: m_fFirstCreatureStat)
+    float fFootWeight; // src: XBOX_RETAIL_PDB +0x138 (old: m_fSecondCreatureStat)
+    float fBaseScale; // src: XBOX_RETAIL_PDB +0x13c (old: m_fThirdCreatureStatCur)
+    TESCombatStyle* pCombatStyle; // src: XBOX_RETAIL_PDB +0x140 (old: m_pCombatStyle)
+    BGSBodyPartData* pBodyPartData; // src: XBOX_RETAIL_PDB +0x144 (old: m_pBodyPartDataCur)
+    BGSImpactDataSet__IMPACT_MATERIAL_TYPE eBloodImpactMaterial; // src: XBOX_RETAIL_PDB +0x148 (old: m_eImpactMaterial)
+    BGSImpactDataSet* pImpactDataSet; // src: XBOX_RETAIL_PDB +0x14c (old: m_pImpactDataSet)
+    bool bEmbeddedWeaponChecked; // src: XBOX_RETAIL_PDB +0x150 (old: m_bHasImpactDataSet)
     unsigned char layoutPadding151[3];
-    SOUND_LEVEL eSoundLevel;
-    BGSListForm* pWeaponList;
-    char cCanUseHandToHand;
+    SOUND_LEVEL eSoundLevel; // src: XBOX_RETAIL_PDB +0x154 (old: m_eSoundLevel)
+    BGSListForm* pWeaponList; // src: XBOX_RETAIL_PDB +0x158 (old: m_pCreatureListForm)
+    char cCanUseHandToHand; // src: XBOX_RETAIL_PDB +0x15c (old: m_cCreatureDataFlag)
     unsigned char layoutPadding15D[3];
 };

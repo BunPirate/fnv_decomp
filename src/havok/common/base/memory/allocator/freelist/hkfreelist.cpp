@@ -32,17 +32,17 @@ class hkFreeList
 
     Element* m_free;
     unsigned int m_elementSize;
-    Block* m_lastIncrementalBlock;
+    Block* m_lastIncrementalBlock; // src: XBOX_RETAIL_PDB +0x8 (old: m_incrementalBlock)
     Block* m_blocks;
     Block* m_freeBlocks;
     unsigned int m_blockSize;
-    unsigned int m_align;
+    unsigned int m_align; // src: XBOX_RETAIL_PDB +0x18 (old: m_alignment)
     unsigned int m_maxBlockSize;
     char* m_top;
     char* m_blockEnd;
     int m_numFreeElements;
-    int m_totalNumElements;
-    hkFreeListAllocatorServer* m_memoryServer;
+    int m_totalNumElements; // src: XBOX_RETAIL_PDB +0x2c (old: m_numElements)
+    hkFreeListAllocatorServer* m_memoryServer; // src: XBOX_RETAIL_PDB +0x30 (old: m_blockServer)
 
     __declspec(noinline) int _freeBlocks(Block* cur);
     __declspec(noinline) void freeAllMemory();

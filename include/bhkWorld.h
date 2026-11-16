@@ -46,31 +46,31 @@ public:
 
     unsigned int unk0C;
     void* pDebugger;
-    bool bAdded;
+    bool bAdded; // src: XBOX_RETAIL_PDB +0x14 (old: bStateChanged)
     bool bEnabled;
-    bool bDebugDisplay;
+    bool bDebugDisplay; // src: XBOX_RETAIL_PDB +0x16 (old: m_bFlagAt16)
     char _pdbpad_17[1];
-    unsigned int iBatchAdd;
-    unsigned int iBatchRemove;
+    unsigned int iBatchAdd; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiValueAt18)
+    unsigned int iBatchRemove; // src: XBOX_RETAIL_PDB +0x1c (old: m_uiReferenceCount)
     void* pTrapListener;
-    void* pWaterListener;
-    void* pAcousticSpaceListener;
-    void* pEntityBatch;
-    unsigned int iEntityBatchCount;
-    void* pPhantomBatch;
-    unsigned int iPhantomBatchCount;
-    void* pActionBatch;
-    unsigned int iActionBatchCount;
-    void* pConstraintInstanceBatch;
-    unsigned int iConstraintInstanceBatchCount;
-    void* pEntityRemoveBatch;
-    unsigned int iEntityRemoveBatchCount;
+    void* pWaterListener; // src: XBOX_RETAIL_PDB +0x24 (old: m_pObjectAt24)
+    void* pAcousticSpaceListener; // src: XBOX_RETAIL_PDB +0x28 (old: m_pObjectAt28)
+    void* pEntityBatch; // src: XBOX_RETAIL_PDB +0x2c (old: m_pObjectAt2C)
+    unsigned int iEntityBatchCount; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiValueAt30)
+    void* pPhantomBatch; // src: XBOX_RETAIL_PDB +0x34 (old: m_pObjectAt34)
+    unsigned int iPhantomBatchCount; // src: XBOX_RETAIL_PDB +0x38 (old: m_uiValueAt38)
+    void* pActionBatch; // src: XBOX_RETAIL_PDB +0x3c (old: m_pObjectAt3C)
+    unsigned int iActionBatchCount; // src: XBOX_RETAIL_PDB +0x40 (old: m_uiValueAt40)
+    void* pConstraintInstanceBatch; // src: XBOX_RETAIL_PDB +0x44 (old: m_pObjectAt44)
+    unsigned int iConstraintInstanceBatchCount; // src: XBOX_RETAIL_PDB +0x48 (old: m_uiValueAt48)
+    void* pEntityRemoveBatch; // src: XBOX_RETAIL_PDB +0x4c (old: m_pObjectAt4C)
+    unsigned int iEntityRemoveBatchCount; // src: XBOX_RETAIL_PDB +0x50 (old: m_uiValueAt50)
     char _pdbpad_54[12];
     char Origin[16];
-    char pEntityListenerA[12];
-    char DebugColorA[12];
-    float fOriginalTau;
-    float fOriginalDamping;
-    char ActionList[8];
+    char pEntityListenerA[12]; // src: XBOX_RETAIL_PDB +0x70 (old: m_achDataAt70)
+    char DebugColorA[12]; // src: XBOX_RETAIL_PDB +0x7c (old: m_achDataAt7C)
+    float fOriginalTau; // src: XBOX_RETAIL_PDB +0x88 (old: m_fValueAt88)
+    float fOriginalDamping; // src: XBOX_RETAIL_PDB +0x8c (old: m_fValueAt8C)
+    char ActionList[8]; // src: XBOX_RETAIL_PDB +0x90 (old: ActionEntryList)
     char _pdbpad_98[8];
 };

@@ -17,7 +17,7 @@ public:
     bool Load(TESFile* apFile);
     void BGSMovableStatic_InitItem();
 
-    char cPassThroughSoundIndex;
+    char cPassThroughSoundIndex; // src: XBOX_RETAIL_PDB +0x50 (old: m_cType)
     unsigned char layoutPadding51[3];
-    TESSound* pRandomSound;
+    TESSound* pRandomSound; // src: XBOX_RETAIL_PDB +0x54 (old: m_pSoundForm)
 };

@@ -16,9 +16,9 @@ class TESEffectShader : public TESForm
 {
 public:
     EffectShaderData Data;
-    TESTexture TextureShaderTexture;
-    TESTexture ParticleShaderTexture;
-    TESTexture BlockOutTexture;
+    TESTexture TextureShaderTexture; // src: XBOX_RETAIL_PDB +0x14c (old: m_kFillTexture)
+    TESTexture ParticleShaderTexture; // src: XBOX_RETAIL_PDB +0x158 (old: m_kParticleShaderTexture)
+    TESTexture BlockOutTexture; // src: XBOX_RETAIL_PDB +0x164 (old: m_kHolesTexture)
 
     TESEffectShader();
     virtual ~TESEffectShader();

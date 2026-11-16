@@ -72,13 +72,13 @@ struct hkpConstraintQueryIn;
 class hkpBreakableConstraintData : public hkpConstraintData
 {
 public:
-    hkpBridgeAtoms m_atoms;
-    hkpConstraintData* m_constraintData;
-    hkUint16 m_childRuntimeSize;
-    hkUint16 m_childNumSolverResults;
-    hkReal m_solverResultLimit;
-    hkBool m_removeWhenBroken;
-    hkBool m_revertBackVelocityOnBreak;
+    hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0xc (old: m_kBridgeAtoms)
+    hkpConstraintData* m_constraintData; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintData)
+    hkUint16 m_childRuntimeSize; // src: XBOX_RETAIL_PDB +0x1c (old: m_usRuntimeOffset)
+    hkUint16 m_childNumSolverResults; // src: XBOX_RETAIL_PDB +0x1e (old: m_usNumSolverResults)
+    hkReal m_solverResultLimit; // src: XBOX_RETAIL_PDB +0x20 (old: m_fBreakingStrength)
+    hkBool m_removeWhenBroken; // src: XBOX_RETAIL_PDB +0x24 (old: m_bRemoveWhenBroken)
+    hkBool m_revertBackVelocityOnBreak; // src: XBOX_RETAIL_PDB +0x25 (old: m_bRevertBackVelocityOnBreak)
     char pad26[2];
 
     hkpBreakableConstraintData(FinishingFlag flag);
@@ -481,7 +481,7 @@ void __cdecl hkpConstraintCallbackUtil_fireConstraintRepaired(BrkInfo* event);
 void __cdecl hkpWorldCallbackUtil_fireConstraintBroken(hkpSimulationIsland* world, BrkInfo* event);
 void __cdecl hkpWorldCallbackUtil_fireConstraintRepaired(hkpSimulationIsland* world, BrkInfo* event);
 
-extern char hkpBreakableConstraintDataClass;
+extern char hkpBreakableConstraintDataClass; // src: XBOX_RETAIL_PDB 0x01269c44 (old: DAT_01269c44/g_01269c44)
 
 // Sets the broken flag on the breakable runtime, updates the constraint flags, and dispatches a BrkInfo event to listeners and the simulation island.
 // @fnv 0x00d4e020

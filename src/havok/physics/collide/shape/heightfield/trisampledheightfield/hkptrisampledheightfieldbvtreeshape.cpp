@@ -79,10 +79,10 @@ class hkpTriSampledHeightFieldBvTreeShape
 {
   public:
     char pad0[0x14];
-    hkpSingleShapeContainer m_childContainer;
-    hkInt32 m_childSize;
-    hkBool m_wantAabbRejectionTest;
-    unsigned char m_padding[12];
+    hkpSingleShapeContainer m_childContainer; // src: XBOX_RETAIL_PDB +0x14 (old: m_kChildContainer)
+    hkInt32 m_childSize; // src: XBOX_RETAIL_PDB +0x1c (old: m_iChildSize)
+    hkBool m_wantAabbRejectionTest; // src: XBOX_RETAIL_PDB +0x20 (old: m_bCheckHeightFieldBounds)
+    unsigned char m_padding[12]; // src: XBOX_RETAIL_PDB +0x21 (old: m_ucUnknownByte)
     char pad2D[3];
 };
 #pragma pack(pop)

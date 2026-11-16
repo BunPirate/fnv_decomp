@@ -36,7 +36,7 @@ public:
     unsigned int unk08;
     unsigned int unk0C;
     unsigned int unk10;
-    unsigned char bBufferRemovalOperations;
+    unsigned char bBufferRemovalOperations; // src: XBOX_RETAIL_PDB +0x14 (old: m_ucState)
     unsigned char unk15[3];
-    NiTMap<TESObjectREFR*, int> RemovalQueueMap; // destroyed by 0x0061fae0, which stores the NiTMap<TESObjectREFR *,int> vftable 0x0104d948
+    NiTMap<TESObjectREFR*, int> RemovalQueueMap; // destroyed by 0x0061fae0, which stores the NiTMap<TESObjectREFR *,int> vftable 0x0104d948 // src: XBOX_RETAIL_PDB +0x18 (old: m_map)
 };

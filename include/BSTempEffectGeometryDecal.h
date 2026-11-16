@@ -69,20 +69,20 @@ public:
     void SaveGameTES_00688b00();
     bool LoadGameTES_00688c90();
 
-    unsigned int pDecalData;
-    NiPointer<NiAVObject> spDecalGeometry;
-    int pGeometry;
-    char* pOldIndex;
-    unsigned char bFinished;
+    unsigned int pDecalData; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    NiPointer<NiAVObject> spDecalGeometry; // src: XBOX_RETAIL_PDB +0x1c (old: m_spGeometry)
+    int pGeometry; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
+    char* pOldIndex; // src: XBOX_RETAIL_PDB +0x24 (old: m_pData)
+    unsigned char bFinished; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     unsigned char unk29[3];
-    NiPointer<NiAVObject> spTargetGeom;
-    NiPointer<NiAVObject> spParent;
-    NiPointer<NiAVObject> spDecalParent;
-    NiPoint3 pOrigin;
-    NiPoint3 pVector;
-    float fScale;
-    float fRotation;
-    unsigned int pTextureSet;
-    unsigned int iNumVerts;
-    unsigned int iBodyParts;
+    NiPointer<NiAVObject> spTargetGeom; // src: XBOX_RETAIL_PDB +0x2c (old: m_sp2C)
+    NiPointer<NiAVObject> spParent; // src: XBOX_RETAIL_PDB +0x30 (old: m_sp30)
+    NiPointer<NiAVObject> spDecalParent; // src: XBOX_RETAIL_PDB +0x34 (old: m_sp34)
+    NiPoint3 pOrigin; // src: XBOX_RETAIL_PDB +0x38 (old: m_38)
+    NiPoint3 pVector; // src: XBOX_RETAIL_PDB +0x44 (old: m_44)
+    float fScale; // src: XBOX_RETAIL_PDB +0x50 (old: m_50)
+    float fRotation; // src: XBOX_RETAIL_PDB +0x54 (old: m_54)
+    unsigned int pTextureSet; // src: XBOX_RETAIL_PDB +0x58 (old: m_58)
+    unsigned int iNumVerts; // src: XBOX_RETAIL_PDB +0x5c (old: m_5c)
+    unsigned int iBodyParts; // src: XBOX_RETAIL_PDB +0x60 (old: m_60)
 };

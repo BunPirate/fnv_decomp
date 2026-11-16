@@ -25,7 +25,7 @@
 
 class BSAttachPointPair;
 
-extern "C" void* BSPSysStripUpdateModifier_ms_RTTI;
+extern "C" void* BSPSysStripUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01204388 (old: g_01204388)
 
 struct FUN_00c600f0_Class
 {
@@ -373,7 +373,7 @@ void __thiscall FUN_00c63950_class::ForwardToOther(int aiValue)
 }
 
 struct GlobalObject_00a7b610;
-extern GlobalObject_00a7b610 BSParentVelocityModifier_ms_RTTI;
+extern GlobalObject_00a7b610 BSParentVelocityModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012043c8 (old: g_012043c8)
 
 struct FUN_00c63aa0_class
 {
@@ -2347,7 +2347,7 @@ void FUN_00c61fc0_cls::Serialize(void* apStrings)
     }
 }
 
-extern "C" void* BSPSysStripUpdateModifier_ms_RTTI;
+extern "C" void* BSPSysStripUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01204388 (old: g_01204388)
 
 class Base00c319e0
 {
@@ -2669,7 +2669,7 @@ struct ExtraDataViewerEntry : NiExtraData
 class BSAttachPoints : public ExtraDataViewerEntry
 {
   public:
-    int pAttachPointsA;
+    int pAttachPointsA; // src: XBOX_RETAIL_PDB +0xc (old: unk0c)
     AttachPoint** m_ppkPoints;
     int unk14;
     unsigned short m_usElementCount;

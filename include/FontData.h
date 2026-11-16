@@ -7,8 +7,8 @@ class Info_;
 // pdb: structure TextureFile, size 0x24, 2 members
 struct TextureFile
 {
-    unsigned char iType[4];
-    unsigned char pFilename[32];
+    unsigned char iType[4]; // src: XBOX_RETAIL_PDB +0x0 (old: _unverified_iType)
+    unsigned char pFilename[32]; // src: XBOX_RETAIL_PDB +0x4 (old: _unverified_pFilename)
 };
 
 // pdb: structure UVMap, size 0x8, 2 members
@@ -21,7 +21,7 @@ struct UVMap
 // pdb: structure FontLetter, size 0x38, 7 members
 struct FontLetter
 {
-    unsigned char iTextureIndex[4];
+    unsigned char iTextureIndex[4]; // src: XBOX_RETAIL_PDB +0x0 (old: _unverified_iTextureIndex)
     UVMap pMapping[4];
     float fWidth;
     float fHeight;

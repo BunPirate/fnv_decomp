@@ -31,7 +31,7 @@ class Sphere
 {
   public:
     NiPoint3 Center;
-    float fRadius;
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: Radius)
     Sphere(const NiPoint3&, float);
 };
 

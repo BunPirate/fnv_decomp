@@ -147,7 +147,7 @@ void __fastcall SaveSplineControlPoints(NiBSplineData* self, int, NiStream& stre
     }
 }
 
-extern void* NiBSplineData_ms_RTTI;
+extern void* NiBSplineData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4034 (old: g_011f4034)
 extern const char str_01099f08[];
 extern const char str_01099ee8[];
 

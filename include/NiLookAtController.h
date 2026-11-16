@@ -40,6 +40,6 @@ public:
     unsigned short GetAxis() const;
     bool IsActive() const;
 
-    char m_uFlags[0x04];
+    char m_uFlags[0x04]; // src: XBOX_RETAIL_PDB +0x34 (old: _pad)
     NiAVObject* m_pkLookAt;
 };

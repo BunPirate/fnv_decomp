@@ -57,7 +57,7 @@ void __stdcall GetPunctuationChars(char** apOutString, int* apiLength)
 }
 
 extern hkProcess* DAT_01269cd0;
-extern hkInspectProcess* hkInspectProcess_m_tag;
+extern hkInspectProcess* hkInspectProcess_m_tag; // src: XBOX_RETAIL_PDB 0x01269cd4 (old: DAT_01269cd4)
 void __cdecl hkInspectProcess_create(hkProcess*);
 extern hkProcessFactory* hkProcessFactory_registerProcess;
 // @fnv 0x00ddb750
@@ -88,7 +88,7 @@ void __cdecl myTrackedObjectCallback(void* ptr, int klass, char wasAdded, int ta
 }
 
 void __cdecl CreateImpl(hkProcess*);
-extern hkInspectProcess* hkStatisticsProcess_m_tag;
+extern hkInspectProcess* hkStatisticsProcess_m_tag; // src: XBOX_RETAIL_PDB 0x01269cd8 (old: DAT_01269cd8)
 
 // @fnv 0x00ddc1a0
 // src: XBOX_RETAIL_PDB 0x00ddc1a0
@@ -421,7 +421,7 @@ extern hkLayoutRulesQ DAT_010d6ae8;
 // pdb: class hkStructureLayout, size 0x4, 1 members
 struct hkStructureLayout
 {
-    hkLayoutRulesQ m_rules;
+    hkLayoutRulesQ m_rules; // src: XBOX_RETAIL_PDB +0x0 (old: m_kLayoutRules)
     hkStructureLayout(const hkLayoutRulesQ& rules) throw();
 };
 

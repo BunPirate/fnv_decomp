@@ -43,38 +43,38 @@ public:
     virtual void FinishLoadGame_009dfa00(BGSLoadFormBuffer* buffer);
     virtual void ResetPathingState(BGSLoadFormBuffer* apBuffer);
 
-    NiPoint3 LookAtPoint;                 // 0x04
-    NiPoint3 CachedMoveDelta;                        // 0x10
-    NiPointer<PathingRequest> spCurrentRequest;              // 0x1c
-    NiPointer<NiNode> spCurrentPath;                  // 0x20
+    NiPoint3 LookAtPoint;                 // 0x04 // src: XBOX_RETAIL_PDB +0x4 (old: m_kLookAtTargetPosition)
+    NiPoint3 CachedMoveDelta;                        // 0x10 // src: XBOX_RETAIL_PDB +0x10 (old: m_kPathingDelta)
+    NiPointer<PathingRequest> spCurrentRequest;              // 0x1c // src: XBOX_RETAIL_PDB +0x1c (old: request)
+    NiPointer<NiNode> spCurrentPath;                  // 0x20 // src: XBOX_RETAIL_PDB +0x20 (old: m_pActorNode)
     union
     {
         ActorPathHandler* m_pPathHandler;           // 0x24
         unsigned int preferredMoveMode;
     };
     Actor* pActor;                                  // 0x28
-    unsigned int DetectionDoorID;
-    NiPointer<ActorPathingMessageQueue> spMessageQueue;     // 0x30
-    unsigned int uiPreferredMoveMode;
-    unsigned int uiForcedMoveMode;                 // 0x38
-    unsigned int iCachedLastValidMoveMode;                  // 0x3c
-    unsigned short iPreviousNode;                    // 0x40
-    unsigned short iNextNode;                       // 0x42
-    PathingLocation FailedPathDestination;              // 0x44
+    unsigned int DetectionDoorID; // src: XBOX_RETAIL_PDB +0x2c (old: unk2C)
+    NiPointer<ActorPathingMessageQueue> spMessageQueue;     // 0x30 // src: XBOX_RETAIL_PDB +0x30 (old: m_queue)
+    unsigned int uiPreferredMoveMode; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
+    unsigned int uiForcedMoveMode;                 // 0x38 // src: XBOX_RETAIL_PDB +0x38 (old: m_uiMovementFlags)
+    unsigned int iCachedLastValidMoveMode;                  // 0x3c // src: XBOX_RETAIL_PDB +0x3c (old: m_uiMovementMode)
+    unsigned short iPreviousNode;                    // 0x40 // src: XBOX_RETAIL_PDB +0x40 (old: currentNode)
+    unsigned short iNextNode;                       // 0x42 // src: XBOX_RETAIL_PDB +0x42 (old: lastNode)
+    PathingLocation FailedPathDestination;              // 0x44 // src: XBOX_RETAIL_PDB +0x44 (old: m_pathingLocation)
     int eState;                                    // 0x6c
     bool bPathingFailed;                            // 0x70
-    bool bForceMoveMode;                        // 0x71
-    bool bStopMovementNextUpdate;                       // 0x72
-    bool bFaceTargetPoint;                        // 0x73
-    bool bWaitingForPath;                         // 0x74
-    bool bActorChangedProcessLevel;                      // 0x75
-    bool bInDialog;                         // 0x76
-    bool bHaveValidDeltaThisFrame;                        // 0x77
-    bool bStopCurrentMoveAnim;
+    bool bForceMoveMode;                        // 0x71 // src: XBOX_RETAIL_PDB +0x71 (old: m_bHasMovementData)
+    bool bStopMovementNextUpdate;                       // 0x72 // src: XBOX_RETAIL_PDB +0x72 (old: m_bMovementComplete)
+    bool bFaceTargetPoint;                        // 0x73 // src: XBOX_RETAIL_PDB +0x73 (old: m_bHasLookAtTarget)
+    bool bWaitingForPath;                         // 0x74 // src: XBOX_RETAIL_PDB +0x74 (old: m_bMovementActive)
+    bool bActorChangedProcessLevel;                      // 0x75 // src: XBOX_RETAIL_PDB +0x75 (old: m_bMovementStateFlag)
+    bool bInDialog;                         // 0x76 // src: XBOX_RETAIL_PDB +0x76 (old: m_bMovementPaused)
+    bool bHaveValidDeltaThisFrame;                        // 0x77 // src: XBOX_RETAIL_PDB +0x77 (old: m_bHasPathingDelta)
+    bool bStopCurrentMoveAnim; // src: XBOX_RETAIL_PDB +0x78 (old: unk78)
     unsigned char unk79[3];
-    unsigned int iLastFailureTimeStamp;                          // 0x7c
-    unsigned int iFirstFailureTimeStamp;                         // 0x80
-    int iContinuedFailureCount;                                   // 0x84
+    unsigned int iLastFailureTimeStamp;                          // 0x7c // src: XBOX_RETAIL_PDB +0x7c (old: lastTime)
+    unsigned int iFirstFailureTimeStamp;                         // 0x80 // src: XBOX_RETAIL_PDB +0x80 (old: startTime)
+    int iContinuedFailureCount;                                   // 0x84 // src: XBOX_RETAIL_PDB +0x84 (old: retries)
 
     void ClearMovementPath();
     void RefreshMovementState();

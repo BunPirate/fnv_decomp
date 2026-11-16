@@ -159,35 +159,35 @@ public:
         NiTPointerMap<unsigned int, TESObjectREFR*>* cellMap;
         NiTPointerMap<unsigned int, TESObjectREFR*>* pCellNavMeshInfoMap;
     };
-    TESObjectCELL* pPersistentCell;
-    CellList TerrainLODManager;
+    TESObjectCELL* pPersistentCell; // src: XBOX_RETAIL_PDB +0x34 (old: m_pCell)
+    CellList TerrainLODManager; // src: XBOX_RETAIL_PDB +0x38 (old: m_kFirstTreeComponent)
     union
     {
         BGSTerrainManager* terrain;
         void* m_pThirdTreePointer;
     };
-    TESClimate* pClimate;
-    void* pImageSpace;
-    TESImageSpace* pImpactSwap;
-    unsigned char cFlags;
+    TESClimate* pClimate; // src: XBOX_RETAIL_PDB +0x40 (old: climate)
+    void* pImageSpace; // src: XBOX_RETAIL_PDB +0x44 (old: imageSpace)
+    TESImageSpace* pImpactSwap; // src: XBOX_RETAIL_PDB +0x48 (old: data)
+    unsigned char cFlags; // src: XBOX_RETAIL_PDB +0x4c (old: flags4C)
     unsigned char unk4D;
-    unsigned short sParentUseFlags;
-    ReferenceMap FixedPersistentRefMap;
-    SL MobilePersistentRefList;
-    void* pOverlappedMultiboundMap;
-    ObjectPointer spPortalGraph;
-    TESWorldSpace* pParentWorld;
-    TESWaterForm* pWorldWater;
-    TESWaterForm* pLODWater;
-    float fLODWaterHeight;
-    unsigned char WorldMapData[0x20];
-    BoundsPoint MinimumCoords;
-    BoundsPoint MaximumCoords;
+    unsigned short sParentUseFlags; // src: XBOX_RETAIL_PDB +0x4e (old: field4E)
+    ReferenceMap FixedPersistentRefMap; // src: XBOX_RETAIL_PDB +0x50 (old: m_kSecondTreeComponent)
+    SL MobilePersistentRefList; // src: XBOX_RETAIL_PDB +0x60 (old: m_kThirdTreeComponent)
+    void* pOverlappedMultiboundMap; // src: XBOX_RETAIL_PDB +0x68 (old: m_pFourthTreePointer)
+    ObjectPointer spPortalGraph; // src: XBOX_RETAIL_PDB +0x6c (old: m_kFourthTreeComponent)
+    TESWorldSpace* pParentWorld; // src: XBOX_RETAIL_PDB +0x70 (old: parent)
+    TESWaterForm* pWorldWater; // src: XBOX_RETAIL_PDB +0x74 (old: water)
+    TESWaterForm* pLODWater; // src: XBOX_RETAIL_PDB +0x78 (old: lodWater)
+    float fLODWaterHeight; // src: XBOX_RETAIL_PDB +0x7c (old: field7c)
+    unsigned char WorldMapData[0x20]; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
+    BoundsPoint MinimumCoords; // src: XBOX_RETAIL_PDB +0xa0 (old: m_kFirstPoint)
+    BoundsPoint MaximumCoords; // src: XBOX_RETAIL_PDB +0xa8 (old: m_kEndPoint)
     CellOffsetMap OffsetDataMap;
-    StrMem cEditorID;
-    float fDefaultLandHeight;
-    float fDefaultWaterHeight;
-    unsigned int pEncounterZone;
+    StrMem cEditorID; // src: XBOX_RETAIL_PDB +0xc0 (old: mapName)
+    float fDefaultLandHeight; // src: XBOX_RETAIL_PDB +0xc8 (old: fC8)
+    float fDefaultWaterHeight; // src: XBOX_RETAIL_PDB +0xcc (old: fCC)
+    unsigned int pEncounterZone; // src: XBOX_RETAIL_PDB +0xd0 (old: fieldD0)
     TESTexture CanopyShadowTexture;
-    TESTexture WaterNoiseTexture;
+    TESTexture WaterNoiseTexture; // src: XBOX_RETAIL_PDB +0xe0 (old: m_kLeafShadowTexture)
 };

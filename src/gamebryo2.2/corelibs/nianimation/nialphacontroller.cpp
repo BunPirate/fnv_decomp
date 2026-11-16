@@ -20,7 +20,7 @@ void __fastcall GetAlphaValue(NiAlphaController* self, void*, float& fValue)
     fValue = p[0x3c / 4];
 }
 
-extern int NiAlphaController_ms_RTTI;
+extern int NiAlphaController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4084 (old: g_011f4084)
 
 // @fnv 0x00a56a80
 // src: COMMUNITY 0x00a56a80
@@ -55,7 +55,7 @@ struct FUN_00bc3050_RTTI
     const char* m_pcName;
     FUN_00bc3050_RTTI* m_pParentNode;
 };
-extern FUN_00bc3050_RTTI NiMaterialProperty_ms_RTTI;
+extern FUN_00bc3050_RTTI NiMaterialProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a5c (old: DAT_011f4a5c/g_011f4a5c)
 struct FUN_00bc3050_Obj
 {
     virtual void f0();
@@ -134,7 +134,7 @@ NiFloatInterpController* __fastcall CreateAndCopy(NiAlphaController* self, void*
     return r;
 }
 
-static const float NiInterpController_INVALID_TIME = -3.402823466e+38f;
+static const float NiInterpController_INVALID_TIME = -3.402823466e+38f; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 struct FloatTarget
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;

@@ -8,7 +8,7 @@
 class NiShader;
 
 typedef NiTStringTemplateMap<NiTPointerMap<const char*, NiShader*>, NiShader*> CreatorMap;
-extern CreatorMap* NiD3DShaderProgramFactory_ms_pkShaderCreators;
+extern CreatorMap* NiD3DShaderProgramFactory_ms_pkShaderCreators; // src: XBOX_RETAIL_PDB 0x0126fa14 (old: DAT_0126fa14)
 extern "C" const char* __cdecl strchr(const char*, int);
 extern "C" int __cdecl tolower(int);
 struct DirectoryEntry

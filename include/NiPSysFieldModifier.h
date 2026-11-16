@@ -8,12 +8,12 @@ class NiAVObject;
 class NiPSysFieldModifier : public NiPSysModifier
 {
 public:
-    NiAVObject* m_pkFieldObj;
-    float m_fMagnitude;
-    float m_fAttenuation;
-    bool m_bUseMaxDistance;
-    float m_fMaxDistance;
-    float m_fMaxDistanceSqr;
+    NiAVObject* m_pkFieldObj; // src: XBOX_RETAIL_PDB +0x18 (old: m_spFieldObject)
+    float m_fMagnitude; // src: XBOX_RETAIL_PDB +0x1c (old: m_fInfluence)
+    float m_fAttenuation; // src: XBOX_RETAIL_PDB +0x20 (old: m_fFieldAttenuation)
+    bool m_bUseMaxDistance; // src: XBOX_RETAIL_PDB +0x24 (old: m_bEnableMaxDistance)
+    float m_fMaxDistance; // src: XBOX_RETAIL_PDB +0x28 (old: m_fDistanceLimit)
+    float m_fMaxDistanceSqr; // src: XBOX_RETAIL_PDB +0x2c (old: m_fFieldStrength)
 
     NiPSysFieldModifier();
     virtual ~NiPSysFieldModifier();

@@ -1180,9 +1180,9 @@ bool FUN_0099c1f0_shell::PathingCoverLocation_GetHeight()
 // pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
-    int bWorldSpace;
-    int pWorldSpace;
-    int pInteriorCell;
+    int bWorldSpace; // src: XBOX_RETAIL_PDB +0x0 (old: a)
+    int pWorldSpace; // src: XBOX_RETAIL_PDB +0x4 (old: b)
+    int pInteriorCell; // src: XBOX_RETAIL_PDB +0x8 (old: c)
 };
 bool __cdecl CombatState_CheckCoverLOS(void*, ParentSpaceNode*, int);
 // @fnv 0x0099cb00

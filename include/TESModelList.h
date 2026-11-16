@@ -33,6 +33,6 @@ public:
     void FUN_00489a60();
     BSSimpleList<const char*>* FUN_00717e50();
 
-    BSSimpleList<const char*> nifFilenames;
-    unsigned char TextureListArray[8];
+    BSSimpleList<const char*> nifFilenames; // src: XBOX_RETAIL_PDB +0x4 (old: m_kModelPaths)
+    unsigned char TextureListArray[8]; // src: XBOX_RETAIL_PDB +0xc (old: m_kModelData)
 };

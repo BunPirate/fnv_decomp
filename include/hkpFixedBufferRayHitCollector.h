@@ -22,9 +22,9 @@ public:
 
     virtual void CollectRayHit(const hkpCdBody& cdBody, const RayCastHitResult& hitInfo);
 
-    hkPadSpu<WorldRayCastOutput*> m_rayCastOutputBase;
-    hkPadSpu<WorldRayCastOutput*> m_nextFreeOutput;
-    hkPadSpu<int> m_capacity;
-    hkPadSpu<int> m_numOutputs;
-    hkPadSpu<const hkpCollidable*> m_collidableOnPpu;
+    hkPadSpu<WorldRayCastOutput*> m_rayCastOutputBase; // src: XBOX_RETAIL_PDB +0x8 (old: m_pRayHitBuffer)
+    hkPadSpu<WorldRayCastOutput*> m_nextFreeOutput; // src: XBOX_RETAIL_PDB +0xc (old: m_pHitBufferEnd)
+    hkPadSpu<int> m_capacity; // src: XBOX_RETAIL_PDB +0x10 (old: m_pRayCursor)
+    hkPadSpu<int> m_numOutputs; // src: XBOX_RETAIL_PDB +0x14 (old: m_iHitCount)
+    hkPadSpu<const hkpCollidable*> m_collidableOnPpu; // src: XBOX_RETAIL_PDB +0x18 (old: m_pCollidable)
 };

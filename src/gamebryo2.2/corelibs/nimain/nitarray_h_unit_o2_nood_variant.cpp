@@ -27,7 +27,7 @@ struct FUN_0096aca0_shell : Arr
 };
 
 extern __declspec(thread) int g_tlsMemContext;
-extern void* bhkDashpotAction_ms_RTTI;
+extern void* bhkDashpotAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685c8 (old: DAT_012685c8/g_012685c8)
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 
 struct PrimitiveStringArray

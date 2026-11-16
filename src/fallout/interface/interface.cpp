@@ -5320,7 +5320,7 @@ bool __cdecl Interface_FindTextReplacementString(const char* apString, char* apO
 class Model
 {
   public:
-    unsigned int pFilename, iRefCount, iManualRefCount, spObject3D;
+    unsigned int pFilename, iRefCount, iManualRefCount, spObject3D; // src: XBOX_RETAIL_PDB pFilename +0x0 (old: unk00); iRefCount +0x4 (old: unk04); iManualRefCount +0x8 (old: unk08); spObject3D +0xc (old: unk0C)
     Model(const char*, BSStream*, bool, bool);
     NiNode* GetObject3D();
 };

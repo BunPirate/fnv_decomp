@@ -126,7 +126,7 @@ void* FUN_006223d0::bhkBvTreeShape_GetShapeCollection()
     return ::bhkBvTreeShape_GetShapeCollection(this);
 }
 
-extern "C" void* bhkTriSampledHeightFieldBvTreeShape_ms_RTTI;
+extern "C" void* bhkTriSampledHeightFieldBvTreeShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268350 (old: g_01268350)
 
 struct FUN_00622420_Class
 {

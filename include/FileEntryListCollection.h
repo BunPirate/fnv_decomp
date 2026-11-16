@@ -8,8 +8,8 @@ class TESModelList;
 class FileEntryListCollection
 {
 public:
-    unsigned int iTextureListCount;
-    FileEntryList** pTextureLists;
+    unsigned int iTextureListCount; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiFileEntryCount)
+    FileEntryList** pTextureLists; // src: XBOX_RETAIL_PDB +0x4 (old: m_ppElementArray)
 
     ~FileEntryListCollection();
     FileEntryListCollection* ClearData(unsigned int flags);

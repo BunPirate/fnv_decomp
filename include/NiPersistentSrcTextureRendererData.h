@@ -19,7 +19,7 @@ public:
     unsigned int unk0C;
     unsigned int unk10;
     NiPixelFormat m_kPixelFormat;
-    unsigned char DegradePriorityRange[8];
+    unsigned char DegradePriorityRange[8]; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
 };
 
 // pdb: class NiPersistentSrcTextureRendererData, size 0x94, bases: NiTexture::RendererData, 13 members
@@ -55,13 +55,13 @@ public:
     unsigned int* m_puiWidth;
     unsigned int* m_puiHeight;
     unsigned int* m_puiOffsetInBytes;
-    unsigned int m_uiPadOffsetInBytes;
+    unsigned int m_uiPadOffsetInBytes; // src: XBOX_RETAIL_PDB +0x70 (old: m_uiPixelDataSize)
     unsigned int m_uiMipmapLevels;
     unsigned int m_uiPixelStride;
     unsigned int m_uiFaces;
-    int m_eTargetPlatform;
-    unsigned char* m_pucPristinePixels;
-    unsigned int m_uiPristineMaxOffsetInBytes;
-    unsigned int m_uiPristinePadOffsetInBytes;
+    int m_eTargetPlatform; // src: XBOX_RETAIL_PDB +0x80 (old: m_iPaletteFormat)
+    unsigned char* m_pucPristinePixels; // src: XBOX_RETAIL_PDB +0x84 (old: m_pucPaletteData)
+    unsigned int m_uiPristineMaxOffsetInBytes; // src: XBOX_RETAIL_PDB +0x88 (old: m_uiPaletteSize)
+    unsigned int m_uiPristinePadOffsetInBytes; // src: XBOX_RETAIL_PDB +0x8c (old: m_uiPaletteEntryCount)
     NiPalette* m_spPalette;
 };

@@ -252,7 +252,7 @@ class BipedAnim
   public:
     BipedAnim(TESObjectREFR*, bool);
     void BipedAnim_SetBipedWeapon(TESObjectWEAP*, unsigned char);
-    unsigned char root[0x2b4];
+    unsigned char root[0x2b4]; // src: XBOX_RETAIL_PDB +0x0 (old: bipedData)
     NiNode* GetBoneNode(BIPED_BONE);
     BIPED_OBJECT_DATA* BipedAnim_QBufferedObjects();
     void UpdateRaceSex(TESRace*, SEX);

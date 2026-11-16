@@ -47,8 +47,8 @@ public:
     void FUN_00483170(unsigned short amount);
     EnchantmentItem* FUN_00726070();
 
-    EnchantmentItem* pFormEnchanting;
-    unsigned short iAmountofEnchantment;
+    EnchantmentItem* pFormEnchanting; // src: XBOX_RETAIL_PDB +0x4 (old: m_pEnchantment)
+    unsigned short iAmountofEnchantment; // src: XBOX_RETAIL_PDB +0x8 (old: m_usEnchantmentAmount)
     unsigned char layoutPaddingA[2];
-    MagicSystem__CastingType eCastingType;
+    MagicSystem__CastingType eCastingType; // src: XBOX_RETAIL_PDB +0xc (old: m_eCastingType)
 };

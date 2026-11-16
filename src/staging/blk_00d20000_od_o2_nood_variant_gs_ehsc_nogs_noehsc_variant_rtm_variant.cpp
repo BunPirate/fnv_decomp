@@ -400,8 +400,8 @@ ST_CP_EDGE
 };
 static ClosestPointResult __cdecl ComputeClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,TriangleDistanceUtility::FourRealValueRecord&m_pAccessManager,hkContactPoint&cpoint);
 static __forceinline ClosestPointResult getClosestPointInl(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,TriangleDistanceUtility::FourRealValueRecord&m_pAccessManager,hkContactPoint&cpoint,MaterialIndexedTriangle*featureOutput=0);
-hkContactPointId m_contactPointId;
-TriangleDistanceUtility::FourRealValueRecord m_closestPointTriangleCache;
+hkContactPointId m_contactPointId; // src: XBOX_RETAIL_PDB +0xc (old: m_usContactPointId)
+TriangleDistanceUtility::FourRealValueRecord m_closestPointTriangleCache; // src: XBOX_RETAIL_PDB +0x10 (old: m_kTriangleAccessData)
 };
 
 __forceinline const hkVector4_S* hkpTriangleShape::GetIndexedVertices() const

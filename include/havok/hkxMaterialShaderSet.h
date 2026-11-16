@@ -11,7 +11,7 @@ class hkxMaterialShader;
 class hkxMaterialShaderSet : public hkReferencedObject
 {
   public:
-    hkArray<hkxMaterialShader*> m_shaders;  // +0x8
+    hkArray<hkxMaterialShader*> m_shaders;  // +0x8 // src: XBOX_RETAIL_PDB +0x8 (old: m_spPixelShaders)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkxMaterialShaderSet[(sizeof(hkxMaterialShaderSet) == 0x14) ? 1 : -1];

@@ -165,7 +165,7 @@ struct FUN_00cf4490_cls {
     void bhkVelocityConstraintMotor_SaveBinary(void* arStream);
 };
 struct CpuOpaque;
-extern CpuOpaque bhkSpringDamperConstraintMotor_ms_RTTI;
+extern CpuOpaque bhkSpringDamperConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268740 (old: DAT_01268740/g_01268740)
 CpuOpaque* __cdecl bhkSpringDamperConstraintMotor_GetRTTI();
 struct SerializedObject { int base00,base04,base08,base0C,base10,word14,word18;void __thiscall bhkSpringDamperConstraintMotor_SaveBinary(int arStream); };
 extern "C" void __cdecl bhkLimitedForceConstraintMotor_SaveBinary(int,SerializedObject*);
@@ -496,7 +496,7 @@ struct FUN_00cdf560 {
 struct FUN_00cf4190 : FUN_00cdf560 {
     FUN_00cf4190();
 };
-extern int bhkPositionConstraintMotor_ms_RTTI;
+extern int bhkPositionConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268730 (old: DAT_01268730/g_01268730)
 int* bhkPositionConstraintMotor_GetRTTI();
 extern "C" void __cdecl bhkLimitedForceConstraintMotor_LoadBinary(void* arStream, void* arMotor);
 struct SerializedRecord {
@@ -505,7 +505,7 @@ struct SerializedRecord {
     void bhkPositionConstraintMotor_LoadBinary(NiStream* arStream);
 };
 struct CpuOpaque;
-extern CpuOpaque bhkVelocityConstraintMotor_ms_RTTI;
+extern CpuOpaque bhkVelocityConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268738 (old: DAT_01268738/g_01268738)
 CpuOpaque* __cdecl bhkVelocityConstraintMotor_GetRTTI();
 template <class T>
 inline void NiStreamSaveBinaryCF46(NiBinaryStream& kStream, const T& kValue)

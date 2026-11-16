@@ -70,9 +70,9 @@ struct ArmNoteBase
 // pdb: class BSGrabIKNote, size 0x1c, bases: BSAnimNote, 3 members
 struct BSGrabIKNote : ArmNoteBase
 {
-    unsigned int eArm;
-    float fGain;
-    unsigned int eState;
+    unsigned int eArm; // src: XBOX_RETAIL_PDB +0x10 (old: m_eArm)
+    float fGain; // src: XBOX_RETAIL_PDB +0x14 (old: m_fGain)
+    unsigned int eState; // src: XBOX_RETAIL_PDB +0x18 (old: m_eAnimationState)
     void* Clone(CloningProcess* arCloneData);
     void GetViewerStrings_00a44650(ViewerStrings* pkStrings);
 };

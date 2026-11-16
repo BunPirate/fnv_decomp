@@ -21,6 +21,6 @@ public:
     unsigned int GetIngredient();
     void InitItem(TESForm* apOwner);
 
-    IngredientItem* pFormIngredient;
-    unsigned char iProduceChance[4];
+    IngredientItem* pFormIngredient; // src: XBOX_RETAIL_PDB +0x4 (old: pIngredient)
+    unsigned char iProduceChance[4]; // src: XBOX_RETAIL_PDB +0x8 (old: cProdChance)
 };

@@ -47,7 +47,7 @@ class hkpPrismaticConstraintData : public hkpConstraintData
 {
 public:
     char padC[4];
-    char m_atoms[0xC0];
+    char m_atoms[0xC0]; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 
     __declspec(noinline) virtual ~hkpPrismaticConstraintData() throw();
     static void operator delete(void* pItem) throw();

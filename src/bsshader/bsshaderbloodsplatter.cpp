@@ -361,7 +361,7 @@ int __thiscall BloodSplatterShaderLocal_00b80d30::ImageSpaceShader_GetShaderDecl
     return reinterpret_cast<int>(m_spShaderDecl.m_pObject);
 }
 
-extern int BSShaderBloodSplatter_ms_RTTI;
+extern int BSShaderBloodSplatter_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fedc8 (old: g_011fedc8)
 
 // @fnv 0x00b807b0
 // src: COMMUNITY 0x00b807b0
@@ -659,7 +659,7 @@ struct FUN_00b80b30_mgr
     void* ImageSpaceTexture_GetTexture();
 };
 
-extern FUN_00b80b30_mgr ImageSpaceEffectHDR_spAdaptedLight;
+extern FUN_00b80b30_mgr ImageSpaceEffectHDR_spAdaptedLight; // src: XBOX_RETAIL_PDB 0x012005a4 (old: DAT_012005a4)
 extern int DAT_011f91e4;
 extern int DAT_011fedc4;
 

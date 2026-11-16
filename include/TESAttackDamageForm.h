@@ -24,6 +24,6 @@ public:
     unsigned short GetDamage();
     int GetResult();
 
-    unsigned short sAttackDamage;
+    unsigned short sAttackDamage; // src: XBOX_RETAIL_PDB +0x4 (old: m_usAttackDamage)
     unsigned char layoutPadding6[2];
 };

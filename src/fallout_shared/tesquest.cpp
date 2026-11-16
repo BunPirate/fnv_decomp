@@ -76,7 +76,7 @@ class RegionObjectEntry
 class Date
 {
   public:
-    unsigned short sDate, sYear;
+    unsigned short sDate, sYear; // src: XBOX_RETAIL_PDB sDate +0x0 (old: usDate); sYear +0x2 (old: usYear)
     Date();
     Date(const Date& date);
     ~Date();

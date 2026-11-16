@@ -113,7 +113,7 @@ void* __cdecl PrecipitationShader_GetRTTI()
     return &g_012005c0;
 }
 
-extern void* PrecipitationShaderProperty_ms_RTTI;
+extern void* PrecipitationShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005fc (old: DAT_012005fc/g_012005fc)
 
 // @fnv 0x00bb0d10
 // src: XBOX_PDB 0x00bb0d10

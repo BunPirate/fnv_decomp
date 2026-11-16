@@ -37,9 +37,9 @@ class hkpVelocityConstraintMotor : public hkpLimitedForceConstraintMotor
 {
   public:
     virtual void v0();
-    float m_tau;
-    float m_velocityTarget;
-    char m_useVelocityTargetFromConstraintTargets;
+    float m_tau; // src: XBOX_RETAIL_PDB +0x14 (old: m_fTau)
+    float m_velocityTarget; // src: XBOX_RETAIL_PDB +0x18 (old: m_fVelocityTarget)
+    char m_useVelocityTargetFromConstraintTargets; // src: XBOX_RETAIL_PDB +0x1c (old: m_bUseVelocityTarget)
     char pad1D[3];
 
     __forceinline hkpVelocityConstraintMotor(const hkpVelocityConstraintMotor& o) throw()

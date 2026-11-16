@@ -16,7 +16,7 @@ void __fastcall ReleaseMorphTarget(NiMorphData::MorphTarget*);
 typedef void* (__thiscall* DestroyMorphTargetFn)(NiMorphData::MorphTarget*, unsigned char);
 typedef void (__thiscall* ReleaseMorphTargetFn)(NiMorphData::MorphTarget*);
 
-extern "C" void* NiMorphData_ms_RTTI;
+extern "C" void* NiMorphData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3e74 (old: g_011f3e74)
 
 // Returns the address of the global g_011f3e74.
 // @fnv 0x00a415e0
@@ -307,7 +307,7 @@ struct ViewerStrings
     }
 };
 
-extern "C" void* NiMorphData_ms_RTTI;
+extern "C" void* NiMorphData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3e74 (old: g_011f3e74)
 
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcName);
 char* NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);

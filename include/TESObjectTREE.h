@@ -16,9 +16,9 @@ class TESObjectTREE : public TESBoundTreeObject,
                       public BGSDestructibleObjectForm
 {
 public:
-    NiTPrimitiveArray_unsigned_int_ SeedArray;
+    NiTPrimitiveArray_unsigned_int_ SeedArray; // src: XBOX_RETAIL_PDB +0x5c (old: m_kSeedArray)
     TreeRecordData Data;
-    NiPoint2 BillboardSize;
+    NiPoint2 BillboardSize; // src: XBOX_RETAIL_PDB +0x8c (old: m_kBillboardDimensions)
 
     TESObjectTREE();
     TreeRecordData* GetData();

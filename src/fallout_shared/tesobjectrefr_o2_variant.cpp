@@ -2359,7 +2359,7 @@ struct AabbHavokObj
 };
 
 char* NiGetViewerStringName(const char* pcName);
-extern const char* bhkBoxShape_ms_RTTI;
+extern const char* bhkBoxShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268264 (old: g_01268264/g_aabbPhantomRttiName/ms_kRTTI)
 
 struct ShapePhantomBase
 {
@@ -3137,7 +3137,7 @@ ObjectCA06* __cdecl bhkSphereShape_CreateObject()
     return new ObjectCA06;
 }
 
-extern const char* bhkSphereShape_ms_RTTI;
+extern const char* bhkSphereShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268288 (old: DAT_01268288/g_01268288/ms_kRTTI)
 
 struct FUN_00ca0ac0_class : SphereShape
 {

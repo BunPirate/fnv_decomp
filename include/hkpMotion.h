@@ -79,16 +79,16 @@ public:
     static const ClassMemberDescriptor Members[];
 
     hkEnum<MotionType, hkUint8> m_type;
-    hkUint8 m_deactivationIntegrateCounter;
-    hkUint16 m_deactivationNumInactiveFrames[2];
+    hkUint8 m_deactivationIntegrateCounter; // src: XBOX_RETAIL_PDB +0x9 (old: m_ucDeactivationIntegrateCounter)
+    hkUint16 m_deactivationNumInactiveFrames[2]; // src: XBOX_RETAIL_PDB +0xa (old: m_ausDeactivationNumInactiveFrames)
     char padE[2];
     hkMotionState m_kMotionState;
-    hkVector4 m_inertiaAndMassInv;
+    hkVector4 m_inertiaAndMassInv; // src: XBOX_RETAIL_PDB +0xc0 (old: m_kInertiaAndMassInv)
     hkVector4 m_kTranslationalVelocity;
     hkVector4 m_kAngularVelocity;
-    hkVector4 m_deactivationRefPosition[2];
-    hkUint32 m_deactivationRefOrientation[2];
-    hkpMaxSizeMotion* m_savedMotion;
-    hkUint16 m_savedQualityTypeIndex;
-    hkHalf m_gravityFactor;
+    hkVector4 m_deactivationRefPosition[2]; // src: XBOX_RETAIL_PDB +0xf0 (old: m_akDeactivationReferencePositions)
+    hkUint32 m_deactivationRefOrientation[2]; // src: XBOX_RETAIL_PDB +0x110 (old: m_auiDeactivationReferenceOrientations)
+    hkpMaxSizeMotion* m_savedMotion; // src: XBOX_RETAIL_PDB +0x118 (old: m_pSavedMotion)
+    hkUint16 m_savedQualityTypeIndex; // src: XBOX_RETAIL_PDB +0x11c (old: m_savedMotionSize)
+    hkHalf m_gravityFactor; // src: XBOX_RETAIL_PDB +0x11e (old: m_fGravityFactor)
 };

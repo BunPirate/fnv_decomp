@@ -11,5 +11,5 @@ public:
 
     ExtraPackageData(ActorPackageData*);
 
-    ActorPackageData* pActorPackageData;
+    ActorPackageData* pActorPackageData; // src: XBOX_RETAIL_PDB +0xc (old: m_pActorPackageData)
 };

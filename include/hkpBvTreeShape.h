@@ -29,5 +29,5 @@ public:
 
     hkUint32 GetAabbHits(const hkAabb& aabb, hkpShapeKey* hits, int maxNumKeys) const;
 
-    hkEnum<BvTreeType, hkUint8> m_bvTreeType;
+    hkEnum<BvTreeType, hkUint8> m_bvTreeType; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiUserData)
 };

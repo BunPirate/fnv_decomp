@@ -18,5 +18,5 @@ public:
     };
 
     hkStringPtr m_name;
-    hkRefVariant m_value;
+    hkRefVariant m_value; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiFilterValue)
 };

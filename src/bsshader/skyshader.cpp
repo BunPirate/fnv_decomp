@@ -45,7 +45,7 @@ inline NiTransform::NiTransform() {}
 // src/bsshader/skyshader.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/bsshader/skyshader.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern void* SkyShader_ms_RTTI;
+extern void* SkyShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011ff8d8 (old: g_011ff8d8)
 
 // @fnv 0x00b887b0
 // src: COMMUNITY 0x00b887b0

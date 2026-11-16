@@ -1068,7 +1068,7 @@ const char* const* FUN_00c5fc60_class::BSNiNode_GetRTTI()
 class BSPSysStripUpdateModifier : public NiPSysModifier {
 public:
     BSPSysStripUpdateModifier();
-    unsigned int fUpdateDeltaTime;
+    unsigned int fUpdateDeltaTime; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
 };
 // @fnv 0x00c5fd30
 // pdb: BSPSysStripUpdateModifier::BSPSysStripUpdateModifier | BSPSysStripUpdateModifier.obj | debug, call graph, medium
@@ -7989,7 +7989,7 @@ bool ListOwner_c5e830::BSMasterParticleSystem_IsEqual(NiObject* pkObject)
 // CreateObject 0x00c5eed0 allocates 0x1c) with a BSSimpleArray<NiAVObject*,1024> at 0x0c.
 // pdb: class BSTextureData, size 0x1c, bases: NiExtraData, 1 members
 struct BSTextureData : NiExtraData {
-    BSSimpleArray<NiAVObject*, 1024> pObjects;
+    BSSimpleArray<NiAVObject*, 1024> pObjects; // src: XBOX_RETAIL_PDB +0xc (old: m_00c)
     BSTextureData();
     virtual ~BSTextureData();
 };

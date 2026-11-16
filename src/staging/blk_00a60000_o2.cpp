@@ -277,7 +277,7 @@ void NiStream__SDMShutdown()
 }
 
 extern "C" void NiFreeAlias(void*);
-extern void* NiPoint3_ms_pSqrtTable;
+extern void* NiPoint3_ms_pSqrtTable; // src: XBOX_RETAIL_PDB 0x011f4aa8 (old: DAT_011f4aa8)
 
 // @fnv 0x00a7e940
 // pdb: NiPoint3::_SDMShutdown | NiPoint3_Xenon.obj | debug, object-file run extension, low
@@ -821,7 +821,7 @@ struct A616E0Pool
     A616E0Bucket m_buckets[7];
 };
 
-extern A616E0Pool* BSTexturePalette_pTexMapA;
+extern A616E0Pool* BSTexturePalette_pTexMapA; // src: XBOX_RETAIL_PDB 0x011f4464 (old: DAT_011f4464)
 
 // Scans the seven buckets of DAT_011f4464 from the last to the first and returns whether GetFirst found an entry, filling it.
 // @fnv 0x00a616e0
@@ -1171,7 +1171,7 @@ struct TLSHeap_b9725
 extern __declspec(thread) TLSCtx_b9725 g_tlsCtx_b9725;
 extern TLSHeap_b9725 DAT_011f6238;
 extern void* DAT_011f4468;
-extern void* BSTexturePalette_pTexMapA;
+extern void* BSTexturePalette_pTexMapA; // src: XBOX_RETAIL_PDB 0x011f4464 (old: DAT_011f4464)
 extern unsigned char DAT_011f4461;
 void* __cdecl ClearAndReset();
 void* __cdecl _fnv_zlib_memset(void* p, int c, unsigned int n);
@@ -1290,7 +1290,7 @@ struct ShaderEntry
     void __thiscall BSTexMap_RemoveAll();
 };
 extern ShaderState* DAT_011f4468;
-extern unsigned char* BSTexturePalette_pTexMapA;
+extern unsigned char* BSTexturePalette_pTexMapA; // src: XBOX_RETAIL_PDB 0x011f4464 (old: DAT_011f4464)
 void __cdecl BSTexturePalette_RemoveAll();
 
 // Calls FUN_00a62030, deletes DAT_011f4468, destroys each ShaderEntry in the DAT_011f4464 array, frees it, and nulls both globals.

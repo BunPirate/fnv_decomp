@@ -276,9 +276,9 @@ class FUN_00d46be0_class
 class FUN_00d46c30 : public hkReferencedObject
 {
   public:
-    FUN_00d46be0_class* m_track;
-    int m_offset;
-    int m_memType;
+    FUN_00d46be0_class* m_track; // src: XBOX_RETAIL_PDB +0x8 (old: m_stream)
+    int m_offset; // src: XBOX_RETAIL_PDB +0xc (old: m_0c)
+    int m_memType; // src: XBOX_RETAIL_PDB +0x10 (old: m_ownership)
 
     virtual ~FUN_00d46c30() throw();
 };

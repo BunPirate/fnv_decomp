@@ -169,7 +169,7 @@ struct hkpProcessCollisionOutput
     int unk08, unk0c;
     TrackContact m_akContactPoints[256];
     TrackToi m_fTimeOfImpact;
-    hkPadSpu<void*> m_potentialContacts;
+    hkPadSpu<void*> m_potentialContacts; // src: XBOX_RETAIL_PDB +0x3080 (old: m_akContactRecords)
     int unk3074, unk3078, unk307c;
     hkpProcessCollisionOutput(hkpConstraintOwner* owner)
     {
@@ -198,8 +198,8 @@ typedef void (__thiscall* ProcessCollisionAgentFunc)(hkpCollisionAgent*,
 // pdb: structure hkpAgent3ProcessInput, size 0x80, bases: hkpAgent3Input, 2 members
 struct hkpAgent3ProcessInput : public hkpAgent3Input
 {
-    hkPadSpu<hkReal> m_distAtT1;
-    hkVector4 m_linearTimInfo;
+    hkPadSpu<hkReal> m_distAtT1; // src: XBOX_RETAIL_PDB +0x60 (old: m_fSubtypeValue)
+    hkVector4 m_linearTimInfo; // src: XBOX_RETAIL_PDB +0x70 (old: m_vSubtypePosition)
 };
 
 typedef void*(__cdecl* hkAgent3CleanupFunc)(hkpAgentNnEntry* entry, void* agentData, hkpContactMgr* mgr,
@@ -237,25 +237,25 @@ struct hkpProcessCollisionInput
 // pdb: structure hkpAgentNnMachinePaddedEntry, size 0x20, bases: hkpAgentNnEntry, 1 members
 struct hkpAgentNnMachinePaddedEntry : public hkpAgentNnEntry
 {
-    int m_padOutTo16BytesAlignment;
+    int m_padOutTo16BytesAlignment; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiRollingFrictionData)
     int m_padding3;
 };
 
 // pdb: structure hkpAgentNnMachineTimEntry, size 0x30, bases: hkpAgentNnEntry, 2 members
 struct hkpAgentNnMachineTimEntry : public hkpAgentNnEntry
 {
-    hkReal m_timeOfSeparatingNormal;
+    hkReal m_timeOfSeparatingNormal; // src: XBOX_RETAIL_PDB +0x18 (old: m_fFloatValue)
     int unk1c;
-    hkVector4 m_separatingNormal;
+    hkVector4 m_separatingNormal; // src: XBOX_RETAIL_PDB +0x20 (old: m_vSeparatingNormal)
 };
 
 // pdb: structure hkAgentNnMachineBodyTemp, size 0xa0, 4 members
 struct hkAgentNnMachineBodyTemp
 {
-    hkpCdBody m_bodyA;
-    hkpCdBody m_bodyB;
-    hkTransform m_transA;
-    hkTransform m_transB;
+    hkpCdBody m_bodyA; // src: XBOX_RETAIL_PDB +0x0 (old: m_pBodyA)
+    hkpCdBody m_bodyB; // src: XBOX_RETAIL_PDB +0x10 (old: m_pBodyB)
+    hkTransform m_transA; // src: XBOX_RETAIL_PDB +0x20 (old: m_kTransformA)
+    hkTransform m_transB; // src: XBOX_RETAIL_PDB +0x60 (old: m_kTransformB)
 };
 
 void* __cdecl hkAgentMachine_processTransformedShapes(void* cdBody, void* newCdBodies, void* newMotionStates, unsigned int numSlots, void* cdBodyHasTransformFlag);
@@ -453,7 +453,7 @@ extern "C"
 // pdb: structure hkpAgentNnSector, size 0x200, 1 members
 struct hkpAgentNnSector
 {
-    unsigned char m_data[512];
+    unsigned char m_data[512]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     hkpAgentNnEntry* getBegin()
     {
         return reinterpret_cast<hkpAgentNnEntry*>(&m_data[0]);

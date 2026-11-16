@@ -61,11 +61,11 @@ public:
     static hkReal ms_fRoundUpThreshold;
     static hkReal ms_fRoundUpThresholdInverse;
 
-    hkReal m_cylRadius;
-    hkReal m_cylBaseRadiusFactorForHeightFieldCollisions;
+    hkReal m_cylRadius; // src: XBOX_RETAIL_PDB +0x14 (old: m_fCylinderRadius)
+    hkReal m_cylBaseRadiusFactorForHeightFieldCollisions; // src: XBOX_RETAIL_PDB +0x18 (old: m_fCylinderRadiusSquared)
     char pad1C[0x4];
-    hkVector4 m_vertexA;
-    hkVector4 m_vertexB;
-    hkVector4 m_perpendicular1;
-    hkVector4 m_perpendicular2;
+    hkVector4 m_vertexA; // src: XBOX_RETAIL_PDB +0x20 (old: m_kVertexA)
+    hkVector4 m_vertexB; // src: XBOX_RETAIL_PDB +0x30 (old: m_kVertexB)
+    hkVector4 m_perpendicular1; // src: XBOX_RETAIL_PDB +0x40 (old: m_kPerpendicular1)
+    hkVector4 m_perpendicular2; // src: XBOX_RETAIL_PDB +0x50 (old: m_kPerpendicular2)
 };

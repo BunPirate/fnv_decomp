@@ -11,11 +11,11 @@ class TESFile;
 enum PACK_EVENT_ACTION_TYPE;
 
 // pdb: class PackageEventAction, size 0x10, 4 members
-class PackageEventAction
+class PackageEventAction // src: XBOX_RETAIL_PDB (old: PackageEventActionData_packageeventaction)
 {
 public:
-    TESIdleForm* pIdle;
-    Script* pResultScript;
+    TESIdleForm* pIdle; // src: XBOX_RETAIL_PDB +0x0 (old: m_pIdleForm)
+    Script* pResultScript; // src: XBOX_RETAIL_PDB +0x4 (old: m_pScript)
     TESTopic* pTopic;
     PACK_EVENT_ACTION_TYPE eType;
 

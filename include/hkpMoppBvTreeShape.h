@@ -33,7 +33,7 @@ public:
     Vector4Comparison castRayBundleImpl(const ShapeRayBundleCastInput& input, ShapeRayCastOutputArray& results,
                                   hkVector4ComparisonParameter mask) const throw();
 
-    hkpSingleShapeContainer m_child;
-    mutable int m_childSize;
+    hkpSingleShapeContainer m_child; // src: XBOX_RETAIL_PDB +0x30 (old: m_pChildAtom)
+    mutable int m_childSize; // src: XBOX_RETAIL_PDB +0x38 (old: m_iChildSize)
     int unk3C;
 };

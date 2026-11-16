@@ -15,7 +15,7 @@ public:
     virtual void Start() override;
     virtual void Finish() override;
 
-    unsigned int eAdditionalActorValue;
+    unsigned int eAdditionalActorValue; // src: XBOX_RETAIL_PDB +0x4c (old: m_uiUnknownValue)
 
     ShieldEffect(void*, void*, void*);
     void ApplyActorValueModifier(Actor* actor, float magnitude);

@@ -46,5 +46,5 @@ class NiBoolInterpolator : public NiKeyBasedInterpolator
     bool m_bBoolValue;
     unsigned char unk0D[3];
     NiPointer<NiBoolData> m_spBoolData;
-    unsigned int m_uiLastIdx;
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x14 (old: m_uiLastKeyIndex)
 };

@@ -4074,7 +4074,7 @@ char __cdecl Cmd_ResetPerformanceTimers_Execute()
 }
 }  // namespace fnv_005d74d0
 
-extern unsigned char TESImageSpaceModifier_bEnable;
+extern unsigned char TESImageSpaceModifier_bEnable; // src: XBOX_RETAIL_PDB 0x0118abb0 (old: DAT_0118abb0)
 
 // @fnv 0x005d7930
 // src: COMMUNITY 0x005d7930
@@ -43454,7 +43454,7 @@ typedef void (__thiscall *SetTextureFunction)(NiShadeProperty*, int, int, void*)
 
 class GlobalObjectO2_00a7b610;
 extern GlobalObjectO2_00a7b610 g_011f5ae0;
-extern GlobalObjectO2_00a7b610 BSShaderNoLightingProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSShaderNoLightingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa05c (old: g_011fa05c/g_kFalloffRTTI)
 
 
 // SetTexture must dispatch through virtual slot 61 in 0x005cf860.

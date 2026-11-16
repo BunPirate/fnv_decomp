@@ -7,7 +7,7 @@
 class NiSphereBV : public NiBoundingVolume
 {
 public:
-    NiSphere m_kSphere;
+    NiSphere m_kSphere; // src: XBOX_RETAIL_PDB +0x4 (old: m_kBoundingSphere)
 
     virtual void LoadBinary(NiStream& kStream) override;
     virtual void __thiscall SaveBinary(NiStream& kStream) override;

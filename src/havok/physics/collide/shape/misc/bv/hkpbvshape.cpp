@@ -16,8 +16,8 @@ struct C9D8F0Callback;
 class hkpBvShape : public hkpShape
 {
 public:
-    hkpShape* m_boundingVolumeShape;
-    hkpSingleShapeContainer m_childShape;
+    hkpShape* m_boundingVolumeShape; // src: XBOX_RETAIL_PDB +0x10 (old: m_pBvShapeReference)
+    hkpSingleShapeContainer m_childShape; // src: XBOX_RETAIL_PDB +0x14 (old: m_pContainedShape)
 
     __declspec(noinline) void ReleaseReference_00c9d930();
     hkpBvShape* Destroy(int flags);

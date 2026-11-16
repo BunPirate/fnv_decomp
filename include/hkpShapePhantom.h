@@ -20,5 +20,5 @@ public:
     void __thiscall SetWorldPosition(hkpRigidBody* position, float extraTolerance);
 
     char padA4[0xC];
-    hkMotionState m_motionState;
+    hkMotionState m_motionState; // src: XBOX_RETAIL_PDB +0xb0 (old: m_kMotionState)
 };

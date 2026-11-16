@@ -50,7 +50,7 @@ struct Program
     char _pad[0x14];
     ShaderMapBase* pkMap;
 };
-extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 // If the global Program and its map exist, gets the device's name and removes that entry from the map.
 // @fnv 0x00e93790
 void RemoveDeviceFromMap(Direct3DDeviceInterface* pkD3DDevice)

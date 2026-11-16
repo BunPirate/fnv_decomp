@@ -15,13 +15,13 @@ template <class T> class BSSimpleList;
 class ScriptLocals
 {
 public:
-    Script* m_pMasterScript;
-    char m_cFlags;
+    Script* m_pMasterScript; // src: XBOX_RETAIL_PDB +0x0 (old: m_pOwnerScript)
+    char m_cFlags; // src: XBOX_RETAIL_PDB +0x4 (old: m_cActionFlags)
     unsigned char layoutPadding5;
     unsigned short layoutPadding6;
-    BSSimpleList<FormFlagRecord*>* m_pActionList;
-    BSSimpleList<ScriptLocalVariable*>* m_pLocalList;
-    ScriptDefinition* m_pScriptEffectData;
+    BSSimpleList<FormFlagRecord*>* m_pActionList; // src: XBOX_RETAIL_PDB +0x8 (old: m_pLocalVariableList)
+    BSSimpleList<ScriptLocalVariable*>* m_pLocalList; // src: XBOX_RETAIL_PDB +0xc (old: m_pVariableList)
+    ScriptDefinition* m_pScriptEffectData; // src: XBOX_RETAIL_PDB +0x10 (old: m_pExtendedLocals)
 
     ScriptLocals();
     ~ScriptLocals();

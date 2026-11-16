@@ -4,7 +4,7 @@
 // src/gamebryo2.2/corelibs/nimain/niscmextradata.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nimain/niscmextradata.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern int NiSCMExtraData_ms_RTTI;
+extern int NiSCMExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01270908 (old: g_01270908)
 
 // @fnv 0x00ee89a0
 // src: COMMUNITY 0x00ee89a0

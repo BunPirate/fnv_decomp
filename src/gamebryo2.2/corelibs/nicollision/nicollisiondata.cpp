@@ -50,7 +50,7 @@ inline unsigned int StrArr::AddInline(char* pcElement)
 // src/gamebryo2.2/corelibs/nicollision/nicollisiondata.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nicollision/nicollisiondata.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern void* NiCollisionData_ms_RTTI;
+extern void* NiCollisionData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fab4 (old: g_0126fab4)
 
 // @fnv 0x00eacd20
 // src: COMMUNITY 0x00eacd20

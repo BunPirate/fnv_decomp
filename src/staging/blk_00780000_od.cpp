@@ -822,7 +822,7 @@ struct FUN_00788440 : Menu
     FUN_00788440();
     virtual ~FUN_00788440();
     void SetFlag(int, bool);
-    void Apply(void*);
+    void CalcLoadScreenTypeTextWindowFaces(void*);
 };
 // Initializes the view, clears the node and index arrays, queries the renderer view, sets flags, and applies the first item's data.
 // @fnv 0x00788440
@@ -855,7 +855,7 @@ FUN_00788440::FUN_00788440() : view(0.0f, 0.0f, 0.0f, 0.0f)
     {
         void* data = selected->Get();
         if (data)
-            Apply(&static_cast<Menu*>(data)->iMenuThickness);
+            CalcLoadScreenTypeTextWindowFaces(&static_cast<Menu*>(data)->iMenuThickness);
     }
 }
 

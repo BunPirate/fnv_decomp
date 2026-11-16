@@ -24,8 +24,8 @@ class BSDecalPlacementVectorExtraData : public NiIntegerExtraData
     // for this class only, so that unit defines it inline here.
     static void* operator new(unsigned int size);
 
-    unsigned short usGroupCount;
+    unsigned short usGroupCount; // src: XBOX_RETAIL_PDB +0x10 (old: count)
     unsigned short unk12;
-    void* pDecalPlacementGroups[8];
-    ExtraList skinnedObjects;
+    void* pDecalPlacementGroups[8]; // src: XBOX_RETAIL_PDB +0x14 (old: groups)
+    ExtraList skinnedObjects; // src: XBOX_RETAIL_PDB +0x34 (old: list)
 };

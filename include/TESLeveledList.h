@@ -68,9 +68,9 @@ public:
     // The compiler supplies __vecDelDtor(unsigned int).
 
     BSSimpleList<LeveledObject*> leveledList;
-    unsigned char cChanceNone;
-    unsigned char cLLFlags;
+    unsigned char cChanceNone; // src: XBOX_RETAIL_PDB +0xc (old: m_pChanceGlobal)
+    unsigned char cLLFlags; // src: XBOX_RETAIL_PDB +0xd (old: m_ucChanceNone)
     unsigned char layoutPaddingE[2];
-    TESGlobal* pChanceGlobal;
-    BSSimpleList<LeveledObject*> ScriptAddedList;
+    TESGlobal* pChanceGlobal; // src: XBOX_RETAIL_PDB +0x10 (old: m_pLevelGlobal)
+    BSSimpleList<LeveledObject*> ScriptAddedList; // src: XBOX_RETAIL_PDB +0x14 (old: m_kLeveledObjects)
 };

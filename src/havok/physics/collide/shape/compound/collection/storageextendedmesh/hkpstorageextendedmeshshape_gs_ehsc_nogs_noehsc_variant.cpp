@@ -89,7 +89,7 @@ static __declspec(noinline) int numIndices_00d49c20(int stride, int triangles)
     }
 }
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 hkpNamedMeshMaterialClass, hkpStorageExtendedMeshShapeMaterialClass;
+extern GlobalObjectO2_00d472a0 hkpNamedMeshMaterialClass, hkpStorageExtendedMeshShapeMaterialClass; // src: XBOX_RETAIL_PDB hkpStorageExtendedMeshShapeMaterialClass 0x01268c8c (old: DAT_01268c8c/g_01268c8c/g_kHkpMeshMaterialClass); hkpNamedMeshMaterialClass 0x01269bb4 (old: g_01269bb4/g_unk01269bb4)
 
 template <class T> inline void initializeItems(T*, int)
 {}

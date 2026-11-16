@@ -86,6 +86,6 @@ public:
     void DisplayBehaviorGraph(hkArray<int>& kWordVars, hkArray<int>& kWordStack, hkArray<int>& kQuadVars, hkArray<hkVector4_S>& kQuadStack,
         hkArray<char*>& kNodes, hkArray<int>& kStates, hkArray<int>& kTransitions, hkArray<hkQsTransform_S>& kPoses);
 
-    hkArray<hkDebugDisplayHandler*> m_debugDisplayHandlers;
-    mutable PhysicsSimulationContext* m_arrayLock;
+    hkArray<hkDebugDisplayHandler*> m_debugDisplayHandlers; // src: XBOX_RETAIL_PDB +0x8 (old: m_kDebugDisplayHandlers)
+    mutable PhysicsSimulationContext* m_arrayLock; // src: XBOX_RETAIL_PDB +0x14 (old: m_pPhysicsSimulationContext)
 };

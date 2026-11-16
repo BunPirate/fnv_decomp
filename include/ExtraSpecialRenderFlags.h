@@ -15,6 +15,6 @@ public:
     unsigned int GetFlags();
     void SetFlags(unsigned int flags);
 
-    unsigned int m_flags;
+    unsigned int m_flags; // src: XBOX_RETAIL_PDB +0xc (old: uiFlags)
     float m_fRenderValue;
 };

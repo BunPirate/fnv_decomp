@@ -1526,9 +1526,9 @@ class Character;
 class Conversation
 {
   public:
-    void* lDialogueItems;
+    void* lDialogueItems; // src: XBOX_RETAIL_PDB +0x0 (old: unk00)
     void* unk04;
-    void* pCurrentItem;
+    void* pCurrentItem; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     Conversation(Character*, PlayerCharacter*, TESTopic*);
     ~Conversation();
     void* FUN_00798450(unsigned int);

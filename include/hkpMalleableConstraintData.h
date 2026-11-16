@@ -10,7 +10,7 @@ public:
     hkpMalleableConstraintData(hkpConstraintData* ref) throw();
     virtual ~hkpMalleableConstraintData() throw();
 
-    hkpConstraintData* m_constraintData;
-    hkpBridgeAtoms m_atoms;
-    float m_strength;
+    hkpConstraintData* m_constraintData; // src: XBOX_RETAIL_PDB +0xc (old: m_pConstraintData)
+    hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
+    float m_strength; // src: XBOX_RETAIL_PDB +0x1c (old: m_fSpringStrength)
 };

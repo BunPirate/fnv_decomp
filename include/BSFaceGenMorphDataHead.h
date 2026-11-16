@@ -25,8 +25,8 @@ public:
 
     static const NiRTTI ms_kRTTI;
 
-    BSFaceGenMorph** ppExpressionMorphs;
-    BSFaceGenMorph** ppModifierMorphs;
-    BSFaceGenMorph** ppPhonemeMorphs;
-    BSFaceGenMorph** ppCustomMorphs;
+    BSFaceGenMorph** ppExpressionMorphs; // src: XBOX_RETAIL_PDB +0x8 (old: expressions)
+    BSFaceGenMorph** ppModifierMorphs; // src: XBOX_RETAIL_PDB +0xc (old: modifiers)
+    BSFaceGenMorph** ppPhonemeMorphs; // src: XBOX_RETAIL_PDB +0x10 (old: phonemes)
+    BSFaceGenMorph** ppCustomMorphs; // src: XBOX_RETAIL_PDB +0x14 (old: custom)
 };

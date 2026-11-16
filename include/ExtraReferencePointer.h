@@ -8,5 +8,5 @@ class TESObjectREFR;
 class ExtraReferencePointer : public BSExtraData
 {
 public:
-    TESObjectREFR* pRef;
+    TESObjectREFR* pRef; // src: XBOX_RETAIL_PDB +0xc (old: ref)
 };

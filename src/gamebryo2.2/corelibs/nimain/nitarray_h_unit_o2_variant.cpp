@@ -95,7 +95,7 @@ struct GlobalObjectO2_00a7b610
 };
 
 extern __declspec(thread) GlobalObjectO2_00a7b610 g_tls_object;
-extern GlobalObjectO2_00a7b610* bhkSpringDamperConstraintMotor_ms_RTTI;
+extern GlobalObjectO2_00a7b610* bhkSpringDamperConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268740 (old: DAT_01268740/g_01268740)
 
 char* __cdecl _FUN_00a7d330(GlobalObjectO2_00a7b610* object);
 
@@ -219,7 +219,7 @@ class CC31C0MemContext
     int m_iPrevious;
 };
 
-extern const char* bhkSpringAction_ms_RTTI;
+extern const char* bhkSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685b0 (old: DAT_012685b0/g_012685b0/g_pcCC31C0ClassName)
 extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcName);
 
 class CC31C0Object
@@ -354,7 +354,7 @@ struct CF4520AllocTagScope
         g_iCC4740AllocTag = saved;
     }
 };
-extern const char* bhkVelocityConstraintMotor_ms_RTTI;
+extern const char* bhkVelocityConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268738 (old: DAT_01268738/g_01268738)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* name);
 // @fnv 0x00cf4520
 // src: XBOX_PDB 0x00cf4520
@@ -384,7 +384,7 @@ struct BCCCFD0AllocTagScope
     }
 };
 
-extern const char* bhkExtendedMeshShape_ms_RTTI;
+extern const char* bhkExtendedMeshShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126867c (old: DAT_0126867c/g_0126867c/g_pcCCCFD0Name)
 
 class CCCFD0Base
 {
@@ -503,7 +503,7 @@ void CAA010This::hkMalleableConstraintCinfo_GetViewerStrings(StrArr* apStrings)
     }
 }
 
-extern const char* bhkPositionConstraintMotor_ms_RTTI;
+extern const char* bhkPositionConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268730 (old: DAT_01268730/g_01268730)
 // @fnv 0x00cf4300
 // src: XBOX_PDB 0x00cf4300
 // pdb: bhkPositionConstraintMotor::GetViewerStrings | bhkPositionConstraintMotor.obj | retail, upstream name already matches, high

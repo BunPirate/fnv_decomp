@@ -20,10 +20,10 @@ public:
     void FUN_00633190();
     void LoadGeometry(void*);
 
-    NiPointer<NiNode> spAtmosphere;
-    NiPointer<NiFogProperty> spFog;
-    NiPointer<NiNode> spSkyQuadNode;
-    NiPointer<NiNode> spSkyQuad;
-    unsigned char bUpdateFogDistance;
+    NiPointer<NiNode> spAtmosphere; // src: XBOX_RETAIL_PDB +0x8 (old: m_spAtmosphere)
+    NiPointer<NiFogProperty> spFog; // src: XBOX_RETAIL_PDB +0xc (old: m_spFog)
+    NiPointer<NiNode> spSkyQuadNode; // src: XBOX_RETAIL_PDB +0x10 (old: m_spSkyNode)
+    NiPointer<NiNode> spSkyQuad; // src: XBOX_RETAIL_PDB +0x14 (old: m_spSkyShape)
+    unsigned char bUpdateFogDistance; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
     unsigned char unk19[3];
 };

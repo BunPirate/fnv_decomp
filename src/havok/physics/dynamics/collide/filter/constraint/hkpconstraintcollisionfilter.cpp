@@ -56,7 +56,7 @@ struct hkpPairCollisionFilter : hkpCollisionFilter
     unsigned int unk30;
     unsigned int unk34;
     unsigned int unk38;
-    unsigned int m_disabledPairs;
+    unsigned int m_disabledPairs; // src: XBOX_RETAIL_PDB +0x30 (old: unk3C)
     hkpPairCollisionFilter(void*);
 };
 struct Secondary

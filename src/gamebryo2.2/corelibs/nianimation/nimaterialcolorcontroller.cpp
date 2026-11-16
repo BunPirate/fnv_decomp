@@ -76,7 +76,7 @@ void __stdcall NiMaterialColorController_GetViewerStrings(StrArr* pkStrings)
 }
 }  // namespace fnv_00a4b880
 
-extern "C" void* BSClearZNode_ms_RTTI;
+extern "C" void* BSClearZNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f74 (old: g_01201f74)
 
 // @fnv 0x00bc29d0
 // src: XBOX_PDB 0x00bc29d0
@@ -204,7 +204,7 @@ bool NiMaterialColorController::IsEqual(NiObject* pkObject) const
     return ((unsigned char)((NiMaterialColorController*)pkObject)->m_uiObjectFlags ^ (unsigned char)m_uiObjectFlags) & 7 ? false : true;
 }
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // NiColor is the three-float RGB type; NiColorA has a fourth alpha component.
 inline NiColor::NiColor()

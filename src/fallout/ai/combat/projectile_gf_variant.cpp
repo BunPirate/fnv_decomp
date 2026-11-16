@@ -165,7 +165,7 @@ struct FloatSetting
     float* Setting_Float_00403e20();
 };
 struct FormTypeDescriptor;
-extern FormTypeDescriptor bhkCollisionBox_ms_RTTI;
+extern FormTypeDescriptor bhkCollisionBox_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268444 (old: DAT_01268444/g_01268444/g_kRTTI9C64/g_pcCBEA40Name)
 extern AudioController* DAT_011dea10;
 extern EventEntity* DAT_011dea3c;
 extern unsigned char DAT_011f20a4;

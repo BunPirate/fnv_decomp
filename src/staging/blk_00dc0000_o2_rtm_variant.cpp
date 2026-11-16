@@ -257,7 +257,7 @@ struct FUN_00dcc670_Class
 };
 extern int DAT_010d7540;
 extern FUN_00dcc670_Manager* DAT_01268364;
-extern int hkpNamedMeshMaterialClass;
+extern int hkpNamedMeshMaterialClass; // src: XBOX_RETAIL_PDB 0x01269bb4 (old: g_01269bb4/g_unk01269bb4)
 int* __cdecl Object_GetGlobalObjectAddress_00dccb00();
 extern int DAT_01269be4;
 int* __cdecl Runtime_GetDAT01269be4Address();
@@ -266,7 +266,7 @@ struct FUN_00dced30_cls
     virtual void m_v00(int arg);
 };
 void __cdecl Object_ForwardCall_00dced30(FUN_00dced30_cls* pObject);
-extern int hkpBreakableConstraintDataClass;
+extern int hkpBreakableConstraintDataClass; // src: XBOX_RETAIL_PDB 0x01269c44 (old: DAT_01269c44/g_01269c44)
 int __cdecl Object_ComputeValue_00dced40();
 struct FUN_00d4dfc0_class
 {
@@ -951,7 +951,7 @@ static void SkipWhitespace(TokenReader* stream);
 extern TokenReader* volatile inputStream;
 void MatchCaller();
 struct CpuOpaque;
-extern CpuOpaque hkpWeldingUtilityClass;
+extern CpuOpaque hkpWeldingUtilityClass; // src: XBOX_RETAIL_PDB 0x01269c14 (old: DAT_01269c14/g_01269c14)
 CpuOpaque* __cdecl Runtime_GetDAT01269c14Address();
 struct RefObj
 {

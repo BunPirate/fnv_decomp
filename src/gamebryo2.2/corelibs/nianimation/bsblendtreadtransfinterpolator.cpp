@@ -23,7 +23,7 @@ bool BSBlendTreadTransfInterpolator::UpdateTransform(float time, NiObjectNET* ta
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 BSBlendTreadTransfInterpolator_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSBlendTreadTransfInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3ed0 (old: g_011f3ed0)
 
 // @fnv 0x00a42fe0
 // src: COMMUNITY 0x00a42fe0

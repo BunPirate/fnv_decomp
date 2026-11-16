@@ -120,7 +120,7 @@ public:
             int unk0dc;
         };
     };
-    AnimState xEntryText;
+    AnimState xEntryText; // src: XBOX_RETAIL_PDB +0xe0 (old: anim)
     union
     {
         Tile* m_pTiles[8];
@@ -136,30 +136,30 @@ public:
             int unk128;
         };
     };
-    BSSoundHandle Sounds[5];
-    ListState xLogTiles;
-    ListState xGuessTiles;
-    PairState wordList;
-    ListState xUsedBonuses;
-    int pTerminal;
-    int pTerminalRef;
-    int pPassword;
-    int iNumGuesses;
-    int iTotGuesses;
-    int iWordsHave;
-    int iWordLength;
-    int iBufferPos;
-    int iYStart;
-    int iYInterval;
-    int iLastOffset;
-    int pLastTarget;
-    int eStage;
-    Tile* pOverTile;
-    int iCursorX;
-    int dwAccessTime;
-    int pCursorVis;
-    bool bSuppressEntry;
-    unsigned char bUsedReset[3];
+    BSSoundHandle Sounds[5]; // src: XBOX_RETAIL_PDB +0x12c (old: sounds)
+    ListState xLogTiles; // src: XBOX_RETAIL_PDB +0x168 (old: list168)
+    ListState xGuessTiles; // src: XBOX_RETAIL_PDB +0x174 (old: list174)
+    PairState wordList; // src: XBOX_RETAIL_PDB +0x180 (old: pair180)
+    ListState xUsedBonuses; // src: XBOX_RETAIL_PDB +0x188 (old: list188)
+    int pTerminal; // src: XBOX_RETAIL_PDB +0x194 (old: unk194)
+    int pTerminalRef; // src: XBOX_RETAIL_PDB +0x198 (old: unk198)
+    int pPassword; // src: XBOX_RETAIL_PDB +0x19c (old: unk19c)
+    int iNumGuesses; // src: XBOX_RETAIL_PDB +0x1a0 (old: unk1a0)
+    int iTotGuesses; // src: XBOX_RETAIL_PDB +0x1a4 (old: unk1a4)
+    int iWordsHave; // src: XBOX_RETAIL_PDB +0x1a8 (old: unk1a8)
+    int iWordLength; // src: XBOX_RETAIL_PDB +0x1ac (old: unk1ac)
+    int iBufferPos; // src: XBOX_RETAIL_PDB +0x1b0 (old: unk1b0)
+    int iYStart; // src: XBOX_RETAIL_PDB +0x1b4 (old: unk1b4)
+    int iYInterval; // src: XBOX_RETAIL_PDB +0x1b8 (old: unk1b8)
+    int iLastOffset; // src: XBOX_RETAIL_PDB +0x1bc (old: unk1bc)
+    int pLastTarget; // src: XBOX_RETAIL_PDB +0x1c0 (old: unk1c0)
+    int eStage; // src: XBOX_RETAIL_PDB +0x1c4 (old: m_iStage)
+    Tile* pOverTile; // src: XBOX_RETAIL_PDB +0x1c8 (old: m_pkCursorTile)
+    int iCursorX; // src: XBOX_RETAIL_PDB +0x1cc (old: m_iCursorIndex)
+    int dwAccessTime; // src: XBOX_RETAIL_PDB +0x1d0 (old: unk1d0)
+    int pCursorVis; // src: XBOX_RETAIL_PDB +0x1d4 (old: unk1d4)
+    bool bSuppressEntry; // src: XBOX_RETAIL_PDB +0x1d8 (old: m_bBlink)
+    unsigned char bUsedReset[3]; // src: XBOX_RETAIL_PDB +0x1d9 (old: unk1d9)
 
     HackingMenu();
     void* Destroy(unsigned int flags);

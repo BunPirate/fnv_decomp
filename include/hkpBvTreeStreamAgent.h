@@ -55,7 +55,7 @@ public:
     static hkpCollisionAgent* __cdecl dispatchBvTreeConvexList(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpContactMgr* pMgr);
     static hkpCollisionAgent* __cdecl dispatchConvexListBvTree(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpContactMgr* pMgr);
 
-    hkpCollisionDispatcher* m_dispatcher;
-    hkAabb m_cachedAabb;
-    AgentSectorPointerArray m_agentTrack;
+    hkpCollisionDispatcher* m_dispatcher; // src: XBOX_RETAIL_PDB +0xc (old: m_pCollisionDispatcher)
+    hkAabb m_cachedAabb; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBoundingBox)
+    AgentSectorPointerArray m_agentTrack; // src: XBOX_RETAIL_PDB +0x30 (old: m_kAgentNnTrack)
 };

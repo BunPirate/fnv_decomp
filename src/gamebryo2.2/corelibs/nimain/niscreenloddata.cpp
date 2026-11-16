@@ -64,7 +64,7 @@ struct FUN_00a95cb0_shell : public NiScreenLODData
     void* NiScreenLODData_GetRTTI();
 };
 
-extern "C" void* NiScreenLODData_ms_RTTI;
+extern "C" void* NiScreenLODData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ee8 (old: g_011f5ee8)
 
 // @fnv 0x00a95cb0
 // src: COMMUNITY 0x00a95cb0

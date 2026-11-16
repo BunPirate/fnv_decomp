@@ -215,7 +215,7 @@ class NiD3DShaderProgram;
 class NiWireframeProperty : public NiProperty
 {
   public:
-    unsigned short m_uFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiObjectFlags)
 };
 
 class GraphicsRenderer

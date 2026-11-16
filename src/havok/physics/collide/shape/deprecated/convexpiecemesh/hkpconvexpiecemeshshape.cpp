@@ -204,9 +204,9 @@ template <class T> inline void CollectArray(hkStatisticsCollector* pkCollector, 
 class hkpConvexPieceStreamData : public hkReferencedObject
 {
   public:
-    hkArray<hkUint32> m_convexPieceStream;
-    hkArray<hkUint32> m_convexPieceOffsets;
-    hkArray<hkUint32> m_convexPieceSingleTriangles;
+    hkArray<hkUint32> m_convexPieceStream; // src: XBOX_RETAIL_PDB +0x8 (old: m_pConvexPieceStreamData)
+    hkArray<hkUint32> m_convexPieceOffsets; // src: XBOX_RETAIL_PDB +0x14 (old: m_kSecondUInt32Array)
+    hkArray<hkUint32> m_convexPieceSingleTriangles; // src: XBOX_RETAIL_PDB +0x20 (old: m_kThirdUInt32Array)
 };
 
 // The +0x18/+0x1c pointers and base statistics call at 0x00d213e0 identify a convex-piece mesh, not display geometry.

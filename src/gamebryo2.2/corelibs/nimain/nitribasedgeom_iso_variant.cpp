@@ -6,7 +6,7 @@
 #include "../../../../include/NiUpdateData.h"
 
 class GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiLines_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiLines_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a48 (old: DAT_011f4a48/g_011f4a48)
 
 // @fnv 0x00a74790
 // src: COMMUNITY 0x00a74790

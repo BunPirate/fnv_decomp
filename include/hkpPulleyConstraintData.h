@@ -23,7 +23,7 @@ public:
     virtual void vf15(int a);
 
     int unk0c;
-    int m_atoms;
+    int m_atoms; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
     int unk14;
     int unk18;
     int unk1c;

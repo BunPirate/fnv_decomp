@@ -11,6 +11,6 @@ public:
     virtual bool IsEffectValid(MagicTarget* apTarget);
     virtual void Start();
 
-    int eSpellType;
-    int eArchetypeID;
+    int eSpellType; // src: XBOX_RETAIL_PDB +0x48 (old: m_eSpellType)
+    int eArchetypeID; // src: XBOX_RETAIL_PDB +0x4c (old: m_iCureType)
 };

@@ -207,7 +207,7 @@ __declspec(noinline) void Base_00cfd660::target() { g_sink_00cfd660 = 1; }
 // src: HAVOK_SRC 0x00cfd660
 void Derived_00cfd660::hkpSimpleConstraintContactMgr_getAllContactPointIds() { Base_00cfd660::target(); }
 
-extern int hkpSimpleConstraintContactMgrClass;
+extern int hkpSimpleConstraintContactMgrClass; // src: XBOX_RETAIL_PDB 0x01268798 (old: DAT_01268798/g_01268798)
 
 // @fnv 0x00cfdad0
 // src: COMMUNITY 0x00cfdad0
@@ -346,13 +346,13 @@ class hkpWorldCFD;
 // No shared removed-event definition is available yet.
 // pdb: structure hkpContactPointRemovedEvent, size 0x1c, 7 members
 struct hkpContactPointRemovedEvent {
-    hkUint16 m_contactPointId;
-    hkpContactPointPropertiesCFD* m_contactPointProperties;
-    hkpEntity* m_entityA;
-    hkpEntity* m_entityB;
-    int m_callbackFiredFrom;
-    hkpSimpleConstraintContactMgr* m_internalContactMgr;
-    hkpConstraintOwner* m_constraintOwner;
+    hkUint16 m_contactPointId; // src: XBOX_RETAIL_PDB +0x0 (old: m_usContactPointId)
+    hkpContactPointPropertiesCFD* m_contactPointProperties; // src: XBOX_RETAIL_PDB +0x4 (old: m_pContactPointProperties)
+    hkpEntity* m_entityA; // src: XBOX_RETAIL_PDB +0x8 (old: m_pEntityA)
+    hkpEntity* m_entityB; // src: XBOX_RETAIL_PDB +0xc (old: m_pEntityB)
+    int m_callbackFiredFrom; // src: XBOX_RETAIL_PDB +0x10 (old: m_iUnknownValue)
+    hkpSimpleConstraintContactMgr* m_internalContactMgr; // src: XBOX_RETAIL_PDB +0x14 (old: m_pContactMgr)
+    hkpConstraintOwner* m_constraintOwner; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintOwner)
 
     hkpContactPointRemovedEvent(hkUint16 id, hkpSimpleConstraintContactMgr* pkMgr, hkpConstraintOwner* pkOwner, hkpContactPointPropertiesCFD* pkProps, hkpEntity* pkA, hkpEntity* pkB)
         : m_contactPointId(id), m_contactPointProperties(pkProps), m_entityA(pkA), m_entityB(pkB), m_internalContactMgr(pkMgr), m_constraintOwner(pkOwner) {}

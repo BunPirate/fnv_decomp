@@ -37,15 +37,15 @@ public:
     virtual void HandleControllerConnectOrDisconnect(bool);
 
     TileMenu* pMenu;
-    BSSimpleList<Tile__TileTemplate*> xTemplates;
-    Tile* pLastTile;
-    int iIsModal;
-    int iMenuThickness;
-    bool bRenderedMenu;
-    bool bDeleteTemplates;
+    BSSimpleList<Tile__TileTemplate*> xTemplates; // src: XBOX_RETAIL_PDB +0x8 (old: m_kTileTemplateList)
+    Tile* pLastTile; // src: XBOX_RETAIL_PDB +0x10 (old: m_pMenuTile)
+    int iIsModal; // src: XBOX_RETAIL_PDB +0x14 (old: m_iModalMenuId)
+    int iMenuThickness; // src: XBOX_RETAIL_PDB +0x18 (old: m_iSecondaryValue)
+    bool bRenderedMenu; // src: XBOX_RETAIL_PDB +0x1c (old: m_bIsSpecial)
+    bool bDeleteTemplates; // src: XBOX_RETAIL_PDB +0x1d (old: m_bVisible)
     unsigned char layoutPadding1E[2];
-    int iClass;
-    Interface::FADE_STATE xFadeState;
+    int iClass; // src: XBOX_RETAIL_PDB +0x20 (old: m_iMenuId)
+    Interface::FADE_STATE xFadeState; // src: XBOX_RETAIL_PDB +0x24 (old: m_eFadeState)
 
     Menu();
     void SetTileMenu(TileMenu*, bool);

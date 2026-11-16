@@ -8,7 +8,7 @@
 // src/gamebryo2.2/corelibs/nianimation/nilookatcontroller.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nianimation/nilookatcontroller.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* NiLookAtController_ms_RTTI;
+extern "C" void* NiLookAtController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f98 (old: CtrlRTTI_B_a42b70/g_011f3f98)
 
 // @fnv 0x00a4cd30
 // src: COMMUNITY 0x00a4cd30

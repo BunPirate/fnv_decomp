@@ -11,7 +11,7 @@ class hkpStiffSpringConstraintAtom : public hkpConstraintAtom
 {
   public:
     char pad2[0x2];
-    hkReal m_length;  // +0x4
+    hkReal m_length;  // +0x4 // src: XBOX_RETAIL_PDB +0x4 (old: m_fRestLength)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpStiffSpringConstraintAtom[(sizeof(hkpStiffSpringConstraintAtom) == 0x8) ? 1 : -1];

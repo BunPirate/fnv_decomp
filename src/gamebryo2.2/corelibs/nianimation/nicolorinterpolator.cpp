@@ -123,7 +123,7 @@ NiColorInterpolator* __fastcall NiColorInterpolatorConstructor(NiColorInterpolat
 }
 }  // namespace fnv_00a3bd10
 
-extern "C" void* NiColorInterpolator_ms_RTTI;
+extern "C" void* NiColorInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3730 (old: _g_011f3730/g_011f3730)
 
 // @fnv 0x00a3bd70
 const NiRTTI* NiColorInterpolator::GetRTTI() const

@@ -707,7 +707,7 @@ struct Scope2490
 // pdb: class Movie, size 0x28, 10 members
 struct Movie
 {
-    int pBink, dxDevice, pTextureSet, iFrameCount, iNumFramesSkipped, fScale, fXCoordOffset, fYCoordOffset, ePlayingState, bLoading;
+    int pBink, dxDevice, pTextureSet, iFrameCount, iNumFramesSkipped, fScale, fXCoordOffset, fYCoordOffset, ePlayingState, bLoading; // src: XBOX_RETAIL_PDB pBink +0x0 (old: unk00); dxDevice +0x4 (old: unk04); pTextureSet +0x8 (old: unk08); iFrameCount +0xc (old: unk0C); iNumFramesSkipped +0x10 (old: unk10); fScale +0x14 (old: unk14); fXCoordOffset +0x18 (old: unk18); fYCoordOffset +0x1c (old: unk1C); ePlayingState +0x20 (old: unk20); bLoading +0x24 (old: unk24)
     Movie();
     static void* operator new(unsigned int size)
     {

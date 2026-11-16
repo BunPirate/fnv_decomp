@@ -691,11 +691,11 @@ virtual hkReal GetHitFraction();
 virtual hkReal GetHitDistance(const hkAabbTree<hkAabbTreeData::RayQueryAabb,hkUint16>::Node*leaf);
 virtual hkReal GetHitDistance(const hkAabbTree<hkAabbTreeData::QuantizedAabb,hkUint16>::Node*leaf);
 public:
-const hkpGroupFilter*m_filter;
-hkpFixedBufferCdPointCollector*m_castCollector;
-const hkpCollidable*m_collidable;
-hkpShapeType m_shapeType;
-ShapeSweepParameters m_input;};
+const hkpGroupFilter*m_filter; // src: XBOX_RETAIL_PDB +0x10 (old: m_iFilter)
+hkpFixedBufferCdPointCollector*m_castCollector; // src: XBOX_RETAIL_PDB +0x14 (old: m_pPointCollector)
+const hkpCollidable*m_collidable; // src: XBOX_RETAIL_PDB +0x18 (old: m_kCollidable)
+hkpShapeType m_shapeType; // src: XBOX_RETAIL_PDB +0x1c (old: m_iType)
+ShapeSweepParameters m_input;}; // src: XBOX_RETAIL_PDB +0x20 (old: m_pRayCastInput)
 // @fnv 0x00df7340
 // src: XBOX_PDB 0x00df7340
 // pdb: hkCpuWorldLinearCastJob | hkpCpuWorldLinearCastJob.obj | retail, string-set bridge, high

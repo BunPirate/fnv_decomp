@@ -10,7 +10,7 @@ class hkpSimpleShapePhantomCollisionDetail;
 class hkpSimpleShapePhantom : public hkpShapePhantom
 {
 public:
-    hkArray<hkpSimpleShapePhantomCollisionDetail> m_collisionDetails;
-    hkBool m_orderDirty;
+    hkArray<hkpSimpleShapePhantomCollisionDetail> m_collisionDetails; // src: XBOX_RETAIL_PDB +0x160 (old: m_kCollisionDetails)
+    hkBool m_orderDirty; // src: XBOX_RETAIL_PDB +0x16c (old: m_bOrderDirty)
     char pad16D[0x3];
 };

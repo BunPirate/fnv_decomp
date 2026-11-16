@@ -47,8 +47,8 @@ public:
     bool GetManagerControlled() const;
     bool AdvanceController(float time);
 
-    NiTPrimitiveArray<NiPointer<NiTexture> > m_kTextures;
-    unsigned int m_uiIndex;
-    unsigned int m_uiAffectedMap;
-    void* m_pcCtlrID;
+    NiTPrimitiveArray<NiPointer<NiTexture> > m_kTextures; // src: XBOX_RETAIL_PDB +0x38 (old: m_kTextureSwapList)
+    unsigned int m_uiIndex; // src: XBOX_RETAIL_PDB +0x48 (old: m_uiPosition)
+    unsigned int m_uiAffectedMap; // src: XBOX_RETAIL_PDB +0x4c (old: m_eAffectedMap)
+    void* m_pcCtlrID; // src: XBOX_RETAIL_PDB +0x50 (old: m_pkBuf)
 };

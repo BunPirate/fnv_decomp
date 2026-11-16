@@ -10,7 +10,7 @@
 class TESGlobal : public TESForm
 {
 public:
-    BSStringT<char> cFormEditorID;
+    BSStringT<char> cFormEditorID; // src: XBOX_RETAIL_PDB +0x18 (old: cGlobalEditorID)
     char cType;
     unsigned char layoutPadding21;
     unsigned short layoutPadding22;

@@ -1290,8 +1290,8 @@ struct FUN_004a4650_ListBase
 // Iterates the linked list from m_pItemHead, deleting each item via DeleteItem, then clears the head, prev and tail pointers.
 // @fnv 0x004a4650
 // src: XBOX_PDB 0x004a4650
-// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::RemoveAll | BGSDecalManager.obj | debug, call graph, high, not renamed: the public Xbox 360 symbol already names it; the code is probably folded with another original
-// pdb locals: pkCurr, pkDel
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::RemoveAll | BGSDecalManager.obj | debug, call graph, disputed (was high), not renamed: the public Xbox 360 symbol already names it; the code is probably folded with another original
+// pdb locals (of the disputed candidate, unverified): pkCurr, pkDel
 void __fastcall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll(FUN_004a4650_ListBase* self)
 {
     NiTListItem<NiPointer<ObstacleData> >* item = self->m_pItemHead;

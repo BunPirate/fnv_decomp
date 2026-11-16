@@ -10,7 +10,7 @@
 class NiPSysSphereEmitter : public NiPSysVolumeEmitter
 {
   public:
-    float m_fEmitterRadius;
+    float m_fEmitterRadius; // src: XBOX_RETAIL_PDB +0x58 (old: m_fBoundRadius)
     virtual void LoadBinary(NiStream& kStream);
     virtual void SaveBinary(NiStream& kStream);
 };

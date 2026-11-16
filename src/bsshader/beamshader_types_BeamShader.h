@@ -20,12 +20,12 @@ class GraphicsRenderer;
 class BeamShader : public BSShader
 {
   public:
-    BSShaderManager::eBSSMPassEnum ePass;            // +0x6C, 4 bytes
-    float fTimer;                                      // +0x70, 4 bytes
-    float fVars[16];                               // +0x74, 64 bytes
-    NiPointer<NiD3DPass> spBeamPass;                   // +0xB4, 4 bytes
-    NiPointer<NiD3DVertexShader> spBeamVertexShader;  // +0xB8, 4 bytes
-    NiPointer<NiD3DPixelShader> spBeamPixelShader;    // +0xBC, 4 bytes
+    BSShaderManager::eBSSMPassEnum ePass;            // +0x6C, 4 bytes // src: XBOX_RETAIL_PDB +0x6c (old: m_ePass)
+    float fTimer;                                      // +0x70, 4 bytes // src: XBOX_RETAIL_PDB +0x70 (old: m_fPackageValue)
+    float fVars[16];                               // +0x74, 64 bytes // src: XBOX_RETAIL_PDB +0x74 (old: m_fMatrix)
+    NiPointer<NiD3DPass> spBeamPass;                   // +0xB4, 4 bytes // src: XBOX_RETAIL_PDB +0xb4 (old: m_pD3DPass)
+    NiPointer<NiD3DVertexShader> spBeamVertexShader;  // +0xB8, 4 bytes // src: XBOX_RETAIL_PDB +0xb8 (old: D3DShaderRenderData)
+    NiPointer<NiD3DPixelShader> spBeamPixelShader;    // +0xBC, 4 bytes // src: XBOX_RETAIL_PDB +0xbc (old: D3DShaderPassState)
     virtual void InitializeVertexShader();
     virtual void InitializePixelShader();
     // const NiRTTI* __cdecl BeamShader::*()

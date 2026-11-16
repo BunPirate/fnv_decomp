@@ -46,7 +46,7 @@ class NiUnionBV;
 extern NiUnionBV* DAT_011f4788;
 void NiStream__SDMShutdown();
 extern "C" void NiFreeAlias(void*);
-extern void* NiPoint3_ms_pSqrtTable;
+extern void* NiPoint3_ms_pSqrtTable; // src: XBOX_RETAIL_PDB 0x011f4aa8 (old: DAT_011f4aa8)
 void FreeGlobalAlias();
 extern int DAT_0109df2c;
 extern int DAT_011f4ab4;
@@ -174,7 +174,7 @@ struct A616E0Pool
 {
     A616E0Bucket m_buckets[7];
 };
-extern A616E0Pool* BSTexturePalette_pTexMapA;
+extern A616E0Pool* BSTexturePalette_pTexMapA; // src: XBOX_RETAIL_PDB 0x011f4464 (old: DAT_011f4464)
 bool __cdecl BSTexturePalette_GetFirstPos(A616E0Iter* arIterator);
 class A61750Texture
 {

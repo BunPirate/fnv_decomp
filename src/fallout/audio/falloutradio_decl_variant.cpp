@@ -31,8 +31,8 @@ void FalloutAudioMedia_MediaSetRadio(bool);
 class Conversation
 {
   public:
-    BSSimpleList<DialogueItem*> lDialogueItems;
-    BSSimpleList<DialogueItem*>* pCurrentItem;
+    BSSimpleList<DialogueItem*> lDialogueItems; // src: XBOX_RETAIL_PDB +0x0 (old: items)
+    BSSimpleList<DialogueItem*>* pCurrentItem; // src: XBOX_RETAIL_PDB +0x8 (old: current)
     bool Conversation_NextItem();
     void Conversation_PrecacheSounds();
     bool Conversation_FirstItem();

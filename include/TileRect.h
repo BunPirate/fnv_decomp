@@ -21,6 +21,6 @@ class TileRect : public Tile
     NiAVObject* GetExtraDataModel() const;
     const char* FUN_00709970();
 
-    bool bIsScissor;
+    bool bIsScissor; // src: XBOX_RETAIL_PDB +0x38 (old: m_bTextureLoaded)
     unsigned char layoutPadding39[3];
 };

@@ -21,7 +21,7 @@ NiFixedString::operator const char*() const
 char* NiViewerStrings_NiGetViewerString_Title(char*);
 char* NiGetViewerString_00a7d510(const char*, unsigned int);
 void* NiMalloc(unsigned int);
-extern char* NiGeomMorpherController_ms_RTTI;
+extern char* NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 extern NiRTTI DAT_011f3e58, DAT_011f3738;
 __forceinline void StrArr::append(char*& value)
 {

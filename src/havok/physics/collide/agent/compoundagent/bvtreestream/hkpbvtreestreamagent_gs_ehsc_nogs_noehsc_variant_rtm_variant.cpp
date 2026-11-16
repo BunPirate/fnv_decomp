@@ -295,8 +295,8 @@ hkpCollisionAgent*m_pCollisionAgent;
 hkpShapeKey&GetIteratorKey(){return m_key;}
 void setKey(hkpShapeKey&key){m_key=key;}
 };
-hkArray<BvTreeAgentTrack>m_collisionPartners;
-hkAabb m_cachedAabb;
+hkArray<BvTreeAgentTrack>m_collisionPartners; // src: XBOX_RETAIL_PDB +0xc (old: m_kEntries)
+hkAabb m_cachedAabb; // src: XBOX_RETAIL_PDB +0x20 (old: m_kBoundingBox)
 static hkBool ms_bUseAabbCache;
 static hkpCollisionAgent*__cdecl createShapeBvAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);
 static hkpCollisionAgent*__cdecl createBvTreeShapeAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);

@@ -41,15 +41,15 @@ public:
     void PatrolActorPackageData_ClearReservedPatrolRef();
 
     PATROL_STATE eState; // 0x04
-    float fCurrentTimeAtReference; // 0x08
-    bool bPatrolDirection; // 0x0C
+    float fCurrentTimeAtReference; // 0x08 // src: XBOX_RETAIL_PDB +0x8 (old: m_fElapsedWaitTime)
+    bool bPatrolDirection; // 0x0C // src: XBOX_RETAIL_PDB +0xc (old: m_bPatrolFlag)
     unsigned char unk0D[3];
     Actor* pActor; // 0x10
     TESPackage* pPackage; // 0x14
-    const TESPatrolPackageData* pPackageData; // 0x18
+    const TESPatrolPackageData* pPackageData; // 0x18 // src: XBOX_RETAIL_PDB +0x18 (old: m_pEscortPackageData)
     BSSimpleArray<TESObjectREFR*, 1024> References; // 0x1C
-    bool bCircularArray; // 0x2C
+    bool bCircularArray; // 0x2C // src: XBOX_RETAIL_PDB +0x2c (old: m_bReferenceFlag)
     unsigned char unk2D[3];
-    unsigned int iLoopAroundIndex; // 0x30
-    unsigned int iCurrentReference; // 0x34
+    unsigned int iLoopAroundIndex; // 0x30 // src: XBOX_RETAIL_PDB +0x30 (old: m_uiValueAfterReferenceFlag)
+    unsigned int iCurrentReference; // 0x34 // src: XBOX_RETAIL_PDB +0x34 (old: m_uiSecondValueAfterReferenceFlag)
 };

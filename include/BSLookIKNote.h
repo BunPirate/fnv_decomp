@@ -20,6 +20,6 @@ class BSLookIKNote : public BSAnimNote
 
     void* __thiscall Destroy(unsigned int flags);
 
-    float fGain;
+    float fGain; // src: XBOX_RETAIL_PDB +0x10 (old: m_fDistanceScale)
     int eState;
 };

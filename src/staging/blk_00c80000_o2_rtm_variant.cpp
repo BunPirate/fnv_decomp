@@ -2340,7 +2340,7 @@ class C87A10WorldObject : public C87A10RefObject
   public:
     void bhkAction_Link(bool abAttach);
 };
-extern int WeaponObject_ms_RTTI;
+extern int WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 void* __cdecl WeaponObject_GetRTTI();
 // Constructor of a two-level Havok wrapper: attach the given Havok object (through its referenced-object base).
 extern int g_iC88380RefObjectCount;
@@ -2390,7 +2390,7 @@ class FUN_00c88380 : public C88380RefObject
     FUN_00c88380(C88380HavokObject* pkObject);
     virtual ~FUN_00c88380();
 };
-extern int bhkLimitedHingeConstraint_ms_RTTI;
+extern int bhkLimitedHingeConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126831c (old: DAT_0126831c/g_0126831c)
 int* __cdecl bhkLimitedHingeConstraint_GetRTTI();
 struct FNVTransformState
 {
@@ -7545,7 +7545,7 @@ struct C8B540Group : C8B4D0Group
 
     int GetSelectedResult(int iArg);
 };
-extern int bhkBlendCollisionObjectAddRotation_ms_RTTI;
+extern int bhkBlendCollisionObjectAddRotation_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012681cc (old: DAT_012681cc/g_012681cc)
 int __cdecl bhkBlendCollisionObjectAddRotation_GetRTTI();
 void __cdecl bhkBlendCollisionObject_LoadBinary(int, int);
 void __cdecl bhkBlendCollisionObjectAddRotation_LoadBinary(int param_1, int param_2);
@@ -9780,7 +9780,7 @@ struct TypeInfoLocal
     const char* name;
     TypeInfoLocal* base;
 };
-extern TypeInfoLocal g_012682e8, g_012682dc, g_012686a0, bhkBoxShape_ms_RTTI;
+extern TypeInfoLocal g_012682e8, g_012682dc, g_012686a0, bhkBoxShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268264 (old: g_01268264/g_aabbPhantomRttiName/ms_kRTTI)
 struct ShapeLocal
 {
     virtual void v0();

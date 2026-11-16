@@ -17,13 +17,13 @@ class NiPSysRotationModifier : public NiPSysPositionModifier
   public:
     NiPSysRotationModifier();
 
-    float m_fInitialRotSpeed;
-    float m_fInitialRotSpeedVar;
-    float m_fInitialRotAngle;
-    float m_fInitialRotAngleVar;
-    NiPoint3 m_kInitialAxis;
-    bool m_bRandomInitialAxis;
-    bool m_bRandomRotSpeedSign;
+    float m_fInitialRotSpeed; // src: XBOX_RETAIL_PDB +0x18 (old: m_fInitialRotationSpeed)
+    float m_fInitialRotSpeedVar; // src: XBOX_RETAIL_PDB +0x1c (old: m_fInitialRotationSpeedVariation)
+    float m_fInitialRotAngle; // src: XBOX_RETAIL_PDB +0x20 (old: m_fInitialRotationAngle)
+    float m_fInitialRotAngleVar; // src: XBOX_RETAIL_PDB +0x24 (old: m_fInitialRotationAngleVariation)
+    NiPoint3 m_kInitialAxis; // src: XBOX_RETAIL_PDB +0x28 (old: m_kRotationAxis)
+    bool m_bRandomInitialAxis; // src: XBOX_RETAIL_PDB +0x34 (old: m_bUseRandomRotationAxis)
+    bool m_bRandomRotSpeedSign; // src: XBOX_RETAIL_PDB +0x35 (old: m_bRandomInitialRotationSpeedSign)
     unsigned char layoutPadding36[2];
 };
 

@@ -109,16 +109,16 @@ public:
             unsigned int m_uiEntryMax;
         };
     };
-    NiFixedString m_kFilename;
-    NiFixedString m_kWorkingDir;
-    NiFixedString m_kPathAndFilename;
-    NiFixedString m_kShaderProfile;
-    char** m_kValidTargets;
+    NiFixedString m_kFilename; // src: XBOX_RETAIL_PDB +0x18 (old: m_18)
+    NiFixedString m_kWorkingDir; // src: XBOX_RETAIL_PDB +0x1c (old: m_pcWorkingDir)
+    NiFixedString m_kPathAndFilename; // src: XBOX_RETAIL_PDB +0x20 (old: m_pcCacheFileName)
+    NiFixedString m_kShaderProfile; // src: XBOX_RETAIL_PDB +0x24 (old: m_s3)
+    char** m_kValidTargets; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     unsigned int m_uiValue1;
     unsigned int m_uiBufferSize;
-    unsigned int m_uiVersion;
-    bool m_bAutoWriteCacheToDisk;
-    bool m_bLoaded;
-    unsigned char m_bLocked;
+    unsigned int m_uiVersion; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiReserved)
+    bool m_bAutoWriteCacheToDisk; // src: XBOX_RETAIL_PDB +0x38 (old: m_bAutoWrite)
+    bool m_bLoaded; // src: XBOX_RETAIL_PDB +0x39 (old: m_bLoadComplete)
+    unsigned char m_bLocked; // src: XBOX_RETAIL_PDB +0x3a (old: m_3a)
     unsigned char unk3B;
 };

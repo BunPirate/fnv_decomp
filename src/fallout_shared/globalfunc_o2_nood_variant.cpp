@@ -59,7 +59,7 @@ extern const float DAT_01016248;
 extern const float DAT_01017870;
 extern const float DAT_0101b2d0;
 extern const float str_0101ffc0;
-extern const char* bhkMouseSpringAction_ms_RTTI;
+extern const char* bhkMouseSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126812c (old: DAT_0126812c/g_0126812c)
 struct __declspec(align(16)) SpringInfo
 {
     int unk00;

@@ -9,14 +9,14 @@ class NiStream;
 class NiQuatTransform
 {
 public:
-    float m_kTranslate;
+    float m_kTranslate; // src: XBOX_RETAIL_PDB +0x0 (old: x)
     float y;
     float z;
-    float m_kRotate;
+    float m_kRotate; // src: XBOX_RETAIL_PDB +0xc (old: qx)
     float qy;
     float qz;
     float qw;
-    float m_fScale;
+    float m_fScale; // src: XBOX_RETAIL_PDB +0x1c (old: scale)
 
     NiQuatTransform();
     NiQuatTransform& operator=(const NiQuatTransform& rhs);

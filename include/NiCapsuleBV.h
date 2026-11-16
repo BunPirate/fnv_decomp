@@ -18,8 +18,8 @@ public:
     NiCapsuleBV* CopyConstruct(const NiCapsuleBV& source);
 
     NiPoint3 m_kCenter;
-    NiPoint3 m_kAxis;
-    float m_fExtent;
+    NiPoint3 m_kAxis; // src: XBOX_RETAIL_PDB +0x10 (old: m_kAxisDirection)
+    float m_fExtent; // src: XBOX_RETAIL_PDB +0x1c (old: m_fHalfLength)
     union
     {
         char _pad[0x18];

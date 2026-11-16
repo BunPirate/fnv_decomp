@@ -14,7 +14,7 @@
 // src/gamebryo2.2/corelibs/nianimation/bsfrustumfovcontroller.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nianimation/bsfrustumfovcontroller.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* BSFrustumFOVController_ms_RTTI;
+extern "C" void* BSFrustumFOVController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3ec8 (old: g_011f3ec8)
 
 // @fnv 0x00a42e80
 // src: COMMUNITY 0x00a42e80
@@ -137,7 +137,7 @@ void Base840::BSFrustumFOVController_SaveBinary(NiStream& kStream)
     NiBoolInterpController_SaveBinary(kStream);
 }
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // Updates the camera controller time and, if not skipped, applies the interpolator's value to the target's view frustum bounds.
 // @fnv 0x00a42dc0

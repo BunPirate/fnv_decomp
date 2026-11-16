@@ -12,6 +12,6 @@ public:
 
     char* m_pcName;
     StrArr m_kStringArray;
-    char m_kCtrl[0x14];
+    char m_kCtrl[0x14]; // src: XBOX_RETAIL_PDB +0x1c (old: pad)
     unsigned int m_uiSequenceValue;
 };

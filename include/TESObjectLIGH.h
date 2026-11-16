@@ -51,7 +51,7 @@ public:
     int FUN_0087eaa0();
 
     LightSourceData data;
-    float fFade;
-    TESSound* m_pSound;
-    NiColor EmittanceColor;
+    float fFade; // src: XBOX_RETAIL_PDB +0xb4 (old: fFadeAmount)
+    TESSound* m_pSound; // src: XBOX_RETAIL_PDB +0xb8 (old: m_pGameSound)
+    NiColor EmittanceColor; // src: XBOX_RETAIL_PDB +0xbc (old: m_kDiffuseColor)
 };

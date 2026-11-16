@@ -88,7 +88,7 @@ void __thiscall NiPSysModifierFloatCtlr::SynchronizePoseInterpolator_00c32e90(Ni
     ((LocalNiFloatInterpolator*)pkFloatInterp)->SetFloatValue(fValue);
 }
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // @fnv 0x00c32ee0
 // pdb: NiPSysModifierFloatCtlr::Update | NiPSysModifierFloatCtlr.obj | retail, object-file gap fill, high

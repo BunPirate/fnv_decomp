@@ -48,5 +48,5 @@ public:
         int iCenterPixelY;
         int count;
     };
-    unsigned int iDimension;
+    unsigned int iDimension; // src: XBOX_RETAIL_PDB +0xc (old: uiDimension)
 };

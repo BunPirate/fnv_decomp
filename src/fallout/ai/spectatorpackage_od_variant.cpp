@@ -61,15 +61,15 @@ struct SpectatorThreatInfo
 {
     Actor* pSource;
     Actor* pTarget;
-    int eThreatLevel;
-    unsigned int iLastPerceivedTime;
+    int eThreatLevel; // src: XBOX_RETAIL_PDB +0x8 (old: m_iFirstInteger)
+    unsigned int iLastPerceivedTime; // src: XBOX_RETAIL_PDB +0xc (old: m_uiSecondValue)
     float fRadius;
-    NiPoint3 LastKnownPosSource;
-    NiPoint3 LastKnownPosTarget;
-    bool bHasSource;
-    bool bHasTarget;
+    NiPoint3 LastKnownPosSource; // src: XBOX_RETAIL_PDB +0x14 (old: aPos)
+    NiPoint3 LastKnownPosTarget; // src: XBOX_RETAIL_PDB +0x20 (old: bPos)
+    bool bHasSource; // src: XBOX_RETAIL_PDB +0x2c (old: m_bFirstFlag)
+    bool bHasTarget; // src: XBOX_RETAIL_PDB +0x2d (old: m_bFollowingFlag)
     char _pad[2];
-    Helper62d0 spDebugGeometry;
+    Helper62d0 spDebugGeometry; // src: XBOX_RETAIL_PDB +0x30 (old: spEffect)
     void __thiscall SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     void LoadGame_009f7170(BGSLoadFormBuffer* apLoadGameBuffer);
     unsigned int __thiscall _ref_00726070();

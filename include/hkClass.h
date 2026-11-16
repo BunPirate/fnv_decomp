@@ -49,12 +49,12 @@ public:
 
     char* m_name;
     hkClass* m_parent;
-    hkInt32 m_objectSize;
-    hkInt32 m_numImplementedInterfaces;
-    hkSimpleArray<hkClassEnum> m_declaredEnums;
-    hkSimpleArray<hkClassMember> m_declaredMembers;
-    void* m_defaults;
-    hkCustomAttributes* m_attributes;
+    hkInt32 m_objectSize; // src: XBOX_RETAIL_PDB +0x8 (old: m_iObjectSize)
+    hkInt32 m_numImplementedInterfaces; // src: XBOX_RETAIL_PDB +0xc (old: m_iNumImplementedInterfaces)
+    hkSimpleArray<hkClassEnum> m_declaredEnums; // src: XBOX_RETAIL_PDB +0x10 (old: m_kDeclaredEnums)
+    hkSimpleArray<hkClassMember> m_declaredMembers; // src: XBOX_RETAIL_PDB +0x18 (old: m_kDeclaredMembers)
+    void* m_defaults; // src: XBOX_RETAIL_PDB +0x20 (old: m_pDefaultObject)
+    hkCustomAttributes* m_attributes; // src: XBOX_RETAIL_PDB +0x24 (old: m_pCustomAttributes)
     hkUint32 m_flags;
-    hkInt32 m_describedVersion;
+    hkInt32 m_describedVersion; // src: XBOX_RETAIL_PDB +0x2c (old: m_iDescribedVersion)
 };

@@ -20,9 +20,9 @@ public:
     virtual void init();
     virtual void step(float frameTimeInMs);
 
-    int m_selectable;
-    int m_inStream;
-    int m_outStream;
-    int m_displayHandler;
-    int m_processHandler;
+    int m_selectable; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int m_inStream; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    int m_outStream; // src: XBOX_RETAIL_PDB +0xc (old: unk0c)
+    int m_displayHandler; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    int m_processHandler; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
 };

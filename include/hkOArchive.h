@@ -8,8 +8,8 @@
 class hkOArchive : public hkReferencedObject
 {
 public:
-    hkStreamWriter* m_writer;
-    hkBool m_byteSwap;
+    hkStreamWriter* m_writer; // src: XBOX_RETAIL_PDB +0x8 (old: writer)
+    hkBool m_byteSwap; // src: XBOX_RETAIL_PDB +0xc (old: byteSwap)
 
     hkOArchive(hkStreamWriter* writer, hkBool byteSwap);
     virtual ~hkOArchive() throw();

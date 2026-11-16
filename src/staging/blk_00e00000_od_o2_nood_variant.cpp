@@ -1439,7 +1439,7 @@ struct S00e01d10_Member
     int m_iWordAt00;
 };
 
-class __declspec(align(16)) hkxNodeSelectionSet
+class __declspec(align(16)) hkxNodeSelectionSet // src: EXE (old: S00e01d10_Object)
 {
   public:
     hkxNodeSelectionSet(FinishingFlag flag) : m_kMember(flag)
@@ -1476,7 +1476,7 @@ struct S00e022a0_Member
     int m_iWordAt00;
 };
 
-class __declspec(align(16)) hkxMaterialEffect
+class __declspec(align(16)) hkxMaterialEffect // src: EXE (old: S00e022a0_Object)
 {
   public:
     hkxMaterialEffect(FinishingFlag flag) : m_kMember(flag)

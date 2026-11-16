@@ -538,7 +538,7 @@ struct GlobalString
 {
     const char* value;
 };
-extern GlobalString bhkTriSampledHeightFieldBvTreeShape_ms_RTTI;
+extern GlobalString bhkTriSampledHeightFieldBvTreeShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268350 (old: g_01268350)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* text);
 struct StringBuilder
 {

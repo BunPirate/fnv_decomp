@@ -73,21 +73,21 @@ public:
     void Reset();
     void Avoid(MoveRequest*);
 
-    unsigned int eState;
+    unsigned int eState; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
     Location startTransform;
-    Location CurrentDestination;
-    float fTargetRadius;
-    unsigned int pTargetRef;
-    unsigned int iLocation;
-    TimeoutTimer HidingTimer;
-    NiPoint3 LookAtPosition;
-    bool bReservedSecondaryLocation;
+    Location CurrentDestination; // src: XBOX_RETAIL_PDB +0x24 (old: currentTransform)
+    float fTargetRadius; // src: XBOX_RETAIL_PDB +0x34 (old: rate)
+    unsigned int pTargetRef; // src: XBOX_RETAIL_PDB +0x38 (old: target38)
+    unsigned int iLocation; // src: XBOX_RETAIL_PDB +0x3c (old: mode)
+    TimeoutTimer HidingTimer; // src: XBOX_RETAIL_PDB +0x40 (old: pos40)
+    NiPoint3 LookAtPosition; // src: XBOX_RETAIL_PDB +0x48 (old: pos48)
+    bool bReservedSecondaryLocation; // src: XBOX_RETAIL_PDB +0x54 (old: active54)
     unsigned char unk55[3];
-    GO spQueuedPathingRequest;
-    bool bHasQueuedPathingRequest;
+    GO spQueuedPathingRequest; // src: XBOX_RETAIL_PDB +0x58 (old: state58)
+    bool bHasQueuedPathingRequest; // src: XBOX_RETAIL_PDB +0x5c (old: active5C)
     unsigned char unk5D[3];
-    int iCurrentNode;
-    TimeoutTimer CoveredMoveSearchTimer;
-    TimeoutTimer CheckCoverTimer;
-    TimeoutTimer CheckDestinationTimer;
+    int iCurrentNode; // src: XBOX_RETAIL_PDB +0x60 (old: unk60)
+    TimeoutTimer CoveredMoveSearchTimer; // src: XBOX_RETAIL_PDB +0x64 (old: state64)
+    TimeoutTimer CheckCoverTimer; // src: XBOX_RETAIL_PDB +0x6c (old: state6C)
+    TimeoutTimer CheckDestinationTimer; // src: XBOX_RETAIL_PDB +0x74 (old: state74)
 };

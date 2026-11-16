@@ -47,23 +47,23 @@ public:
     static unsigned char* GetKeyPointerByIndex(unsigned char* pk, unsigned int i, unsigned char uc);
 
     unsigned int m_uiNumUOffsetKeys;
-    unsigned char* m_pkUOffsetKeys;
-    unsigned int m_eUOffsetType;
+    unsigned char* m_pkUOffsetKeys; // src: XBOX_RETAIL_PDB +0xc (old: m_pUOffsetKeys)
+    unsigned int m_eUOffsetType; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiUOffsetKeyStride)
     unsigned int m_uiNumVOffsetKeys;
-    unsigned char* m_pkVOffsetKeys;
-    unsigned int m_eVOffsetType;
+    unsigned char* m_pkVOffsetKeys; // src: XBOX_RETAIL_PDB +0x18 (old: m_pVOffsetKeys)
+    unsigned int m_eVOffsetType; // src: XBOX_RETAIL_PDB +0x1c (old: m_uiVOffsetKeyStride)
     unsigned int m_uiNumUTilingKeys;
-    unsigned char* m_pkUTilingKeys;
-    unsigned int m_eUTilingType;
+    unsigned char* m_pkUTilingKeys; // src: XBOX_RETAIL_PDB +0x24 (old: m_pUTilingKeys)
+    unsigned int m_eUTilingType; // src: XBOX_RETAIL_PDB +0x28 (old: m_uiUTilingKeyStride)
     unsigned int m_uiNumVTilingKeys;
-    unsigned char* m_pkVTilingKeys;
-    unsigned int m_eVTilingType;
-    int m_fLastUOffset;
-    int m_fLastVOffset;
-    int m_fLastUTiling;
-    int m_fLastVTiling;
-    unsigned char m_ucUOffsetSize;
-    unsigned char m_ucVOffsetSize;
-    unsigned char m_ucUTilingSize;
-    unsigned char m_ucVTilingSize;
+    unsigned char* m_pkVTilingKeys; // src: XBOX_RETAIL_PDB +0x30 (old: m_pVTilingKeys)
+    unsigned int m_eVTilingType; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiVTilingKeyStride)
+    int m_fLastUOffset; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    int m_fLastVOffset; // src: XBOX_RETAIL_PDB +0x3c (old: unk3C)
+    int m_fLastUTiling; // src: XBOX_RETAIL_PDB +0x40 (old: unk40)
+    int m_fLastVTiling; // src: XBOX_RETAIL_PDB +0x44 (old: unk44)
+    unsigned char m_ucUOffsetSize; // src: XBOX_RETAIL_PDB +0x48 (old: m_ucByte48)
+    unsigned char m_ucVOffsetSize; // src: XBOX_RETAIL_PDB +0x49 (old: m_ucByte49)
+    unsigned char m_ucUTilingSize; // src: XBOX_RETAIL_PDB +0x4a (old: m_ucByte4A)
+    unsigned char m_ucVTilingSize; // src: XBOX_RETAIL_PDB +0x4b (old: m_ucByte4B)
 };

@@ -18,7 +18,7 @@
 #include "../../../include/TESObjectREFR.h"
 #include "../../../include/bhkCharacterProxy.h"
 
-extern const NiRTTI bhkCharacterProxy_ms_RTTI;
+extern const NiRTTI bhkCharacterProxy_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268344 (old: g_01268344)
 
 #include <xmmintrin.h>
 

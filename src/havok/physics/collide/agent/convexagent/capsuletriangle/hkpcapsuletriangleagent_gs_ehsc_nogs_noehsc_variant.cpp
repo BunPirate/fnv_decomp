@@ -508,8 +508,8 @@ static __forceinline ClosestPointResult getClosestPointInternal(const hkpCdBody&
 public:
 static ClosestPointResult __cdecl ComputeClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,TriangleDistanceUtility::PointTriangleCache&m_pAccessManager,hkContactPoint&cpoint);
 protected:
-hkContactPointId m_contactPointId[3];
-TriangleDistanceUtility::PointTriangleCache m_triangleCache;
+hkContactPointId m_contactPointId[3]; // src: XBOX_RETAIL_PDB +0xc (old: m_usContactPointId)
+TriangleDistanceUtility::PointTriangleCache m_triangleCache; // src: XBOX_RETAIL_PDB +0x14 (old: m_kClosestPointCache)
 };
 
 __forceinline hkpConvexShape::WeldResult hkpConvexShape::weldContactPoint(hkpVertexId* featurePoints, hkUint8& numFeaturePoints,

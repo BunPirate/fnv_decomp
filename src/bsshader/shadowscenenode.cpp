@@ -687,7 +687,7 @@ struct GlobalObjectO2_00a7b610
 {
     int pad;
 };
-GlobalObjectO2_00a7b610 ShadowSceneNode_ms_RTTI;
+GlobalObjectO2_00a7b610 ShadowSceneNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f9e80 (old: g_011f9e80)
 
 // @fnv 0x00b5e590
 // src: XBOX_PDB 0x00b5e590
@@ -1038,7 +1038,7 @@ struct FUN_00c51570_Class
 char* NiViewerStrings_NiGetViewerString_Title(const char*);
 char* __cdecl NiGetViewerString_00a7d490(const char*, unsigned short);
 char* __cdecl NiGetViewerString_00a7d4d0(const char*, int);
-extern const char* ShadowSceneNode_ms_RTTI;
+extern const char* ShadowSceneNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f9e80 (old: g_011f9e80)
 
 struct LightNode
 {

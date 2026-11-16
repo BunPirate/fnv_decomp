@@ -104,10 +104,10 @@ public:
     unsigned int m_uiCollisionShapeKey;
     const void* m_pMotionState;
     const hkpCdBody* m_parent;
-    signed char m_ownerOffset;
-    unsigned char m_forceCollideOntoPpu;
-    unsigned short m_shapeSizeOnSpu;
-    hkpTypedBroadPhaseHandle m_broadPhaseHandle;
-    hkpCollidableBoundingVolumeData m_boundingVolumeData;
-    float m_allowedPenetrationDepth;
+    signed char m_ownerOffset; // src: XBOX_RETAIL_PDB +0x10 (old: m_iOwnerOffset)
+    unsigned char m_forceCollideOntoPpu; // src: XBOX_RETAIL_PDB +0x11 (old: m_uiForceCollideOntoPpu)
+    unsigned short m_shapeSizeOnSpu; // src: XBOX_RETAIL_PDB +0x12 (old: m_uiShapeSizeOnSpu)
+    hkpTypedBroadPhaseHandle m_broadPhaseHandle; // src: XBOX_RETAIL_PDB +0x14 (old: m_kBroadPhaseHandle)
+    hkpCollidableBoundingVolumeData m_boundingVolumeData; // src: XBOX_RETAIL_PDB +0x20 (old: m_kBoundingVolumeData)
+    float m_allowedPenetrationDepth; // src: XBOX_RETAIL_PDB +0x4c (old: m_fAllowedPenetrationDepth)
 };

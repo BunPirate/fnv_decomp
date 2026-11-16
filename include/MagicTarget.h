@@ -39,9 +39,9 @@ public:
     virtual bool ExecuteEffect(MagicCaster* apCaster, MagicItem* apItem, ActiveEffect* apEffect);
 
     bool m_bLeadingFlag;
-    bool bUpdating;
+    bool bUpdating; // src: XBOX_RETAIL_PDB +0x5 (old: m_bSecondFlag)
     unsigned short layoutPadding6;
-    BSSimpleList<MagicEffectContext*> PostUpdateDispelList;
+    BSSimpleList<MagicEffectContext*> PostUpdateDispelList; // src: XBOX_RETAIL_PDB +0x8 (old: m_kActiveEffectList)
 
     MagicTarget();
     ~MagicTarget();

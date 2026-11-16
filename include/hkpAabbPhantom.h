@@ -30,8 +30,8 @@ public:
     void hkpAabbPhantom_castRay(const WorldRayCastInput& input, hkpRayHitCollector& collector) const;
 
     char padA4[0xC];
-    hkAabb m_aabb;
-    hkArray<void*> m_overlappingCollidables;
-    hkBool m_orderDirty;
+    hkAabb m_aabb; // src: XBOX_RETAIL_PDB +0xb0 (old: m_kBounds)
+    hkArray<void*> m_overlappingCollidables; // src: XBOX_RETAIL_PDB +0xd0 (old: m_ppOverlappingCollidables)
+    hkBool m_orderDirty; // src: XBOX_RETAIL_PDB +0xdc (old: m_bOrderDirty)
     char padDD[0x3];
 };

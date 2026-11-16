@@ -985,8 +985,8 @@ void hkDataClassNative::fillMemberInfo(const hkClassMember& mem, hkMemberInfo& i
 class hkClassMemberAccessor
 {
   public:
-    void* m_address;
-    const hkClassMember* m_member;
+    void* m_address; // src: XBOX_RETAIL_PDB +0x0 (old: m_pTargetObject)
+    const hkClassMember* m_member; // src: XBOX_RETAIL_PDB +0x4 (old: m_kMemberDescriptor)
 
     hkClassMemberAccessor(void* obj, void* name) throw()
     {

@@ -21,5 +21,5 @@ public:
     void ProcessState_0067bfa0(BGSLoadFormBuffer* apLoadGameBuffer);
     void PackageLocation_LoadGame_0067fbe0(BGSLoadFormBuffer* apLoadGameBuffer);
 
-    LocationDescriptor* pSearchLocation;
+    LocationDescriptor* pSearchLocation; // src: XBOX_RETAIL_PDB +0x4 (old: m_pPackageTarget)
 };

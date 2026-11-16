@@ -12,7 +12,7 @@ public:
     virtual void CopyData(ActiveEffect* apDestination) override;
     virtual void ApplyActorValueModifier(Actor* apActor, float afModifier, ActorValue::Index aeOverrideActorValue) override;
 
-    ActorValue::Index eTargetBodyPart;
+    ActorValue::Index eTargetBodyPart; // src: XBOX_RETAIL_PDB +0x4c (old: m_eModifiedActorValue)
 
     void LoadGame(void* apActor);
 };

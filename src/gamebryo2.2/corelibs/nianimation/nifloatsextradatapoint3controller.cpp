@@ -170,7 +170,7 @@ NiFloatsExtraDataPoint3Controller* __fastcall DestroyPoint3Controller(
     return self;
 }
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 struct Pt4edd { float x, y, z; };
 class Interp4edd {
 public:

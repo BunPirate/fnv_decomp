@@ -26,5 +26,5 @@ public:
                                  BSSimpleList<TESAmmoEffect*>* effects,
                                  float value);
 
-    unsigned char data[12];
+    unsigned char data[12]; // src: XBOX_RETAIL_PDB +0x24 (old: effectData)
 };

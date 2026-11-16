@@ -9,5 +9,5 @@ class hkxEnvironmentVariable;
 class hkxEnvironment : public hkReferencedObject
 {
 public:
-    hkArray<hkxEnvironmentVariable> m_variables;
+    hkArray<hkxEnvironmentVariable> m_variables; // src: XBOX_RETAIL_PDB +0x8 (old: m_kVariables)
 };

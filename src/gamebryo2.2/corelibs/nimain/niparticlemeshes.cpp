@@ -12,7 +12,7 @@ NiParticleMeshes::NiParticleMeshes()
 {}
 
 
-extern NiRTTI* NiParticleMeshes_ms_RTTI;
+extern NiRTTI* NiParticleMeshes_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f14 (old: g_011f5f14)
 
 // @fnv 0x00a98ec0
 const NiRTTI* NiParticleMeshes::GetRTTI() const

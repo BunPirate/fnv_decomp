@@ -44,7 +44,7 @@ inline void NiD3DPass::DecRefCount()
 inline NiColorA::NiColorA(float red, float green, float blue, float alpha)
     : r(red), g(green), b(blue), a(alpha) {}
 
-extern int BSDistantTreeShader_ms_RTTI;
+extern int BSDistantTreeShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007bc (old: g_012007bc)
 
 // @fnv 0x00bb6490
 // src: XBOX_PDB 0x00bb6490

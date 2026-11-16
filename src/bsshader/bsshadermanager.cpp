@@ -119,7 +119,7 @@ extern float DAT_011adcc8;
 extern unsigned int DAT_011f91b8;
 extern void (*DAT_011f9f38)(), (*DAT_011f9f3c)();
 extern void (*DAT_011f9f40[16])(), (*DAT_011f9f80[16])();
-extern unsigned int (*BSShaderManager_pObjectTypeCallback)(NiAVObject*);
+extern unsigned int (*BSShaderManager_pObjectTypeCallback)(NiAVObject*); // src: XBOX_RETAIL_PDB 0x011f91ec (old: DAT_011f91ec)
 extern ShadowSceneNode* DAT_011f91c8[4];
 #pragma intrinsic(sin, cos)
 
@@ -2296,9 +2296,9 @@ struct RTTIStub
 {
     int unk00;
 };
-extern RTTIStub TileShader_ms_RTTI;
-extern RTTIStub TallGrassShader_ms_RTTI;
-extern RTTIStub BSShaderNoLighting_ms_RTTI;
+extern RTTIStub TileShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012021b8 (old: g_012021b8)
+extern RTTIStub TallGrassShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01200508 (old: DAT_01200508/g_01200508)
+extern RTTIStub BSShaderNoLighting_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202040 (old: g_01202040)
 struct ShProp;
 struct PropPtr
 {

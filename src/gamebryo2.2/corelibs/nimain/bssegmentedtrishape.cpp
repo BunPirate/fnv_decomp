@@ -4,7 +4,7 @@
 
 #include "../../../../include/MemoryManager.h"
 
-extern "C" void* BSSegmentedTriShape_ms_RTTI;
+extern "C" void* BSSegmentedTriShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b40 (old: g_011f5b40)
 
 // @fnv 0x00a86fe0
 // src: COMMUNITY 0x00a86fe0
@@ -817,7 +817,7 @@ extern "C" const char DAT_0109e928[];
 extern "C" const char DAT_0109e938[];
 extern "C" const char DAT_0109e94c[];
 extern "C" const char DAT_0109e95c[];
-extern "C" void* BSSegmentedTriShape_ms_RTTI;
+extern "C" void* BSSegmentedTriShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b40 (old: g_011f5b40)
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* value);
 void* __cdecl NiGetViewerString_00a7d510(const char* fmt, unsigned int value);
 

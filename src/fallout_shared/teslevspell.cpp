@@ -44,7 +44,7 @@ class ContainerItemExtra
     static void* operator new(unsigned int);
     ContainerItemExtra();
     bool Load(TESFile*);
-    void* pOwnerForm[3];
+    void* pOwnerForm[3]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
 };
 class LeveledObject
 {

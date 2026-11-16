@@ -44,14 +44,14 @@ public:
     void UpdateCombatProcedure(Projectile* apProjectile);
 
     COVER_STATE eState;
-    void* pCoverLocation;
-    float CurrentCoverPosition[3];
-    float CurrentFirePosition[3];
-    unsigned char LookAtPosition[0x0C];
-    Timer WaitBehindCoverTimer;
-    Timer WaitingOutOfCoverTimer;
-    Timer FiringOutOfCoverTimer;
-    Timer ReevaluateCoverTimer;
-    Timer HoldingGroundTimer;
-    Timer TargetBlockedTimer;
+    void* pCoverLocation; // src: XBOX_RETAIL_PDB +0x14 (old: m_pCurrentCoverPoint)
+    float CurrentCoverPosition[3]; // src: XBOX_RETAIL_PDB +0x18 (old: m_afFirstVector)
+    float CurrentFirePosition[3]; // src: XBOX_RETAIL_PDB +0x24 (old: m_afSecondVector)
+    unsigned char LookAtPosition[0x0C]; // src: XBOX_RETAIL_PDB +0x30 (old: _pad1)
+    Timer WaitBehindCoverTimer; // src: XBOX_RETAIL_PDB +0x3c (old: m_waitTimer)
+    Timer WaitingOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x44 (old: m_waitingOutTimer)
+    Timer FiringOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x4c (old: m_firingTimer)
+    Timer ReevaluateCoverTimer; // src: XBOX_RETAIL_PDB +0x54 (old: m_reevaluateTimer)
+    Timer HoldingGroundTimer; // src: XBOX_RETAIL_PDB +0x5c (old: m_holdingGroundTimer)
+    Timer TargetBlockedTimer; // src: XBOX_RETAIL_PDB +0x64 (old: m_targetBlockedTimer)
 };

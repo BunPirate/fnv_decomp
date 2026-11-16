@@ -67,7 +67,7 @@ void NiPSysPlanarCollider::LoadBinary(NiStream& kStream)
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiPSysPlanarCollider_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiPSysPlanarCollider_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026c8 (old: g_012026c8)
 
 // @fnv 0x00c299d0
 void* __fastcall GetPlanarColliderRTTI(NiPSysPlanarCollider*, void*)
@@ -256,7 +256,7 @@ struct GlobalObjectO2_00a7b610
 {
     const char* m_pcName;
 };
-extern GlobalObjectO2_00a7b610 NiPSysPlanarCollider_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiPSysPlanarCollider_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026c8 (old: g_012026c8)
 
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);

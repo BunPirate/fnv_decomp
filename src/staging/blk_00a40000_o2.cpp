@@ -999,7 +999,7 @@ void A42380Owner::UpdateFields_00a42380(NiRefObject* pkData)
 
 extern const NiRTTI NiNodeRTTI_a42b70;
 extern const NiRTTI CtrlRTTI_A_a42b70;
-extern const NiRTTI NiLookAtController_ms_RTTI;
+extern const NiRTTI NiLookAtController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f98 (old: CtrlRTTI_B_a42b70/g_011f3f98)
 extern const NiRTTI CtrlRTTI_C_a42b70;
 
 struct StubController : NiObject
@@ -2803,7 +2803,7 @@ NiPointer<NiGPUProgram>::operator=(const NiPointer<NiGPUProgram>& other)
     return *this;
 }
 
-extern unsigned int NiSequence_ms_RTTI;
+extern unsigned int NiSequence_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f48 (old: g_011f3f48)
 struct BinaryDataRecord
 {
     unsigned int unk000;

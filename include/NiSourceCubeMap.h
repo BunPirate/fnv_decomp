@@ -34,5 +34,5 @@ class NiSourceCubeMap : public NiSourceTexture
     void* FUN_00a61250(unsigned int);
     void LoadFromPixelData(Pixels*, Pixels*, Pixels*, Pixels*, Pixels*, Pixels*);
 
-    unsigned int m_eFace;
+    unsigned int m_eFace; // src: XBOX_RETAIL_PDB +0x48 (old: m_uiFace)
 };

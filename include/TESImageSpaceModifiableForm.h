@@ -27,5 +27,5 @@ public:
     TESImageSpaceModifier* GetFormImageSpaceModifying();
     void SetFormImageSpaceModifying(TESImageSpaceModifier* modifier);
 
-    TESImageSpaceModifier* pFormImageSpaceModifying;
+    TESImageSpaceModifier* pFormImageSpaceModifying; // src: XBOX_RETAIL_PDB +0x4 (old: m_pImageSpaceModifier)
 };

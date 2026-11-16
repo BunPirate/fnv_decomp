@@ -9,11 +9,11 @@
 class NiPSysGrowFadeModifier : public NiPSysModifier
 {
   public:
-    float m_fGrowTime;
-    unsigned short m_usGrowGeneration;
-    float m_fFadeTime;
-    unsigned short m_usFadeGeneration;
-    float m_fBaseScale;
+    float m_fGrowTime; // src: XBOX_RETAIL_PDB +0x18 (old: m_fGrowthTime)
+    unsigned short m_usGrowGeneration; // src: XBOX_RETAIL_PDB +0x1c (old: m_usGrowGenerationLimit)
+    float m_fFadeTime; // src: XBOX_RETAIL_PDB +0x20 (old: m_fFadeDuration)
+    unsigned short m_usFadeGeneration; // src: XBOX_RETAIL_PDB +0x24 (old: m_usFadeGenerationLimit)
+    float m_fBaseScale; // src: XBOX_RETAIL_PDB +0x28 (old: m_fInitialScale)
     virtual void LoadBinary(NiStream&);
 };
 template <class T> inline void NiBinaryStreamLoad(NiBinaryStream& stream, T* value)

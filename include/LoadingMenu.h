@@ -191,8 +191,8 @@ public:
     void UpdateObjectiveTilesVisibilities(bool);
     void UpdateTipTilesVisibilities(bool);
     void UpdateXPProgressTilesVisibilities(bool);
-    void CalcLoadScreenTypeTextWindowVerts(void*);
-    void CalcLoadScreenTypeTextWindowVerts(int);
+    void CalcLoadScreenTypeTextWindowFaces(void*);
+    void CalcLoadScreenTypeTextWindowFaces(int);
     void InitPlayerTileSettings();
     void UpdatePlayerTileSettings(int);
     void UpdatePlayerTileSettings(BGSPerkEntry*);

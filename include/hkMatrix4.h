@@ -6,10 +6,10 @@
 class hkMatrix4
 {
 public:
-    hkVector4 m_col0;
-    hkVector4 m_col1;
-    hkVector4 m_col2;
-    hkVector4 m_col3;
+    hkVector4 m_col0; // src: XBOX_RETAIL_PDB +0x0 (old: m_kColumn0)
+    hkVector4 m_col1; // src: XBOX_RETAIL_PDB +0x10 (old: m_kColumn1)
+    hkVector4 m_col2; // src: XBOX_RETAIL_PDB +0x20 (old: m_kColumn2)
+    hkVector4 m_col3; // src: XBOX_RETAIL_PDB +0x30 (old: m_kColumn3)
 
     __forceinline hkMatrix4()
     {}

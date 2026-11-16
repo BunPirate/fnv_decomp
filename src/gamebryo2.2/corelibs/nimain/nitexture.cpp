@@ -326,7 +326,7 @@ template <class T> class ViewerArray
 };
 typedef ViewerArray<char*> ViewerStrings;
 
-extern const char* NiScreenGeometryData_ms_RTTI;
+extern const char* NiScreenGeometryData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5e54 (old: DAT_011f5e54/g_011f5e54)
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcClassName);
 char* NiGetViewerString(const char* pcPrefix, bool bValue);
 char* NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);

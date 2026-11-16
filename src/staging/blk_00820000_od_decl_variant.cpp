@@ -220,9 +220,9 @@ struct FUN_0083d0d0_Class
 // pdb: structure WeatherEntry, size 0xc, 3 members
 struct WeatherEntry
 {
-    int pWeather;
-    int uiChance;
-    int pChanceVar;
+    int pWeather; // src: XBOX_RETAIL_PDB +0x0 (old: a)
+    int uiChance; // src: XBOX_RETAIL_PDB +0x4 (old: b)
+    int pChanceVar; // src: XBOX_RETAIL_PDB +0x8 (old: c)
     WeatherEntry();
 };
 struct G2

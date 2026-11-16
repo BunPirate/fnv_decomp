@@ -17,6 +17,6 @@ public:
     void EntityRemovedCallback(void* entity);
     void addEntity(hkpEntity* entity);
 
-    hkArray<hkpEntity*> m_chainedEntities;
-    hkpConstraintChainInstanceAction* m_action;
+    hkArray<hkpEntity*> m_chainedEntities; // src: XBOX_RETAIL_PDB +0x38 (old: m_ppRigidBodies)
+    hkpConstraintChainInstanceAction* m_action; // src: XBOX_RETAIL_PDB +0x44 (old: m_pAction)
 };

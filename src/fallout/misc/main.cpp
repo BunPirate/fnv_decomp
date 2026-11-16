@@ -1856,7 +1856,7 @@ int* __cdecl Renderer_GetReason()
 }  // namespace fnv_0086d580
 
 // ::NiAVObject is named in full below: the shared ExtraDataList forward-declares ::NiAVObject.
-extern unsigned int(__cdecl* BSShaderManager_pObjectTypeCallback)(::NiAVObject*);
+extern unsigned int(__cdecl* BSShaderManager_pObjectTypeCallback)(::NiAVObject*); // src: XBOX_RETAIL_PDB 0x011f91ec (old: DAT_011f91ec)
 
 // @fnv 0x0086e4d0
 // src: COMMUNITY 0x0086e4d0
@@ -2112,7 +2112,7 @@ void FUN_0086fc60_shell::Main_OnIdle_UpdateAnimationsAndEffects()
 }
 }  // namespace fnv_0086fc60
 
-extern unsigned char TESImageSpaceModifier_bEnable;
+extern unsigned char TESImageSpaceModifier_bEnable; // src: XBOX_RETAIL_PDB 0x0118abb0 (old: DAT_0118abb0)
 
 // @fnv 0x0086ff40
 // src: COMMUNITY 0x0086ff40
@@ -2277,7 +2277,7 @@ void __cdecl BSShaderAccumulator_SetRunBoundingSphereTests(bool abFlag1, bool ab
 struct GlobalObjectO2_00a7b610
 {
 };
-extern GlobalObjectO2_00a7b610 BSFadeNodeCuller_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSFadeNodeCuller_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f7c (old: g_01201f7c)
 
 
 

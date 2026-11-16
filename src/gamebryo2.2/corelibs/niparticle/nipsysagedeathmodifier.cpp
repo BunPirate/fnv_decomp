@@ -58,7 +58,7 @@ struct ParticleSystem;
 struct NiPSysAgeDeathModifier : NiPSysModifier
 {
     bool m_bSpawnOnDeath;
-    NiPSysSpawnModifier* m_pkSpawnModifier;
+    NiPSysSpawnModifier* m_pkSpawnModifier; // src: XBOX_RETAIL_PDB +0x1c (old: m_pSpawnModifier)
     void LinkObject_00c2ef60(NiStream&);
     void __thiscall ProcessClone_00c2f1a0(CloningProcess&);
     void* __thiscall Destroy(unsigned int);

@@ -54,9 +54,9 @@ public:
         float duration;
         float m_14;
     };
-    Clock HidingTimer;
-    NiPoint3 HidePosition;
-    NiPoint3 LookAtPosition;
+    Clock HidingTimer; // src: XBOX_RETAIL_PDB +0x18 (old: clock)
+    NiPoint3 HidePosition; // src: XBOX_RETAIL_PDB +0x20 (old: destination)
+    NiPoint3 LookAtPosition; // src: XBOX_RETAIL_PDB +0x2c (old: rotation)
     union
     {
         Hiding* hiding;

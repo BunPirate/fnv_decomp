@@ -772,7 +772,7 @@ class C29E50Base
 };
 
 // pdb: class NiPSysInitialRotSpeedVarCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
-class NiPSysInitialRotSpeedVarCtlr : public C29E50Base
+class NiPSysInitialRotSpeedVarCtlr : public C29E50Base // src: EXE (old: C29E50Object)
 {
   public:
     NiPSysInitialRotSpeedVarCtlr() throw()

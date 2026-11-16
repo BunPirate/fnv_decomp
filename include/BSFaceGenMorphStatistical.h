@@ -13,5 +13,5 @@ public:
     virtual ~BSFaceGenMorphStatistical();
     void ApplyDifferentialMorph(NiTriBasedGeom*, BSFaceGenBaseMorphExtraData*, float);
 
-    unsigned int iFirstIndex;
+    unsigned int iFirstIndex; // src: XBOX_RETAIL_PDB +0xc (old: extra)
 };

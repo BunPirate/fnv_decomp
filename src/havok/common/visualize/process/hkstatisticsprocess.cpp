@@ -204,16 +204,16 @@ struct SecondBase
 };
 
 // pdb: class hkStatisticsProcess, size 0x44, bases: hkReferencedObject, hkProcess, 3 members
-struct hkStatisticsProcess : FirstBase, SecondBase
+struct hkStatisticsProcess : FirstBase, SecondBase // src: EXE (old: FUN_00ddc0b0)
 {
     int unk0c;
     int unk10;
     int unk14;
     int unk18;
     int unk1c;
-    PtrArrayMember m_contexts;
-    ArrayMember m_infoBuffer;
-    ArrayMember m_strBuffer;
+    PtrArrayMember m_contexts; // src: XBOX_RETAIL_PDB +0x20 (old: m_kFirst)
+    ArrayMember m_infoBuffer; // src: XBOX_RETAIL_PDB +0x2c (old: m_kSecond)
+    ArrayMember m_strBuffer; // src: XBOX_RETAIL_PDB +0x38 (old: m_kThird)
 
     virtual ~hkStatisticsProcess() throw();
 };
@@ -224,7 +224,7 @@ struct hkStatisticsProcess : FirstBase, SecondBase
 hkStatisticsProcess::~hkStatisticsProcess() throw()
 {}
 
-extern int hkStatisticsProcess_m_tag;
+extern int hkStatisticsProcess_m_tag; // src: XBOX_RETAIL_PDB 0x01269cd8 (old: DAT_01269cd8)
 
 // @fnv 0x00ddc820
 // src: GUESS 0x00ddc820 (confidence: low)
@@ -338,7 +338,7 @@ __forceinline Elem16& LocalVec3::expand(Allocator& allocator)
 extern char DAT_010c9368;
 extern char DAT_0102e388;
 extern char DAT_010d6ae8;
-extern char hkMonitorStreamStringMapClass;
+extern char hkMonitorStreamStringMapClass; // src: XBOX_RETAIL_PDB 0x0126c830 (old: DAT_0126c830/g_0126c830/g_unk0126c830)
 struct CharVec
 {
     char* m_pData;
@@ -743,7 +743,7 @@ struct Sbf00_B2
 extern int DAT_010d1508;
 extern int DAT_010d7e48;
 extern int DAT_010d7e28;
-extern int hkMonitorStreamFrameInfoClass;
+extern int hkMonitorStreamFrameInfoClass; // src: XBOX_RETAIL_PDB 0x0126c860 (old: DAT_0126c860/g_0126c860)
 extern double DAT_01017b70;
 unsigned __int64 __cdecl hkStopwatch_getTicksPerSecond();
 void __cdecl hkObjectSerialize_writeObject(Sbf00_Ctx* a1, Sbf00_Name* a2, int a3, int a4, Sbf00_Sub* a5, void* a6, Sbf00_Arr24* a7);

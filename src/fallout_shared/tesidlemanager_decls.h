@@ -37,15 +37,15 @@ class AnimData
 };
 
 // pdb: class TESIdleManager, size 0x28, 3 members
-class TESIdleManager : public NiTMap<const char*, IdleAnimationDirectoryEntry*>
+class TESIdleManager : public NiTMap<const char*, IdleAnimationDirectoryEntry*> // src: XBOX_RETAIL_PDB (old: IdleAnimationManager)
 {
     // The map occupies 0x10 bytes; the manager's loaded flag is at 0x14.
     unsigned char unused10[4];
 
   public:
-    unsigned char bInitialized;
+    unsigned char bInitialized; // src: XBOX_RETAIL_PDB +0x14 (old: loadedIdles)
     unsigned char padLoadedIdles[3];
-    NiTArray<BGSCameraPath*, NiTMallocInterface<BGSCameraPath*> > LoadedIdleArray;
+    NiTArray<BGSCameraPath*, NiTMallocInterface<BGSCameraPath*> > LoadedIdleArray; // src: XBOX_RETAIL_PDB +0x18 (old: idleForms)
     NiFormArray* TESIdleManager_GetLooseIdleArray(const char* directory);
     NiFormArray* GetIdleArray(TESForm* apForm);
     void InitializeIdleAnimations();

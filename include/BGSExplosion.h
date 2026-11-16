@@ -39,6 +39,6 @@ public:
     void SetImpactDataSet(BGSImpactDataSet* value);
     void SetSecondaryImpactSound(TESSound* value);
 
-    TESBoundObject* pImpactPlacedObject;
+    TESBoundObject* pImpactPlacedObject; // src: XBOX_RETAIL_PDB +0x70 (old: m_pExplosionBoundObject)
     ExplosionEffectSettings Data;
 };

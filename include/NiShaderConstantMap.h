@@ -50,5 +50,5 @@ public:
     static ShaderConstantMapEntry* ms_pkConstantMap;
     static unsigned int ms_uiConstantMapEntryCount;
 
-    NiGPUProgram__ProgramType m_eProgramType;
+    NiGPUProgram__ProgramType m_eProgramType; // src: XBOX_RETAIL_PDB +0x8 (old: m_iProgramType)
 };

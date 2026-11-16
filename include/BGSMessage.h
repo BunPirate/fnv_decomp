@@ -13,9 +13,9 @@ class BGSMessage : public TESForm, public TESFullName, public TESDescription
 {
 public:
     BGSMenuIcon* pIcon;
-    BSSimpleList<PerkButtonEntry*> ButtonList;
+    BSSimpleList<PerkButtonEntry*> ButtonList; // src: XBOX_RETAIL_PDB +0x30 (old: m_kButtonEntries)
     unsigned int iFlags;
-    unsigned int iDisplayTime;
+    unsigned int iDisplayTime; // src: XBOX_RETAIL_PDB +0x3c (old: m_uiDisplayDuration)
 
     BGSMessage();
     virtual ~BGSMessage();

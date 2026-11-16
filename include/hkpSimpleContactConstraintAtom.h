@@ -10,16 +10,16 @@ class hkpSimpleContactConstraintAtom
 {
 public:
     unsigned short m_type;
-    unsigned short m_sizeOfAllAtoms;
-    unsigned short m_numContactPoints;
-    unsigned short m_numReservedContactPoints;
-    unsigned char m_numUserDatasForBodyA;
-    unsigned char m_numUserDatasForBodyB;
-    unsigned char m_contactPointPropertiesStriding;
+    unsigned short m_sizeOfAllAtoms; // src: XBOX_RETAIL_PDB +0x2 (old: m_usSizeOfAllAtoms)
+    unsigned short m_numContactPoints; // src: XBOX_RETAIL_PDB +0x4 (old: m_usNumContactPoints)
+    unsigned short m_numReservedContactPoints; // src: XBOX_RETAIL_PDB +0x6 (old: m_usMaxNumContactPoints)
+    unsigned char m_numUserDatasForBodyA; // src: XBOX_RETAIL_PDB +0x8 (old: m_ucNumReservedContactPoints)
+    unsigned char m_numUserDatasForBodyB; // src: XBOX_RETAIL_PDB +0x9 (old: m_ucNumContactPointProperties)
+    unsigned char m_contactPointPropertiesStriding; // src: XBOX_RETAIL_PDB +0xa (old: m_ucContactPointPropertiesStriding)
     unsigned char unk0B;
-    unsigned short m_maxNumContactPoints;
+    unsigned short m_maxNumContactPoints; // src: XBOX_RETAIL_PDB +0xc (old: m_usMaxNumContactPointProperties)
     unsigned short unk0E;
-    unsigned short m_info;
+    unsigned short m_info; // src: XBOX_RETAIL_PDB +0x10 (old: m_infoFlags)
     unsigned short unk12;
     int unk14;
     int unk18;

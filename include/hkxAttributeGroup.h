@@ -10,5 +10,5 @@ class hkxAttributeGroup
 {
 public:
     hkStringPtr m_name;
-    hkArray<hkxAttribute> m_attributes;
+    hkArray<hkxAttribute> m_attributes; // src: XBOX_RETAIL_PDB +0x4 (old: m_pCustomAttributes)
 };

@@ -20,5 +20,5 @@ public:
     void Destroy();
     void UpdateReference(bool);
 
-    hkReferencedObject* phkObject;
+    hkReferencedObject* phkObject; // src: XBOX_RETAIL_PDB +0x8 (old: m_pHavokObject)
 };

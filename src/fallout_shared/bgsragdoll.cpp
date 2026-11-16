@@ -109,7 +109,7 @@ struct GrabIKOperations : GrabIK_DATA
     bool Differs(const GrabIK_DATA&);
 };
 // pdb: structure PoseMatching_DATA, size 0x24, 3 members
-struct PoseMatching_DATA : RagdollFeedbackProfile
+struct PoseMatching_DATA : RagdollFeedbackProfile // src: XBOX_RETAIL_PDB (old: RagdollFeedbackOperations)
 {
     void Copy(const RagdollFeedbackProfile&);
     bool Compare(const RagdollFeedbackProfile&);

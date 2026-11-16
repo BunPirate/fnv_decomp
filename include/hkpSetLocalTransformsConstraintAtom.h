@@ -11,6 +11,6 @@ public:
     unsigned int unk04;
     unsigned int unk08;
     unsigned int unk0C;
-    hkTransform m_transformA;
+    hkTransform m_transformA; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBodyALocalFrame)
     hkTransform m_kBodyBLocalFrame;
 };

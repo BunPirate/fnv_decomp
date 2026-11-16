@@ -91,12 +91,12 @@ class D698B0Base : public D698B0BaseA, public D698B0BaseB, public D698B0BaseC
 };
 
 // pdb: class hkpConstraintViewer, size 0x38, bases: hkpWorldViewerBase, hkpWorldPostSimulationListener, 1 members
-class hkpConstraintViewer : public D698B0Base, public D698B0Listener
+class hkpConstraintViewer : public D698B0Base, public D698B0Listener // src: EXE (old: FUN_00d698b0)
 {
   public:
     hkpConstraintViewer(void* contexts);
 
-    D698B0ListenerArray m_constraints;
+    D698B0ListenerArray m_constraints; // src: XBOX_RETAIL_PDB +0x2c (old: m_entries)
 };
 
 // Base constructor then, if a world is set, registers this listener with every island in that world.

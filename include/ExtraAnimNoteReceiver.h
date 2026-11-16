@@ -13,5 +13,5 @@ public:
     void FUN_0057a8d0();
     void* FUN_0057a8a0(unsigned int flags);
 
-    BSAnimNoteReceiver* pReceiver;
+    BSAnimNoteReceiver* pReceiver; // src: XBOX_RETAIL_PDB +0xc (old: m_pReceiver)
 };

@@ -9,7 +9,7 @@
 #include "../../../../include/NiUpdateData.h"
 #include "../../../../include/NiStream.h"
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long* value);
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long* value);
 

@@ -8,7 +8,7 @@ class TESForm;
 class TESHealthForm : public BaseFormComponent
 {
 public:
-    unsigned int iHealth;
+    unsigned int iHealth; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiHealthValue)
 
     TESHealthForm();
     ~TESHealthForm();

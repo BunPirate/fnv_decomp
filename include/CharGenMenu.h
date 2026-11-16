@@ -44,7 +44,7 @@ public:
             unsigned char unk56[2];
         };
     };
-    ListBox_enum_ActorValue__Index_ lbItemList;
+    ListBox_enum_ActorValue__Index_ lbItemList; // src: XBOX_RETAIL_PDB +0x58 (old: list)
 
     CharGenMenu();
     void SetTile(int id, Tile* tile);

@@ -20,6 +20,6 @@ public:
     bool __thiscall IsEqual_00c1f9e0(NiAVObject* pkObject);
     bool __thiscall FUN_00c31b80(NiAVObject* pkObject);
 
-    float m_fEmitterRadius;
-    float m_fEmitterHeight;
+    float m_fEmitterRadius; // src: XBOX_RETAIL_PDB +0x58 (old: m_fCylinderRadius)
+    float m_fEmitterHeight; // src: XBOX_RETAIL_PDB +0x5c (old: m_fCylinderHeight)
 };

@@ -45,30 +45,30 @@ public:
         void SIdvWindInfo_Parse(ElementIterator* cFile);
     };
 
-    float* m_fBillboardSize;
-    float* m_fLod;
-    float m_fOverrideTreeSize;
-    float m_fOverrideTreeVariance;
-    int m_cRandom;
-    SptFilename m_sTreeInfo;
+    float* m_fBillboardSize; // src: XBOX_RETAIL_PDB +0x10 (old: m_pfTreeSize)
+    float* m_fLod; // src: XBOX_RETAIL_PDB +0x14 (old: m_pfTreeSizeVariance)
+    float m_fOverrideTreeSize; // src: XBOX_RETAIL_PDB +0x18 (old: m_actualSize)
+    float m_fOverrideTreeVariance; // src: XBOX_RETAIL_PDB +0x1c (old: m_actualVariance)
+    int m_cRandom; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
+    SptFilename m_sTreeInfo; // src: XBOX_RETAIL_PDB +0x24 (old: m_pcFileName)
     int unk40;
     int unk44;
     int unk48;
     int unk4c;
     int unk50;
     int unk54;
-    int m_pBranch;
-    int m_pBranchGeometry;
-    int m_vBranchInfo;
+    int m_pBranch; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
+    int m_pBranchGeometry; // src: XBOX_RETAIL_PDB +0x5c (old: unk5c)
+    int m_vBranchInfo; // src: XBOX_RETAIL_PDB +0x60 (old: unk60)
     int unk64;
     int unk68;
     int unk6c;
-    int m_nNumBranchLodLevels;
-    int m_vBillboardLeaves;
+    int m_nNumBranchLodLevels; // src: XBOX_RETAIL_PDB +0x70 (old: unk70)
+    int m_vBillboardLeaves; // src: XBOX_RETAIL_PDB +0x74 (old: unk74)
     int unk78;
     int unk7c;
     int unk80;
-    int m_sLeafInfo;
+    int m_sLeafInfo; // src: XBOX_RETAIL_PDB +0x84 (old: unk84)
     int unk88;
     int unk8c;
     int unk90;
@@ -88,15 +88,15 @@ public:
     int unkc8;
     int unkcc;
     int unkd0;
-    int m_vLeafLods;
-    int m_bParsedLeafLods;
-    int m_fMinBranchVolumePercent;
-    int m_fMaxBranchVolumePercent;
-    int m_fLeafReductionPercentage;
-    int m_fBranchReductionFuzziness;
-    int m_fLargeBranchPercent;
-    int m_nBranchesWeightLevel;
-    float m_sWindInfo;
+    int m_vLeafLods; // src: XBOX_RETAIL_PDB +0xd4 (old: unkd4)
+    int m_bParsedLeafLods; // src: XBOX_RETAIL_PDB +0xd8 (old: unkd8)
+    int m_fMinBranchVolumePercent; // src: XBOX_RETAIL_PDB +0xdc (old: unkdc)
+    int m_fMaxBranchVolumePercent; // src: XBOX_RETAIL_PDB +0xe0 (old: unke0)
+    int m_fLeafReductionPercentage; // src: XBOX_RETAIL_PDB +0xe4 (old: unke4)
+    int m_fBranchReductionFuzziness; // src: XBOX_RETAIL_PDB +0xe8 (old: unke8)
+    int m_fLargeBranchPercent; // src: XBOX_RETAIL_PDB +0xec (old: unkec)
+    int m_nBranchesWeightLevel; // src: XBOX_RETAIL_PDB +0xf0 (old: unkf0)
+    float m_sWindInfo; // src: XBOX_RETAIL_PDB +0xf4 (old: unkF4)
     float unkF8;
     float unkFC;
     float unk100;

@@ -6,7 +6,7 @@ enum MEM_CONTEXT;
 class AutoMemContext
 {
   public:
-    MEM_CONTEXT iOldMemContext;
+    MEM_CONTEXT iOldMemContext; // src: XBOX_RETAIL_PDB +0x0 (old: m_eMemoryContext)
 
     AutoMemContext();
     AutoMemContext(int context);

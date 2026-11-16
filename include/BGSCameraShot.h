@@ -33,13 +33,13 @@ public:
     float TESCombatStyle_GetTargetingFOV();
 
     BGSCameraShot__CAMERA_SHOT_DATA Data;
-    NiPointer<NiAVObject> spLocationNode;
-    NiPointer<NiAVObject> spTargetNode;
-    TESObjectREFR* pTargetRef;
-    NiPointer<NiNode> spCameraNode;
-    NiPointer<NiAVObject> spImagespaceTarget;
-    char cCameraHasRotation;
-    bool bCameraTooClose;
-    bool bCameraIsKillCam;
+    NiPointer<NiAVObject> spLocationNode; // src: XBOX_RETAIL_PDB +0x60 (old: m_pLocationNode)
+    NiPointer<NiAVObject> spTargetNode; // src: XBOX_RETAIL_PDB +0x64 (old: m_pTargetNode)
+    TESObjectREFR* pTargetRef; // src: XBOX_RETAIL_PDB +0x68 (old: m_pReference)
+    NiPointer<NiNode> spCameraNode; // src: XBOX_RETAIL_PDB +0x6c (old: m_spPositionNode)
+    NiPointer<NiAVObject> spImagespaceTarget; // src: XBOX_RETAIL_PDB +0x70 (old: m_pSceneObject)
+    char cCameraHasRotation; // src: XBOX_RETAIL_PDB +0x74 (old: m_bUpdateNodePosition)
+    bool bCameraTooClose; // src: XBOX_RETAIL_PDB +0x75 (old: m_bFlag74)
+    bool bCameraIsKillCam; // src: XBOX_RETAIL_PDB +0x76 (old: m_bFlag75)
     unsigned char layoutPadding77[1];
 };

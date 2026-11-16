@@ -8,7 +8,7 @@ class QuantityMenu : public Menu
 public:
     virtual ~QuantityMenu();
 
-    unsigned char pTiles[0x1c];
+    unsigned char pTiles[0x1c]; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
 
     QuantityMenu();
     bool HandleButton(int aiButton, float afValue);

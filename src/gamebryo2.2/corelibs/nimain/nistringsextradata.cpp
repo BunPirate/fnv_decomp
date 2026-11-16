@@ -7,7 +7,7 @@
 #include "../../../../include/NiStream.h"
 #include "../../../../include/NiStringsExtraData.h"
 
-extern "C" void* NiStringsExtraData_ms_RTTI;
+extern "C" void* NiStringsExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ebc (old: g_011f5ebc)
 
 // @fnv 0x00a94820
 // src: COMMUNITY 0x00a94820
@@ -139,7 +139,7 @@ void NiStringsExtraData::LoadStringArray(NiStream* kStream)
     }
 }
 
-extern "C" void* NiStringsExtraData_ms_RTTI;
+extern "C" void* NiStringsExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ebc (old: g_011f5ebc)
 
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* __cdecl NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);

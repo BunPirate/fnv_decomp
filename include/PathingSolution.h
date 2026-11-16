@@ -133,7 +133,7 @@ public:
             unsigned int unk3c;
         };
     };
-    bool bIncompletePath;
+    bool bIncompletePath; // src: XBOX_RETAIL_PDB +0x40 (old: m_bHasValidPath)
     unsigned char unk41;
     unsigned short unk42;
 };

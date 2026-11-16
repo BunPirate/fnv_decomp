@@ -51,8 +51,8 @@ public:
         ActorX* m_pActor;
         Range6aa4* m_pkActor;
     };
-    TriRef20 StartNode;
-    NiPoint3 AvoidNodeCenter;
-    float fDistanceUpperBound;
-    NiPoint3 ThreatLocation;
+    TriRef20 StartNode; // src: XBOX_RETAIL_PDB +0x20a8 (old: m_kInfo)
+    NiPoint3 AvoidNodeCenter; // src: XBOX_RETAIL_PDB +0x20bc (old: m_kStartPoint)
+    float fDistanceUpperBound; // src: XBOX_RETAIL_PDB +0x20c8 (old: m_fFirstLightParameter)
+    NiPoint3 ThreatLocation; // src: XBOX_RETAIL_PDB +0x20cc (old: m_kTargetPos)
 };

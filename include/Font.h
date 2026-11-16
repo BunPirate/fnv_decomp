@@ -104,7 +104,7 @@ public:
     GO pTextureData[8];
     float fFontHeight;
     float fMaxDrop;
-    unsigned char iLineOverlap[4];
+    unsigned char iLineOverlap[4]; // src: XBOX_RETAIL_PDB +0x34 (old: _unverified_iLineOverlap)
     FontData* pFontData;
     IconTextureNameStorage IconAtlasTextureName;
     ButtonIconStorage ButtonIcons;

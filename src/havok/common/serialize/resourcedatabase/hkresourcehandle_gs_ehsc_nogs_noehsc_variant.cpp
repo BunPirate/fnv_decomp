@@ -936,7 +936,7 @@ class hkMemoryResourceContainer : public hkResourceBase
 
     hkStringPtr m_name;
     hkMemoryResourceContainer* m_parent;
-    hkArray<void*> m_resourceHandles;
+    hkArray<void*> m_resourceHandles; // src: XBOX_RETAIL_PDB +0x10 (old: m_kHandles)
     hkRefArrayE2ELocalForm<hkMemoryResourceContainer> m_children;
 };
 

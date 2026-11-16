@@ -1168,8 +1168,8 @@ struct ImpactSwap
     void RemoveSwappedImpactData(int, BGSImpactData*);
     char* GetAltFootstepMaterialName(int);
     void* __vecDelDtor(unsigned int);
-    char pRemappedData[48];
-    char pAltFootstepMaterialNames[300];
+    char pRemappedData[48]; // src: XBOX_RETAIL_PDB +0x0 (old: m_pData)
+    char pAltFootstepMaterialNames[300]; // src: XBOX_RETAIL_PDB +0x30 (old: m_acAltFootstepMaterialNames)
 };
 typedef char _sizecheck_ImpactSwap[sizeof(ImpactSwap) == 348 ? 1 : -1];
 
@@ -15018,7 +15018,7 @@ void CellLabel::TESObjectCELL_GetFormDetailedString(char* aString)
     }
 }
 
-extern void* NiGeomMorpherController_ms_RTTI;
+extern void* NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 
 struct Ctrl_552790
 {

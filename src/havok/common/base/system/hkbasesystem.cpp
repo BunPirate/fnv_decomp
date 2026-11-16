@@ -229,7 +229,7 @@ found:
     DAT_011f6238.MemoryManager_Deallocate(cur);
 }
 
-extern int hkSingletonInitList;
+extern int hkSingletonInitList; // src: XBOX_RETAIL_PDB 0x01268790 (old: DAT_01268790)
 void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct SoundNode
@@ -285,7 +285,7 @@ extern "C" void __cdecl hkBaseSystem_quitSingletons()
         heap.bufFree(pendingList.m_data, (pendingList.m_iCapacityState & 0x3fffffff) * 4);
 }
 
-extern int hkSingletonInitList;
+extern int hkSingletonInitList; // src: XBOX_RETAIL_PDB 0x01268790 (old: DAT_01268790)
 struct SpawnedListNode
 {
     int m_00;

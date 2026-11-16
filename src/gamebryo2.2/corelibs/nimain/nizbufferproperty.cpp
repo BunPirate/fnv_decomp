@@ -29,7 +29,7 @@ char const* const* __cdecl NiSourceTexture_GetRTTI()
     return &g_011f4454_arg1;
 }
 
-extern "C" void* NiSpecularProperty_ms_RTTI;
+extern "C" void* NiSpecularProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ecc (old: DAT_011f5ecc/g_011f5ecc)
 
 // @fnv 0x00a950d0
 // src: COMMUNITY 0x00a950d0
@@ -285,7 +285,7 @@ struct S_00a5f640_B
         v = x;
     }
 };
-extern char* NiZBufferProperty_ms_RTTI;
+extern char* NiZBufferProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f443c (old: DAT_011f443c/g_011f443c)
 struct Property284
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14;

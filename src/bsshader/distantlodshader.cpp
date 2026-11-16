@@ -210,7 +210,7 @@ void __fastcall ReleaseLodObjects(LodShaderBase* shader, int)
     shader->FUN_00e814b0();
 }
 
-extern "C" void* DistantLODShader_ms_RTTI;
+extern "C" void* DistantLODShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012023c8 (old: g_012023c8)
 
 // @fnv 0x00bd5460
 // src: XBOX_PDB 0x00bd5460

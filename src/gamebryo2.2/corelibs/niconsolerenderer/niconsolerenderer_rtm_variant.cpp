@@ -196,7 +196,7 @@ extern const char DAT_010eec28[];
 extern const char DAT_010eec38[];
 extern "C" void* g_011f4430;
 void* __cdecl NiVertexColorProperty_GetRTTI();
-extern "C" int NiZBufferProperty_ms_RTTI;
+extern "C" int NiZBufferProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f443c (old: DAT_011f443c/g_011f443c)
 int __cdecl NiZBufferProperty_GetRTTI();
 int __cdecl NiZBufferProperty_GetType_0();
 int __cdecl Object_ComputeValue_00dc9e60();
@@ -258,7 +258,7 @@ struct FUN_00e75840_shell {
     unsigned int color;
     void NiDX9Renderer_SetBackgroundColor(float* param);
 };
-extern "C" void* NiShaderDeclaration_ms_RTTI;
+extern "C" void* NiShaderDeclaration_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01270900 (old: g_01270900)
 void* __cdecl NiShaderDeclaration_GetRTTI();
 struct FUN_00e758f0_shell {
     void PackColorToUInt(float* floats);
@@ -3725,7 +3725,7 @@ struct RendererBridge {
     bool InitializeRendererResources();
 };
 extern "C" __declspec(dllimport) long __stdcall fnv_InterlockedDecrement(long volatile*);
-extern char NiRenderedCubeMap_ms_RTTI;
+extern char NiRenderedCubeMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012708e4 (old: DAT_012708e4/g_012708e4/g_sentinel_012708e4)
 class PktRefCounted {
 public:
     virtual void unk00();

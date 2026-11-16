@@ -1168,9 +1168,9 @@ struct S_eb6b90_Node
 };
 
 // pdb: class NiOBBLeaf, size 0x98, bases: NiOBBNode, 1 members
-struct NiOBBLeaf : S_eb6b90_Node
+struct NiOBBLeaf : S_eb6b90_Node // src: EXE (old: FUN_00eb6b90)
 {
-    NiPoint3* m_pWorldVertex[3];
+    NiPoint3* m_pWorldVertex[3]; // src: XBOX_RETAIL_PDB +0x8c (old: m_apkWorldVertex)
 
     NiOBBLeaf(S_eb6b90_Root* pkRoot, unsigned short* pusTriList, NiPoint3* pkVertex,
                  NiPoint3* pkWorldVertex, unsigned short m_usTriangleID);

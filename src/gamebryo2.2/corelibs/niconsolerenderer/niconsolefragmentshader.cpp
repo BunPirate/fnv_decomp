@@ -76,7 +76,7 @@ void* __thiscall NiShaderInstanceDescriptor::FUN_00e8d370(unsigned int mode)
     return this;
 }
 
-extern "C" void* NiFragmentShaderInstanceDescriptor_ms_RTTI;
+extern "C" void* NiFragmentShaderInstanceDescriptor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01270918 (old: g_01270918)
 
 // @fnv 0x00e8d530
 // src: COMMUNITY 0x00e8d530
@@ -384,7 +384,7 @@ struct FieldsMid_e8db90
     }
 };
 
-struct NiDX9FragmentShader : BaseObj_e8db90, FieldsMid_e8db90
+struct NiDX9FragmentShader : BaseObj_e8db90, FieldsMid_e8db90 // src: EXE (old: FUN_00e8db90)
 {
     virtual void unk00();
     SubObj_e8db90 m_3c;

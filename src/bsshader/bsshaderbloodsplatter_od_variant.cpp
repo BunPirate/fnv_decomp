@@ -43,7 +43,7 @@ struct SplatterShaderInfo
     const char* file;
     _D3DXMACRO macros[9];
 };
-extern int BSShaderBloodSplatter_ms_RTTI;
+extern int BSShaderBloodSplatter_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fedc8 (old: g_011fedc8)
 int* __cdecl BSShaderBloodSplatter_GetRTTI();
 
 struct FUN_0068ab60_shell

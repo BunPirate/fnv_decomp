@@ -36,7 +36,7 @@ class NiFloatInterpolator : public NiKeyBasedInterpolator
     void SetAnimationKeys(TimedAnimationKey* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType);
     void SetAnimationKeys(void* keys, unsigned int count, unsigned int type);
 
-    float m_fFloatValue;
-    NiPointer<NiFloatData> m_spFloatData;
-    unsigned int m_uiLastIdx;
+    float m_fFloatValue; // src: XBOX_RETAIL_PDB +0xc (old: value)
+    NiPointer<NiFloatData> m_spFloatData; // src: XBOX_RETAIL_PDB +0x10 (old: data)
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x14 (old: lastIndex)
 };

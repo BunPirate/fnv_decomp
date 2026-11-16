@@ -393,10 +393,10 @@ __declspec(noinline) void __cdecl DispatchToOffsetTarget(hkpCollidable* pkObject
 // No shared hkpWorldRayCastInput header yet; the ray endpoints and filter occupy 0x00..0x27.
 // pdb: structure hkpWorldRayCastInput, size 0x30, 4 members
 struct hkpWorldRayCastInput {
-    hkVector4 m_from;
-    hkVector4 m_to;
-    bool m_enableShapeCollectionFilter;
-    unsigned int m_filterInfo;
+    hkVector4 m_from; // src: XBOX_RETAIL_PDB +0x0 (old: m_vFrom)
+    hkVector4 m_to; // src: XBOX_RETAIL_PDB +0x10 (old: m_vTo)
+    bool m_enableShapeCollectionFilter; // src: XBOX_RETAIL_PDB +0x20 (old: m_bEnableShapeCollectionFilter)
+    unsigned int m_filterInfo; // src: XBOX_RETAIL_PDB +0x24 (old: m_uiFilterInfo)
 };
 
 struct hkpRayHitCollectorD084;

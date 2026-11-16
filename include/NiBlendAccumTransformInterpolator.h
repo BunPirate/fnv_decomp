@@ -16,7 +16,7 @@ public:
     void CalculateSingleValue(float fTime, NiObjectNET* pkInterpTarget);
     bool StoreSingleValue(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue);
 
-    NiQuatTransform m_kAccumulatedTransformValue;
-    AccumItem* m_pkAccumArray;
-    bool m_bReset;
+    NiQuatTransform m_kAccumulatedTransformValue; // src: XBOX_RETAIL_PDB +0x30 (old: m_kAccumulatedTransform)
+    AccumItem* m_pkAccumArray; // src: XBOX_RETAIL_PDB +0x50 (old: m_pAccumulationData)
+    bool m_bReset; // src: XBOX_RETAIL_PDB +0x54 (old: m_bHasAccumulation)
 };

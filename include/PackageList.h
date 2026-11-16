@@ -10,7 +10,7 @@ class TESPackage;
 class PackageList
 {
 public:
-    BSSimpleList<TESPackage*> listPackages;
+    BSSimpleList<TESPackage*> listPackages; // src: XBOX_RETAIL_PDB +0x0 (old: m_kPackages)
 
     ~PackageList();
     void FUN_0067e3a0();

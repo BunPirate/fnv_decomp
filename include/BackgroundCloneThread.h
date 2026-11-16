@@ -14,7 +14,7 @@ public:
 
     void* __thiscall FUN_00442290(unsigned int flags);
 
-    bool bExit;
-    int iRunningCount;
-    Q449* pCloneReferencesQueue;
+    bool bExit; // src: XBOX_RETAIL_PDB +0x30 (old: m_bThirdThreadFlag)
+    int iRunningCount; // src: XBOX_RETAIL_PDB +0x34 (old: m_iState)
+    Q449* pCloneReferencesQueue; // src: XBOX_RETAIL_PDB +0x38 (old: m_pCloneQueue)
 };

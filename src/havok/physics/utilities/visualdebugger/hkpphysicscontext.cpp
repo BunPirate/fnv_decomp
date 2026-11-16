@@ -1038,7 +1038,7 @@ struct CD22Owner
     void AddElementAndNotify(CD22Elem* e, const char* d, const char* s, int z);
 };
 
-extern char hkpWorldCinfoClass[];
+extern char hkpWorldCinfoClass[]; // src: XBOX_RETAIL_PDB 0x01269104 (old: DAT_01269104/g_01269104)
 extern char str_010cb20c[];
 
 struct CD22Object

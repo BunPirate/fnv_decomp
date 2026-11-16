@@ -23,5 +23,5 @@ public:
     void FUN_00806e30(Actor* apActor);
     void __thiscall FUN_00806e70(Actor* apActor);
 
-    TESForm* pAssociatedItem;
+    TESForm* pAssociatedItem; // src: XBOX_RETAIL_PDB +0x48 (old: m_pAssociatedForm)
 };

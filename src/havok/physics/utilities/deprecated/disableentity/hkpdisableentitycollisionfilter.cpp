@@ -51,7 +51,7 @@ class hkpDisableEntityCollisionFilter : public CollisionFilterBaseLocal_00e467d0
     hkBool removeEntity(hkpEntity* entity);
     void* DeleteInstance(unsigned char flags);
 
-    hkArray<hkpEntity*> m_disabledEntities;
+    hkArray<hkpEntity*> m_disabledEntities; // src: XBOX_RETAIL_PDB +0x34 (old: m_kDisabledEntities)
 };
 
 // @fnv 0x00e467b0

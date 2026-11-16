@@ -15,7 +15,7 @@ extern GlobalObject2_0040c150 g_011c8f00;
 class ContainerItemExtra
 {
   public:
-    unsigned int pOwnerForm[3];
+    unsigned int pOwnerForm[3]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     static void* operator new(unsigned int);
     static void operator delete(void*);
     ContainerItemExtra();

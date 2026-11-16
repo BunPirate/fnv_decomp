@@ -42,7 +42,7 @@ inline NiTObjectArray<T>::NiTObjectArray(unsigned int uiMaxSize, unsigned int ui
 }
 
 
-extern "C" void* NiPSysMeshUpdateModifier_ms_RTTI;
+extern "C" void* NiPSysMeshUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202530 (old: DAT_01202530/g_01202530)
 
 // @fnv 0x00c21720
 // src: COMMUNITY 0x00c21720

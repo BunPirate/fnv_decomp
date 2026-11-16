@@ -11,8 +11,8 @@ public:
     TESEscortPackageData();
     virtual ~TESEscortPackageData();
 
-    LocationDescriptor* pSearchLocation;
-    int iFollowPackRadius;
+    LocationDescriptor* pSearchLocation; // src: XBOX_RETAIL_PDB +0x4 (old: m_pPackageTarget)
+    int iFollowPackRadius; // src: XBOX_RETAIL_PDB +0x8 (old: m_iValue)
 
     TESEscortPackageData* __thiscall ConstructFromForm(TESForm** pForm);
     void TESFollowPackageData_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);

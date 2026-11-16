@@ -19,6 +19,6 @@ public:
 
     char* m_name;
     hkSimpleArray<hkClassEnumItem> m_items;
-    hkCustomAttributes* m_attributes;
+    hkCustomAttributes* m_attributes; // src: XBOX_RETAIL_PDB +0xc (old: m_pCustomAttributes)
     hkUint32 m_flags;
 };

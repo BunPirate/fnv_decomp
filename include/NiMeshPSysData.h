@@ -44,9 +44,9 @@ public:
     void __thiscall RemoveParticle(unsigned short usParticle);
     void __thiscall LoadBinary_00c31090(NiStream& kStream);
 
-    NiPointer<NiNode> m_spParticleMeshes;
-    bool m_bFillPoolsOnLoad;
+    NiPointer<NiNode> m_spParticleMeshes; // src: XBOX_RETAIL_PDB +0x7c (old: m_pMeshNode)
+    bool m_bFillPoolsOnLoad; // src: XBOX_RETAIL_PDB +0x80 (old: m_bUseDefaultPools)
     unsigned char unk81[3];
-    unsigned int m_uiDefaultPoolSize;
-    NiTObjectArray<NiTObjectArray<NiPointer<NiAVObject> >*> m_kPools;
+    unsigned int m_uiDefaultPoolSize; // src: XBOX_RETAIL_PDB +0x84 (old: m_uiDefaultPoolsSize)
+    NiTObjectArray<NiTObjectArray<NiPointer<NiAVObject> >*> m_kPools; // src: XBOX_RETAIL_PDB +0x88 (old: m_kPoolArrays)
 };

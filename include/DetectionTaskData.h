@@ -6,6 +6,6 @@
 class DetectionTaskData : public MobileObjectTaskletData
 {
 public:
-    float fNumber;
-    int iUpdated;
+    float fNumber; // src: XBOX_RETAIL_PDB +0x38 (old: m_fDetectionValue)
+    int iUpdated; // src: XBOX_RETAIL_PDB +0x3c (old: m_iDetectionState)
 };

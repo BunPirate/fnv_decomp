@@ -17,5 +17,5 @@ public:
     void SetSize(int value);
     void SetPosition(NiPoint3& position);
 
-    void* pFacePlanes[6];
+    void* pFacePlanes[6]; // src: XBOX_RETAIL_PDB +0x34 (old: m_apBoxData)
 };

@@ -270,7 +270,7 @@ class FUN_007e9130_cls : public Base
     int unk0118;
     MemB m_11c;
 };
-extern unsigned int* NiPoint3_ms_pSqrtTable;
+extern unsigned int* NiPoint3_ms_pSqrtTable; // src: XBOX_RETAIL_PDB 0x011f4aa8 (old: DAT_011f4aa8)
 float __cdecl FastSqrt(const float* v);
 int __cdecl VATSMenu_GetClassStatic();
 class B7F7790Ref

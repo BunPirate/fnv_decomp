@@ -19,5 +19,5 @@ public:
     void __thiscall FUN_0041fdb0();
     void ReleaseStorage_0041fe10();
 
-    PatrolRefData* pPatrolData;
+    PatrolRefData* pPatrolData; // src: XBOX_RETAIL_PDB +0xc (old: pData)
 };

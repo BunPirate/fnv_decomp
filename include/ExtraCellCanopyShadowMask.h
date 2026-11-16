@@ -16,8 +16,8 @@ class ExtraCellCanopyShadowMask : public BSExtraData
 {
 public:
     int eState;
-    GO spMask;
-    _D3DLOCKED_RECT Rect;
+    GO spMask; // src: XBOX_RETAIL_PDB +0x10 (old: mGO)
+    _D3DLOCKED_RECT Rect; // src: XBOX_RETAIL_PDB +0x14 (old: rect)
     int layoutPadding;
 
     ExtraCellCanopyShadowMask(int aeState, NiRenderedTexture* apTex);

@@ -309,7 +309,7 @@ float BSMultiBoundAABB::GetPointLength()
     return static_cast<const NiPoint3&>(HalfExtents).Length();
 }
 
-extern int BSMultiBoundOBB_ms_RTTI;
+extern int BSMultiBoundOBB_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202818 (old: g_01202818)
 
 struct FUN_004a70f0_shell
 {
@@ -2625,8 +2625,8 @@ struct Frustum
 // pdb: structure Sphere, size 0x10, 2 members
 struct Sphere
 {
-    NiPoint3 Center;
-    float fRadius;
+    NiPoint3 Center; // src: XBOX_RETAIL_PDB +0x0 (old: center)
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: radius)
     int ClassifySphereAgainstPlane(const Plane& kPlane);
 };
 struct MultiBoundSphereContainment : public BSMultiBoundSphere

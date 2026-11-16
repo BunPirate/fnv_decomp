@@ -10,7 +10,7 @@ class NiGeomMorpherController : public NiInterpController
 public:
     struct InterpItem
     {
-        NiPointer<NiInterpolator> m_spInterpolator;
+        NiPointer<NiInterpolator> m_spInterpolator; // src: XBOX_RETAIL_PDB +0x0 (old: m_spControllerInterpolator)
         float m_fWeight;
 
         __declspec(nothrow) InterpItem();
@@ -43,13 +43,13 @@ public:
     void SetMorphData(NiMorphData* pkData, bool bCalculateMorphBound);
     void AllocateInterpArray();
 
-    unsigned short m_uFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiObjectFlags)
     unsigned char m_aucPad[2];
-    NiPointer<NiMorphData> m_spMorphData;
-    InterpItem* m_pkInterpItems;
-    bool m_bNeedPreDisplay;
-    bool m_bIgnoreBaseTarget;
-    bool m_bAlwaysUpdate;
-    bool m_bBoundCalculated;
+    NiPointer<NiMorphData> m_spMorphData; // src: XBOX_RETAIL_PDB +0x38 (old: m_spMorphTargetData)
+    InterpItem* m_pkInterpItems; // src: XBOX_RETAIL_PDB +0x3c (old: m_pInterpolatorItems)
+    bool m_bNeedPreDisplay; // src: XBOX_RETAIL_PDB +0x40 (old: m_bUpdateEnabled)
+    bool m_bIgnoreBaseTarget; // src: XBOX_RETAIL_PDB +0x41 (old: m_bUpdateNormals)
+    bool m_bAlwaysUpdate; // src: XBOX_RETAIL_PDB +0x42 (old: m_bNeedsUpdate)
+    bool m_bBoundCalculated; // src: XBOX_RETAIL_PDB +0x43 (old: m_bUpdateBounds)
 };
 

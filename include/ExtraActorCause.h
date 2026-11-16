@@ -16,5 +16,5 @@ public:
     void SetActorCause(int apCause);
     void* FUN_0042cb00(unsigned int flags);
 
-    NiPointer<ActorCause> spActorCause;
+    NiPointer<ActorCause> spActorCause; // src: XBOX_RETAIL_PDB +0xc (old: actorCause)
 };

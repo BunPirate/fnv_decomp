@@ -7,7 +7,7 @@
 class CIdvCamera
 {
 public:
-    CVec3 m_cPosition;
+    CVec3 m_cPosition; // src: XBOX_RETAIL_PDB +0x4 (old: m_kTranslation)
 
     CIdvCamera();
     virtual ~CIdvCamera();

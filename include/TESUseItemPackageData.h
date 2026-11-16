@@ -15,5 +15,5 @@ public:
     void vf01(TESPackageData* apCopy);
     void FUN_0067c9d0();
 
-    LocationDescriptor* pSearchLocation;
+    LocationDescriptor* pSearchLocation; // src: XBOX_RETAIL_PDB +0x4 (old: m_pPackageTarget)
 };

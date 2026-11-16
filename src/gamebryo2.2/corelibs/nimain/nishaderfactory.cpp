@@ -74,10 +74,10 @@ public:
     NiGlobalConstantEntry(const char* pcKey, unsigned int eType, unsigned int uiDataSize, const void* pvDataSource) throw();
     void* Destroy(int flag);
 
-    NiFixedString m_kKey;
-    unsigned int m_eType;
-    unsigned int m_uiDataSize;
-    void* m_pvDataSource;
+    NiFixedString m_kKey; // src: XBOX_RETAIL_PDB +0x8 (old: m_kName)
+    unsigned int m_eType; // src: XBOX_RETAIL_PDB +0xc (old: m_uiCurrentValue)
+    unsigned int m_uiDataSize; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiSize)
+    void* m_pvDataSource; // src: XBOX_RETAIL_PDB +0x14 (old: m_pResource)
 };
 
 void* __cdecl Object_DispatchCommandFour(unsigned int uiSize);

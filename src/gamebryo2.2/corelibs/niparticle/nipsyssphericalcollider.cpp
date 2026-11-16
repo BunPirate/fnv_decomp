@@ -89,7 +89,7 @@ inline NiPoint3& NiPoint3::operator-=(const NiPoint3& p)
     return *this;
 }
 
-extern "C" const void* NiPSysSphericalCollider_ms_RTTI;
+extern "C" const void* NiPSysSphericalCollider_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026a0 (old: g_012026a0)
 
 // @fnv 0x00c281f0
 // src: COMMUNITY 0x00c281f0

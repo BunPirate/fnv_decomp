@@ -10,7 +10,7 @@ class BSMultiBoundAABB : public BSMultiBoundShape
 {
 public:
     NiPoint3 Center;
-    NiPoint3 HalfExtents;
+    NiPoint3 HalfExtents; // src: XBOX_RETAIL_PDB +0x18 (old: m_kOffset)
 
     BSMultiBoundAABB();
     virtual ~BSMultiBoundAABB();

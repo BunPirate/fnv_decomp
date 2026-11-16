@@ -323,11 +323,11 @@ class DetectionViewData
 class DetectionEvent
 {
   public:
-    int iActionValue;
-    NiPoint3 Location;
-    CombatTargetTimestamp fTimeStamp;
-    int eEventType;
-    TESObjectREFR* pRef;
+    int iActionValue; // src: XBOX_RETAIL_PDB +0x0 (old: type)
+    NiPoint3 Location; // src: XBOX_RETAIL_PDB +0x4 (old: position)
+    CombatTargetTimestamp fTimeStamp; // src: XBOX_RETAIL_PDB +0x10 (old: time)
+    int eEventType; // src: XBOX_RETAIL_PDB +0x14 (old: state)
+    TESObjectREFR* pRef; // src: XBOX_RETAIL_PDB +0x18 (old: source)
     DetectionEvent();
     void LoadFields_008d72e0(BGSLoadFormBuffer*);
     void SetTargetReference(BGSLoadFormBuffer*);

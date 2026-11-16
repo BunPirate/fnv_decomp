@@ -17,11 +17,11 @@ public:
     BSTaskThread(unsigned int aiProcessor, const char* apThreadName);
     virtual ~BSTaskThread();
 
-    void* hThreadHandle;
-    unsigned int iThreadID;
+    void* hThreadHandle; // src: XBOX_RETAIL_PDB +0x4 (old: hThread)
+    unsigned int iThreadID; // src: XBOX_RETAIL_PDB +0x8 (old: uiThreadID)
     Semaphore kStartSemaphore;
-    Semaphore PauseSemaphore;
-    int HavokThreadMemory;
+    Semaphore PauseSemaphore; // src: XBOX_RETAIL_PDB +0x18 (old: kDoneSemaphore)
+    int HavokThreadMemory; // src: XBOX_RETAIL_PDB +0x24 (old: unk24)
     int unk28;
     unsigned int uiOwnerThreadID;
 };

@@ -29,13 +29,13 @@ public:
         unsigned int uiSubCategoryID;
     };
 
-    Data data;
-    PerkEntryConditionSet RecipeConditions;
-    BSSimpleList<QuantityData*> ingredientlist;
-    BSSimpleList<QuantityData*> outputlist;
-    BSSimpleList<QuantityData*> garbageCollection;
-    TESRecipeCategory* pRecipeCat;
-    TESRecipeCategory* pRecipeSubCat;
+    Data data; // src: XBOX_RETAIL_PDB +0x24 (old: kData)
+    PerkEntryConditionSet RecipeConditions; // src: XBOX_RETAIL_PDB +0x34 (old: kConditions)
+    BSSimpleList<QuantityData*> ingredientlist; // src: XBOX_RETAIL_PDB +0x3c (old: kIngredients)
+    BSSimpleList<QuantityData*> outputlist; // src: XBOX_RETAIL_PDB +0x44 (old: kOutputs)
+    BSSimpleList<QuantityData*> garbageCollection; // src: XBOX_RETAIL_PDB +0x4c (old: kGarbageCollection)
+    TESRecipeCategory* pRecipeCat; // src: XBOX_RETAIL_PDB +0x54 (old: pCategory)
+    TESRecipeCategory* pRecipeSubCat; // src: XBOX_RETAIL_PDB +0x58 (old: pSubCategory)
 
     TESRecipe();
     virtual ~TESRecipe();

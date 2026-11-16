@@ -10,5 +10,5 @@ public:
     void reset();
 
     unsigned char unk04[4];
-    void* m_collector;
+    void* m_collector; // src: XBOX_RETAIL_PDB +0x8 (old: payload)
 };

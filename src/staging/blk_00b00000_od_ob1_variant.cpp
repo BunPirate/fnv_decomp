@@ -553,7 +553,7 @@ struct OwnerRefB0
     ~OwnerRefB0()
     {}
 };
-struct BSWin32TaskletGroupData : ThreadBaseE8
+struct BSWin32TaskletGroupData : ThreadBaseE8 // src: EXE (old: FUN_00b02860)
 {
     unsigned char m_bStopped;
     int unk08;
@@ -1996,8 +1996,8 @@ class exception
     virtual const char* what() const;
 
   private:
-    const char* _Mywhat;
-    int _Mydofree;
+    const char* _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: message)
+    int _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: ownsMessage)
 };
 class bad_alloc : public exception
 {

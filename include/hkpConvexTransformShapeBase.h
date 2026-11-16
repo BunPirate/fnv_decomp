@@ -13,6 +13,6 @@ public:
 
     const hkpConvexShape* GetShapeForKey() const;
 
-    hkpSingleShapeContainer m_childShape;
-    int m_childShapeSize;
+    hkpSingleShapeContainer m_childShape; // src: XBOX_RETAIL_PDB +0x14 (old: m_pContainedShape)
+    int m_childShapeSize; // src: XBOX_RETAIL_PDB +0x1c (old: m_iChildShapeSize)
 };

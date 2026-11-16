@@ -47,9 +47,9 @@ public:
     unsigned int m_uiPreTypePadding[2];
     unsigned int m_type;
     unsigned int m_uiPostTypePadding[3];
-    hkBool m_noGroupCollisionEnabled;
+    hkBool m_noGroupCollisionEnabled; // src: XBOX_RETAIL_PDB +0x30 (old: m_bEnableCollisionTable)
     char pad31[3];
-    unsigned int m_collisionGroups[32];
+    unsigned int m_collisionGroups[32]; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiCollisionTable)
 };
 
 // Returns m_bEnableCollisionTable if mask or value is zero, otherwise ORs selected m_uiCollisionTable entries per mask bits and returns whether value overlaps the result.

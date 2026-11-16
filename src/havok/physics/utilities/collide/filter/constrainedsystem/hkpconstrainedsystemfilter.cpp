@@ -10,7 +10,7 @@
 #include "../../../../../../../include/hkpConstraintInstance.h"
 #include "../../../../../../../include/hkpEntity.h"
 
-extern int hkpConstrainedSystemFilterClass;
+extern int hkpConstrainedSystemFilterClass; // src: XBOX_RETAIL_PDB 0x0126d658 (old: g_0126d658/g_unk0126d658)
 
 // @fnv 0x00dffaf0
 // src: GUESS 0x00dffaf0 (confidence: low)

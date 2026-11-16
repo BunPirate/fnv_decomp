@@ -25,5 +25,5 @@ public:
     void Start_0080dd30();
     void Finish_0080ddd0();
 
-    unsigned char bStartedInCombat;
+    unsigned char bStartedInCombat; // src: XBOX_RETAIL_PDB +0x4c (old: exhausted)
 };

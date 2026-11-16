@@ -18,7 +18,7 @@ public:
     static void __cdecl operator delete(void* p, void* placement);
     static void __cdecl operator delete[](void* p, void* placement);
 
-    hkpContactMgr* m_contactMgr;
+    hkpContactMgr* m_contactMgr; // src: XBOX_RETAIL_PDB +0x8 (old: m_pContactManager)
 
     hkpContactMgr* getContactMgr();
 

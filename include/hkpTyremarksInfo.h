@@ -15,7 +15,7 @@ public:
 
     void updateTyremarksInfo(float timestep, void* vehicle); // exe: 0x00e39fd0
 
-    hkReal m_minTyremarkEnergy;
-    hkReal m_maxTyremarkEnergy;
-    hkArray<hkpTyremarksWheel*> m_tyremarksWheel;
+    hkReal m_minTyremarkEnergy; // src: XBOX_RETAIL_PDB +0x8 (old: m_fMinTyremarkPointDistance)
+    hkReal m_maxTyremarkEnergy; // src: XBOX_RETAIL_PDB +0xc (old: m_fMaxTyremarkPointDistance)
+    hkArray<hkpTyremarksWheel*> m_tyremarksWheel; // src: XBOX_RETAIL_PDB +0x10 (old: m_kTyremarksWheels)
 };

@@ -12,10 +12,10 @@ class PathingInfo
 {
 public:
     BSSimpleArray<PathingInfoEntry, 1024> Items;
-    unsigned int iInfoFlags;
-    BSSimpleArray<const NavMeshInfo*, 1024> BestInfoPath;
-    BSSimpleArray<TESObjectREFR*, 1024> BestInfoPathDoors;
-    PathingPath BestTeleportPath;
+    unsigned int iInfoFlags; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiNavMeshInfoCount)
+    BSSimpleArray<const NavMeshInfo*, 1024> BestInfoPath; // src: XBOX_RETAIL_PDB +0x14 (old: NavMeshInfoPointerArray)
+    BSSimpleArray<TESObjectREFR*, 1024> BestInfoPathDoors; // src: XBOX_RETAIL_PDB +0x24 (old: TESObjectReferenceArray)
+    PathingPath BestTeleportPath; // src: XBOX_RETAIL_PDB +0x34 (old: NavMeshReferenceCollection)
 
     PathingInfo();
     ~PathingInfo();

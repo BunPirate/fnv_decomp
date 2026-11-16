@@ -239,7 +239,7 @@ class hkpMovingSurfaceModifierConstraintAtom : public hkpModifierConstraintAtom
   public:
     void CopyMemory_00d21f50(const hkContactPoint& kCp, void* pvA, void* pvB, void* pvC, intptr_t kVelOut);
 
-    hkVector4 m_velocity;
+    hkVector4 m_velocity; // src: XBOX_RETAIL_PDB +0x20 (old: m_fVelocity)
 };
 
 // Subtracts a copy of m_fVelocity scaled by its dot product with the separating normal from that copy, and adds the result to kVelOut.

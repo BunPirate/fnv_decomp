@@ -79,7 +79,7 @@ void NiPSysModifierBoolCtlr::AppendModifierInfo(StrArr* pkStrings)
     pkStrings->SetAt(size, tmp);
 }
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 class C32CB0Interpolator
 {

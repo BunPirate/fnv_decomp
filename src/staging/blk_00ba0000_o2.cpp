@@ -1093,7 +1093,7 @@ FUN_00bb7170_Class* FUN_00bb7300_Class::CreateInstance()
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 BSShaderNoLightingProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSShaderNoLightingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa05c (old: g_011fa05c/g_kFalloffRTTI)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 void __stdcall WriteToSettingArray(StrArr*);
 
@@ -1225,7 +1225,7 @@ FUN_00bad560_Class* FUN_00bad560_Class::FUN_00bad560(char flag)
     return this;
 }
 
-extern const char* const SkyShaderProperty_ms_RTTI;
+extern const char* const SkyShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005b8 (old: DAT_012005b8/g_012005b8)
 
 // @fnv 0x00baec70
 // src: XBOX_PDB 0x00baec70
@@ -3694,7 +3694,7 @@ FUN_00baa570::~FUN_00baa570()
 }
 }  // namespace fnv_00baa570
 
-extern int TallGrassShader_ms_RTTI;
+extern int TallGrassShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01200508 (old: DAT_01200508/g_01200508)
 
 // @fnv 0x00baa630
 // src: XBOX_PDB 0x00baa630
@@ -5898,7 +5898,7 @@ void __cdecl SpeedTreeLeafShader_UpdateScaleAdjustment()
     DAT_01200644 = 0.0f;
 }
 
-extern int SpeedTreeLeafShader_ms_RTTI;
+extern int SpeedTreeLeafShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01200610 (old: DAT_01200610/g_01200610)
 
 // @fnv 0x00bb1d30
 // src: XBOX_PDB 0x00bb1d30
@@ -7913,7 +7913,7 @@ void* FUN_00bb4080_Class::GeometryDecalShaderProperty_GeometryDecalShaderPropert
     return this;
 }
 
-extern int GeometryDecalShaderProperty_ms_RTTI;
+extern int GeometryDecalShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007a8 (old: DAT_012007a8/g_012007a8)
 
 // @fnv 0x00bb40b0
 // src: XBOX_PDB 0x00bb40b0
@@ -8624,7 +8624,7 @@ bool FUN_00bb5ff0_Class::Lighting30ShaderProperty_SetupGeometry(FUN_00a59d30_Cla
 }
 
 // FUN_00bb7200 : a one-line function - getter
-extern int BSDistantTreeShaderProperty_ms_RTTI;
+extern int BSDistantTreeShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007c8 (old: g_012007c8/g_target_00bb7200)
 // @fnv 0x00bb7200
 // src: XBOX_PDB 0x00bb7200
 void* BSDistantTreeShaderProperty_GetRTTI()
@@ -8753,7 +8753,7 @@ TileShaderProperty* __cdecl TileShaderProperty_CreateObject()
     return new TileShaderProperty(false);
 }
 
-extern void* TileShaderProperty_ms_RTTI;
+extern void* TileShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007d8 (old: DAT_012007d8/g_012007d8)
 extern const char DAT_010b9e1c[];
 extern const char DAT_010b9e0c[];
 extern const char DAT_010b9dfc[];
@@ -8952,7 +8952,7 @@ struct FNVArray
     }
 };
 
-extern void* BSFogProperty_ms_RTTI;
+extern void* BSFogProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007e0 (old: gSetting/g_012007e0)
 extern char* NiGetViewerString_00a7d550(const char* name, float value);
 extern const char gFirstName[];
 extern const char gSecondName[];
@@ -13023,7 +13023,7 @@ void __thiscall FUN_00baeee0_shell::SkyShaderProperty_GetViewerStrings(StrArr* a
 }
 
 namespace fnv_00bb1160 {
-extern void* PrecipitationShaderProperty_ms_RTTI;
+extern void* PrecipitationShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005fc (old: DAT_012005fc/g_012005fc)
 extern char DAT_010b90ec;
 extern char DAT_010ae79c;
 extern char DAT_010ae344;
@@ -14194,7 +14194,7 @@ struct FUN_00bae560_q
 };
 
 extern FUN_00bae560_g* DAT_011f91ac;
-extern FUN_00bae560_tex ImageSpaceEffectHDR_spAdaptedLight;
+extern FUN_00bae560_tex ImageSpaceEffectHDR_spAdaptedLight; // src: XBOX_RETAIL_PDB 0x012005a4 (old: DAT_012005a4)
 extern unsigned char DAT_012005a1;
 extern unsigned char DAT_012005a2;
 extern float DAT_011f9410;
@@ -16742,28 +16742,28 @@ struct ImageSpaceShaderParam : ImageSpaceEffectParam
     int unk18;
     int unk1c;
     int unk20;
-    int iFiltermode;
-    int iClearFlags;
-    int fClearColor;
+    int iFiltermode; // src: XBOX_RETAIL_PDB +0x24 (old: unk24)
+    int iClearFlags; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
+    int fClearColor; // src: XBOX_RETAIL_PDB +0x2c (old: unk2c)
     int unk30;
     int unk34;
     int unk38;
-    int pfVertexConstantGroup;
-    int iVSize;
-    int pfPixelConstantGroup;
-    int iPSize;
-    int spVertexConstantMap;
-    int spPixelConstantMap;
-    int bUseTexOffset;
-    int pInputTextures;
+    int pfVertexConstantGroup; // src: XBOX_RETAIL_PDB +0x3c (old: unk3c)
+    int iVSize; // src: XBOX_RETAIL_PDB +0x40 (old: unk40)
+    int pfPixelConstantGroup; // src: XBOX_RETAIL_PDB +0x44 (old: unk44)
+    int iPSize; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
+    int spVertexConstantMap; // src: XBOX_RETAIL_PDB +0x4c (old: unk4c)
+    int spPixelConstantMap; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
+    int bUseTexOffset; // src: XBOX_RETAIL_PDB +0x54 (old: unk54)
+    int pInputTextures; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
     int unk5c;
     int unk60;
     int unk64;
-    int pInputFilterModes;
+    int pInputFilterModes; // src: XBOX_RETAIL_PDB +0x68 (old: unk68)
     int unk6c;
     int unk70;
     int unk74;
-    int pRenderStates;
+    int pRenderStates; // src: XBOX_RETAIL_PDB +0x78 (old: unk78)
     int unk7c;
     int unk80;
     int unk84;

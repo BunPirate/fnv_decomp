@@ -200,24 +200,24 @@ struct S_EffectArray
 struct ImageSpaceEffect
 {
     virtual ~ImageSpaceEffect();
-    int bIsActive;
-    int pEffectList;
+    int bIsActive; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int pEffectList; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     int unk0c;
     int unk10;
     int unk14;
-    int pEffectParamList;
+    int pEffectParamList; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
     int unk1c;
     int unk20;
     int unk24;
-    S_EffectArray pTextures;
+    S_EffectArray pTextures; // src: XBOX_RETAIL_PDB +0x28 (old: m_effectTextures)
     int unk2c;
     int unk30;
     int unk34;
-    int pEffectInputs;
+    int pEffectInputs; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
     int unk3c;
     int unk40;
     int unk44;
-    int pEffectOutput;
+    int pEffectOutput; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
     int unk4c;
     int unk50;
     int unk54;

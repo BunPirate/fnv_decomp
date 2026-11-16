@@ -40,7 +40,7 @@ void NiFree(void* pointer);
 
 
 extern MemoryManager g_memoryManager;
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 struct TextureShaderMaps
 {
@@ -252,7 +252,7 @@ struct FUN_00a46480_shell : public NiTextureTransformController
 };
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiTextureTransformController_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiTextureTransformController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f20 (old: g_011f3f20)
 
 // @fnv 0x00a46480
 // src: COMMUNITY 0x00a46480

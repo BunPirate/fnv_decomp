@@ -12,7 +12,7 @@ class PerkEntryConditionSet
 {
 public:
     // a list of conditions: the constructor 0x006808b0 constructs it (EH-framed list constructor call)
-    BSSimpleList<TESConditionItem*> listConditions;
+    BSSimpleList<TESConditionItem*> listConditions; // src: XBOX_RETAIL_PDB +0x0 (old: m_kConditionItems)
 
     PerkEntryConditionSet();
     ~PerkEntryConditionSet();

@@ -25,16 +25,16 @@ class TESPackage;
 class CombatManager
 {
 public:
-    NiTPrimitiveArray<ActorCombatGroup*> CombatGroups;
-    NiTMap<Actor*, unsigned __int64>* pLocalActorTargetingMap;
-    CombatThreatMap* pThreatMap;
-    CombatCoverMap* pCoverMap;
-    CombatTargetMap* pTargetMap;
-    CombatTargetTimestamp fCombatMusicStartedTimeStamp;
-    TimeoutTimer CombatMusicStopTimer;
-    TimeoutTimer CombatMusicUpdateTimer;
-    unsigned int iNextGroupID;
-    NiPointer<NiNode> spDebugGeometry;
+    NiTPrimitiveArray<ActorCombatGroup*> CombatGroups; // src: XBOX_RETAIL_PDB +0x0 (old: m_kCombatGroups)
+    NiTMap<Actor*, unsigned __int64>* pLocalActorTargetingMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_pActorCombatGroupMap)
+    CombatThreatMap* pThreatMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pThreatMap)
+    CombatCoverMap* pCoverMap; // src: XBOX_RETAIL_PDB +0x18 (old: m_pCoverMap)
+    CombatTargetMap* pTargetMap; // src: XBOX_RETAIL_PDB +0x1c (old: m_pTargetMap)
+    CombatTargetTimestamp fCombatMusicStartedTimeStamp; // src: XBOX_RETAIL_PDB +0x20 (old: m_kFourByteManagerData)
+    TimeoutTimer CombatMusicStopTimer; // src: XBOX_RETAIL_PDB +0x24 (old: m_kFirstEightByteManagerData)
+    TimeoutTimer CombatMusicUpdateTimer; // src: XBOX_RETAIL_PDB +0x2c (old: m_kSecondEightByteManagerData)
+    unsigned int iNextGroupID; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiDebugFlags)
+    NiPointer<NiNode> spDebugGeometry; // src: XBOX_RETAIL_PDB +0x38 (old: m_spDebugRootNode)
 
     void ResetFormData();
     void ClearData(bool);

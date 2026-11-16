@@ -90,91 +90,91 @@ class Actor : public MobileObject,
 {
 public:
     bhkRagdollController* m_pRagdollController;            // +0xAC
-    bhkRagdollPenetrationUtil* pPenetrationDetection;  // +0xB0
-    DIALOGUE_EMOTION ePersuasionEmotion;                   // +0xB4
-    float fEmotionValue;                                // +0xB8
-    bool bProcessMe;                                // +0xBC
+    bhkRagdollPenetrationUtil* pPenetrationDetection;  // +0xB0 // src: XBOX_RETAIL_PDB +0xb0 (old: m_pRagdollPenetrationUtil)
+    DIALOGUE_EMOTION ePersuasionEmotion;                   // +0xB4 // src: XBOX_RETAIL_PDB +0xb4 (old: m_eDialogueEmotion)
+    float fEmotionValue;                                // +0xB8 // src: XBOX_RETAIL_PDB +0xb8 (old: ActorRagdollData)
+    bool bProcessMe;                                // +0xBC // src: XBOX_RETAIL_PDB +0xbc (old: m_bFirstActorFlag)
     unsigned char layoutPaddingBD;
     unsigned short layoutPaddingBE;
-    Actor* pMyKiller;  // +0xC0
-    bool bMurderAlarm;         // +0xC4
+    Actor* pMyKiller;  // +0xC0 // src: XBOX_RETAIL_PDB +0xc0 (old: m_pActorReference)
+    bool bMurderAlarm;         // +0xC4 // src: XBOX_RETAIL_PDB +0xc4 (old: m_bActorFlag)
     unsigned char layoutPaddingC5;
     unsigned short layoutPaddingC6;
-    float fCheckMyDeadBodyTimer;     // +0xC8
-    float fDeadBodyAlarm;            // +0xCC
-    ActorValueModifierList pPermanentModifiers;   // +0xD0
-    ActorValueModifierList pBaseValueOverrides;  // +0xE0
-    bool bBlockPostAnim;    // +0xF0
-    bool bReloadTargetQueued;               // +0xF1
-    bool bRunsInLow;           // +0xF2
+    float fCheckMyDeadBodyTimer;     // +0xC8 // src: XBOX_RETAIL_PDB +0xc8 (old: m_fFirstValueAfterFlag)
+    float fDeadBodyAlarm;            // +0xCC // src: XBOX_RETAIL_PDB +0xcc (old: m_fSecondScalar)
+    ActorValueModifierList pPermanentModifiers;   // +0xD0 // src: XBOX_RETAIL_PDB +0xd0 (old: m_kFirstActorData)
+    ActorValueModifierList pBaseValueOverrides;  // +0xE0 // src: XBOX_RETAIL_PDB +0xe0 (old: m_kSecondActorData)
+    bool bBlockPostAnim;    // +0xF0 // src: XBOX_RETAIL_PDB +0xf0 (old: m_bFlagBeforeTwoBooleans)
+    bool bReloadTargetQueued;               // +0xF1 // src: XBOX_RETAIL_PDB +0xf1 (old: m_bMiddleFlag)
+    bool bRunsInLow;           // +0xF2 // src: XBOX_RETAIL_PDB +0xf2 (old: m_bThirdActorFlag)
     unsigned char layoutPaddingF3;
-    BSSimpleList<CombatGroupCollection*> CastPowers;         // +0xF4
-    BSSimpleList<ActorListEntry*> DispModifierList;  // +0xFC
-    bool bInCombat;                                   // +0x104
+    BSSimpleList<CombatGroupCollection*> CastPowers;         // +0xF4 // src: XBOX_RETAIL_PDB +0xf4 (old: m_kFirstPointerList)
+    BSSimpleList<ActorListEntry*> DispModifierList;  // +0xFC // src: XBOX_RETAIL_PDB +0xfc (old: m_kSecondPointerList)
+    bool bInCombat;                                   // +0x104 // src: XBOX_RETAIL_PDB +0x104 (old: m_bActorStateFlag)
     unsigned char layoutPadding105;
     unsigned short layoutPadding106;
-    ACTOR_LIFE_STATE eLifeState;          // +0x108
-    ACTOR_CRITICAL_STAGE eCriticalStage;  // +0x10C
-    ANIM_GROUP_ENUM eQueuedattack;      // +0x110
-    float fLastUpdate;  // +0x114
-    bool bDeadFlag;                     // +0x118
+    ACTOR_LIFE_STATE eLifeState;          // +0x108 // src: XBOX_RETAIL_PDB +0x108 (old: m_eLifeState)
+    ACTOR_CRITICAL_STAGE eCriticalStage;  // +0x10C // src: XBOX_RETAIL_PDB +0x10c (old: m_eCriticalStage)
+    ANIM_GROUP_ENUM eQueuedattack;      // +0x110 // src: XBOX_RETAIL_PDB +0x110 (old: m_eAnimationGroup)
+    float fLastUpdate;  // +0x114 // src: XBOX_RETAIL_PDB +0x114 (old: ActorConditionAndAnimationState)
+    bool bDeadFlag;                     // +0x118 // src: XBOX_RETAIL_PDB +0x118 (old: m_bHasUpdated)
     unsigned char layoutPadding119;
     unsigned short layoutPadding11A;
-    int iVisFlags;                            // +0x11C
-    unsigned int iLastSeenTime;         // +0x120
-    bool bForceRun;                              // +0x124
-    bool bForceSneak;                           // +0x125
-    bool bForceUpdateQuestTarget;                       // +0x126
-    bool bSearchingInCombat;                           // +0x127
-    Actor* pCurrentCombatTarget;                            // +0x128
-    BSSimpleArray<Actor*, 1024>* pCurrentCombatTargetArray;   // +0x12C
-    BSSimpleArray<Actor*, 1024>* pCurrentCombatMemberArray;  // +0x130
-    bool bAttackOnNextTheft;                            // +0x134
+    int iVisFlags;                            // +0x11C // src: XBOX_RETAIL_PDB +0x11c (old: m_iActorStateValue)
+    unsigned int iLastSeenTime;         // +0x120 // src: XBOX_RETAIL_PDB +0x120 (old: m_uiValueBeforeBooleanFields)
+    bool bForceRun;                              // +0x124 // src: XBOX_RETAIL_PDB +0x124 (old: ActorStateFlags)
+    bool bForceSneak;                           // +0x125 // src: XBOX_RETAIL_PDB +0x125 (old: ActorReferenceData)
+    bool bForceUpdateQuestTarget;                       // +0x126 // src: XBOX_RETAIL_PDB +0x126 (old: ActorReferenceListData)
+    bool bSearchingInCombat;                           // +0x127 // src: XBOX_RETAIL_PDB +0x127 (old: m_bFlagBeforeCurrentActor)
+    Actor* pCurrentCombatTarget;                            // +0x128 // src: XBOX_RETAIL_PDB +0x128 (old: m_pCurrentActor)
+    BSSimpleArray<Actor*, 1024>* pCurrentCombatTargetArray;   // +0x12C // src: XBOX_RETAIL_PDB +0x12c (old: m_pFirstActorArray)
+    BSSimpleArray<Actor*, 1024>* pCurrentCombatMemberArray;  // +0x130 // src: XBOX_RETAIL_PDB +0x130 (old: m_pSecondActorArray)
+    bool bAttackOnNextTheft;                            // +0x134 // src: XBOX_RETAIL_PDB +0x134 (old: m_bActorListValid)
     unsigned char layoutPadding135;
     unsigned short layoutPadding136;
-    int iThiefCrimeStamp;                     // +0x138
-    unsigned int iMinorCrimes;  // +0x13C
-    unsigned int iMajorCrimes;              // +0x140
-    bool bIgnoreCrime;                     // +0x144
-    bool bEVPBuffered;              // +0x145
-    bool bResetAI;              // +0x146
+    int iThiefCrimeStamp;                     // +0x138 // src: XBOX_RETAIL_PDB +0x138 (old: m_iIntegerAfterActorListValid)
+    unsigned int iMinorCrimes;  // +0x13C // src: XBOX_RETAIL_PDB +0x13c (old: m_uiFirstValueAfterInteger)
+    unsigned int iMajorCrimes;              // +0x140 // src: XBOX_RETAIL_PDB +0x140 (old: m_uiActorFlags)
+    bool bIgnoreCrime;                     // +0x144 // src: XBOX_RETAIL_PDB +0x144 (old: ActorStatusData)
+    bool bEVPBuffered;              // +0x145 // src: XBOX_RETAIL_PDB +0x145 (old: ActorBaseConfiguration)
+    bool bResetAI;              // +0x146 // src: XBOX_RETAIL_PDB +0x146 (old: m_bFlagBeforeActorBase)
     unsigned char layoutPadding147;
-    TESActorBase* pTemplateActorBase;              // +0x148
-    bool bInWater;                 // +0x14C
-    bool bSwimming;                 // +0x14D
-    bool bUpdateLighting;  // +0x14E
+    TESActorBase* pTemplateActorBase;              // +0x148 // src: XBOX_RETAIL_PDB +0x148 (old: m_pActorBase)
+    bool bInWater;                 // +0x14C // src: XBOX_RETAIL_PDB +0x14c (old: ActorBaseReference)
+    bool bSwimming;                 // +0x14D // src: XBOX_RETAIL_PDB +0x14d (old: m_bSecondActorFlag)
+    bool bUpdateLighting;  // +0x14E // src: XBOX_RETAIL_PDB +0x14e (old: m_bThirdBooleanFlagAfterActorBase)
     unsigned char layoutPadding14F;
-    int iActionValue;                  // +0x150
-    float fTimeronAction;  // +0x154
-    float fHeadTrackTimer;    // +0x158
-    bool bWasInFrustum;         // +0x15C
-    bool bShouldRotateToTrack;          // +0x15D
+    int iActionValue;                  // +0x150 // src: XBOX_RETAIL_PDB +0x150 (old: m_iIntegerBeforeTwoFloatValues)
+    float fTimeronAction;  // +0x154 // src: XBOX_RETAIL_PDB +0x154 (old: BooleanIntegerTwoFloatData)
+    float fHeadTrackTimer;    // +0x158 // src: XBOX_RETAIL_PDB +0x158 (old: IntegerFloatFlagSettings)
+    bool bWasInFrustum;         // +0x15C // src: XBOX_RETAIL_PDB +0x15c (old: m_bFirstBehaviorFlag)
+    bool bShouldRotateToTrack;          // +0x15D // src: XBOX_RETAIL_PDB +0x15d (old: m_bSecondOfTwoFlags)
     unsigned short layoutPadding15E;
-    NiPoint3 EditorLocCoord;     // +0x160
-    float fEditorLocZRot;       // +0x16C
-    TESForm* pEditorLocForm;  // +0x170
-    bool bSetOnDeath;   // +0x174
-    bool bContainerReset;             // +0x175
+    NiPoint3 EditorLocCoord;     // +0x160 // src: XBOX_RETAIL_PDB +0x160 (old: m_kFormPosition)
+    float fEditorLocZRot;       // +0x16C // src: XBOX_RETAIL_PDB +0x16c (old: FormPositionData)
+    TESForm* pEditorLocForm;  // +0x170 // src: XBOX_RETAIL_PDB +0x170 (old: FormReferenceState)
+    bool bSetOnDeath;   // +0x174 // src: XBOX_RETAIL_PDB +0x174 (old: m_bFirstFlagAfterForm)
+    bool bContainerReset;             // +0x175 // src: XBOX_RETAIL_PDB +0x175 (old: m_bFormFlag)
     unsigned short layoutPadding176;
-    float fGunSkillGun;       // +0x178
-    float fGunSkillHUD;   // +0x17C
-    float fGunSkillActor;          // +0x180
-    float fGunSkillVATS;             // +0x184
-    float fCurrentWeaponCondition;                // +0x188
-    bool bFootIKInRange;   // +0x18C
-    bool bPlayerTeammate;  // +0x18D
-    bool bLightingUpdatedNonMoving;                // +0x18E
+    float fGunSkillGun;       // +0x178 // src: XBOX_RETAIL_PDB +0x178 (old: TwoBooleanFourFloatData)
+    float fGunSkillHUD;   // +0x17C // src: XBOX_RETAIL_PDB +0x17c (old: BooleanAndFiveFloatSettings)
+    float fGunSkillActor;          // +0x180 // src: XBOX_RETAIL_PDB +0x180 (old: FiveFloatBooleanData)
+    float fGunSkillVATS;             // +0x184 // src: XBOX_RETAIL_PDB +0x184 (old: FloatFlagSettings)
+    float fCurrentWeaponCondition;                // +0x188 // src: XBOX_RETAIL_PDB +0x188 (old: m_fFourthFloat)
+    bool bFootIKInRange;   // +0x18C // src: XBOX_RETAIL_PDB +0x18c (old: FloatTripleBooleanFlagRecord)
+    bool bPlayerTeammate;  // +0x18D // src: XBOX_RETAIL_PDB +0x18d (old: m_bMiddleFlagBeforeActorMover)
+    bool bLightingUpdatedNonMoving;                // +0x18E // src: XBOX_RETAIL_PDB +0x18e (old: m_bMovementFlag)
     unsigned char layoutPadding18F;
-    ActorMover* pActorMover;                              // +0x190
-    void* pLastHitData;                                          // +0x194
-    TESPackage* pInitialPackage;                                 // +0x198
-    float fRadiationResistanceMult;                         // +0x19C
-    ContinuousBeamProjectile* pContinuousBeamPersistant;  // +0x1A0
-    int iEmotion;                                           // +0x1A4
-    int iEmotionValue;                               // +0x1A8
-    SIT_SLEEP_STATE cCurrentSitSleepState;                       // +0x1AC
-    bool bTurretBehavior;                         // +0x1B0
-    bool bForceHitReaction;                                   // +0x1B1
+    ActorMover* pActorMover;                              // +0x190 // src: XBOX_RETAIL_PDB +0x190 (old: m_pActorMover)
+    void* pLastHitData;                                          // +0x194 // src: XBOX_RETAIL_PDB +0x194 (old: m_pData)
+    TESPackage* pInitialPackage;                                 // +0x198 // src: XBOX_RETAIL_PDB +0x198 (old: m_pPackage)
+    float fRadiationResistanceMult;                         // +0x19C // src: XBOX_RETAIL_PDB +0x19c (old: m_fPackageParameter)
+    ContinuousBeamProjectile* pContinuousBeamPersistant;  // +0x1A0 // src: XBOX_RETAIL_PDB +0x1a0 (old: m_pContinuousBeamProjectile)
+    int iEmotion;                                           // +0x1A4 // src: XBOX_RETAIL_PDB +0x1a4 (old: m_iPackageState)
+    int iEmotionValue;                               // +0x1A8 // src: XBOX_RETAIL_PDB +0x1a8 (old: ActorProjectileState)
+    SIT_SLEEP_STATE cCurrentSitSleepState;                       // +0x1AC // src: XBOX_RETAIL_PDB +0x1ac (old: m_eSitSleepState)
+    bool bTurretBehavior;                         // +0x1B0 // src: XBOX_RETAIL_PDB +0x1b0 (old: m_bFlagAfterSitSleepState)
+    bool bForceHitReaction;                                   // +0x1B1 // src: XBOX_RETAIL_PDB +0x1b1 (old: ActorSleepState)
     unsigned short layoutPadding1B2;
 
     // Exe/RTTI slot 23: 0x008ab3a0, called directly by Creature.

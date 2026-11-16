@@ -14,5 +14,5 @@ public:
     void process(void* value);
     void unk00();
 
-    void* m_collector;
+    void* m_collector; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
 };

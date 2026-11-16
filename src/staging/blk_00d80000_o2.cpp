@@ -902,7 +902,7 @@ S_00d85af0_Cls* S_00d85af0_Cls::AssignFrom(const S_00d85af0_Cls* o) {
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkpSimulationClass;
+extern CpuOpaque hkpSimulationClass; // src: XBOX_RETAIL_PDB 0x01269514 (old: DAT_01269514/g_01269514)
 // @fnv 0x00d9f6c0
 // src: GUESS 0x00d9f6c0 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00d9f6c0()
@@ -3255,10 +3255,10 @@ typedef hkpCollisionAgent* (__cdecl *CreateFuncD923)(
 // Shared hkpAgentEntry.h is absent; retain the local declaration required by this unit.
 // pdb: structure hkpAgentEntry, size 0x4, 4 members
 struct hkpAgentEntry {
-    unsigned char m_streamCommand;
-    unsigned char m_agentType;
-    unsigned char m_numContactPoints;
-    unsigned char m_size;
+    unsigned char m_streamCommand; // src: XBOX_RETAIL_PDB +0x0 (old: m_ucAgentType)
+    unsigned char m_agentType; // src: XBOX_RETAIL_PDB +0x1 (old: m_ucNnTrackType)
+    unsigned char m_numContactPoints; // src: XBOX_RETAIL_PDB +0x2 (old: m_usNumContactPoints)
+    unsigned char m_size; // src: XBOX_RETAIL_PDB +0x3 (old: m_iElementCount)
 };
 inline CreateFuncD923 FindAgentCreateFunction(const hkpCollisionDispatcher& dispatcher, const hkpCdBody& bodyA, const hkpCdBody& bodyB, const hkpCollisionInput& input)
 {

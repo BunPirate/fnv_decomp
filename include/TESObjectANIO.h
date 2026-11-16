@@ -14,5 +14,5 @@ public:
 
     bool Load(TESFile* file);
 
-    TESObjectANIO* pIdleAnim;
+    TESObjectANIO* pIdleAnim; // src: XBOX_RETAIL_PDB +0x38 (old: pObject)
 };

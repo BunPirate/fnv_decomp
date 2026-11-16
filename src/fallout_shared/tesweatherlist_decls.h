@@ -15,9 +15,9 @@ class TESWeather;
 class WeatherEntry
 {
   public:
-    TESWeather* pWeather;
-    unsigned int uiChance;
-    TESGlobal* pChanceVar;
+    TESWeather* pWeather; // src: XBOX_RETAIL_PDB +0x0 (old: m_weather)
+    unsigned int uiChance; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiFilterValue)
+    TESGlobal* pChanceVar; // src: XBOX_RETAIL_PDB +0x8 (old: m_otherWeather)
     WeatherEntry();
 };
 

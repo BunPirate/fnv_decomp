@@ -15,8 +15,8 @@ public:
     BSMultiBoundSphere(const NiPoint3& center, float radius);
     virtual ~BSMultiBoundSphere();
 
-    NiPoint3 Center;
-    float Radius;
+    NiPoint3 Center; // src: XBOX_RETAIL_PDB +0xc (old: center)
+    float Radius; // src: XBOX_RETAIL_PDB +0x18 (old: radius)
 
     virtual NiObject* MakeClone(CloningProcess& arCloning);
     virtual float GetRadius() const;

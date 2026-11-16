@@ -27,9 +27,9 @@ public:
         float m_minDistanceToUseConvexHull;
     };
     char pad1C[0x4];
-    hkVector4 m_aabbHalfExtents;
-    hkVector4 m_aabbCenter;
-    hkBool m_useCachedAabb;
+    hkVector4 m_aabbHalfExtents; // src: XBOX_RETAIL_PDB +0x20 (old: m_kAabbHalfExtents)
+    hkVector4 m_aabbCenter; // src: XBOX_RETAIL_PDB +0x30 (old: m_kAabbCenter)
+    hkBool m_useCachedAabb; // src: XBOX_RETAIL_PDB +0x40 (old: m_bUseCachedAabb)
     char pad41[0x3];
-    hkArray<hkpConvexShape*> m_childShapes;
+    hkArray<hkpConvexShape*> m_childShapes; // src: XBOX_RETAIL_PDB +0x44 (old: m_kChildShapes)
 };

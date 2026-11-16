@@ -45,7 +45,7 @@ void NiBSplineCompPoint3Interpolator::LoadBinary(NiStream& kStream)
     input->Read(&m_afCompScalars, 8);
 }
 
-extern "C" void* NiBSplineCompPoint3Interpolator_ms_RTTI;
+extern "C" void* NiBSplineCompPoint3Interpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4014 (old: g_011f4014)
 
 // @fnv 0x00a51270
 // src: COMMUNITY 0x00a51270

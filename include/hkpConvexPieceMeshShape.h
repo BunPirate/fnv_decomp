@@ -11,7 +11,7 @@ public:
     virtual void calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const;
     void CollectShapeStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw();
 
-    hkpConvexPieceStreamData* m_convexPieceStream;
-    hkpShapeCollection* m_displayMesh;
-    hkReal m_radius;
+    hkpConvexPieceStreamData* m_convexPieceStream; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConvexPieceStreamData)
+    hkpShapeCollection* m_displayMesh; // src: XBOX_RETAIL_PDB +0x1c (old: m_pDisplayMesh)
+    hkReal m_radius; // src: XBOX_RETAIL_PDB +0x20 (old: m_fSphereRadius)
 };

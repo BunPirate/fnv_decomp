@@ -6,10 +6,10 @@
 class IntSeenData : public SeenData
 {
 public:
-    signed char cSectionX;
-    signed char cSectionY;
+    signed char cSectionX; // src: XBOX_RETAIL_PDB +0x24 (old: field_24)
+    signed char cSectionY; // src: XBOX_RETAIL_PDB +0x25 (old: field_25)
     unsigned short field_26;
-    IntSeenData* pNextSection;
+    IntSeenData* pNextSection; // src: XBOX_RETAIL_PDB +0x28 (old: field_28)
 
     IntSeenData();
     IntSeenData(char x, char y);

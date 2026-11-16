@@ -13,6 +13,6 @@ public:
 
     bool bEnabled;
     unsigned char layoutPadding1[3];
-    BSSimpleArray<const char*, 1024> ArmSystemsNameA;
-    BSSimpleArray<GrabIK_DATA__GrabIK_Arm_DATA, 1024> ArmSystemsA;
+    BSSimpleArray<const char*, 1024> ArmSystemsNameA; // src: XBOX_RETAIL_PDB +0x4 (old: m_kGrabNames)
+    BSSimpleArray<GrabIK_DATA__GrabIK_Arm_DATA, 1024> ArmSystemsA; // src: XBOX_RETAIL_PDB +0x14 (old: m_kGrabArmData)
 };

@@ -10,13 +10,13 @@
 struct hkCpuJobThreadPoolCinfo
 {
     int m_numThreads;
-    int m_havokStackSize;
+    int m_havokStackSize; // src: XBOX_RETAIL_PDB +0x4 (old: m_stackSize)
     int m_timerBufferPerThreadAllocation;
     int m_threadPriority;
     const int* m_hardwareThreadIds;
     int m_numHardwareThreadIds;
     int m_hardwareThreadIdsCapacity;
-    const char* m_threadName;
+    const char* m_threadName; // src: XBOX_RETAIL_PDB +0x1c (old: m_name)
     hkCpuJobThreadPoolCinfo();
 };
 
@@ -37,9 +37,9 @@ hkCpuJobThreadPoolCinfo::hkCpuJobThreadPoolCinfo()
 class hkThread
 {
   public:
-    int m_thread;
+    int m_thread; // src: XBOX_RETAIL_PDB +0x0 (old: m_iThreadHandle)
     int m_uiThreadId;
-    int m_threadId;
+    int m_threadId; // src: XBOX_RETAIL_PDB +0x8 (old: m_08)
     int m_0c;
 
     // Thread startup does not unwind the pool constructor.

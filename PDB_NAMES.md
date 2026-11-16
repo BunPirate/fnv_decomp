@@ -18,13 +18,13 @@ The compilers are Microsoft's, from the downloads the CI uses, checked against t
 
 ## What changes
 
-### Renames (29,413)
+### Renames (29,414)
 
 | Kind | Renamed | Example |
 |---|---|---|
 | Parameters | 20,733 | `Script::ScriptEffectUpdateFunction`: `result` → `afReturnValue` |
 | Fields | 4,852 | `CombatProcedureBeInCover` +0x44: `m_waitingOutTimer` → `WaitingOutOfCoverTimer` |
-| Functions | 3,230 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
+| Functions | 3,231 | `BGSSaveLoadManager::IsSaveFileNameGenerated`, `CombatController::AddTarget` |
 | Globals | 517 | `DAT_0126b1b0` → `hkpVehicleInstanceClass` |
 | Classes | 81 | `FUN_00eb3750` → `NiCapsuleTriIntersector`, `AIThreadManager` → `AILinearTaskThreadManager` |
 
@@ -48,6 +48,13 @@ Naming rules:
   marker keeps it as a second source: `// src: XBOX_RETAIL_PDB 0x0078a230 (was COMMUNITY)`. A `GUESS` tag is dropped.
 - Where the existing name already was the PDB name, spelled differently (an address suffix, a `Class_` prefix, or
   `Class_Class` for a constructor), the name and its tag stay as they were. The PDB name is in the `// pdb:` comment.
+- Every renamed field, global and class carries a marker at the end of its definition line, with the source, the
+  member offset or address, and the old name, so each one can be found and reversed on its own:
+  `Timer WaitingOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x44 (old: m_waitingOutTimer)`. Field names come from the
+  retail build's type records. A global is marked on each of its declarations. When several renamed fields share one
+  declaration, the marker names each. 54 of the 81 class names come from the PC executable's own RTTI (the vtable
+  `main` already named), so they are tagged `EXE`; the other 27 come from linked methods and are tagged
+  `XBOX_RETAIL_PDB`. Renamed parameters have no marker; they are in the mapping (see the end of this file).
 
 ### Comments on every linked function (37,465) and class (2,509)
 
@@ -104,7 +111,7 @@ linked by their name-string argument, which has to match a public symbol in the 
 | Rejected by the build | 2,045 | They made a unit fail to compile or compile differently, usually through a use the parser missed. |
 | Declared twice under two names in one file | 860 | One address declared twice (for example `GetExtraData` and `FUN_00a5bdd0`); renaming both would collide. |
 | Already named, only spelled differently | 293 | The existing name and its tag already carry the same evidence (see the naming rules). |
-| Conflicts found in review | 8 | 0x0078b9b0, whose own message names it `CalcLoadScreenTypeTextWindowVerts`; 2 names from the public Xbox 360 symbols (probably folded code); 5 whose original is also linked to another PC function by a different build. The comment says why. |
+| Conflicts found in review | 7 | 2 names from the public Xbox 360 symbols (probably folded code); 5 whose original is also linked to another PC function by a different build. Their comment shows the tier `disputed (was high)`, and their parameter and local names are labelled unverified. |
 | Collisions and shadowing | 372 | The name already exists on the class, a base or derived class, in the function body, or as another global. |
 | Classes whose real name is already defined | 2,249 | Stand-ins for real classes; the comment names the real class. |
 | Local variables | all | No safe way to pair the current locals with the originals by position. They are listed in `// pdb locals:`. |
@@ -117,9 +124,12 @@ All of these still get the real name in a comment.
 - **Linking errors.** About 1 in 1,000 high-tier retail links is expected to be wrong, and somewhat more for
   debug-only links. A wrong link gives a wrong name, never wrong code.
 - **Object-file position.** Run extension and gap fill link by position inside one object file, so a function missing
-  or reordered on one side shifts its neighbours. Review found one such shift (0x0078b9b0, `Verts` against `Faces`).
-  It is the only renamed function whose own message strings contradict its link. One other message differs from the
-  name (`computeMemberSize`, whose message says `structureLayout::getMemberSize()`), but that link comes from the same
+  or reordered on one side shifts its neighbours. A function's own message strings are a check on that, but a message
+  can keep an older name. 0x0078b9b0 prints `CalcLoadScreenTypeTextWindowVerts()`, yet in the debug build it is
+  `LoadingMenu::CalcLoadScreenTypeTextWindowFaces` that loads this message, and neither PDB has a `Verts` function, so
+  the name is `Faces`. Where a message seems to contradict a link, the test is which function of the Xbox 360 build
+  loads it. No other renamed function's message names a different function. One message differs from the name
+  (`computeMemberSize`, whose message says `structureLayout::getMemberSize()`), but that link comes from the same
   string, so the message is Havok's own older wording.
 - **Folded code.** A function the linker folded with identical code stands for several originals, so its name is one
   of several.
@@ -128,5 +138,17 @@ All of these still get the real name in a comment.
 - **`Class_Method` spellings.** On a stand-in class the name is a convention, not the original spelling. The original
   is in the comment.
 
-A machine-readable mapping of every link and every rename (old name, new name, source, confidence, reason when
-skipped) exists and can be shared separately.
+## Mapping
+
+Every link and every rename is listed, as JSON Lines, on the branch
+[`pdb-names-mapping`](https://github.com/mathisto/fnv_decomp/tree/pdb-names-mapping) of the fork this pull request
+comes from. It is kept out of this pull request because the check accepts only source, `build/units.json` and Markdown.
+It holds names, addresses, offsets and link methods; no PDB or executable data.
+
+- `functions_renamed.jsonl`: address, old and new decorated names, the PDB name, build, link method, tier, marker.
+- `functions_linked.jsonl`: every one of the 37,460 links, renamed or not, with the reason when not.
+- `fields.jsonl`: class, offset, old name, new name, PDB type, file and line of the marker.
+- `globals.jsonl`, `classes.jsonl`: address or file, old names, new name, source, the marker and where it is.
+- `parameters.jsonl`: function address, parameter index, old name, new name.
+- `symbols_changed_by_class_or_type_renames.jsonl`: decorated names that changed only because a class or type in them
+  was renamed.

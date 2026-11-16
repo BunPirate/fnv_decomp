@@ -69,25 +69,25 @@ struct CameraShotExtra : BGSCameraShot
 class VATS
 {
   public:
-    BSSimpleList<VATSCommand*> commandList;
+    BSSimpleList<VATSCommand*> commandList; // src: XBOX_RETAIL_PDB +0x0 (old: m_kCommandList)
     int eMode;
-    BSSimpleList<BGSCameraShot*>* pCameraList;
+    BSSimpleList<BGSCameraShot*>* pCameraList; // src: XBOX_RETAIL_PDB +0xc (old: m_pCameraShotList)
     BGSCameraShot* pCamera;
-    float fCameraTimer;
-    float fCameraMinTimer;
-    Projectile* pFirstProjectile;
-    Projectile* pLastProjectile;
-    TESIdleForm* pMeleeAttack;
-    ImageSpaceModifierInstanceForm* pImagespaceMod;
+    float fCameraTimer; // src: XBOX_RETAIL_PDB +0x14 (old: m_fCameraTime)
+    float fCameraMinTimer; // src: XBOX_RETAIL_PDB +0x18 (old: m_fCameraDuration)
+    Projectile* pFirstProjectile; // src: XBOX_RETAIL_PDB +0x1c (old: m_pSource)
+    Projectile* pLastProjectile; // src: XBOX_RETAIL_PDB +0x20 (old: m_pTargetProjectile)
+    TESIdleForm* pMeleeAttack; // src: XBOX_RETAIL_PDB +0x24 (old: m_pIdleForm)
+    ImageSpaceModifierInstanceForm* pImagespaceMod; // src: XBOX_RETAIL_PDB +0x28 (old: m_pImagespaceModifier)
     ImageSpaceModifierInstanceRB* pTransitionImagespaceMod;
-    bool bAiming;
+    bool bAiming; // src: XBOX_RETAIL_PDB +0x30 (old: bIsPlayer)
     unsigned char layoutPadding31[3];
-    NiPointer<ShadowSceneLight> spVATSLight;
-    bool bFirstVatsAttack;
+    NiPointer<ShadowSceneLight> spVATSLight; // src: XBOX_RETAIL_PDB +0x34 (old: m_spShadowSceneLight)
+    bool bFirstVatsAttack; // src: XBOX_RETAIL_PDB +0x38 (old: m_bShadowLightEnabled)
     unsigned char layoutPadding39[3];
-    int iKillCount;
-    TESBoundObject* pUnEquipWeapon;
-    ExtraDataList* pUnEquipExtra;
+    int iKillCount; // src: XBOX_RETAIL_PDB +0x3c (old: m_iShadowLightState)
+    TESBoundObject* pUnEquipWeapon; // src: XBOX_RETAIL_PDB +0x40 (old: m_pCurrentWeaponObject)
+    ExtraDataList* pUnEquipExtra; // src: XBOX_RETAIL_PDB +0x44 (old: m_pWeaponExtraData)
     void Update(int mode, bool force);
     float GetModeTimeMultiplier();
     void QuitVATSPlayback(bool abForceQuit, bool abFinishCommandPlayback);
@@ -397,27 +397,27 @@ bool __cdecl ActionPoints_IsAttackAction(int);
 class HitData
 {
   public:
-    Actor* pAggressor;
+    Actor* pAggressor; // src: XBOX_RETAIL_PDB +0x0 (old: m_pAggressor)
     TESObjectREFR* pTarget;
-    TESObjectREFR* pSourceRef;
-    unsigned int eAttackSkill;
-    unsigned int eDamageLimb;
-    float fHealthDamage;
-    float fTotalDamage;
-    float fFatigueDamage;
-    float fTargetedLimbDamage;
-    float fPercentBlocked;
-    float fArmorDamage;
-    float fDamageToWeapon;
+    TESObjectREFR* pSourceRef; // src: XBOX_RETAIL_PDB +0x8 (old: m_pSourceReference)
+    unsigned int eAttackSkill; // src: XBOX_RETAIL_PDB +0xc (old: m_uiHitLocation)
+    unsigned int eDamageLimb; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiHitFlags)
+    float fHealthDamage; // src: XBOX_RETAIL_PDB +0x14 (old: m_fDamage)
+    float fTotalDamage; // src: XBOX_RETAIL_PDB +0x18 (old: m_fArmorDamage)
+    float fFatigueDamage; // src: XBOX_RETAIL_PDB +0x1c (old: m_fHealthDamage)
+    float fTargetedLimbDamage; // src: XBOX_RETAIL_PDB +0x20 (old: m_fLimbDamage)
+    float fPercentBlocked; // src: XBOX_RETAIL_PDB +0x24 (old: m_fFatigueDamage)
+    float fArmorDamage; // src: XBOX_RETAIL_PDB +0x28 (old: m_fSneakAttackMultiplier)
+    float fDamageToWeapon; // src: XBOX_RETAIL_PDB +0x2c (old: m_fCriticalHitMultiplier)
     TESObjectWEAP* pWeapon;
-    float fWeaponHealth;
-    NiPoint3 kHitLocation;
-    NiPoint3 kHitDirection;
-    void* pCriticalEffect;
-    void* pVATSCommand;
+    float fWeaponHealth; // src: XBOX_RETAIL_PDB +0x34 (old: m_fWeaponDamage)
+    NiPoint3 kHitLocation; // src: XBOX_RETAIL_PDB +0x38 (old: vOffset1)
+    NiPoint3 kHitDirection; // src: XBOX_RETAIL_PDB +0x44 (old: vOffset2)
+    void* pCriticalEffect; // src: XBOX_RETAIL_PDB +0x50 (old: m_pHitDataObjectAtOffset50)
+    void* pVATSCommand; // src: XBOX_RETAIL_PDB +0x54 (old: m_pHitDataObjectAtOffset54)
     unsigned int uiFlags;
-    float fBonusMult;
-    int iRefCount;
+    float fBonusMult; // src: XBOX_RETAIL_PDB +0x5c (old: m_fHitValueAtOffset5C)
+    int iRefCount; // src: XBOX_RETAIL_PDB +0x60 (old: BackgroundTask)
 
     HitData();
     void ClearData_009b4dc0();

@@ -16,7 +16,7 @@ void __thiscall NiPSysEmitterDeclinationCtlr::GetTargetValueAtOffset20(float& fV
     fValue = *(float*)((char*)p + 0x20);
 }
 
-extern "C" void* NiPSysEmitterDeclinationCtlr_ms_RTTI;
+extern "C" void* NiPSysEmitterDeclinationCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202758 (old: g_01202758)
 
 // @fnv 0x00c2b9a0
 // src: COMMUNITY 0x00c2b9a0

@@ -10,7 +10,7 @@ public:
     virtual void Process();
     virtual void OnComplete();
 
-    bool bYielding;
+    bool bYielding; // src: XBOX_RETAIL_PDB +0x4 (old: m_bTaskYielded)
 
     void TaskYield();
     void* DestroyIfFlagged(unsigned int flags);

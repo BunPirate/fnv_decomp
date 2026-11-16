@@ -44,8 +44,8 @@ public:
     void BaseCleanup();
 
     unsigned int unk08;
-    NiFixedString m_kShaderName;
-    NiShader* m_spCachedShader;
-    bool m_bManualShaderManagement;
+    NiFixedString m_kShaderName; // src: XBOX_RETAIL_PDB +0xc (old: m_kShaderFilename)
+    NiShader* m_spCachedShader; // src: XBOX_RETAIL_PDB +0x10 (old: m_sp)
+    bool m_bManualShaderManagement; // src: XBOX_RETAIL_PDB +0x14 (old: m_bManual)
     unsigned char unk15[3];
 };

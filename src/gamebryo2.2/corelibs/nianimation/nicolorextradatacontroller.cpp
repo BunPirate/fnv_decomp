@@ -96,7 +96,7 @@ void* __thiscall NiColorExtraDataController::CreatePoseInterpolator(unsigned sho
     return 0;
 }
 
-extern NiRTTI NiColorInterpolator_ms_RTTI;
+extern NiRTTI NiColorInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3730 (old: _g_011f3730/g_011f3730)
 // @fnv 0x00a4fc90
 // src: XBOX_PDB 0x00a4fc90
 // pdb: NiColorExtraDataController::SynchronizePoseInterpolator | NiColorExtraDataController.obj | retail, upstream name already matches, high
@@ -228,7 +228,7 @@ NiColorA::NiColorA(float fR, float fG, float fB, float fA)
     a = fA;
 }
 
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // Keep the update entry point local until the shared controller declares it.
 // @fnv 0x00a4fce0

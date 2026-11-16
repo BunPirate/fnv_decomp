@@ -499,7 +499,7 @@ void FUN_00cf4490_cls::bhkVelocityConstraintMotor_SaveBinary(void* arStream)
 }
 
 struct CpuOpaque;
-extern CpuOpaque bhkSpringDamperConstraintMotor_ms_RTTI;
+extern CpuOpaque bhkSpringDamperConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268740 (old: DAT_01268740/g_01268740)
 // @fnv 0x00cf45f0
 // src: COMMUNITY 0x00cf45f0
 CpuOpaque* __cdecl bhkSpringDamperConstraintMotor_GetRTTI()
@@ -1270,7 +1270,7 @@ FUN_00cf4190::FUN_00cf4190() : FUN_00cdf560(0.0f)
     m0 = (int)&DAT_010cc064;
 }
 
-extern int bhkPositionConstraintMotor_ms_RTTI;
+extern int bhkPositionConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268730 (old: DAT_01268730/g_01268730)
 
 // @fnv 0x00cf41b0
 // src: COMMUNITY 0x00cf41b0
@@ -1302,7 +1302,7 @@ void SerializedRecord::bhkPositionConstraintMotor_LoadBinary(NiStream* arStream)
 }
 
 struct CpuOpaque;
-extern CpuOpaque bhkVelocityConstraintMotor_ms_RTTI;
+extern CpuOpaque bhkVelocityConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268738 (old: DAT_01268738/g_01268738)
 // @fnv 0x00cf43f0
 // src: COMMUNITY 0x00cf43f0
 CpuOpaque* __cdecl bhkVelocityConstraintMotor_GetRTTI()

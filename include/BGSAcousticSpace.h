@@ -45,16 +45,16 @@ enum CELL_ENVIRO_TYPE
 class BGSAcousticSpace : public TESBoundObject
 {
 public:
-    bool bIsInterior;
+    bool bIsInterior; // src: XBOX_RETAIL_PDB +0x30 (old: m_bIsInterior)
     unsigned char layoutPadding31[3];
     TESSound* pDawnSound;
     TESSound* pNoonSound;
     TESSound* pDuskSound;
     TESSound* pNightSound;
     TESSound* pWallaSound;
-    TESRegion* pSoundRegion;
-    CELL_ENVIRO_TYPE eEnvType;
-    int iWallaPop;
+    TESRegion* pSoundRegion; // src: XBOX_RETAIL_PDB +0x48 (old: pRegion)
+    CELL_ENVIRO_TYPE eEnvType; // src: XBOX_RETAIL_PDB +0x4c (old: m_eCellEnvironmentType)
+    int iWallaPop; // src: XBOX_RETAIL_PDB +0x50 (old: m_iFlags)
 
     BGSAcousticSpace();
 

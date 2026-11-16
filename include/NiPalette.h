@@ -24,11 +24,11 @@ public:
     void DecRefCount();
     void* DestroyPalette(unsigned int);
 
-    unsigned int m_bAlpha;
-    unsigned int m_uiEntries;
-    unsigned int m_uiRevID;
-    unsigned int m_pkPalette;
-    unsigned int m_pkRendererData;
-    unsigned int m_pkPrev;
-    unsigned int m_pkNext;
+    unsigned int m_bAlpha; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    unsigned int m_uiEntries; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
+    unsigned int m_uiRevID; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    unsigned int m_pkPalette; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
+    unsigned int m_pkRendererData; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    unsigned int m_pkPrev; // src: XBOX_RETAIL_PDB +0x1c (old: unk1C)
+    unsigned int m_pkNext; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
 };

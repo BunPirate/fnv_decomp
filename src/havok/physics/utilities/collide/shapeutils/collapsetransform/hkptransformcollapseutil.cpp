@@ -49,7 +49,7 @@ struct ShapeRefArray
 };
 
 // pdb: class _SharedShapeData, size 0xc (here 0x10), 1 members
-struct _SharedShapeData
+struct _SharedShapeData // src: XBOX_RETAIL_PDB (old: ShapeData)
 {
     int m_kPointA;
     int m_kPointB;

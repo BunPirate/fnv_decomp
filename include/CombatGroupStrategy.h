@@ -13,5 +13,5 @@ public:
 
     bool CheckGroup(ActorCombatGroup* apGroup);
 
-    int eType;
+    int eType; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
 };

@@ -10,7 +10,7 @@ class hkpAngularDashpotAction : public hkpBinaryAction
 {
 public:
     hkQuaternion m_rotation;
-    hkReal m_strength;
-    hkReal m_damping;
+    hkReal m_strength; // src: XBOX_RETAIL_PDB +0x30 (old: m_fSpringStrength)
+    hkReal m_damping; // src: XBOX_RETAIL_PDB +0x34 (old: m_fMotorDamping)
     char pad38[0x8];
 };

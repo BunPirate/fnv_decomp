@@ -28,10 +28,10 @@ class TESIdleForm : public TESForm, public TESModelAnim
 public:
     PerkEntryConditionSet Conditions;
     IdleAnimationData data;
-    NiFormArray* pChildIdles;
-    TESIdleForm* pParentIdle;
-    TESIdleForm* pPrevIdle;
-    unsigned char cFormEditorID[8];
+    NiFormArray* pChildIdles; // src: XBOX_RETAIL_PDB +0x40 (old: m_pParentPath)
+    TESIdleForm* pParentIdle; // src: XBOX_RETAIL_PDB +0x44 (old: m_pParentIdleForm)
+    TESIdleForm* pPrevIdle; // src: XBOX_RETAIL_PDB +0x48 (old: m_pIdleForm)
+    unsigned char cFormEditorID[8]; // src: XBOX_RETAIL_PDB +0x4c (old: unk4C)
 
     TESIdleForm();
     virtual ~TESIdleForm();

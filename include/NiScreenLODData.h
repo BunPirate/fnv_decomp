@@ -11,7 +11,7 @@ class ScreenObject;
 class NiScreenLODData : public NiLODData
 {
   public:
-    ScreenData* m_kBound;
+    ScreenData* m_kBound; // src: XBOX_RETAIL_PDB +0x8 (old: data)
     void* unused;
     ScreenObject* root;
     ScreenObject** objects;

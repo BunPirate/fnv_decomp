@@ -22,20 +22,20 @@ class PathingSearchRayCast
 public:
     virtual ~PathingSearchRayCast();
 
-    PathingLocation StartLocation;
-    PathingLocation GoalLocation;
+    PathingLocation StartLocation; // src: XBOX_RETAIL_PDB +0x4 (old: loc04)
+    PathingLocation GoalLocation; // src: XBOX_RETAIL_PDB +0x2c (old: loc2C)
     PathingRequest* pRequest;
-    unsigned int eType;
-    NiPoint3 BoundsMin;
-    NiPoint3 BoundsMax;
-    float fActorRadius;
-    void* pCache;
-    unsigned int pHavokWorld;
-    unsigned int pPickData;
-    void* pCollector;
-    int iRayCastCount;
-    float fMaxDrop;
-    float fMaxStep;
+    unsigned int eType; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
+    NiPoint3 BoundsMin; // src: XBOX_RETAIL_PDB +0x5c (old: pt5C)
+    NiPoint3 BoundsMax; // src: XBOX_RETAIL_PDB +0x68 (old: pt68)
+    float fActorRadius; // src: XBOX_RETAIL_PDB +0x74 (old: f74)
+    void* pCache; // src: XBOX_RETAIL_PDB +0x78 (old: unk78)
+    unsigned int pHavokWorld; // src: XBOX_RETAIL_PDB +0x7c (old: unk7C)
+    unsigned int pPickData; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
+    void* pCollector; // src: XBOX_RETAIL_PDB +0x84 (old: unk84)
+    int iRayCastCount; // src: XBOX_RETAIL_PDB +0x88 (old: unk88)
+    float fMaxDrop; // src: XBOX_RETAIL_PDB +0x8c (old: f8C)
+    float fMaxStep; // src: XBOX_RETAIL_PDB +0x90 (old: f90)
 
     PathingSearchRayCast();
     bool FUN_006c4000();

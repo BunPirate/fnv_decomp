@@ -544,7 +544,7 @@ extern float DAT_011a9ea4;
 extern float DAT_011a9ea8;
 extern float DAT_011a9eac;
 extern float DAT_011a9eb0;
-extern char NiParticleMeshesData_ms_RTTI;
+extern char NiParticleMeshesData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f0c (old: DAT_011f5f0c/g_011f5f0c)
 struct Axis12 : ArrNew
 {
     float ax;

@@ -2737,26 +2737,26 @@ typedef float hkReal;
 
 // pdb: class hkpCharacterProxyCinfo, size 0x80, 19 members
 struct hkpCharacterProxyCinfo {
-    hkVector4 m_position;
-    hkVector4 m_velocity;
-    hkReal m_dynamicFriction;
-    hkReal m_staticFriction;
-    hkReal m_keepContactTolerance;
+    hkVector4 m_position; // src: XBOX_RETAIL_PDB +0x0 (old: m_vContactPosition)
+    hkVector4 m_velocity; // src: XBOX_RETAIL_PDB +0x10 (old: m_fVelocity)
+    hkReal m_dynamicFriction; // src: XBOX_RETAIL_PDB +0x20 (old: m_fDynamicFriction)
+    hkReal m_staticFriction; // src: XBOX_RETAIL_PDB +0x24 (old: m_fStaticFriction)
+    hkReal m_keepContactTolerance; // src: XBOX_RETAIL_PDB +0x28 (old: m_fKeepContactTolerance)
     int m_2c;
-    hkVector4 m_up;
-    hkReal m_extraUpStaticFriction;
-    hkReal m_extraDownStaticFriction;
-    void* m_shapePhantom;
-    hkReal m_keepDistance;
-    hkReal m_contactAngleSensitivity;
-    int m_userPlanes;
-    hkReal m_maxCharacterSpeedForSolver;
-    hkReal m_characterStrength;
-    hkReal m_characterMass;
-    hkReal m_maxSlope;
-    hkReal m_penetrationRecoverySpeed;
-    int m_maxCastIterations;
-    bool m_refreshManifoldInCheckSupport;
+    hkVector4 m_up; // src: XBOX_RETAIL_PDB +0x30 (old: m_vStart)
+    hkReal m_extraUpStaticFriction; // src: XBOX_RETAIL_PDB +0x40 (old: m_fExtraUpStaticFriction)
+    hkReal m_extraDownStaticFriction; // src: XBOX_RETAIL_PDB +0x44 (old: m_fExtraDownStaticFriction)
+    void* m_shapePhantom; // src: XBOX_RETAIL_PDB +0x48 (old: m_pCharacterPhantom)
+    hkReal m_keepDistance; // src: XBOX_RETAIL_PDB +0x4c (old: m_fKeepDistance)
+    hkReal m_contactAngleSensitivity; // src: XBOX_RETAIL_PDB +0x50 (old: m_fContactAngleSensitivity)
+    int m_userPlanes; // src: XBOX_RETAIL_PDB +0x54 (old: m_uiUserPlanes)
+    hkReal m_maxCharacterSpeedForSolver; // src: XBOX_RETAIL_PDB +0x58 (old: m_fMaxCharacterSpeedForSolver)
+    hkReal m_characterStrength; // src: XBOX_RETAIL_PDB +0x5c (old: m_fCharacterStrength)
+    hkReal m_characterMass; // src: XBOX_RETAIL_PDB +0x60 (old: m_fCharacterMass)
+    hkReal m_maxSlope; // src: XBOX_RETAIL_PDB +0x64 (old: m_fMaximumSlope)
+    hkReal m_penetrationRecoverySpeed; // src: XBOX_RETAIL_PDB +0x68 (old: m_fPenetrationRecoverySpeed)
+    int m_maxCastIterations; // src: XBOX_RETAIL_PDB +0x6c (old: m_iMaxCastIterations)
+    bool m_refreshManifoldInCheckSupport; // src: XBOX_RETAIL_PDB +0x70 (old: m_bRefreshManifoldInCheckSupport)
 };
 
 namespace MathUtilities {
@@ -2775,27 +2775,27 @@ namespace MathUtilities {
 // pdb: class hkpCharacterProxy, size 0xc0, bases: hkReferencedObject, hkpEntityListener, hkpPhantomListener, 23 members
 struct hkpCharacterProxy {
     int m_00, m_04, m_08, m_0c;
-    hkVector4 m_velocity;
-    int m_oldDisplacement, m_24, m_28, m_2c;
-    void* m_shapePhantom;
-    hkReal m_dynamicFriction;
-    hkReal m_staticFriction;
+    hkVector4 m_velocity; // src: XBOX_RETAIL_PDB +0x10 (old: m_fVelocity)
+    int m_oldDisplacement, m_24, m_28, m_2c; // src: XBOX_RETAIL_PDB +0x20 (old: m_20)
+    void* m_shapePhantom; // src: XBOX_RETAIL_PDB +0x30 (old: m_pCharacterPhantom)
+    hkReal m_dynamicFriction; // src: XBOX_RETAIL_PDB +0x34 (old: m_fDynamicFriction)
+    hkReal m_staticFriction; // src: XBOX_RETAIL_PDB +0x38 (old: m_fStaticFriction)
     int m_3c;
-    hkVector4 m_up;
-    hkReal m_extraUpStaticFriction;
-    hkReal m_extraDownStaticFriction;
-    hkReal m_keepDistance;
-    hkReal m_keepContactTolerance;
-    hkReal m_contactAngleSensitivity;
-    int m_userPlanes;
-    hkReal m_maxCharacterSpeedForSolver;
-    hkReal m_characterStrength;
-    hkReal m_characterMass;
-    int m_manifold, m_78, m_7c, m_listeners, m_84, m_88, m_bodies, m_90, m_94, m_phantoms, m_9c, m_a0;
-    hkReal m_maxSlopeCosine;
-    hkReal m_penetrationRecoverySpeed;
-    int m_maxCastIterations;
-    bool m_refreshManifoldInCheckSupport;
+    hkVector4 m_up; // src: XBOX_RETAIL_PDB +0x40 (old: m_vStart)
+    hkReal m_extraUpStaticFriction; // src: XBOX_RETAIL_PDB +0x50 (old: m_fExtraUpStaticFriction)
+    hkReal m_extraDownStaticFriction; // src: XBOX_RETAIL_PDB +0x54 (old: m_fExtraDownStaticFriction)
+    hkReal m_keepDistance; // src: XBOX_RETAIL_PDB +0x58 (old: m_fKeepDistance)
+    hkReal m_keepContactTolerance; // src: XBOX_RETAIL_PDB +0x5c (old: m_fKeepContactTolerance)
+    hkReal m_contactAngleSensitivity; // src: XBOX_RETAIL_PDB +0x60 (old: m_fContactAngleSensitivity)
+    int m_userPlanes; // src: XBOX_RETAIL_PDB +0x64 (old: m_uiUserPlanes)
+    hkReal m_maxCharacterSpeedForSolver; // src: XBOX_RETAIL_PDB +0x68 (old: m_fMaxCharacterSpeedForSolver)
+    hkReal m_characterStrength; // src: XBOX_RETAIL_PDB +0x6c (old: m_fCharacterStrength)
+    hkReal m_characterMass; // src: XBOX_RETAIL_PDB +0x70 (old: m_fCharacterMass)
+    int m_manifold, m_78, m_7c, m_listeners, m_84, m_88, m_bodies, m_90, m_94, m_phantoms, m_9c, m_a0; // src: XBOX_RETAIL_PDB m_manifold +0x74 (old: m_74); m_listeners +0x80 (old: m_80); m_bodies +0x8c (old: m_8c); m_phantoms +0x98 (old: m_98)
+    hkReal m_maxSlopeCosine; // src: XBOX_RETAIL_PDB +0xa4 (old: m_fMaximumSlopeAngle)
+    hkReal m_penetrationRecoverySpeed; // src: XBOX_RETAIL_PDB +0xa8 (old: m_fPenetrationRecoverySpeed)
+    int m_maxCastIterations; // src: XBOX_RETAIL_PDB +0xac (old: m_iMaxCastIterations)
+    bool m_refreshManifoldInCheckSupport; // src: XBOX_RETAIL_PDB +0xb0 (old: m_bRefreshManifoldInCheckSupport)
 
     const hkVector4& getPosition() const;
     void getCinfo(hkpCharacterProxyCinfo& info) const;

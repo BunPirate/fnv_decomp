@@ -106,7 +106,7 @@ void __thiscall FUN_00bca500_shell::TileShader_InitPass(void* auiCurrentPass)
     DAT_0126f74c = *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x6c);
 }
 
-extern "C" void* TileShader_ms_RTTI;
+extern "C" void* TileShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012021b8 (old: g_012021b8)
 
 // @fnv 0x00bca6b0
 // src: XBOX_PDB 0x00bca6b0

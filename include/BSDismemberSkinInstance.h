@@ -41,8 +41,8 @@ public:
     int unk28;
     int unk2C;
     int unk30;
-    unsigned int uiPartitionDataArraySize;
-    Partition* pPartitionDataArray;
-    unsigned char bVisiblePartitions;
+    unsigned int uiPartitionDataArraySize; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
+    Partition* pPartitionDataArray; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    unsigned char bVisiblePartitions; // src: XBOX_RETAIL_PDB +0x3c (old: unk3C)
     unsigned char unk3D[3];
 };

@@ -2643,7 +2643,7 @@ struct ProjData
 };
 
 extern PlayerChar* g_thePlayer;
-extern NiRTTI bhkCollisionBox_ms_RTTI;
+extern NiRTTI bhkCollisionBox_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268444 (old: DAT_01268444/g_01268444/g_kRTTI9C64/g_pcCBEA40Name)
 
 void* GetEntity(CdBody* body);
 WorldObjF* GetUserData(void* apEnt);
@@ -3015,9 +3015,9 @@ struct FUN_009a52f0_shell
 };
 // Checks the projectile's explosion source and, when its radius and length pass the settings thresholds, computes elapsed/duration and calls AddOrUpdateItem.
 // @fnv 0x009a52f0
-// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | retail, object-file run extension, high, not renamed: the debug build links this name to 0x009a54a0
-// pdb params: apProjectile
-// pdb locals: pexplosion, pprojectileBase, fdamage, fradius, fendTime, fstartTime
+// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x009a54a0
+// pdb params (of the disputed candidate, unverified): apProjectile
+// pdb locals (of the disputed candidate, unverified): pexplosion, pprojectileBase, fdamage, fradius, fendTime, fstartTime
 void FUN_009a52f0_shell::UpdateExplosion(ProjectileCalls* apProjectile)
 {
     if (apProjectile->Projectile_IsFlagSet(1))

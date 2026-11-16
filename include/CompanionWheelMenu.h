@@ -34,14 +34,14 @@ public:
     void PlayTopicResponse(TESTopic* apTopic);  // 0x007573d0
     void RunTopicResultScripts(TESTopic* apTopic);  // 0x007575b0
 
-    Tile* pTiles[16];               // +0x28
-    Actor* m_pRelatedCompanion;              // +0x68
-    bool m_bFollowingLong; // +0x6c, toggled by 0x007560c0
-    bool m_bAggressiveStance;               // +0x6d, toggled by 0x007561b0
-    bool m_bRangedCombat;      // +0x6e, toggled by 0x007562b0
-    bool m_bFollowing;             // +0x6f, toggled by 0x007563a0
-    int m_CurrentlySelectedTile;                  // +0x70, -1 in the ctor; the selected tile index (SelectTile 0x007557d0)
-    bool bTalkToOnClose;                    // +0x74, 0 in the ctor
-    unsigned int m_nTimeToClearSubtitle;    // +0x78, tick count at which UpdateDialog clears tile 12's text (set by 0x00757690)
-    BSSoundHandle m_hCurrentReactivityBark;     // +0x7c, built by 0x0041a250
+    Tile* pTiles[16];               // +0x28 // src: XBOX_RETAIL_PDB +0x28 (old: tiles)
+    Actor* m_pRelatedCompanion;              // +0x68 // src: XBOX_RETAIL_PDB +0x68 (old: companion)
+    bool m_bFollowingLong; // +0x6c, toggled by 0x007560c0 // src: XBOX_RETAIL_PDB +0x6c (old: followersTacticsDistance)
+    bool m_bAggressiveStance;               // +0x6d, toggled by 0x007561b0 // src: XBOX_RETAIL_PDB +0x6d (old: aggressive)
+    bool m_bRangedCombat;      // +0x6e, toggled by 0x007562b0 // src: XBOX_RETAIL_PDB +0x6e (old: relatedTopicVisible)
+    bool m_bFollowing;             // +0x6f, toggled by 0x007563a0 // src: XBOX_RETAIL_PDB +0x6f (old: followerWait)
+    int m_CurrentlySelectedTile;                  // +0x70, -1 in the ctor; the selected tile index (SelectTile 0x007557d0) // src: XBOX_RETAIL_PDB +0x70 (old: selected)
+    bool bTalkToOnClose;                    // +0x74, 0 in the ctor // src: XBOX_RETAIL_PDB +0x74 (old: unk74)
+    unsigned int m_nTimeToClearSubtitle;    // +0x78, tick count at which UpdateDialog clears tile 12's text (set by 0x00757690) // src: XBOX_RETAIL_PDB +0x78 (old: textClearTime)
+    BSSoundHandle m_hCurrentReactivityBark;     // +0x7c, built by 0x0041a250 // src: XBOX_RETAIL_PDB +0x7c (old: sound)
 };

@@ -9,7 +9,7 @@
 #include "../../../../include/NiStream.h"
 #include "../../../../include/StrArr.h"
 
-extern const NiRTTI NiRotData_ms_RTTI;
+extern const NiRTTI NiRotData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f50 (old: g_011f3f50)
 
 // @fnv 0x00a48150
 // src: COMMUNITY 0x00a48150

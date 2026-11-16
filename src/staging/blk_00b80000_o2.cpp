@@ -2810,7 +2810,7 @@ FUN_00b9b930_class* FUN_00b9b930_class::FUN_00b9b930(bool abDelete)
 }
 }  // namespace fnv_00b9b930
 
-extern int BSShaderBloodSplatterProperty_ms_RTTI;
+extern int BSShaderBloodSplatterProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011ff0f4 (old: DAT_011ff0f4/g_011ff0f4)
 
 // @fnv 0x00b811e0
 // src: XBOX_PDB 0x00b811e0
@@ -11610,7 +11610,7 @@ struct ManagerStub
     RenderPassActivity* pRenderer;
 };
 
-extern unsigned int(__cdecl* BSShaderManager_pObjectTypeCallback)(NiAVObject*);
+extern unsigned int(__cdecl* BSShaderManager_pObjectTypeCallback)(NiAVObject*); // src: XBOX_RETAIL_PDB 0x011f91ec (old: DAT_011f91ec)
 extern GeomStub** DAT_011f91e0;
 extern unsigned int DAT_011f91e4;
 extern unsigned char g_cullFlags;

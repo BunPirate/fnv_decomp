@@ -29,12 +29,12 @@ public:
 
     QuestDataDefaults data;
     BSSimpleList<QuestStage*> m_kStageList;
-    BSSimpleList<BGSQuestObjective*> m_listObjectives;
-    PerkEntryConditionSet objConditions;
+    BSSimpleList<BGSQuestObjective*> m_listObjectives; // src: XBOX_RETAIL_PDB +0x4c (old: m_kObjectives)
+    PerkEntryConditionSet objConditions; // src: XBOX_RETAIL_PDB +0x54 (old: m_kInfoConditions)
     ScriptLocals* m_pScriptLocals;
     unsigned char m_ucEnabled;
     unsigned char layoutPadding61[3];
-    BSStringT<char> cFormEditorID;
+    BSStringT<char> cFormEditorID; // src: XBOX_RETAIL_PDB +0x64 (old: strEditorID)
 
     TESQuest();
     virtual ~TESQuest();

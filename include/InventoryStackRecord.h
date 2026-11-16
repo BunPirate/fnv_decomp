@@ -14,9 +14,9 @@ class WeaponObjStub;
 class InventoryStackRecord
 {
 public:
-    BSSimpleList<ExtraDataList*>* pExtraObjectList;
-    int iNumber;
-    TESBoundObject* pContainerObj;
+    BSSimpleList<ExtraDataList*>* pExtraObjectList; // src: XBOX_RETAIL_PDB +0x0 (old: m_pExtraDataLists)
+    int iNumber; // src: XBOX_RETAIL_PDB +0x4 (old: m_iCountChange)
+    TESBoundObject* pContainerObj; // src: XBOX_RETAIL_PDB +0x8 (old: m_pItemObject)
 
     InventoryStackRecord();
     InventoryStackRecord(TESBoundObject* apObject, int aiNumber);

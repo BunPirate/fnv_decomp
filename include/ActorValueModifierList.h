@@ -13,10 +13,10 @@ class ModifierPointerList;
 class ActorValueModifierList : public BSSimpleList<Modifier*>
 {
 public:
-    bool bZeroValuesAllowed;
+    bool bZeroValuesAllowed; // src: XBOX_RETAIL_PDB +0x8 (old: m_bAllowZeroValueModifiers)
     unsigned char layoutPadding9;
     unsigned short layoutPaddingA;
-    ModifierPointerList* pFastModifiers;
+    ModifierPointerList* pFastModifiers; // src: XBOX_RETAIL_PDB +0xc (old: m_ppModifiedActorValues)
 
     enum ClampStyle
     {

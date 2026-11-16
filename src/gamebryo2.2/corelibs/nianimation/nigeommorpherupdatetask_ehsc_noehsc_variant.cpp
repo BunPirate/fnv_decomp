@@ -9,7 +9,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 extern "C"
 {
-    extern const void* NiGeomMorpherUpdateTask_ms_RTTI;
+    extern const void* NiGeomMorpherUpdateTask_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4100 (old: g_011f4100)
 }
 const void* __cdecl FUN_00a56c00();
 extern int DAT_011a9414;

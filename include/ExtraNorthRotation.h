@@ -8,5 +8,5 @@ class ExtraNorthRotation : public BSExtraData
 public:
     ExtraNorthRotation();
 
-    float fNorthRot;
+    float fNorthRot; // src: XBOX_RETAIL_PDB +0xc (old: fNorthRotation)
 };

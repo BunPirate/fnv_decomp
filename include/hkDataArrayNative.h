@@ -50,12 +50,12 @@ public:
 
     int m_00;
     int m_04;
-    int m_world;
-    int m_address;
-    int m_arraySize;
-    int m_elementStride;
-    int m_nativeType;
-    int m_class;
-    int m_dataType;
-    int m_tupleCount;
+    int m_world; // src: XBOX_RETAIL_PDB +0xc (old: m_08)
+    int m_address; // src: XBOX_RETAIL_PDB +0x10 (old: m_0C)
+    int m_arraySize; // src: XBOX_RETAIL_PDB +0x14 (old: m_10)
+    int m_elementStride; // src: XBOX_RETAIL_PDB +0x18 (old: m_14)
+    int m_nativeType; // src: XBOX_RETAIL_PDB +0x1c (old: m_18)
+    int m_class; // src: XBOX_RETAIL_PDB +0x20 (old: m_1c)
+    int m_dataType; // src: XBOX_RETAIL_PDB +0x24 (old: m_24)
+    int m_tupleCount; // src: XBOX_RETAIL_PDB +0x28 (old: m_28)
 };

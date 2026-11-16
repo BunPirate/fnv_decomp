@@ -119,11 +119,11 @@ class hkpWorldRayCaster
 {
   public:
     void* m_vtbl;
-    const WorldRayCastInput* m_input;
-    const hkpRayCollidableFilter* m_filter;
-    hkpRayHitCollector* m_collectorBase;
-    int m_collectorStriding;
-    ShapeRayCastQuery m_shapeInput;
+    const WorldRayCastInput* m_input; // src: XBOX_RETAIL_PDB +0x4 (old: m_pRayCastInput)
+    const hkpRayCollidableFilter* m_filter; // src: XBOX_RETAIL_PDB +0x8 (old: m_iFilter)
+    hkpRayHitCollector* m_collectorBase; // src: XBOX_RETAIL_PDB +0xc (old: m_pCollectorBase)
+    int m_collectorStriding; // src: XBOX_RETAIL_PDB +0x10 (old: m_iCollectorStriding)
+    ShapeRayCastQuery m_shapeInput; // src: XBOX_RETAIL_PDB +0x20 (old: m_kShapeRayInput)
 
     float CastRay(const hkpTypedBroadPhaseHandle* broadPhaseHandle, int castIndex);
 };

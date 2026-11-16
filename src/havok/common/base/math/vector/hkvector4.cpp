@@ -715,7 +715,7 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const QueryVector* capsAPoints, float
                           const Plane* cache, float collisionTolerance, int searchManifold, Contacts* points, void* featuresOut);
 char __cdecl bhkCharacterController_IsShapeConsideredPenetrating(BoundingVolumeNode* apShape, int abPenetrating, char abStairsMaterialOnly, int auiShapeKey);
 typedef char(__cdecl* PredFn)(int v);
-extern PredFn bhkCharacterController_pfGetMaterialStairCallback;
+extern PredFn bhkCharacterController_pfGetMaterialStairCallback; // src: XBOX_RETAIL_PDB 0x01267bc8 (old: DAT_01267bc8)
 extern "C" void _ReadWriteBarrier();
 extern float DAT_01011d78;
 static __forceinline float scalar(__m128 x)

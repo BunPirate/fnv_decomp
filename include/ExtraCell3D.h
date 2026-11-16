@@ -11,5 +11,5 @@ class ExtraCell3D : public BSExtraData
 public:
     virtual ~ExtraCell3D();
 
-    NiPointer<NiCell3DNode> spCellNode;
+    NiPointer<NiCell3DNode> spCellNode; // src: XBOX_RETAIL_PDB +0xc (old: m_pController)
 };

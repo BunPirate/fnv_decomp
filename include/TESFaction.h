@@ -50,8 +50,8 @@ public:
     void ForwardCall_0047eb90(bool value);
 
     FactionSaveData data;
-    TESReputation* pReputation;
-    BSSimpleList<FactionRankPresentation*> m_rankDataList;
-    int iMajorCrime;
-    int iMinorCrime;
+    TESReputation* pReputation; // src: XBOX_RETAIL_PDB +0x38 (old: pReputationData)
+    BSSimpleList<FactionRankPresentation*> m_rankDataList; // src: XBOX_RETAIL_PDB +0x3c (old: m_kRankDataList)
+    int iMajorCrime; // src: XBOX_RETAIL_PDB +0x44 (old: m_iFirstFactionValue)
+    int iMinorCrime; // src: XBOX_RETAIL_PDB +0x48 (old: m_iSecondFactionValue)
 };

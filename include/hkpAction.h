@@ -33,8 +33,8 @@ public:
     hkpSimulationIsland* GetSimulationIsland();
     void setSimulationIsland(hkpSimulationIsland* island);
 
-    hkpWorld* m_world;
-    hkpSimulationIsland* m_island;
-    hkUlong m_userData;
+    hkpWorld* m_world; // src: XBOX_RETAIL_PDB +0x8 (old: m_pOwningWorld)
+    hkpSimulationIsland* m_island; // src: XBOX_RETAIL_PDB +0xc (old: m_pCurrentSimulationIsland)
+    hkUlong m_userData; // src: XBOX_RETAIL_PDB +0x10 (old: m_ulUserData)
     hkStringPtr m_name;
 };

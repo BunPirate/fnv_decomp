@@ -34,11 +34,11 @@ public:
     void __thiscall LoadGame_009f9840(BGSLoadFormBuffer*);
     void __thiscall InitLoadGame_009f98e0(unsigned int);
 
-    float fwarningtimer;                // 0x80
-    unsigned int iwarning;        // 0x84 (ctor 0)
+    float fwarningtimer;                // 0x80 // src: XBOX_RETAIL_PDB +0x80 (old: fUnk80)
+    unsigned int iwarning;        // 0x84 (ctor 0) // src: XBOX_RETAIL_PDB +0x84 (old: uiUnk84)
     TESForm* pOwner;             // 0x88 (ctor arg 2)
-    TESObjectCELL* pObjectOwned;        // 0x8c (ctor arg 3)
-    int iCrimeNumber;                  // 0x90 (ctor -1)
-    int iwarninglevel;                   // 0x94 (ctor arg 4)
-    unsigned int iNumberActors;        // 0x98 (ctor 0)
+    TESObjectCELL* pObjectOwned;        // 0x8c (ctor arg 3) // src: XBOX_RETAIL_PDB +0x8c (old: pCell)
+    int iCrimeNumber;                  // 0x90 (ctor -1) // src: XBOX_RETAIL_PDB +0x90 (old: iUnk90)
+    int iwarninglevel;                   // 0x94 (ctor arg 4) // src: XBOX_RETAIL_PDB +0x94 (old: iType)
+    unsigned int iNumberActors;        // 0x98 (ctor 0) // src: XBOX_RETAIL_PDB +0x98 (old: uiUnk98)
 };

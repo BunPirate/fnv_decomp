@@ -180,9 +180,9 @@ extern PFN DAT_0126fa88;
 extern PFN DAT_0126fa8c;
 extern PFN DAT_0126fa90;
 extern PFN* DAT_0126fa94;
-extern PFN* NiBoundingVolume_ms_pfnFindFuncTable;
-extern PFN* NiBoundingVolume_ms_pfnTriTestFuncTable;
-extern PFN* NiBoundingVolume_ms_pfnTriFindFuncTable;
+extern PFN* NiBoundingVolume_ms_pfnFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa98 (old: DAT_0126fa98)
+extern PFN* NiBoundingVolume_ms_pfnTriTestFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa9c (old: DAT_0126fa9c)
+extern PFN* NiBoundingVolume_ms_pfnTriFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126faa0 (old: DAT_0126faa0)
 extern PFN DAT_0126faa4;
 extern PFN DAT_0126faa8;
 extern PFN DAT_0126faac;

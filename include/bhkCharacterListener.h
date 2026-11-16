@@ -13,7 +13,7 @@ public:
     virtual void vf04();
     virtual void vf05();
 
-    unsigned char iFlags[0x6C];
+    unsigned char iFlags[0x6C]; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
 
     unsigned int GetFlags(unsigned int aiFlags);
 };

@@ -22,7 +22,7 @@ class INFO_LINK_ELEMENT
   public:
     unsigned int nID;     // +0x0
     TESTopicInfo* pInfo;  // +0x4
-    int nDesiredIndex;         // +0x8
+    int nDesiredIndex;         // +0x8 // src: XBOX_RETAIL_PDB +0x8 (old: m_iIndex)
 };
 #include "../../include/AutoMemContext.h"
 #include "../../include/BSTempEffectDebris.h"

@@ -133,7 +133,7 @@ protected:
 
     // member names follow the Havok headers (offsets from the exe's constructor)
     hkSocket* m_server;  // src: HAVOK_SRC (members below)
-    bool s_SuppressPollForNewClients;
+    bool s_SuppressPollForNewClients; // src: XBOX_RETAIL_PDB +0xc (old: m_suppressPollForNewClients)
     Array<hkVisualDebuggerClient> m_clients;
     Array<hkProcessContext*> m_contexts;
     Array<hkVisualDebuggerTrackedObject> m_trackedObjects;

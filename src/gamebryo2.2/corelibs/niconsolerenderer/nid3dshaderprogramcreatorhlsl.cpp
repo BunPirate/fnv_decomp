@@ -76,7 +76,7 @@ void FUN_00c7b0f0_shell::UpdateState_00c7b0f0()
     m_iThirdValue = 0x80000000;
 }
 
-extern "C" void* NiD3DHLSLPixelShader_ms_RTTI;
+extern "C" void* NiD3DHLSLPixelShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa40 (old: DAT_0126fa40/g_0126fa40)
 
 // @fnv 0x00e95cc0
 // src: COMMUNITY 0x00e95cc0
@@ -85,7 +85,7 @@ void* __cdecl NiD3DHLSLPixelShader_GetRTTI()
     return &NiD3DHLSLPixelShader_ms_RTTI;
 }
 
-extern const void* NiD3DHLSLVertexShader_ms_RTTI;
+extern const void* NiD3DHLSLVertexShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa48 (old: DAT_0126fa48/g_0126fa48)
 
 // @fnv 0x00e95df0
 // src: COMMUNITY 0x00e95df0

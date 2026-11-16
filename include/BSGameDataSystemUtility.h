@@ -14,11 +14,11 @@ public:
     virtual void vf14();
 
     bool bIsActive;
-    bool bNewGameData;
+    bool bNewGameData; // src: XBOX_RETAIL_PDB +0x5 (old: m_bGameDataFlag)
     unsigned short layoutPadding6;
-    GAMEDATA_STATUS eGameDataStatus_;
-    char cGameDataDir[1055];
-    char cContentInfoDir[1055];
+    GAMEDATA_STATUS eGameDataStatus_; // src: XBOX_RETAIL_PDB +0x8 (old: m_eGameDataStatus)
+    char cGameDataDir[1055]; // src: XBOX_RETAIL_PDB +0xc (old: m_acFirstLargeBuffer)
+    char cContentInfoDir[1055]; // src: XBOX_RETAIL_PDB +0x42b (old: m_acSecondaryPath)
     unsigned short layoutPadding84A;
-    int iFreeSpaceKB_;
+    int iFreeSpaceKB_; // src: XBOX_RETAIL_PDB +0x84c (old: m_iBufferValue)
 };

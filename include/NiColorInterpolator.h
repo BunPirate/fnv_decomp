@@ -51,5 +51,5 @@ class NiColorInterpolator : public NiKeyBasedInterpolator
 
     NiColorA m_kColorValue;
     NiPointer<NiColorData> m_spColorData;
-    unsigned int m_uiLastIdx;
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiLastKeyIndex)
 };

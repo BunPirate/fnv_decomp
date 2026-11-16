@@ -126,7 +126,7 @@ struct RttiX
     const RttiX* m_pkBase;
 };
 extern RttiX DAT_011f4280;
-extern RttiX NiTexturingProperty_ms_RTTI;
+extern RttiX NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 struct ObjX;
 struct MapX
 {
@@ -1703,10 +1703,10 @@ class C3B270_Sub : public C3B270_SubBase
     }
 };
 // pdb: class BSNodeReferences, size 0x18, bases: NiObject, 1 members
-class BSNodeReferences : public FUN_00a5d3a0
+class BSNodeReferences : public FUN_00a5d3a0 // src: EXE (old: C3B270_Object)
 {
   public:
-    C3B270_Sub RefNodeA;
+    C3B270_Sub RefNodeA; // src: XBOX_RETAIL_PDB +0x8 (old: m_08)
     static void* operator new(unsigned int size)
     {
         return Object_DispatchCommandFour(size);

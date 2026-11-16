@@ -43,11 +43,11 @@ public:
 
     static NiShaderFactory* __cdecl GetInstance();
 
-    NiTFixedStringMap<NiGlobalConstantEntry*> m_kGlobalConstantMap;
-    bool (__cdecl* m_pfnClassCreate)(const char*, NiRenderer*, int, char**, bool,
+    NiTFixedStringMap<NiGlobalConstantEntry*> m_kGlobalConstantMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_kGlobalConstantEntryMap)
+    bool (__cdecl* m_pfnClassCreate)(const char*, NiRenderer*, int, char**, bool, // src: XBOX_RETAIL_PDB +0x18 (old: m_pFindGlobalConstantEntry)
                                                RefCountedNamedObject**);
-    unsigned int (__cdecl* m_pfnRunParser)(const char*, NiRenderer*, const char*, bool);
-    unsigned int (__cdecl* m_pfnErrorCallback)(const char*, unsigned int, bool);
+    unsigned int (__cdecl* m_pfnRunParser)(const char*, NiRenderer*, const char*, bool); // src: XBOX_RETAIL_PDB +0x1c (old: GlobalConstantEntryRegistry)
+    unsigned int (__cdecl* m_pfnErrorCallback)(const char*, unsigned int, bool); // src: XBOX_RETAIL_PDB +0x20 (old: GlobalConstantMapContext)
 
 protected:
     static NiShaderFactory* ms_pShaderFactory;

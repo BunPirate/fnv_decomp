@@ -2153,8 +2153,8 @@ void NavMesh::GetCircumCenter2D(unsigned short apTriangle, NiPoint3* aOut)
 // pdb: structure EdgeExtraInfo, size 0xc, 2 members
 struct EdgeExtraInfo
 {
-    int eType;
-    void* Portal;
+    int eType; // src: XBOX_RETAIL_PDB +0x0 (old: m_iType)
+    void* Portal; // src: XBOX_RETAIL_PDB +0x4 (old: m_pkPortal)
     unsigned short m_usLinkedTriangle;
     EdgeExtraInfo();
 };

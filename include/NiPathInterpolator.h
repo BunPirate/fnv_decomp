@@ -81,7 +81,7 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
     bool GetFollow() const;
     bool TimeHasChanged(float fTime) const;
 
-    unsigned short m_uFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0xc (old: m_uiObjectFlags)
     unsigned short unk0E;
     union
     {
@@ -93,22 +93,22 @@ class NiPathInterpolator : public NiKeyBasedInterpolator
         unsigned int m_uiPercentKeyCount;
         int unk14;
     };
-    NiPosData* m_spPathData;
-    void* m_spPctData;
-    float* m_pfPartialLength;
-    float m_fTotalLength;
-    float m_fMaxBankAngle;
-    float m_fSmoothing;
-    short m_sFollowAxis;
+    NiPosData* m_spPathData; // src: XBOX_RETAIL_PDB +0x18 (old: m_pPathObject)
+    void* m_spPctData; // src: XBOX_RETAIL_PDB +0x1c (old: m_pPathInterp)
+    float* m_pfPartialLength; // src: XBOX_RETAIL_PDB +0x20 (old: m_pfPathLengths)
+    float m_fTotalLength; // src: XBOX_RETAIL_PDB +0x24 (old: m_fTotalPathLength)
+    float m_fMaxBankAngle; // src: XBOX_RETAIL_PDB +0x28 (old: m_fPreviousTime)
+    float m_fSmoothing; // src: XBOX_RETAIL_PDB +0x2c (old: m_fLastPercent)
+    short m_sFollowAxis; // src: XBOX_RETAIL_PDB +0x30 (old: m_sLastPathIndex)
     short unk32;
     union
     {
         float m_fPathLength;
         int unk34;
     };
-    int m_eBankDir;
-    NiQuaternion m_kRotation;
-    NiPoint3 m_kPosition;
+    int m_eBankDir; // src: XBOX_RETAIL_PDB +0x38 (old: m_iPathPointCount)
+    NiQuaternion m_kRotation; // src: XBOX_RETAIL_PDB +0x3c (old: m_kRotationMatrix)
+    NiPoint3 m_kPosition; // src: XBOX_RETAIL_PDB +0x4c (old: m_kPathOffset)
     union
     {
         float m_fLast;

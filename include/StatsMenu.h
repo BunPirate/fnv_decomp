@@ -41,27 +41,27 @@ public:
     virtual void AssignTileByID(int, Tile*);
     virtual int GetClass();
 
-    StatsMenu__HealingOption pHealingOptionsA[4];
-    StatsMenu__NamedEffectsList xNamedEffects;
-    StatsMenu__StatusEffect* pRadiationEffect;
-    StatsMenu__StatusEffect* pDehydrationEffect;
-    StatsMenu__StatusEffect* pHungerEffect;
-    StatsMenu__StatusEffect* pSleepEffect;
-    StatsMenu__StatusEffectList xStatusEffects;
+    StatsMenu__HealingOption pHealingOptionsA[4]; // src: XBOX_RETAIL_PDB +0x28 (old: m_kHealingOptions)
+    StatsMenu__NamedEffectsList xNamedEffects; // src: XBOX_RETAIL_PDB +0x68 (old: m_kNamedEffectsList)
+    StatsMenu__StatusEffect* pRadiationEffect; // src: XBOX_RETAIL_PDB +0x74 (old: m_pStatusEffectAtIndex0)
+    StatsMenu__StatusEffect* pDehydrationEffect; // src: XBOX_RETAIL_PDB +0x78 (old: m_pStatusEffectAtIndex1)
+    StatsMenu__StatusEffect* pHungerEffect; // src: XBOX_RETAIL_PDB +0x7c (old: m_pStatusEffectAtIndex2)
+    StatsMenu__StatusEffect* pSleepEffect; // src: XBOX_RETAIL_PDB +0x80 (old: m_pStatusEffectAtIndex3)
+    StatsMenu__StatusEffectList xStatusEffects; // src: XBOX_RETAIL_PDB +0x84 (old: m_kStatusEffectEntries)
 
-    Tile* pTiles[60];
-    ListBox_enum_ActorValue__Index_ lbSpecial;
-    ListBox_enum_ActorValue__Index_ lbSkills;
-    ListBox_PerkRankData___ lbPerks;
-    ListBox_enum_MiscStatManager__MiscStatID_ lbGeneral;
-    ListBox_StatsMenu__StatusEffect___ lbStatusEffects;
-    ListBox_TESReputation___ lbReputation;
+    Tile* pTiles[60]; // src: XBOX_RETAIL_PDB +0x90 (old: m_pTiles)
+    ListBox_enum_ActorValue__Index_ lbSpecial; // src: XBOX_RETAIL_PDB +0x180 (old: m_kPrimaryActorValueList)
+    ListBox_enum_ActorValue__Index_ lbSkills; // src: XBOX_RETAIL_PDB +0x1b0 (old: m_kSecondaryActorValueList)
+    ListBox_PerkRankData___ lbPerks; // src: XBOX_RETAIL_PDB +0x1e0 (old: m_kPerkRankList)
+    ListBox_enum_MiscStatManager__MiscStatID_ lbGeneral; // src: XBOX_RETAIL_PDB +0x210 (old: m_kMiscStatList)
+    ListBox_StatsMenu__StatusEffect___ lbStatusEffects; // src: XBOX_RETAIL_PDB +0x240 (old: m_kStatusEffectList)
+    ListBox_TESReputation___ lbReputation; // src: XBOX_RETAIL_PDB +0x270 (old: m_kReputationList)
     union
     {
         bool m_bUpdateOption;
         unsigned char m_bHealingMode;
     };
-    bool bActiveEffectsUpdatedThisFrame;
+    bool bActiveEffectsUpdatedThisFrame; // src: XBOX_RETAIL_PDB +0x2a1 (old: m_bStatUpdatePending)
     unsigned char unk2A2[2];
 
     static StatsMenu* ms_pInventoryMenu;

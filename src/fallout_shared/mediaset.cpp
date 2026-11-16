@@ -525,7 +525,7 @@ struct MediaSetEntryOperations
 };
 
 // @fnv 0x00599780
-// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | retail, object-file run extension, high, not renamed: the debug build links this name to 0x005977d0
+// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x005977d0
 MediaSetEntry* MediaSetEntryOperations::CopyConstruct(const MediaSetEntry& other)
 {
     reinterpret_cast<UnnamedStr*>(this)->AssignFromString(*reinterpret_cast<const UnnamedStr*>(&other.Name));

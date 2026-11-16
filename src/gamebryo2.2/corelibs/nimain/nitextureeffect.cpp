@@ -53,7 +53,7 @@ void NiTextureEffect::InitializePoint3()
     }
 }
 
-extern int NiTextureEffect_ms_RTTI;
+extern int NiTextureEffect_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5e94 (old: g_011f5e94)
 
 // @fnv 0x00a927d0
 // src: COMMUNITY 0x00a927d0

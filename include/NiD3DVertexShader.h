@@ -40,8 +40,8 @@ public:
 
     static const NiRTTI ms_kRTTI;
 
-    bool m_bSoftwareVP;
-    unsigned int m_uiUsage;
-    RenderableGeometry* m_hShader;
-    COMUnknownInterface* m_hDecl;
+    bool m_bSoftwareVP; // src: XBOX_RETAIL_PDB +0x2c (old: m_bIsInitialized)
+    unsigned int m_uiUsage; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiShaderUsage)
+    RenderableGeometry* m_hShader; // src: XBOX_RETAIL_PDB +0x34 (old: m_pD3DPixelShader)
+    COMUnknownInterface* m_hDecl; // src: XBOX_RETAIL_PDB +0x38 (old: m_pD3DVertexShader)
 };

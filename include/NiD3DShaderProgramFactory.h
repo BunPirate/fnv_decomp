@@ -11,8 +11,8 @@ template <class TVAL> class NiTStringPointerMap;
 class NiD3DShaderProgramFactory : public NiRefObject
 {
 public:
-    NiTPointerList<char*> m_kProgramDirectories;
-    NiTStringPointerMap<ShaderBufferRecord*>* m_pkVertexShaderMap;
+    NiTPointerList<char*> m_kProgramDirectories; // src: XBOX_RETAIL_PDB +0x8 (old: m_kDirectoryList)
+    NiTStringPointerMap<ShaderBufferRecord*>* m_pkVertexShaderMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pVertexShaderMap)
     union
     {
         NiTStringPointerMap<ShaderBufferRecord*>* m_pPixelShaderMap;

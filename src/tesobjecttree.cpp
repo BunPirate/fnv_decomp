@@ -223,7 +223,7 @@ bool NiPoint2_shell::ForwardCall_0051c330(const NiPoint2& other) const
 
 struct NiRTTI;
 
-extern const NiRTTI BSShaderTextureSet_ms_RTTI;
+extern const NiRTTI BSShaderTextureSet_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120044c (old: g_0120044c)
 
 
 // @fnv 0x0051d150

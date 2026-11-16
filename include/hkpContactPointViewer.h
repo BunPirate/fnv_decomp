@@ -23,6 +23,6 @@ public:
     void drawAllContactPointsInIsland_00de2da0(void* island);
     void drawAllContactPointsInIsland(hkpSimulationIsland* island);
 
-    float m_limit;
-    void* m_color;
+    float m_limit; // src: XBOX_RETAIL_PDB +0x2c (old: m_uiFilterValue)
+    void* m_color; // src: XBOX_RETAIL_PDB +0x30 (old: m_ulUserData)
 };

@@ -53,7 +53,7 @@ struct Owner
     void NiAdditionalGeometryData_GetViewerStrings(StringList*);
     void AppendNameStrings(StringList*);
 };
-extern "C" const char* BSPackedAdditionalGeometryData_ms_RTTI;
+extern "C" const char* BSPackedAdditionalGeometryData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4aac (old: DAT_011f4aac/g_011f4aac)
 extern const char str_0109deec[];
 extern char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 extern char* __cdecl NiGetViewerString_00a7d510(const char*, const char*);

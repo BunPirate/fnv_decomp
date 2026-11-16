@@ -26,5 +26,5 @@ public:
         };
         bhkWorld* m_pHavokWorld;
     };
-    NP spCellMopp;
+    NP spCellMopp; // src: XBOX_RETAIL_PDB +0x10 (old: spMopp)
 };

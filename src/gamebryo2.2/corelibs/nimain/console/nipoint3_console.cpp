@@ -16,7 +16,7 @@ struct NiPoint3StartupTable
 NiPoint3StartupTable gNiPoint3StartupSrc = {{8193, 1, 0, -1, 0, 0, 0, 264, 1, 0, 264, 2, 0, 264, 3, 0, 264}};
 NiPoint3StartupTable gNiPoint3StartupDst = gNiPoint3StartupSrc;
 
-extern void* NiPoint3_ms_pSqrtTable;
+extern void* NiPoint3_ms_pSqrtTable; // src: XBOX_RETAIL_PDB 0x011f4aa8 (old: DAT_011f4aa8)
 
 // Normalizes each of count NiPoint3 vectors spaced by stride bytes, scaling by the reciprocal of its length via a lookup table.
 // @fnv 0x00a7e960

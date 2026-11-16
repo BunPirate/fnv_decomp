@@ -9,7 +9,7 @@
 #include "../../include/hkStringPtr.h"
 #include "../../include/hkaSkeleton.h"
 
-extern "C" void* hkPackedNiTriStripsData_ms_RTTI;
+extern "C" void* hkPackedNiTriStripsData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012682bc (old: g_012682bc)
 
 // @fnv 0x00ca34b0
 // src: COMMUNITY 0x00ca34b0

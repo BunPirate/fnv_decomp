@@ -10,7 +10,7 @@ public:
     unsigned int GetControlHandle(unsigned short usChannel);
     void CopyTo(NiBSplineColorInterpolator* source, CloningProcess& proc);
 
-    NiColorA m_kColorAValue;
+    NiColorA m_kColorAValue; // src: XBOX_RETAIL_PDB +0x1c (old: m_kDiffuseColor)
     unsigned int m_kColorACPHandle;
-    unsigned int m_kBasisHandle;
+    unsigned int m_kBasisHandle; // src: XBOX_RETAIL_PDB +0x30 (old: unk30)
 };

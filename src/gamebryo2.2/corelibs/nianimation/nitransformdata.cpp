@@ -215,7 +215,7 @@ void* __fastcall FUN_00a4e5b0(void* pThis, int, unsigned int flags)
     return pThis;
 }
 
-extern "C" const NiRTTI NiTransformData_ms_RTTI;
+extern "C" const NiRTTI NiTransformData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3fbc (old: g_011f3fbc)
 
 // @fnv 0x00a4e0a0
 // src: COMMUNITY 0x00a4e0a0

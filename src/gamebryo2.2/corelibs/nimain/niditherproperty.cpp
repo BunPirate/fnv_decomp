@@ -7,7 +7,7 @@
 #include "../../../../include/NiProperty.h"
 #include "../../../../include/StrArr.h"
 
-extern void* NiDitherProperty_ms_RTTI;
+extern void* NiDitherProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f48 (old: g_011f5f48)
 
 // @fnv 0x00a9a5e0
 // src: COMMUNITY 0x00a9a5e0
@@ -73,7 +73,7 @@ char* __cdecl NiGetViewerString(char const*, bool);
 // pdb: class NiDitherProperty, size 0x1c, bases: NiProperty, 1 members
 struct NiDitherProperty : NiProperty
 {
-    unsigned char m_uFlags;
+    unsigned char m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_bDither)
     void AppendString(StrArr*);
     void AppendDitherSettings(StrArr*);
 };

@@ -95,10 +95,10 @@ struct __declspec(align(16)) bhkrigidbody_vector
     }
 };
 // pdb: structure bhkRigidBodyCinfo, size 0xe0, bases: hkEntityCinfo, 1 members
-class bhkRigidBodyCinfo : public bhkRigidBodyPrefix
+class bhkRigidBodyCinfo : public bhkRigidBodyPrefix // src: XBOX_RETAIL_PDB (old: BhkRigidBody)
 {
   public:
-    WorldPhysicsSettings hk;
+    WorldPhysicsSettings hk; // src: XBOX_RETAIL_PDB +0x20 (old: rigidBody)
     bhkRigidBodyCinfo();
 };
 #endif

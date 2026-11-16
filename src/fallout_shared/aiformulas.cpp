@@ -539,9 +539,9 @@ bool __cdecl ActorValue_IsSkill(int);
 void __cdecl GetSkillAttributeAndBase(int aiSkill, int* aiPrimaryAttribute, float* afBase);
 float __cdecl CalcSkillBase(float, float, float);
 // @fnv 0x00643c90
-// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, high, not renamed: the debug build links this name to 0x00643bd0
-// pdb params: apActor, aiWhich
-// pdb locals: fresult
+// pdb: AiFormulas::AVDeriveSkill | AiFormulas.obj | retail, object-file run extension, disputed (was high), not renamed: the debug build links this name to 0x00643bd0
+// pdb params (of the disputed candidate, unverified): apActor, aiWhich
+// pdb locals (of the disputed candidate, unverified): fresult
 float __cdecl GetSkillValue(ActorValueOwner* apActor, int aiWhich, bool abBaseDerivation)
 {
     float fResult = 0.0f;

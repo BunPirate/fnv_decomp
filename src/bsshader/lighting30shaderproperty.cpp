@@ -7,7 +7,7 @@ struct GlobalObjectO2_00a7b610
 {
     GlobalObjectO2_00a7b610();
 };
-extern GlobalObjectO2_00a7b610 NiMaterialProperty_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiMaterialProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a5c (old: DAT_011f4a5c/g_011f4a5c)
 
 // Returns the address of the global object g_011f4a5c.
 // @fnv 0x00a756c0

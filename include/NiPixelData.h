@@ -72,6 +72,6 @@ public:
     unsigned int m_uiPixelStride;
     unsigned int m_uiRevID;
     unsigned int m_uiFaces;
-    bool bNoConvert;
+    bool bNoConvert; // src: XBOX_RETAIL_PDB +0x70 (old: m_bOwnsPixelData)
     unsigned char m_ucUnknownByte[3];
 };

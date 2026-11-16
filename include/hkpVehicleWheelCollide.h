@@ -67,7 +67,7 @@ public:
     virtual void InitializeWheelCollisionOutput(const hkpVehicleInstance*, unsigned char,
                                                 WheelCollideResult&);
 
-    hkBool m_alreadyUsed;
+    hkBool m_alreadyUsed; // src: XBOX_RETAIL_PDB +0x8 (old: m_bWheelCollisionEnabled)
     unsigned char m_type;
     char padA[2];
 

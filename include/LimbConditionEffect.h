@@ -23,5 +23,5 @@ public:
     static ActiveEffect* Instantiate(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect);
     void SetLimbIndex(int aiLimbIndex);
 
-    int eTargetBodyPart;
+    int eTargetBodyPart; // src: XBOX_RETAIL_PDB +0x4c (old: m_eModifiedActorValue)
 };

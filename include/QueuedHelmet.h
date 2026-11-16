@@ -31,11 +31,11 @@ public:
     void PostProcess();
     void Finish_0043f2b0();
 
-    BipedAnim* pBipedAnim;
-    unsigned char spQueuedHelmetModel[0x50];
-    GO spHelmetFaceGenModel[20];
-    GO spClonedHelmetNode[20];
+    BipedAnim* pBipedAnim; // src: XBOX_RETAIL_PDB +0x28 (old: pExistingBipedAnim)
+    unsigned char spQueuedHelmetModel[0x50]; // src: XBOX_RETAIL_PDB +0x2c (old: unused2)
+    GO spHelmetFaceGenModel[20]; // src: XBOX_RETAIL_PDB +0x7c (old: m_kQueuedModels)
+    GO spClonedHelmetNode[20]; // src: XBOX_RETAIL_PDB +0xcc (old: m_kQueuedModelsSecondary)
     int pRef;
-    int cFlags;
+    int cFlags; // src: XBOX_RETAIL_PDB +0x120 (old: unk120)
     int unk124;
 };

@@ -47,15 +47,15 @@ public:
     bool bIsActive;
     unsigned char layoutPadding5;
     unsigned short layoutPadding6;
-    BSSaveDataOperationEntry* pSaveDataFile;
-    BSSaveDataSystemUtility__SaveDataEntry MostRecentEntry;
-    OPERATION eCurrentOperation;
-    RESULT eSaveResult;
-    RESULT eLoadResult;
-    RESULT eDeleteResult;
-    RESULT_FAILED_REASON eResultFailedReason;
-    unsigned int uiInsufficientSpaceFileSize;
-    void (__cdecl* pDeleteCompleteCallback)(RESULT);
+    BSSaveDataOperationEntry* pSaveDataFile; // src: XBOX_RETAIL_PDB +0x8 (old: m_pOperationContext)
+    BSSaveDataSystemUtility__SaveDataEntry MostRecentEntry; // src: XBOX_RETAIL_PDB +0xc (old: m_kSaveDataEntry)
+    OPERATION eCurrentOperation; // src: XBOX_RETAIL_PDB +0x2c (old: m_eOperation)
+    RESULT eSaveResult; // src: XBOX_RETAIL_PDB +0x30 (old: m_eResult)
+    RESULT eLoadResult; // src: XBOX_RETAIL_PDB +0x34 (old: m_eSecondResult)
+    RESULT eDeleteResult; // src: XBOX_RETAIL_PDB +0x38 (old: m_eThirdResult)
+    RESULT_FAILED_REASON eResultFailedReason; // src: XBOX_RETAIL_PDB +0x3c (old: m_eFailedReason)
+    unsigned int uiInsufficientSpaceFileSize; // src: XBOX_RETAIL_PDB +0x40 (old: m_uiResultCount)
+    void (__cdecl* pDeleteCompleteCallback)(RESULT); // src: XBOX_RETAIL_PDB +0x44 (old: m_pResultCallback)
 
     void SetResultCallback(void (__cdecl* apCallback)(RESULT));  // 0x008d8040 (folded +0x44 setter)
 };

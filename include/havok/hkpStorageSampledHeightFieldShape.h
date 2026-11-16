@@ -10,8 +10,8 @@
 class hkpStorageSampledHeightFieldShape : public hkpSampledHeightFieldShape
 {
   public:
-    hkArray<hkReal> m_storage;  // +0x60
-    char fOffset[0x14];
+    hkArray<hkReal> m_storage;  // +0x60 // src: XBOX_RETAIL_PDB +0x60 (old: m_kStorage)
+    char fOffset[0x14]; // src: XBOX_RETAIL_PDB +0x6c (old: pad6C)
 };
 #pragma pack(pop)
 typedef char

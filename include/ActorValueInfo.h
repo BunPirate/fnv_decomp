@@ -51,12 +51,12 @@ public:
     char* m_pName;
     BSStringT<char> m_cAbbreviation;
     unsigned int uFlags;
-    ActorValue::Section eAVType;
+    ActorValue::Section eAVType; // src: XBOX_RETAIL_PDB +0x48 (old: m_iSection)
     ActorValueDeriveCallback m_pDerivedValueFunction;
-    ActorValueMappingCallback pMappingFunction;
-    ActorValueModifiedCallback pModifiedCallback;
-    int iNumDependentActorValues;
-    ActorValue::Index DependentActorValues[15];
-    int iEnumCount;
-    const char* sEnumNames[10];
+    ActorValueMappingCallback pMappingFunction; // src: XBOX_RETAIL_PDB +0x50 (old: m_pActorValueMapping)
+    ActorValueModifiedCallback pModifiedCallback; // src: XBOX_RETAIL_PDB +0x54 (old: m_pActorValueChangedCallback)
+    int iNumDependentActorValues; // src: XBOX_RETAIL_PDB +0x58 (old: m_iEnumeratedValueCount)
+    ActorValue::Index DependentActorValues[15]; // src: XBOX_RETAIL_PDB +0x5c (old: m_aiEnumeratedValues)
+    int iEnumCount; // src: XBOX_RETAIL_PDB +0x98 (old: m_iEnumeratedNameCount)
+    const char* sEnumNames[10]; // src: XBOX_RETAIL_PDB +0x9c (old: m_apEnumeratedNames)
 };

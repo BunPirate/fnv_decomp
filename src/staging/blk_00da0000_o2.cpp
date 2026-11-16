@@ -246,7 +246,7 @@ int __thiscall FUN_00db7cf0_class::hkVersionPatchManager_UidFromClassVersion_get
     return ((int*)(*(int**)(this + 0x10)))[a];
 }
 
-extern int hkpPropertyValueClass;
+extern int hkpPropertyValueClass; // src: XBOX_RETAIL_PDB 0x0126958c (old: g_0126958c/g_unk0126958c)
 
 // @fnv 0x00da0610
 // src: GUESS 0x00da0610 (confidence: low)
@@ -295,7 +295,7 @@ void __cdecl Object_InvokeVirtualMethod_00da0720(FUN_00da0720_Class* param_1)
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkLocalFrameGroupClass;
+extern CpuOpaque hkLocalFrameGroupClass; // src: XBOX_RETAIL_PDB 0x0126967c (old: DAT_0126967c/g_0126967c)
 // @fnv 0x00da0730
 // src: GUESS 0x00da0730 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126967cAddress()
@@ -303,7 +303,7 @@ CpuOpaque* __cdecl Runtime_GetDAT0126967cAddress()
     return &hkLocalFrameGroupClass;
 }
 
-extern int hkSimpleLocalFrameClass;
+extern int hkSimpleLocalFrameClass; // src: XBOX_RETAIL_PDB 0x012696c4 (old: DAT_012696c4/g_012696c4)
 
 // @fnv 0x00da0750
 // src: GUESS 0x00da0750 (confidence: low)
@@ -342,7 +342,7 @@ int* __cdecl Runtime_GetDAT0126970cAddress()
     return &DAT_0126970c;
 }
 
-extern int hkpMaxSizeMotionClass;
+extern int hkpMaxSizeMotionClass; // src: XBOX_RETAIL_PDB 0x01269754 (old: DAT_01269754/g_01269754)
 
 // @fnv 0x00da08d0
 // src: GUESS 0x00da08d0 (confidence: low)
@@ -628,7 +628,7 @@ void* Object_GetGlobalObjectAddress_00da0a40()
     return &g_target_00da0a40;
 }
 
-extern int hkSemanticsAttributeClass;
+extern int hkSemanticsAttributeClass; // src: XBOX_RETAIL_PDB 0x012698ec (old: DAT_012698ec/g_012698ec)
 
 // @fnv 0x00da0a60
 // src: GUESS 0x00da0a60 (confidence: low)
@@ -686,7 +686,7 @@ void __cdecl Runtime_ForwardCall_00da0af0(FUN_00da0af0_Class* param_1)
     param_1->vf00(0);
 }
 
-extern int hkpSingleShapeContainerClass;
+extern int hkpSingleShapeContainerClass; // src: XBOX_RETAIL_PDB 0x01269a0c (old: DAT_01269a0c/g_01269a0c)
 
 // @fnv 0x00da0b00
 // src: GUESS 0x00da0b00 (confidence: low)

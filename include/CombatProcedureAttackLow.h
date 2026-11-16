@@ -24,8 +24,8 @@ public:
     void SaveGame_009cbfd0(BGSSaveFormBuffer* apSaveGameBuffer);
     void CombatProcedureAttackLow_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
-    int eState;
-    int fWeaponDPS;
-    int fWeaponCondition;
+    int eState; // src: XBOX_RETAIL_PDB +0x10 (old: m_10)
+    int fWeaponDPS; // src: XBOX_RETAIL_PDB +0x14 (old: m_14)
+    int fWeaponCondition; // src: XBOX_RETAIL_PDB +0x18 (old: m_18)
     TESObjectWEAP* pWeapon;
 };

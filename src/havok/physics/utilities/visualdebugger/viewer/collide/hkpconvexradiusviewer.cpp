@@ -27,7 +27,7 @@ struct FUN_00dd9380_class
     void* __thiscall hkProcessFactory_registerProcess(const char* viewerName, void* creationFunction);
 };
 void* DAT_01269cd0;
-void* hkpConvexRadiusViewer_m_tag;
+void* hkpConvexRadiusViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269010 (old: DAT_01269010)
 
 // @fnv 0x00d68e40
 // src: XBOX_RETAIL_PDB 0x00d68e40
@@ -231,7 +231,7 @@ FUN_00d691d0_Class* FUN_00d691d0_Class::Destroy(unsigned int flags)
     return this;
 }
 
-extern void* hkpConvexRadiusViewer_m_tag;
+extern void* hkpConvexRadiusViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269010 (old: DAT_01269010)
 
 struct FUN_00d68940_target
 {
@@ -286,7 +286,7 @@ struct FUN_00d68aa0_owner
     int FindKeyIndex(void* key);
 };
 
-extern void* hkpConvexRadiusViewer_m_tag;
+extern void* hkpConvexRadiusViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269010 (old: DAT_01269010)
 
 struct FUN_00d68aa0_cls
 {
@@ -736,7 +736,7 @@ extern "C" void _ReadWriteBarrier(void);
 extern "C" unsigned __int64 __rdtsc(void);
 #include <windows.h>
 extern DWORD DAT_0126835c;
-extern void* hkpConvexRadiusViewer_m_tag;
+extern void* hkpConvexRadiusViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269010 (old: DAT_01269010)
 extern char DAT_010d2080[];
 extern char DAT_010c41f8[];
 

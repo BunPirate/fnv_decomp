@@ -256,8 +256,8 @@ void CloudColorMethods::Clouds_SetColor(int aiLayer, const NiColor* aColor)
 
 float __cdecl BSMAX_00404010(float, float);
 float __fastcall Sky_GetSunriseBegin(void*);
-extern SettingT_GameSettingCollection_ Sky_fDaytimeColorExtension;
-extern float Sky_GetBeginSunriseColors_fcache;
+extern SettingT_GameSettingCollection_ Sky_fDaytimeColorExtension; // src: XBOX_RETAIL_PDB 0x011ccbd8 (old: originalRuntimeFloatSetting78)
+extern float Sky_GetBeginSunriseColors_fcache; // src: XBOX_RETAIL_PDB 0x011cccfc (old: DAT_011cccfc)
 
 // @fnv 0x0063b9b0
 // src: COMMUNITY 0x0063b9b0
@@ -275,8 +275,8 @@ float Sky::GetBeginSunriseColors()
 
 float __cdecl BSMIN(float, float);
 float __fastcall Sky_GetSunsetEnd(void*);
-extern SettingT_GameSettingCollection_ Sky_fDaytimeColorExtension;
-extern float Sky_GetEndSunsetColors_fcache;
+extern SettingT_GameSettingCollection_ Sky_fDaytimeColorExtension; // src: XBOX_RETAIL_PDB 0x011ccbd8 (old: originalRuntimeFloatSetting78)
+extern float Sky_GetEndSunsetColors_fcache; // src: XBOX_RETAIL_PDB 0x011ccd00 (old: DAT_011ccd00)
 
 // If the 0x2000 flag is set, clears it and recomputes DAT_011ccd00 from a setting plus FUN_00596030(this); returns DAT_011ccd00.
 // @fnv 0x0063ba30
@@ -1428,7 +1428,7 @@ class ResultX_b9476
 };
 
 void* LookupB9476(void*, void*);
-extern char SkyShaderProperty_ms_RTTI;
+extern char SkyShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005b8 (old: DAT_012005b8/g_012005b8)
 
 
 class CloudLayerResetMethods : public Clouds

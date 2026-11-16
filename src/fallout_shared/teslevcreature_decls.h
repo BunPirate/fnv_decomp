@@ -17,7 +17,7 @@ void __cdecl operator delete(void*);
 class ContainerItemExtra
 {
   public:
-    char pOwnerForm[12];
+    char pOwnerForm[12]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ContainerItemExtra();
     bool Load(TESFile*);
 };

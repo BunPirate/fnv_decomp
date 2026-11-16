@@ -86,11 +86,11 @@ public:
 
     char* m_name;
     hkClass* m_class;
-    hkClassEnum* m_enum;
+    hkClassEnum* m_enum; // src: XBOX_RETAIL_PDB +0x8 (old: m_pClassEnum)
     hkUint8 m_type;
-    hkUint8 m_subtype;
-    hkInt16 m_cArraySize;
+    hkUint8 m_subtype; // src: XBOX_RETAIL_PDB +0xd (old: m_eSubtype)
+    hkInt16 m_cArraySize; // src: XBOX_RETAIL_PDB +0xe (old: m_iArraySize)
     hkUint16 m_flags;
     hkUint16 m_offset;
-    hkCustomAttributes* m_attributes;
+    hkCustomAttributes* m_attributes; // src: XBOX_RETAIL_PDB +0x14 (old: m_pCustomAttributes)
 };

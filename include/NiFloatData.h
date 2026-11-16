@@ -15,8 +15,8 @@ class NiFloatData : public NiObject
     void ReplaceAnim(TimedAnimationKey*, unsigned int, NiAnimationKey::KeyType);
 
     unsigned int m_uiNumKeys;
-    TimedAnimationKey* m_pkKeys;
-    NiAnimationKey::KeyType m_eType;
-    unsigned char m_ucKeySize;
+    TimedAnimationKey* m_pkKeys; // src: XBOX_RETAIL_PDB +0xc (old: m_pKeyArray)
+    NiAnimationKey::KeyType m_eType; // src: XBOX_RETAIL_PDB +0x10 (old: m_eRequestType)
+    unsigned char m_ucKeySize; // src: XBOX_RETAIL_PDB +0x14 (old: m_ucKeyDataSize)
     unsigned char m_auPadKeySize[3];
 };

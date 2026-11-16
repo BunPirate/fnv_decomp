@@ -5,8 +5,8 @@ class NiObjectGroup
 {
 public:
     unsigned int m_uiSize;
-    void* m_pvBuffer;
-    void* m_pvFree;
+    void* m_pvBuffer; // src: XBOX_RETAIL_PDB +0x4 (old: pvContextData)
+    void* m_pvFree; // src: XBOX_RETAIL_PDB +0x8 (old: m_pBeforeRefCount)
     unsigned int m_uiRefCount;
 
     void ForwardCall_00a8a670();

@@ -345,7 +345,7 @@ struct ContactPointIdEntry
 __forceinline void*__cdecl operator new(hk_size_t nbytes){;void*obj=hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes));;return obj;}__forceinline void __cdecl operator delete(void*p){if(p){;hkMemoryRouter::getInstance().heap().blockFree(p,sizeof(hkpMultiRayConvexAgent::ContactPointIdEntry));}}__forceinline void*__cdecl operator new(hk_size_t n,void*p){;return p;}__forceinline void*__cdecl operator new[](hk_size_t,void*p){return p;}__forceinline void __cdecl operator delete(void*,void*){}__forceinline void __cdecl operator delete[](void*,void*){}class CommandArgument;
 hkContactPointId m_usContactPointId;
 };
-hkInplaceArray<ContactPointIdEntry,4>m_contactInfo;
+hkInplaceArray<ContactPointIdEntry,4>m_contactInfo; // src: XBOX_RETAIL_PDB +0xc (old: m_kContactPointIds)
 };
 
 class hkpRayShapeCollectionFilter;

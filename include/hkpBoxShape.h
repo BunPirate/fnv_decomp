@@ -38,5 +38,5 @@ public:
     hkpBoxShape* SetExtentsAndRadius(const hkVector4& halfExtents, float radius);
 
     char pad14[0xC];
-    hkVector4 m_halfExtents;
+    hkVector4 m_halfExtents; // src: XBOX_RETAIL_PDB +0x20 (old: m_vHalfExtents)
 };

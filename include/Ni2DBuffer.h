@@ -72,7 +72,7 @@ public:
     // 0x00a8f2c0: a new buffer of the given size that holds pkData.
     static Ni2DBuffer* Create(unsigned int uiWidth, unsigned int uiHeight, RendererData* pkData);
 
-    unsigned int m_uiWidth;
-    unsigned int m_uiHeight;
-    void* m_spRendererData;
+    unsigned int m_uiWidth; // src: XBOX_RETAIL_PDB +0x8 (old: m_uiImageWidth)
+    unsigned int m_uiHeight; // src: XBOX_RETAIL_PDB +0xc (old: m_uiImageHeight)
+    void* m_spRendererData; // src: XBOX_RETAIL_PDB +0x10 (old: m_pRendererData)
 };

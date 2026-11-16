@@ -29,9 +29,9 @@ public:
     void RemoveIdleEntry(unsigned int index);
     int GetPickType();
 
-    unsigned char cIdleFlags;
-    unsigned char cIdleCount;
+    unsigned char cIdleFlags; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucIdleCount)
+    unsigned char cIdleCount; // src: XBOX_RETAIL_PDB +0x5 (old: m_ucPickType)
     unsigned char layoutPadding6[2];
-    TESIdleForm** pIdleArray;
-    float fTimerCheckForIdle;
+    TESIdleForm** pIdleArray; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppIdleForms)
+    float fTimerCheckForIdle; // src: XBOX_RETAIL_PDB +0xc (old: m_fIdleChance)
 };

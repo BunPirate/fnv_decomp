@@ -826,9 +826,9 @@ struct Location
 // pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
-    bool bWorldSpace;
-    void* pWorldSpace;
-    void* pInteriorCell;
+    bool bWorldSpace; // src: XBOX_RETAIL_PDB +0x0 (old: unk00)
+    void* pWorldSpace; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    void* pInteriorCell; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
 };
 struct FUN_006d5320
 {

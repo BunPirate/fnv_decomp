@@ -18,7 +18,7 @@ public:
     virtual int GetClass();
     virtual bool HandleMenuInput(int, float);
 
-    unsigned char pTiles[0xDC];
+    unsigned char pTiles[0xDC]; // src: XBOX_RETAIL_PDB +0x28 (old: layoutExtension)
 
     int GetMenuID_00726f00();
     void* FUN_00726f20(unsigned int flags);

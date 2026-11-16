@@ -25,7 +25,7 @@ NiObject* NiSpecularProperty::MakeClone(CloningProcess& kCloning)
     return pkObject;
 }
 
-extern unsigned int NiSpecularProperty_ms_RTTI;
+extern unsigned int NiSpecularProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ecc (old: DAT_011f5ecc/g_011f5ecc)
 
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int key);
 unsigned int __cdecl NiGetViewerString(const char* pcPrefix, unsigned int bValue);

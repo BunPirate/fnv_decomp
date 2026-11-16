@@ -970,13 +970,13 @@ struct MuzzleFlash
     bool bMPSEnabled;
     bool bUpdateLight;
     char _pad_3[1];
-    float fEnableTimer;
-    float fDurationTimer;
-    char spAVObject[4];
-    char spLight[4];
+    float fEnableTimer; // src: XBOX_RETAIL_PDB +0x4 (old: m_fDurationTimer)
+    float fDurationTimer; // src: XBOX_RETAIL_PDB +0x8 (old: m_fFlashDuration)
+    char spAVObject[4]; // src: XBOX_RETAIL_PDB +0xc (old: pChild)
+    char spLight[4]; // src: XBOX_RETAIL_PDB +0x10 (old: m_pMenuLight)
     BGSProjectile* pProjectile;
-    TESObjectWEAP* pWeaponSource;
-    TESObjectREFR* pParentReference;
+    TESObjectWEAP* pWeaponSource; // src: XBOX_RETAIL_PDB +0x18 (old: m_pFiringWeapon)
+    TESObjectREFR* pParentReference; // src: XBOX_RETAIL_PDB +0x1c (old: m_pParentRef)
 };
 typedef char _sizecheck_MuzzleFlash[sizeof(MuzzleFlash) == 32 ? 1 : -1];
 struct FUN_00978890_shell : public ProcessLists
@@ -2340,42 +2340,42 @@ struct Animation
     bool GetDelayUpdateScenegraph();
     void SetDelayUpdateScenegraph(bool);
     void* __vecDelDtor(unsigned int);
-    unsigned char m_uFlags;
+    unsigned char m_uFlags; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiObjectFlags)
     char _pad_1[3];
-    TESObjectREFR* pActorRef;
-    char pAnimRoot[4];
-    NiNode* pAccumRoot;
-    NiPoint3 movementDelta;
-    NiPoint3 AccumRootTranslate;
-    char pSoundPriorityBone[32];
-    float m_fLooking;
+    TESObjectREFR* pActorRef; // src: XBOX_RETAIL_PDB +0x4 (old: m_pAttachedReference)
+    char pAnimRoot[4]; // src: XBOX_RETAIL_PDB +0x8 (old: m_acHeaderData)
+    NiNode* pAccumRoot; // src: XBOX_RETAIL_PDB +0xc (old: m_pObjectNode)
+    NiPoint3 movementDelta; // src: XBOX_RETAIL_PDB +0x10 (old: m_kNodeTranslation)
+    NiPoint3 AccumRootTranslate; // src: XBOX_RETAIL_PDB +0x1c (old: m_kRootTranslation)
+    char pSoundPriorityBone[32]; // src: XBOX_RETAIL_PDB +0x28 (old: m_acNodeName)
+    float m_fLooking; // src: XBOX_RETAIL_PDB +0x48 (old: m_fAnimationAmount)
     char group[16];
     char action[32];
-    char loopCount[32];
-    char nextGroup[16];
-    char nextLoops[32];
-    char cSkipUpdate;
-    bool bShutDown;
+    char loopCount[32]; // src: XBOX_RETAIL_PDB +0x7c (old: m_acTargetName)
+    char nextGroup[16]; // src: XBOX_RETAIL_PDB +0x9c (old: usReloadGroup)
+    char nextLoops[32]; // src: XBOX_RETAIL_PDB +0xac (old: m_acAnimationName)
+    char cSkipUpdate; // src: XBOX_RETAIL_PDB +0xcc (old: m_cState)
+    bool bShutDown; // src: XBOX_RETAIL_PDB +0xcd (old: m_bIsPlaying)
     char _pad_ce[2];
     float time;
-    float fLipTime;
-    char spManager[4];
-    void* pAnimSequenceMap;
-    char pCurrentSequence[32];
-    BSAnimGroupSequence* pLastMovementSequence;
+    float fLipTime; // src: XBOX_RETAIL_PDB +0xd4 (old: m_fTimeOffset)
+    char spManager[4]; // src: XBOX_RETAIL_PDB +0xd8 (old: m_acReservedBytes)
+    void* pAnimSequenceMap; // src: XBOX_RETAIL_PDB +0xdc (old: m_pOwnerReference)
+    char pCurrentSequence[32]; // src: XBOX_RETAIL_PDB +0xe0 (old: m_pChildTile)
+    BSAnimGroupSequence* pLastMovementSequence; // src: XBOX_RETAIL_PDB +0x100 (old: m_pCurrentSequence)
     char kfModelList[8];
-    float m_fMoveSpeed;
-    float m_fAttackSpeed;
-    float m_fGlobalTimeMultiplier;
-    float m_fReloadModifier;
-    float m_fEquipModifier;
-    char cSkipNextBlend;
+    float m_fMoveSpeed; // src: XBOX_RETAIL_PDB +0x10c (old: m_fMovementRate)
+    float m_fAttackSpeed; // src: XBOX_RETAIL_PDB +0x110 (old: m_fCombatAnimationRate)
+    float m_fGlobalTimeMultiplier; // src: XBOX_RETAIL_PDB +0x114 (old: m_fEquipAnimationRate)
+    float m_fReloadModifier; // src: XBOX_RETAIL_PDB +0x118 (old: m_fReloadAnimationRate)
+    float m_fEquipModifier; // src: XBOX_RETAIL_PDB +0x11c (old: m_fAnimationTimeScale)
+    char cSkipNextBlend; // src: XBOX_RETAIL_PDB +0x120 (old: m_cSkipNextBlend)
     char _pad_121[1];
-    unsigned short sQueuedReloadGroup;
-    char spAnimIdle[4];
-    char spAnimIdleQueued[4];
-    char spAnimIdleFreeWhenInactiveA[8];
-    char replayDelayList[8];
+    unsigned short sQueuedReloadGroup; // src: XBOX_RETAIL_PDB +0x122 (old: m_usQueuedGroup)
+    char spAnimIdle[4]; // src: XBOX_RETAIL_PDB +0x124 (old: LocalInput)
+    char spAnimIdleQueued[4]; // src: XBOX_RETAIL_PDB +0x128 (old: LocalStateValue)
+    char spAnimIdleFreeWhenInactiveA[8]; // src: XBOX_RETAIL_PDB +0x12c (old: LocalOutput)
+    char replayDelayList[8]; // src: XBOX_RETAIL_PDB +0x134 (old: m_acTrailingData)
 };
 typedef char _sizecheck_Animation[sizeof(Animation) == 316 ? 1 : -1];
 struct IndexedTaskData
@@ -2762,9 +2762,9 @@ struct FakeObj
 // pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
-    FakeObj* bWorldSpace;
-    float pWorldSpace;
-    unsigned char pInteriorCell;
+    FakeObj* bWorldSpace; // src: XBOX_RETAIL_PDB +0x0 (old: unk0)
+    float pWorldSpace; // src: XBOX_RETAIL_PDB +0x4 (old: unk4)
+    unsigned char pInteriorCell; // src: XBOX_RETAIL_PDB +0x8 (old: unk8)
     unsigned char unk9;
 };
 // Calls Check on the node's object with the node's float and sets the node's byte at offset 9 to 1 when the check fails.

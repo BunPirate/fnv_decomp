@@ -48,7 +48,7 @@ public:
     bool ExpandNeighborNodes(NavMeshTriangleReference* apNode, NodeOutput* apRetNodes);
     void FUN_006a6b00();
 
-    float fMaxDist;
+    float fMaxDist; // src: XBOX_RETAIL_PDB +0x20a4 (old: maxCost)
     union
     {
         bool hasGoal;

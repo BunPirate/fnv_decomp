@@ -166,7 +166,7 @@ void* __fastcall DestroyScreenGeometry(NiScreenGeometry* self, void*, unsigned i
 }
 }  // namespace fnv_00a90040
 
-extern "C" void* NiScreenGeometryData_ms_RTTI;
+extern "C" void* NiScreenGeometryData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5e54 (old: DAT_011f5e54/g_011f5e54)
 
 // @fnv 0x00a90ab0
 // src: COMMUNITY 0x00a90ab0
@@ -176,7 +176,7 @@ void* __cdecl NiScreenGeometryData_GetRTTI()
 }
 
 
-extern NiRTTI NiScreenSpaceCamera_ms_RTTI;
+extern NiRTTI NiScreenSpaceCamera_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5e6c (old: g_011f5e6c)
 
 // @fnv 0x00a91690
 // src: COMMUNITY 0x00a91690

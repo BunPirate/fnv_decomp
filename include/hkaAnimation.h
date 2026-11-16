@@ -40,9 +40,9 @@ public:
     virtual void vf15();
 
     hkInt32 m_type;
-    hkReal m_duration;
+    hkReal m_duration; // src: XBOX_RETAIL_PDB +0xc (old: m_fAnimationDuration)
     hkInt32 m_iNumTransformTracks;
     hkInt32 m_iNumberOfFloatTracks;
-    hkaAnimatedReferenceFrame* m_extractedMotion;
-    hkArray<hkaAnnotationTrack> m_annotationTracks;
+    hkaAnimatedReferenceFrame* m_extractedMotion; // src: XBOX_RETAIL_PDB +0x18 (old: m_pExtractedMotion)
+    hkArray<hkaAnnotationTrack> m_annotationTracks; // src: XBOX_RETAIL_PDB +0x1c (old: m_kAnnotationTracks)
 };

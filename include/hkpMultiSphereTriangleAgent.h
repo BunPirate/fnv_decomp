@@ -20,8 +20,8 @@ public:
         int unk0C;
     };
 
-    TriangleNormal m_closestPointTriangleCache;
-    unsigned short m_contactPointId[8];
+    TriangleNormal m_closestPointTriangleCache; // src: XBOX_RETAIL_PDB +0xc (old: m_kTriangleNormal)
+    unsigned short m_contactPointId[8]; // src: XBOX_RETAIL_PDB +0x1c (old: m_ids)
 
     hkpMultiSphereTriangleAgent(const hkpCdBody& bodyA, void* mgr);
 

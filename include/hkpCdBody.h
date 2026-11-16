@@ -13,9 +13,9 @@ struct hkFinishLoadedObjectFlagCD2C;
 class hkpCdBody
 {
 public:
-    const hkpShape* m_shape;
-    unsigned int m_shapeKey;
-    const void* m_motion;
+    const hkpShape* m_shape; // src: XBOX_RETAIL_PDB +0x0 (old: m_pCollisionShape)
+    unsigned int m_shapeKey; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiCollisionShapeKey)
+    const void* m_motion; // src: XBOX_RETAIL_PDB +0x8 (old: m_pMotionState)
     const hkpCdBody* m_parent;
 
     hkpCdBody();

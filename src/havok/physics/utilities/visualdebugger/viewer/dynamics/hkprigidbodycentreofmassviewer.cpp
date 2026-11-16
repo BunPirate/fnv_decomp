@@ -166,7 +166,7 @@ D6A140Interface* __cdecl hkpRigidBodyCentreOfMassViewer_create(const void* conte
     return new D6A140Object(contexts);
 }
 
-extern void* hkpRigidBodyCentreOfMassViewer_m_tag;
+extern void* hkpRigidBodyCentreOfMassViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269020 (old: DAT_01269020)
 // @fnv 0x00d6a1a0
 // src: GUESS 0x00d6a1a0 (confidence: low)
 void* __cdecl Object_GetDAT_01269020_00d6a1a0()
@@ -406,7 +406,7 @@ class RegistryOwner
 };
 
 extern RegistryOwner* DAT_01269cd0;
-extern void* hkpRigidBodyCentreOfMassViewer_m_tag;
+extern void* hkpRigidBodyCentreOfMassViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269020 (old: DAT_01269020)
 
 extern void hkpRigidBodyCentreOfMassViewer_create();
 

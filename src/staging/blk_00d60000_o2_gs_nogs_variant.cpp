@@ -26,7 +26,7 @@ struct Registry_00dd9380
     void* Register(char const*, void(__cdecl*)(void));
 };
 extern int DAT_01269cd0;
-extern void* hkpInactiveContactPointViewer_s_tag;
+extern void* hkpInactiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x01269008 (old: DAT_01269008)
 void hkpInactiveContactPointViewer_registerViewer();
 // Constructor of the class whose vftables live at 0x010d1fb0 / 0x010d1f90 /
 // 0x010d1f80 / 0x010d1f70: it calls the immediate base constructor and then
@@ -86,9 +86,9 @@ struct FUN_00d68840_cls
 void* __stdcall hkpActiveContactPointViewer_getIslands(void* pObject);
 // FUN_00d688f0 : tiny global getter.
 // Reads the 4-byte global at DAT_0126900c and returns it in eax.
-extern int hkpActiveContactPointViewer_s_tag;
+extern int hkpActiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x0126900c (old: DAT_0126900c)
 int __cdecl Runtime_GetDAT0126900c();
-extern char hkpConstraintInstanceSmallArraySerializeOverrideTypeClass;
+extern char hkpConstraintInstanceSmallArraySerializeOverrideTypeClass; // src: XBOX_RETAIL_PDB 0x0126905c (old: DAT_0126905c/g_0126905c)
 void* __cdecl Object_GetGlobalObjectAddress_00d6ade0();
 struct S_00d6adf0_Obj
 {
@@ -109,7 +109,7 @@ struct VtblForwarder
     virtual int v0(int);
 };
 int __cdecl Runtime_ForwardCall_00d6aeb0(VtblForwarder* p);
-extern int hkpWorldCinfoClass;
+extern int hkpWorldCinfoClass; // src: XBOX_RETAIL_PDB 0x01269104 (old: DAT_01269104/g_01269104)
 void* __cdecl Object_GetGlobalObjectAddress_00d6aee0();
 struct ResultFlag
 {
@@ -626,7 +626,7 @@ class FUN_00d63370_class
 
     void UpdatePhysicsDebugDisplay(float frameTimeInMs) throw();
 };
-extern int hkpWorldMemoryViewer_m_tag;
+extern int hkpWorldMemoryViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268fc8 (old: DAT_01268fc8)
 int __cdecl Object_GetDAT_01268fc8_00d63420();
 void* __cdecl hkMemoryRouter_getInstance();
 class FUN_00d63340

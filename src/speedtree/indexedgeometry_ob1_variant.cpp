@@ -3774,7 +3774,7 @@ struct VertexIndexRow
     DataVector<U16*> indices;
 };
 // pdb: class CIndexedGeometry, size 0x118 (here 0x190), 29 members
-struct CIndexedGeometry
+struct CIndexedGeometry // src: XBOX_RETAIL_PDB (old: GeometryProcessor)
 {
     U32 unk00, unk04, unk08;
     unsigned char* processedVertices;

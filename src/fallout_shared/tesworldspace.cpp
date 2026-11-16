@@ -707,7 +707,7 @@ const char* TESWorldSpace::GetWorldMapTextureName()
     return (reinterpret_cast<TESFullName*>(reinterpret_cast<char*>(this) + 0x24))->GetFullName();
 }
 
-extern StartMenu TESObjectCELL_sDefaultCellName;
+extern StartMenu TESObjectCELL_sDefaultCellName; // src: XBOX_RETAIL_PDB 0x011ca130 (old: g_011ca130)
 
 // @fnv 0x00586980
 // src: COMMUNITY 0x00586980

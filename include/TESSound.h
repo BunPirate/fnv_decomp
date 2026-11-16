@@ -49,7 +49,7 @@ public:
     static unsigned int GetPlaybackFlags(unsigned int flags);
     static TESSound* FindSoundByFilename(const char* apFilename);
 
-    BSStringT<char> cFormEditorID;
+    BSStringT<char> cFormEditorID; // src: XBOX_RETAIL_PDB +0x3c (old: cFileName)
     union
     {
         TESSound__SOUND_DATA data;

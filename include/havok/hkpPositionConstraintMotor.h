@@ -10,10 +10,10 @@
 class hkpPositionConstraintMotor : public hkpLimitedForceConstraintMotor
 {
   public:
-    hkReal m_tau;                           // +0x14
-    hkReal m_damping;                  // +0x18
-    hkReal m_proportionalRecoveryVelocity;  // +0x1C
-    hkReal m_constantRecoveryVelocity;      // +0x20
+    hkReal m_tau;                           // +0x14 // src: XBOX_RETAIL_PDB +0x14 (old: m_fTau)
+    hkReal m_damping;                  // +0x18 // src: XBOX_RETAIL_PDB +0x18 (old: m_fMotorDamping)
+    hkReal m_proportionalRecoveryVelocity;  // +0x1C // src: XBOX_RETAIL_PDB +0x1c (old: m_fProportionalRecoveryVelocity)
+    hkReal m_constantRecoveryVelocity;      // +0x20 // src: XBOX_RETAIL_PDB +0x20 (old: m_fConstantRecoveryVelocity)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpPositionConstraintMotor[(sizeof(hkpPositionConstraintMotor) == 0x24) ? 1 : -1];

@@ -27,7 +27,7 @@ public:
     virtual void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     GUARD_STATE eState;
-    Actor* pGuardWarnedActor;
+    Actor* pGuardWarnedActor; // src: XBOX_RETAIL_PDB +0x8 (old: pWarningTarget)
     int iWarningCount;
-    float fGuardTimer;
+    float fGuardTimer; // src: XBOX_RETAIL_PDB +0x10 (old: m_fWarningTimer)
 };

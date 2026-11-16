@@ -11,6 +11,6 @@ public:
     hkpVehicleInstance** m_registeredVehicles;
     int m_registeredVehiclesSize;
     int m_registeredVehiclesCapacityAndFlags;
-    unsigned short m_totalNumWheels;
+    unsigned short m_totalNumWheels; // src: XBOX_RETAIL_PDB +0x14 (old: m_uiTotalWheelCount)
     char pad16[0x2];
 };

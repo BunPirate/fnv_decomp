@@ -35,6 +35,6 @@ public:
     bool IsKindOfType(const NiRTTI* type);
 
 
-    unsigned int uiBoundFrameCount;
-    NiPointer<BSMultiBoundShape> spShape;
+    unsigned int uiBoundFrameCount; // src: XBOX_RETAIL_PDB +0x8 (old: m_uiBoundFlags)
+    NiPointer<BSMultiBoundShape> spShape; // src: XBOX_RETAIL_PDB +0xc (old: pShape)
 };

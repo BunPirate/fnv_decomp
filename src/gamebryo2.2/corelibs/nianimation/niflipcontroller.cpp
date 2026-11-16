@@ -61,7 +61,7 @@ const char* __thiscall NiFlipController::GetFormattedValue()
     return pcFormattedValue;
 }
 
-extern NiRTTI NiTexturingProperty_ms_RTTI;
+extern NiRTTI NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 
 // Walks pkTarget's NiRTTI base chain and returns true if it reaches g_011f49a4, false for a null target or RTTI.
 // @fnv 0x00a4f5e0
@@ -301,11 +301,11 @@ struct Map_a4d : MapMid_a4d
 };
 
 // pdb: class NiKeyframeManager, size 0x48, bases: NiTimeController, 1 members
-struct NiKeyframeManager : FUN_00a6d220
+struct NiKeyframeManager : FUN_00a6d220 // src: EXE (old: FUN_00a4da20_cls)
 {
     NiKeyframeManager();
     virtual void v00();
-    Map_a4d m_kMap;
+    Map_a4d m_kMap; // src: XBOX_RETAIL_PDB +0x34 (old: kMap)
 };
 
 // Default constructor for a class that embeds a Map_a4d, which initialises its hash table with the default size.
@@ -316,7 +316,7 @@ NiKeyframeManager::NiKeyframeManager()
 // NiFlipController::Update: advance the interpolator, round its value to a texture index, clamp it,
 // and assign that texture to the affected map (regular map slot, or shader map at index - 0x400).
 
-extern float NiInterpController_INVALID_TIME;         // NiTimeController::INVALID_TIME
+extern float NiInterpController_INVALID_TIME;         // NiTimeController::INVALID_TIME // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 extern const double DAT_01016408;  // 0.5
 struct NiUpdateDataF
 {

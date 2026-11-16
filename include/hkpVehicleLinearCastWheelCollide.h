@@ -66,10 +66,10 @@ public:
     void hkpVehicleLinearCastWheelCollide_calcAabbOfWheel(unsigned char wheelIndex, unsigned char wheelNum, hkAabb* aabbOut);
     void hkpVehicleLinearCastWheelCollide_updateWheelState(unsigned char wheelIndex, unsigned char stateIndex);
 
-    hkUint32 m_wheelCollisionFilterInfo;
-    hkArray<hkpVehicleLinearCastWheelCollideWheelState> m_wheelStates;
-    hkpRejectChassisListener m_rejectChassisListener;
-    hkReal m_maxExtraPenetration;
-    hkReal m_startPointTolerance;
+    hkUint32 m_wheelCollisionFilterInfo; // src: XBOX_RETAIL_PDB +0xc (old: m_uiWheelCount)
+    hkArray<hkpVehicleLinearCastWheelCollideWheelState> m_wheelStates; // src: XBOX_RETAIL_PDB +0x10 (old: m_kWheelStates)
+    hkpRejectChassisListener m_rejectChassisListener; // src: XBOX_RETAIL_PDB +0x1c (old: m_kRejectChassisListener)
+    hkReal m_maxExtraPenetration; // src: XBOX_RETAIL_PDB +0x2c (old: m_fMaxExtraPenetration)
+    hkReal m_startPointTolerance; // src: XBOX_RETAIL_PDB +0x30 (old: m_fMaxExtraPenetrationAgainstFixed)
 };
 

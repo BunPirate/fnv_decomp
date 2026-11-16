@@ -37,6 +37,6 @@ public:
     bool GetPointAtIndex(unsigned int, NiPoint3*);
 
     unsigned int m_uiPathPointIndex;
-    float fDistanceTraveled;
-    float fPathLength;
+    float fDistanceTraveled; // src: XBOX_RETAIL_PDB +0x18 (old: m_fPathValue16)
+    float fPathLength; // src: XBOX_RETAIL_PDB +0x1c (old: m_fPathValue2)
 };

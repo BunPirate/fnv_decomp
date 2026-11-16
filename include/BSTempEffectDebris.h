@@ -14,9 +14,9 @@ class BSTempEffectDebris : public BSTempEffect
     void SetIsForegroundEffect(bool foregroundElement);
     bool IsNew();
 
-    NiPointer<NiAVObject> sp3D;
+    NiPointer<NiAVObject> sp3D; // src: XBOX_RETAIL_PDB +0x18 (old: m_pSceneObject)
     const char* pFilename;
-    bool bUseDebrisCounter;
+    bool bUseDebrisCounter; // src: XBOX_RETAIL_PDB +0x20 (old: m_bForegroundEffect)
     bool bForceDelete;
     bool m_bShouldDelete;
     unsigned char pad23;

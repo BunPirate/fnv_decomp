@@ -6,8 +6,8 @@
 class hkBitField
 {
   public:
-    hkArray<unsigned int> m_words;
-    int m_numBits;
+    hkArray<unsigned int> m_words; // src: XBOX_RETAIL_PDB +0x0 (old: m_auiBitFieldWords)
+    int m_numBits; // src: XBOX_RETAIL_PDB +0xc (old: m_iNumBits)
 
     __declspec(noinline) void fillUnusedBits(int fillValue) throw();
     void setSize(int numBits, int fillValue);

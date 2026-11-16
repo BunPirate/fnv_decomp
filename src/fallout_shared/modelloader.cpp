@@ -218,9 +218,9 @@ class ModelLoader
 class Model
 {
   public:
-    void* pFilename;
-    char iRefCount[8];
-    NiPointer<NiNode> spObject3D;
+    void* pFilename; // src: XBOX_RETAIL_PDB +0x0 (old: owned)
+    char iRefCount[8]; // src: XBOX_RETAIL_PDB +0x4 (old: prefix)
+    NiPointer<NiNode> spObject3D; // src: XBOX_RETAIL_PDB +0xc (old: node)
     Model(const char*, BSStream*, bool, bool);
     ~Model();
     void LoadModelFromStream(const char*, BSStream*, bool, bool);
@@ -898,8 +898,8 @@ struct LoadedFile : public NiMemObject
     volatile long iRefCount;  // +0: IncRefCount (0x0044b0f0) increments it under the loader lock
     char* pFileName;
     BSFile* pFile;
-    bool bInLoadedFileMap;
-    bool bFileUsed;
+    bool bInLoadedFileMap; // src: XBOX_RETAIL_PDB +0xc (old: m_bFirstFlag)
+    bool bFileUsed; // src: XBOX_RETAIL_PDB +0xd (old: m_bFileFlagAtOffsetD)
     char _pad_e[2];
 };
 typedef char _sizecheck_LoadedFile[sizeof(LoadedFile) == 16 ? 1 : -1];
@@ -3115,7 +3115,7 @@ struct FUN_0044b0f0_shell : public LoadedFile
     void LoadedFile_IncRefCount();
 };
 
-extern RecursiveLock LoadedFile_LSAccessCrit;
+extern RecursiveLock LoadedFile_LSAccessCrit; // src: XBOX_RETAIL_PDB 0x011c3b6c (old: g_011c3b6c)
 bool __fastcall BSCriticalSection_TryLock(RecursiveLock*);
 
 // @fnv 0x0044b0f0
@@ -3182,7 +3182,7 @@ struct GlobalObject_0044fae0
     bool BSCriticalSection_TryLock();
     void Leave();
 };
-extern GlobalObject_0044fae0 LoadedFile_LSAccessCrit;
+extern GlobalObject_0044fae0 LoadedFile_LSAccessCrit; // src: XBOX_RETAIL_PDB 0x011c3b6c (old: g_011c3b6c)
 struct Del44b
 {
     int FUN_0044b1f0(int);

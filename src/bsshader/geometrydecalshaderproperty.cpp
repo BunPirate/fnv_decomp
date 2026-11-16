@@ -4,7 +4,7 @@
 #include "../../include/StrArr.h"
 void __stdcall BSShaderLightingProperty_GetViewerStrings(StrArr*);
 char* __cdecl _FUN_00a7d330(const char*);
-extern const char* SkyShaderProperty_ms_RTTI;
+extern const char* SkyShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005b8 (old: DAT_012005b8/g_012005b8)
 // Grows the string array if it is full, then appends the string returned by _FUN_00a7d330(DAT_012005b8) at the end.
 // @fnv 0x00bb44a0
 // src: XBOX_PDB 0x00bb44a0

@@ -11,6 +11,6 @@ public:
     hkpSetLocalRotationsConstraintAtom(FinishingFlag f);
 
     char pad2[0xE];
-    hkRotation m_rotationA;
-    hkRotation m_rotationB;
+    hkRotation m_rotationA; // src: XBOX_RETAIL_PDB +0x10 (old: m_kRotationA)
+    hkRotation m_rotationB; // src: XBOX_RETAIL_PDB +0x40 (old: m_kRotationB)
 };

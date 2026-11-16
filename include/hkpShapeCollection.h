@@ -30,7 +30,7 @@ public:
     virtual void vf11(int);
     virtual void vf12(int, int);
 
-    hkBool m_disableWelding;
-    unsigned char m_collectionType;
+    hkBool m_disableWelding; // src: XBOX_RETAIL_PDB +0x14 (old: m_bDisableWelding)
+    unsigned char m_collectionType; // src: XBOX_RETAIL_PDB +0x15 (old: m_eCollectionType)
     unsigned char unk16[2];
 };

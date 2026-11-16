@@ -326,7 +326,7 @@ namespace fnv_00a3a6b0 {
 
 void __fastcall AppendQuatTransformStrings(NiQuatTransform*, int, NiTArray<char*, NiTMallocInterface<char*> >*);
 void __fastcall AppendBlendInterpolatorStrings(NiBlendInterpolator*, int, NiTArray<char*, NiTMallocInterface<char*> >*);
-extern int NiBlendAccumTransformInterpolator_ms_RTTI;
+extern int NiBlendAccumTransformInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f371c (old: g_011f371c)
 char* NiViewerStrings_NiGetViewerString_Title(int);
 // Append base strings, the class name and the accumulated transform strings.
 // @fnv 0x00a3a6b0

@@ -17,5 +17,5 @@ public:
     void SetLocationFromPackage(int apCopy);
     bool Compare_0067af50(TESPackageData* apCompare);
 
-    AF50Location* pAmbushLocation;
+    AF50Location* pAmbushLocation; // src: XBOX_RETAIL_PDB +0x4 (old: m_pkLocation)
 };

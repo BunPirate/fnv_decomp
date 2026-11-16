@@ -717,7 +717,7 @@ struct FUN_00d0c8d0_cls {
 };
 
 unsigned int hkStatisticsCollector_getAllocatedSize(void* p, unsigned int size);
-extern char hkpSimulationClass;
+extern char hkpSimulationClass; // src: XBOX_RETAIL_PDB 0x01269514 (old: DAT_01269514/g_01269514)
 
 // @fnv 0x00d0c8d0
 // pdb: hkpContinuousSimulation::calcContentStatistics | hkpContinuousSimulation.obj | retail, string-set bridge, high

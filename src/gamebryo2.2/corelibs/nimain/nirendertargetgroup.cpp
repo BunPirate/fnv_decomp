@@ -7,7 +7,7 @@
 #include "../../../../include/NiRenderer.h"
 #include "../../../../include/StrArr.h"
 
-extern NiRTTI NiRenderTargetGroup_ms_RTTI;
+extern NiRTTI NiRenderTargetGroup_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012708ec (old: g_012708ec)
 
 // @fnv 0x00ee8530
 // src: COMMUNITY 0x00ee8530

@@ -54,10 +54,10 @@ class NiTexturingProperty : public NiProperty
     class ParallaxMap;
     class ShaderMap;
 
-    unsigned short m_uFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiObjectFlags)
     unsigned char unk1A[2];
-    NiTPrimitiveArray<Map*> m_kMaps;
-    NiTPrimitiveArray<ShaderMap*>* m_pkShaderMaps;
+    NiTPrimitiveArray<Map*> m_kMaps; // src: XBOX_RETAIL_PDB +0x1c (old: m_kStringArray)
+    NiTPrimitiveArray<ShaderMap*>* m_pkShaderMaps; // src: XBOX_RETAIL_PDB +0x2c (old: m_pShaderMaps)
 
     NiTexturingProperty();
     NiTexturingProperty(NiPixelData* pixelData, const NiFixedString& name, TextureFormatPreferences& preferences);
@@ -121,9 +121,9 @@ class NiTexturingProperty::Map
     void SetTextureIndex(unsigned int uiIndex);
     static void* operator new(size_t uiSize);
 
-    unsigned short m_uFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x4 (old: m_usFlags)
     TexturePtr m_spTexture;
-    TextureMapTransform* m_pkTextureTransform;
+    TextureMapTransform* m_pkTextureTransform; // src: XBOX_RETAIL_PDB +0xc (old: m_pTextureTransform)
 };
 
 // vftable 0x0109c4d8, 0x28 bytes.
@@ -146,7 +146,7 @@ class NiTexturingProperty::ParallaxMap : public Map
   public:
     ParallaxMap() throw();
 
-    float m_fOffset;
+    float m_fOffset; // src: XBOX_RETAIL_PDB +0x10 (old: m_fParallaxOffset)
 };
 
 // vftable 0x0109c4ec.

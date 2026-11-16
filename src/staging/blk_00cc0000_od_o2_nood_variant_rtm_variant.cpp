@@ -1194,7 +1194,7 @@ public:
     float x,y,z;
     char* GetViewerString_00a59af0(const char*);
 };
-extern void* bhkPlaneShape_ms_RTTI;
+extern void* bhkPlaneShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268670 (old: DAT_01268670/g_01268670)
 extern const char DAT_0101c29c[];
 extern const char DAT_010ca6a4[];
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
@@ -2053,7 +2053,7 @@ struct TlsFlagGuard {
     TlsFlagGuard() { unsigned int index = DAT_0126fd98; m_blk = reinterpret_cast<ThreadTlsBlock**>(__readfsdword(0x2c))[index]; m_saved = m_blk->m_2b4; m_blk->m_2b4 = 0x10; }
     ~TlsFlagGuard() { m_blk->m_2b4 = m_saved; }
 };
-extern unsigned int bhkCylinderShape_ms_RTTI;
+extern unsigned int bhkCylinderShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268694 (old: DAT_01268694/g_01268694/g_target_00ccd0f0)
 extern float DAT_010c72bc;
 struct NameArr {
     virtual ~NameArr();

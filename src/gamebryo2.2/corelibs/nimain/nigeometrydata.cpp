@@ -829,7 +829,7 @@ void GeomData::RegisterFields(StrArr* pkStrings)
 }
 
 // NiGeometryData construction uses a nonthrowing constructor contract and real NiPointer initialization.
-extern unsigned short NiGeometryData_ms_usNextID;
+extern unsigned short NiGeometryData_ms_usNextID; // src: XBOX_RETAIL_PDB 0x011a9b14 (old: DAT_011a9b14)
 struct Base302
 {
     virtual ~Base302();

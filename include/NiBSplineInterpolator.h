@@ -30,6 +30,6 @@ class NiBSplineInterpolator : public NiInterpolator
 
     float m_fStartTime;
     float m_fEndTime;
-    NiPointer<NiBSplineData> m_spData;
-    NiPointer<NiBSplineBasisData> m_spBasisData;
+    NiPointer<NiBSplineData> m_spData; // src: XBOX_RETAIL_PDB +0x14 (old: m_spTransformData)
+    NiPointer<NiBSplineBasisData> m_spBasisData; // src: XBOX_RETAIL_PDB +0x18 (old: m_spSplineBasisData)
 };

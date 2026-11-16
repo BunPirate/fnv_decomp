@@ -87,7 +87,7 @@ struct GlobalObjectO2_00a7b610
 {
     char c;
 };
-extern GlobalObjectO2_00a7b610 BSTreadTransfInterpolator_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSTreadTransfInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3ed8 (old: g_011f3ed8)
 // Returns the address of the global object g_011f3ed8.
 // @fnv 0x00a43360
 // src: COMMUNITY 0x00a43360

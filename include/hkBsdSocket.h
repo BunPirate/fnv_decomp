@@ -21,5 +21,5 @@ public:
     bool __thiscall SetNonBlocking(bool blocking);
 
     unsigned char unk08[0x18];
-    int m_socket;
+    int m_socket; // src: XBOX_RETAIL_PDB +0x20 (old: m_pSocket)
 };

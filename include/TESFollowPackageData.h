@@ -18,8 +18,8 @@ public:
     virtual void vf06(BGSLoadFormBuffer* buffer);
     virtual void vf07(BGSLoadFormBuffer* buffer);
 
-    FollowPackageField* pStartLocation;
-    float fTriggerRadius;
+    FollowPackageField* pStartLocation; // src: XBOX_RETAIL_PDB +0x4 (old: m_04)
+    float fTriggerRadius; // src: XBOX_RETAIL_PDB +0x8 (old: m_08)
 
     TESFollowPackageData* Construct(float afValue);
     void* DestroyIfFlagged(unsigned int flags);

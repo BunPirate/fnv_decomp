@@ -19,8 +19,8 @@ enum HAIR_PART;
 class __declspec(align(16)) BSFaceGenModel : public NiRefObject
 {
 public:
-    FaceGenGeometryModel* pMeshData;
-    BSFaceGenTexture* pTextureData;
+    FaceGenGeometryModel* pMeshData; // src: XBOX_RETAIL_PDB +0x8 (old: m_pGeometryModel)
+    BSFaceGenTexture* pTextureData; // src: XBOX_RETAIL_PDB +0xc (old: m_kTextureSlots)
 
     bool LoadModelMesh(const char*, const char*, const char*, HAIR_PART, bool);
     bool LoadFaceGenTexture();

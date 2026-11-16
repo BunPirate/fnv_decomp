@@ -28,7 +28,7 @@ public:
     void __thiscall SetVtableAndProcessState_00e971d0();
     void* __thiscall DestroyVertexShader(unsigned int flags);
 
-    char* m_pcEntryPoint;
-    char* m_pcShaderTarget;
-    ID3DXConstantTable* m_pkConstantTable;
+    char* m_pcEntryPoint; // src: XBOX_RETAIL_PDB +0x3c (old: m_pcShaderEntryPoint)
+    char* m_pcShaderTarget; // src: XBOX_RETAIL_PDB +0x40 (old: m_pcShaderProfile)
+    ID3DXConstantTable* m_pkConstantTable; // src: XBOX_RETAIL_PDB +0x44 (old: m_pShaderConstantTable)
 };

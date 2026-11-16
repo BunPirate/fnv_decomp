@@ -8,7 +8,7 @@
 #include "../../../../include/NiPSysUpdateTask.h"
 #include "../../../../include/NiRefObject.h"
 
-extern "C" void* NiPSysUpdateTask_ms_RTTI;
+extern "C" void* NiPSysUpdateTask_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202580 (old: g_01202580)
 void* __cdecl NiPSysUpdateTask_GetRTTI();
 extern int DAT_010be45c;
 extern int DAT_01069674;

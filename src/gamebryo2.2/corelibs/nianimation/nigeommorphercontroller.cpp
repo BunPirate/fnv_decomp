@@ -390,7 +390,7 @@ struct GlobalObjectO2_00a7b610
 {
     int x;
 };
-extern GlobalObjectO2_00a7b610 NiGeomMorpherController_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 // @fnv 0x00a3afd0
 // src: COMMUNITY 0x00a3afd0
 GlobalObjectO2_00a7b610* __cdecl NiGeomMorpherController_GetRTTI()
@@ -1156,7 +1156,7 @@ struct Mgr
 };
 extern Mgr* DAT_011f5b04;
 extern unsigned char DAT_011f3725;
-extern float NiInterpController_INVALID_TIME;
+extern float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 struct Obj56
 {
     virtual void V00();

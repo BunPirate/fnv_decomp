@@ -28,5 +28,5 @@ public:
 
     static BGSImpactDataSet* ms_pImpactDataSet;
 
-    BGSImpactData* ppImpactData[12];
+    BGSImpactData* ppImpactData[12]; // src: XBOX_RETAIL_PDB +0x1c (old: m_apImpactData)
 };

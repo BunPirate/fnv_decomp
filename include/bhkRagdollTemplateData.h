@@ -17,12 +17,12 @@ public:
 
     static NiObject* __cdecl CreateObject();
 
-    void* ObjectName;
-    CA0E60Array ConstraintsA;
-    CA0E60Array ConstraintTypeA;
-    int fRBMass;
-    int fRBRestitution;
-    int fRBFriction;
-    int fRBRadius;
-    int uiRBMaterial;
+    void* ObjectName; // src: XBOX_RETAIL_PDB +0x8 (old: m_kName)
+    CA0E60Array ConstraintsA; // src: XBOX_RETAIL_PDB +0xc (old: m_kArray1)
+    CA0E60Array ConstraintTypeA; // src: XBOX_RETAIL_PDB +0x1c (old: m_kArray2)
+    int fRBMass; // src: XBOX_RETAIL_PDB +0x2c (old: m_2c)
+    int fRBRestitution; // src: XBOX_RETAIL_PDB +0x30 (old: m_30)
+    int fRBFriction; // src: XBOX_RETAIL_PDB +0x34 (old: m_34)
+    int fRBRadius; // src: XBOX_RETAIL_PDB +0x38 (old: m_38)
+    int uiRBMaterial; // src: XBOX_RETAIL_PDB +0x3c (old: m_3c)
 };

@@ -230,7 +230,7 @@ struct S_00bc2f30_Base
 {
     void NiNode_GetViewerStrings(S_00bc2f30_Arr* a);
 };
-extern const char* BSOrderedNode_ms_RTTI;
+extern const char* BSOrderedNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f84 (old: DAT_01201f84/g_01201f84)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* s);
 char* __cdecl NiGetViewerString(const char* pcPrefix, ...);
 struct S_00bc2f30_Cls : S_00bc2f30_Base

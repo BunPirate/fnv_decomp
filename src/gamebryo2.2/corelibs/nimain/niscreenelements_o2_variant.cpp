@@ -7,7 +7,7 @@ extern char DAT_0109e984;
 #include "../../../../include/NiScreenElements.h"
 #include "../../../../include/StrArr.h"
 
-extern "C" void* NiScreenElements_ms_RTTI;
+extern "C" void* NiScreenElements_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b48 (old: g_011f5b48)
 
 // @fnv 0x00a87800
 // src: COMMUNITY 0x00a87800

@@ -18,13 +18,13 @@ typedef unsigned long hkUlong;
 class hkpPhysicsSystem : public hkReferencedObject
 {
 public:
-    hkArray<hkpRigidBody*> m_rigidBodies;
-    hkArray<hkpConstraintInstance*> m_constraints;
-    hkArray<hkpAction*> m_actions;
-    hkArray<hkpPhantom*> m_phantoms;
+    hkArray<hkpRigidBody*> m_rigidBodies; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppRigidBodies)
+    hkArray<hkpConstraintInstance*> m_constraints; // src: XBOX_RETAIL_PDB +0x14 (old: m_ppConstraints)
+    hkArray<hkpAction*> m_actions; // src: XBOX_RETAIL_PDB +0x20 (old: m_ppActions)
+    hkArray<hkpPhantom*> m_phantoms; // src: XBOX_RETAIL_PDB +0x2c (old: m_kPhantoms)
     hkStringPtr m_name;
-    hkUlong m_userData;
-    hkBool m_active;
+    hkUlong m_userData; // src: XBOX_RETAIL_PDB +0x3c (old: m_ulUserData)
+    hkBool m_active; // src: XBOX_RETAIL_PDB +0x40 (old: m_bSlotEnabled)
     char pad41[3];
 
     hkpPhysicsSystem();

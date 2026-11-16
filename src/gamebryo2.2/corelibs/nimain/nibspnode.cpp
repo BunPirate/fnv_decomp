@@ -42,7 +42,7 @@ void __thiscall NiBSPNode::UpdateWorldData_00a9a840(NiUpdateData& aUpdateData)
 struct GlobalObjectO2_00a7b610
 {
 };
-extern GlobalObjectO2_00a7b610 NiBSPNode_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiBSPNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f54 (old: g_011f5f54)
 
 // @fnv 0x00a9adc0
 // src: COMMUNITY 0x00a9adc0

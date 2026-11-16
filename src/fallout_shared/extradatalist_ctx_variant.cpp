@@ -165,7 +165,7 @@ struct TeleportableReference
 // pdb: class MapMarkerData, size 0x14, 5 members
 struct MapMarkerData
 {
-    int LocationName, unk04, unk08, cFlags, pReputation;
+    int LocationName, unk04, unk08, cFlags, pReputation; // src: XBOX_RETAIL_PDB LocationName +0x0 (old: unk00); cFlags +0xc (old: unk0C); pReputation +0x10 (old: unk10)
     MapMarkerData();
     void MapMarkerData_Copy(MapMarkerData* apCopy);
 };
@@ -187,7 +187,7 @@ struct TwoIntegerValues
 // pdb: class ImpactSwap, size 0x15c, 2 members
 struct ImpactSwap
 {
-    int pRemappedData, unk004, unk008, unk00C, unk010, unk014, unk018, unk01C, unk020, unk024, unk028, unk02C, pAltFootstepMaterialNames, unk034,
+    int pRemappedData, unk004, unk008, unk00C, unk010, unk014, unk018, unk01C, unk020, unk024, unk028, unk02C, pAltFootstepMaterialNames, unk034, // src: XBOX_RETAIL_PDB pRemappedData +0x0 (old: unk000); pAltFootstepMaterialNames +0x30 (old: unk030)
         unk038, unk03C, unk040, unk044, unk048, unk04C, unk050, unk054, unk058, unk05C, unk060, unk064, unk068, unk06C,
         unk070, unk074, unk078, unk07C, unk080, unk084, unk088, unk08C, unk090, unk094, unk098, unk09C, unk0A0, unk0A4,
         unk0A8, unk0AC, unk0B0, unk0B4, unk0B8, unk0BC, unk0C0, unk0C4, unk0C8, unk0CC, unk0D0, unk0D4, unk0D8, unk0DC,
@@ -208,7 +208,7 @@ struct Point3Offset
 // pdb: class PatrolRefData, size 0x14, 2 members
 struct PatrolRefData
 {
-    int fTimeAtRef, OnPatrol, unk08, unk0C, unk10;
+    int fTimeAtRef, OnPatrol, unk08, unk0C, unk10; // src: XBOX_RETAIL_PDB fTimeAtRef +0x0 (old: unk00); OnPatrol +0x4 (old: unk04)
     PatrolRefData();
     void Copy(PatrolRefData* apSource);
 };
@@ -237,7 +237,7 @@ struct CollisionData
 {
     unsigned int GetCollisionLayer() const;
     void SetCollisionLayer(unsigned int auiLayer);
-    unsigned int eLayer;
+    unsigned int eLayer; // src: XBOX_RETAIL_PDB +0x0 (old: uiCollisionLayer)
     CollisionData();
 };
 

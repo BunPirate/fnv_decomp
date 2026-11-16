@@ -763,9 +763,9 @@ void FUN_0083d0d0_Class::RefreshObjectRef(int a)
 // pdb: structure WeatherEntry, size 0xc, 3 members
 struct WeatherEntry
 {
-    int pWeather;
-    int uiChance;
-    int pChanceVar;
+    int pWeather; // src: XBOX_RETAIL_PDB +0x0 (old: a)
+    int uiChance; // src: XBOX_RETAIL_PDB +0x4 (old: b)
+    int pChanceVar; // src: XBOX_RETAIL_PDB +0x8 (old: c)
     WeatherEntry();
 };
 struct G2
@@ -3717,7 +3717,7 @@ class FUN_0081dd00 : public PrimaryBase8229, public SecondaryBase8229
 };
 
 // pdb: class MagicSprayProjectile, size 0xa8 (here 0x1c), bases: MagicProjectile, 0 members
-class MagicSprayProjectile : public FUN_0081dd00
+class MagicSprayProjectile : public FUN_0081dd00 // src: EXE (old: FUN_00822920)
 {
   public:
     MagicSprayProjectile(int apCaster, int apSpell, int apDominantEffect, int apAVEffect, NiPoint3 aOrigin, NiPoint3 aRotation);

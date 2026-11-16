@@ -105,13 +105,13 @@ public:
         Program*, NiShaderConstantMapEntry*, NiAVObject*, Skin*, NiSkinPartition::Partition*,
         void*, Properties*, Effects*, const void*, const void*, unsigned int);
 
-    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspEntries;
-    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspDefinedEntries;
-    bool m_bModified;
+    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspEntries; // src: XBOX_RETAIL_PDB +0xc (old: m_kEntries)
+    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspDefinedEntries; // src: XBOX_RETAIL_PDB +0x1c (old: m_kDefinedEntries)
+    bool m_bModified; // src: XBOX_RETAIL_PDB +0x2c (old: m_bHasChanges)
     unsigned char layoutPadding2D[3];
-    NiD3DShaderProgram* m_pkLastShaderProgram;
-    unsigned int m_eLastError;
-    Direct3DDeviceInterface* m_pkD3DDevice;
-    GraphicsRenderer* m_pkD3DRenderer;
-    ShaderPassRenderer* m_pkD3DRenderState;
+    NiD3DShaderProgram* m_pkLastShaderProgram; // src: XBOX_RETAIL_PDB +0x30 (old: m_pShaderProgram)
+    unsigned int m_eLastError; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiErrorCode)
+    Direct3DDeviceInterface* m_pkD3DDevice; // src: XBOX_RETAIL_PDB +0x38 (old: m_pD3DDevice)
+    GraphicsRenderer* m_pkD3DRenderer; // src: XBOX_RETAIL_PDB +0x3c (old: m_pShaderObject)
+    ShaderPassRenderer* m_pkD3DRenderState; // src: XBOX_RETAIL_PDB +0x40 (old: m_pRenderState)
 };

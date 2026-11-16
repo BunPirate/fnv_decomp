@@ -797,7 +797,7 @@ void __cdecl BSClamp_float(float* aVal, float aMin, float aMax)
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiFloatData_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiFloatData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3748 (old: g_011f3748)
 
 struct FUN_0052cf80_shell
 {
@@ -810,7 +810,7 @@ GlobalObjectO2_00a7b610* FUN_0052cf80_shell::GetGlobalObject()
     return &NiFloatData_ms_RTTI;
 }
 
-extern NiRTTI NiColorData_ms_RTTI;
+extern NiRTTI NiColorData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3750 (old: DAT_011f3750/g_011f3750)
 
 // @fnv 0x0052d120
 const NiRTTI* NiColorData::GetRTTI() const

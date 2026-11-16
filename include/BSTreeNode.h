@@ -74,10 +74,10 @@ class BSTreeNode : public BSFadeNode
             unsigned char unkF8[24];
         };
     };
-    char spModel[4];
-    void* pspBranches;
-    void* pspLeaves;
-    char spBillboard[4];
-    float fNextCollisionCheck;
+    char spModel[4]; // src: XBOX_RETAIL_PDB +0x110 (old: m_pRenderedNodeEntry)
+    void* pspBranches; // src: XBOX_RETAIL_PDB +0x114 (old: m_pSpeedTreeData)
+    void* pspLeaves; // src: XBOX_RETAIL_PDB +0x118 (old: m_pTreeModelData)
+    char spBillboard[4]; // src: XBOX_RETAIL_PDB +0x11c (old: m_ucTreeFlags)
+    float fNextCollisionCheck; // src: XBOX_RETAIL_PDB +0x120 (old: m_fTreeWindTime)
     char _pad_124[12];
 };

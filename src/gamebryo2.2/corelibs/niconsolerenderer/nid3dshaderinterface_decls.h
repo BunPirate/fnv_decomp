@@ -102,5 +102,5 @@ class Program : public NiMemObject
     Program* FUN_00e93ad0();
 };
 extern Direct3DDeviceInterface* DAT_0126f99c;
-extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 #endif

@@ -147,8 +147,8 @@ void FUN_008c8430_shell::SetVtableAndProcessState_008c8430()
 
 extern PlayerCharacter* g_thePlayer;
 void __fastcall PlayerCharacter_UpdateAutoAimActor(void*);
-extern ActorTaskManager UpdatingDetection;
-extern ActorTaskManager UpdatingMovement;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 struct FUN_008c8490_shell
 {
     void DetectionTaskData_HandleEndMessage(unsigned int);
@@ -217,8 +217,8 @@ void FUN_008c8890_shell::SetVtableAndProcessState_008c8890()
 }
 
 namespace fnv_008c88b0 {
-extern ActorTaskManager UpdatingActors;
-extern ActorTaskManager UpdatingMovement;
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 struct FUN_008c88b0_shell
 {
     void QueryPerformanceCounters(int);
@@ -235,8 +235,8 @@ void FUN_008c88b0_shell::QueryPerformanceCounters(int)
 }  // namespace fnv_008c88b0
 
 namespace fnv_008c88e0 {
-extern ActorTaskManager UpdatingMovement;
-extern ActorTaskManager UpdatingActors;
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c88e0_shell
 {
     void AnimationTaskData_HandleEndMessage(int aiThread);
@@ -307,7 +307,7 @@ void FUN_008c8a00_shell::SetVirtualTableAndProcessState_008c8a00()
 }
 
 namespace fnv_008c8a20 {
-extern ActorTaskManager UpdatingActors;
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c8a20_shell
 {
     void ActorUpdateTaskData_HandleCountMessage(int);
@@ -325,7 +325,7 @@ void FUN_008c8a20_shell::ActorUpdateTaskData_HandleCountMessage(int)
 }  // namespace fnv_008c8a20
 
 namespace fnv_008c8a50 {
-extern ActorTaskManager UpdatingActors;
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c8a50_shell
 {
     void ActorUpdateTaskData_HandleEndMessage(int aiThread);
@@ -392,7 +392,7 @@ struct PkgObj
 };
 extern Twin_0084d030 g_timeGlobal;
 extern PkgObj DAT_011e0e80;
-extern ActorTaskManager UpdatingDetection;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
 
 // @fnv 0x008c8ff0
 // pdb: PackageUpdateTaskData::HandleEndMessage | AITaskManager.obj | retail, vtable slot, high
@@ -463,9 +463,9 @@ void FUN_008c9080_shell::SetVirtualTableAndProcessState_008c9080()
 }
 
 namespace fnv_008c90e0 {
-extern ActorTaskManager UpdatingDetection;
-extern ActorTaskManager UpdatingMovement;
-extern ActorTaskManager UpdatingActors;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c90e0_shell
 {
     void ActorsScriptTaskData_HandleEndMessage(unsigned int);
@@ -542,8 +542,8 @@ void FUN_008c91d0_shell::UpdateState_008c91d0()
 }
 
 namespace fnv_008c91f0 {
-extern ActorTaskManager UpdatingDetection;
-extern ActorTaskManager UpdatingMovement;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 
 // Clears field and queries the performance counter on both g_011dfc04 and g_011dfbe8.
 // @fnv 0x008c91f0
@@ -560,8 +560,8 @@ void MovementTaskData::SetMobileObjectCount(unsigned int auiCount)
 
 
 namespace fnv_008c9300 {
-extern ActorTaskManager UpdatingDetection;
-extern ActorTaskManager UpdatingMovement;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 struct FUN_008c9300_shell
 {
     void MovementTaskData_HandleEndMessage(int aiThread);
@@ -1379,8 +1379,8 @@ MobileObjectTaskletData::MobileObjectTaskletData(BSTFreeList<MobileObjectTasklet
 
 
 namespace fnv_008c8450 {
-extern ActorTaskManager UpdatingDetection;
-extern ActorTaskManager UpdatingMovement;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 
 // Clears f38 and f3c, then calls QueryPerformanceCounter on g_011dfc04 and g_011dfbe8.
 // @fnv 0x008c8450
@@ -1427,7 +1427,7 @@ FUN_008c8ae0::FUN_008c8ae0(int a) : FUN_008c82e0(a)
 
 namespace fnv_008c8b70 {
 
-extern ActorTaskManager UpdatingDetection;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
 extern Actor* g_thePlayer;
 void HighProcess_ClearWanderStarted();
 
@@ -1450,9 +1450,9 @@ void ResetPackageTaskMethods::Run(unsigned int auiUnused)
 }  // namespace fnv_008c8b70
 
 namespace fnv_008c90a0 {
-extern ActorTaskManager UpdatingDetection;
-extern ActorTaskManager UpdatingMovement;
-extern ActorTaskManager UpdatingActors;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 
 // Clears f3c and queries the three performance counters with argument 0.
 // @fnv 0x008c90a0

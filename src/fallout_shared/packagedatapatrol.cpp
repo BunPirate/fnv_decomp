@@ -181,8 +181,8 @@ extern "C" void* __cdecl memset(void* dest, int value, unsigned int count);
 // pdb: class Date, size 0x4, 2 members
 struct Date
 {
-    unsigned char sDate;
-    unsigned short sYear;
+    unsigned char sDate; // src: XBOX_RETAIL_PDB +0x0 (old: b)
+    unsigned short sYear; // src: XBOX_RETAIL_PDB +0x2 (old: pad)
     ~Date();
 };
 bool __cdecl TESForm_QEndianSwapOnSave();

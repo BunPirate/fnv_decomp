@@ -8,6 +8,6 @@ class ActorsScriptTaskData : public MobileObjectTaskletData
 public:
     ActorsScriptTaskData(BSTFreeList<MobileObjectTaskletContext>* apList);
 
-    BSSimpleList<MobileObject*>* pprevmoblist;
-    unsigned int iUpdated;
+    BSSimpleList<MobileObject*>* pprevmoblist; // src: XBOX_RETAIL_PDB +0x38 (old: pPrevObjectList)
+    unsigned int iUpdated; // src: XBOX_RETAIL_PDB +0x3c (old: uiRunCount)
 };

@@ -24,13 +24,13 @@ public:
     virtual unsigned int GetListenerID();                   // 0x2C 0x00aeab70
     virtual void SetRolloffFactor(float afRolloffFactor);   // 0x30 0x00aeab90
 
-    NiPoint3 ListenerPosition;    // +0x04
-    NiPoint3 FrontOrientation;    // +0x10
-    NiPoint3 TopOrientation;             // +0x1C
-    NiPoint3 vVelocity;                  // +0x28
-    unsigned int dwTimeLastUpdated;     // +0x34
-    float fVelocity;                   // +0x38
-    float fRolloffFactor;           // +0x3C
-    float fGain;          // +0x40
-    unsigned int iEvironmentType;  // +0x44
+    NiPoint3 ListenerPosition;    // +0x04 // src: XBOX_RETAIL_PDB +0x4 (old: m_kListenerPosition)
+    NiPoint3 FrontOrientation;    // +0x10 // src: XBOX_RETAIL_PDB +0x10 (old: m_kListenerVelocity)
+    NiPoint3 TopOrientation;             // +0x1C // src: XBOX_RETAIL_PDB +0x1c (old: m_kForward)
+    NiPoint3 vVelocity;                  // +0x28 // src: XBOX_RETAIL_PDB +0x28 (old: m_kUp)
+    unsigned int dwTimeLastUpdated;     // +0x34 // src: XBOX_RETAIL_PDB +0x34 (old: m_uiListenerID)
+    float fVelocity;                   // +0x38 // src: XBOX_RETAIL_PDB +0x38 (old: m_fGain)
+    float fRolloffFactor;           // +0x3C // src: XBOX_RETAIL_PDB +0x3c (old: m_fDopplerScale)
+    float fGain;          // +0x40 // src: XBOX_RETAIL_PDB +0x40 (old: m_fDistanceScale)
+    unsigned int iEvironmentType;  // +0x44 // src: XBOX_RETAIL_PDB +0x44 (old: m_uiListenerFlags)
 };

@@ -26,7 +26,7 @@ public:
     virtual ActorValue::Index GetActorValue();
     virtual void ApplyActorValueModifier(Actor* apActor, float afModifier, ActorValue::Index aeOverrideActorValue);
 
-    ActorValue::Index eWhichActorValue;
+    ActorValue::Index eWhichActorValue; // src: XBOX_RETAIL_PDB +0x48 (old: m_eActorValue)
 
     ValueModifierEffect(void*, void*, void*);
     float GetModifiedMagnitude(float afMagnitude);

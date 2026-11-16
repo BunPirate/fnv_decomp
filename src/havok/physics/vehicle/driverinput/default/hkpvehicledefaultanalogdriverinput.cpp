@@ -22,10 +22,10 @@ class hkpVehicleDriverInput : public hkReferencedObject
 class hkpVehicleDefaultAnalogDriverInput : public hkpVehicleDriverInput
 {
   public:
-    hkReal m_slopeChangePointX;
-    hkReal m_initialSlope;
-    hkReal m_deadZone;
-    hkBool m_autoReverse;
+    hkReal m_slopeChangePointX; // src: XBOX_RETAIL_PDB +0x8 (old: m_fSlopeUp)
+    hkReal m_initialSlope; // src: XBOX_RETAIL_PDB +0xc (old: m_fDeadZone)
+    hkReal m_deadZone; // src: XBOX_RETAIL_PDB +0x10 (old: m_fSlopeDown)
+    hkBool m_autoReverse; // src: XBOX_RETAIL_PDB +0x14 (old: m_bAutoReverse)
 
     hkpVehicleDefaultAnalogDriverInput();
     virtual ~hkpVehicleDefaultAnalogDriverInput();
@@ -252,10 +252,10 @@ inline void* __cdecl hkReferencedObject::operator new(std::size_t nbytes)
 class hkpVehicleDriverInputAnalogStatus : public hkReferencedObject
 {
   public:
-    float m_positionX;
-    float m_positionY;
-    hkBool m_handbrakeButtonPressed;
-    hkBool m_reverseButtonPressed;
+    float m_positionX; // src: XBOX_RETAIL_PDB +0x8 (old: m_fPositionX)
+    float m_positionY; // src: XBOX_RETAIL_PDB +0xc (old: m_fPositionY)
+    hkBool m_handbrakeButtonPressed; // src: XBOX_RETAIL_PDB +0x10 (old: m_bFlag)
+    hkBool m_reverseButtonPressed; // src: XBOX_RETAIL_PDB +0x11 (old: m_bReverseButtonPressed)
 
     virtual ~hkpVehicleDriverInputAnalogStatus();
     hkpVehicleDriverInputAnalogStatus* clone_00e43a60() const;

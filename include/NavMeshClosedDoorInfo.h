@@ -4,8 +4,8 @@
 class NavMeshClosedDoorInfo
 {
 public:
-    unsigned int DoorFormID;
-    unsigned short iTriangleIndex;
+    unsigned int DoorFormID; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiDoorFormID)
+    unsigned short iTriangleIndex; // src: XBOX_RETAIL_PDB +0x4 (old: m_usDoorTriangleIndex)
     unsigned char layoutPadding6[2];
 
     NavMeshClosedDoorInfo();

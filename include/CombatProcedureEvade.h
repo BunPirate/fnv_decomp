@@ -6,7 +6,7 @@
 class CombatProcedureEvade : public CombatProcedure
 {
 public:
-    unsigned char eState[0x08];
+    unsigned char eState[0x08]; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
 
     CombatProcedureEvade(int);
 

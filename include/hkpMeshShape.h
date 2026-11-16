@@ -37,12 +37,12 @@ public:
     virtual void vf13();
 
     char pad18[0x8];
-    hkVector4 m_scaling;
-    hkInt32 m_numBitsForSubpartIndex;
-    hkArray<hkpMeshShapeSubpart> m_subparts;
-    hkArray<hkUint16> m_weldingInfo;
-    hkUint8 m_weldingType;
+    hkVector4 m_scaling; // src: XBOX_RETAIL_PDB +0x20 (old: m_kScaling)
+    hkInt32 m_numBitsForSubpartIndex; // src: XBOX_RETAIL_PDB +0x30 (old: m_iNumBitsForSubpartIndex)
+    hkArray<hkpMeshShapeSubpart> m_subparts; // src: XBOX_RETAIL_PDB +0x34 (old: m_kSubparts)
+    hkArray<hkUint16> m_weldingInfo; // src: XBOX_RETAIL_PDB +0x40 (old: m_kWeldingInfo)
+    hkUint8 m_weldingType; // src: XBOX_RETAIL_PDB +0x4c (old: m_eWeldingType)
     char pad4D[0x3];
-    hkReal m_radius;
-    hkInt32 m_pad[3];
+    hkReal m_radius; // src: XBOX_RETAIL_PDB +0x50 (old: m_fSphereRadius)
+    hkInt32 m_pad[3]; // src: XBOX_RETAIL_PDB +0x54 (old: m_auiShapeKeys)
 };

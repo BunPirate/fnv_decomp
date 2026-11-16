@@ -6,8 +6,8 @@
 class NiFrustumPlanes
 {
 public:
-    NiPlane m_akCullingPlanes[6];
-    unsigned int m_uiActivePlanes;
+    NiPlane m_akCullingPlanes[6]; // src: XBOX_RETAIL_PDB +0x0 (old: m_akPlanes)
+    unsigned int m_uiActivePlanes; // src: XBOX_RETAIL_PDB +0x60 (old: m_uiActivePlaneMask)
 
     NiFrustumPlanes() : m_uiActivePlanes(63) {}
 

@@ -13,7 +13,7 @@ public:
     virtual void Update_00af3340();
     virtual bool vf10(void*);
 
-    unsigned char cTitle[0x94];
+    unsigned char cTitle[0x94]; // src: XBOX_RETAIL_PDB +0x4 (old: storage)
 
     void vfn_00();
     void vfn_04();

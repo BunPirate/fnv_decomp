@@ -388,9 +388,9 @@ int __cdecl BGSDistantTreeBlockLoadTask_ctor(char* pcBuffer, Fake076* a2, int iL
 class BGSDistantTreeBlock::InstanceData
 {
 public:
-    unsigned char Pos[0x18];
-    int uiGroup;
-    unsigned char bHidden;
+    unsigned char Pos[0x18]; // src: XBOX_RETAIL_PDB +0x0 (old: pad)
+    int uiGroup; // src: XBOX_RETAIL_PDB +0x18 (old: f18)
+    unsigned char bHidden; // src: XBOX_RETAIL_PDB +0x1c (old: f1c)
 };
 // Looks up aID in map; if found, clears f1c on the instance and on the instance referenced by arr at f18.
 // @fnv 0x006f92a0

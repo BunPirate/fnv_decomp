@@ -79,7 +79,7 @@ void FakeTransformController::NiTransformController_LoadBinary(NiStream& kStream
         kStream.ResetStreamState();
 }
 
-extern int NiBlendAccumTransformInterpolator_ms_RTTI;
+extern int NiBlendAccumTransformInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f371c (old: g_011f371c)
 
 // @fnv 0x00a36480
 // src: COMMUNITY 0x00a36480
@@ -538,7 +538,7 @@ struct QuatXf_00a36680
 extern NiPoint3 DAT_011a8400;
 extern NiQuaternion DAT_011f3704;
 extern float DAT_01096b8c;
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 struct Flags_00a36680
 {
     bool b0 : 1;

@@ -205,9 +205,9 @@ public:
     BGSVoiceType* GetVoiceType();
 
     ActorBaseAttributes actorData;
-    TESLevItem* pDeathItem;
-    BGSVoiceType* pVoiceType;
-    TESForm* pTemplateForm;
-    int iChangeFlags;
-    BSSimpleList<FactionReaction*> listFactions;
+    TESLevItem* pDeathItem; // src: XBOX_RETAIL_PDB +0x1c (old: m_pBaseTemplateForm)
+    BGSVoiceType* pVoiceType; // src: XBOX_RETAIL_PDB +0x20 (old: m_kFactionList)
+    TESForm* pTemplateForm; // src: XBOX_RETAIL_PDB +0x24 (old: m_ppTemplateForms)
+    int iChangeFlags; // src: XBOX_RETAIL_PDB +0x28 (old: m_pDeathItem)
+    BSSimpleList<FactionReaction*> listFactions; // src: XBOX_RETAIL_PDB +0x2c (old: m_pVoiceType)
 };

@@ -7,7 +7,7 @@
 #include "../../../../include/NiStream.h"
 #include "../../../../include/NiObject.h"
 
-extern "C" void* NiPSysEmitterCtlrData_ms_RTTI;
+extern "C" void* NiPSysEmitterCtlrData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202760 (old: g_01202760)
 
 // @fnv 0x00c2baa0
 // src: COMMUNITY 0x00c2baa0
@@ -27,11 +27,11 @@ class NiPSysEmitterCtlrData : public NiObject
     unsigned int m_uiNumBirthRateKeys;
     unsigned char* m_pkBirthRateKeys;
     int m_eBirthRateKeyType;
-    unsigned char m_ucBirthRateSize;
+    unsigned char m_ucBirthRateSize; // src: XBOX_RETAIL_PDB +0x14 (old: m_ucBirthRateKeySize)
     unsigned int m_uiNumEmitterActiveKeys;
     unsigned char* m_pkEmitterActiveKeys;
     unsigned int m_eEmitterActiveKeyType;
-    unsigned char m_ucEmitterActiveSize;
+    unsigned char m_ucEmitterActiveSize; // src: XBOX_RETAIL_PDB +0x24 (old: m_ucEmitterActiveKeySize)
 
     void ReplaceBirthRateKeys(void* pkKeys, unsigned int uiNumKeys, int eType);
     void ReplaceEmitterActiveKeys(void* pkKeys, unsigned int uiNumKeys, int eType);

@@ -73,10 +73,10 @@ public:
     void RemoveFirstSoundEntryByOwner(int state);
     void SaveGame(CombatWriter* apSaveGameBuffer, SavedCombatState* apGroup);
 
-    CombatWorldStateListNode ExecutionConditions;
-    CombatWorldStateListNode Preconditions;
+    CombatWorldStateListNode ExecutionConditions; // src: XBOX_RETAIL_PDB +0x4 (old: m_kFirstSoundEntryNode)
+    CombatWorldStateListNode Preconditions; // src: XBOX_RETAIL_PDB +0xc (old: m_kActionWorldStateNode)
     CombatWorldStateListNode Effects;
-    CombatWorldStateListNode PossibleEffects;
+    CombatWorldStateListNode PossibleEffects; // src: XBOX_RETAIL_PDB +0x1c (old: m_kSecondSoundEntryNode)
     COMBAT_ACTION eType;
     unsigned int iFlags;
 };

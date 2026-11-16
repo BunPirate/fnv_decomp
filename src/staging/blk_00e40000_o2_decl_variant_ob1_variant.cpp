@@ -45,12 +45,12 @@ struct GlobalObjectO2_00d472a0
 {
     int x;
 };
-extern GlobalObjectO2_00d472a0 hkxSparselyAnimatedBoolClass;
+extern GlobalObjectO2_00d472a0 hkxSparselyAnimatedBoolClass; // src: XBOX_RETAIL_PDB 0x0126e600 (old: DAT_0126e600/g_0126e600)
 void __stdcall FindResourceWithExpectedName(int, GlobalObjectO2_00d472a0*);
 void __stdcall Runtime_ForwardCall_00e5c5b0(int a);
 extern "C" void __stdcall FindResourceWithExpectedName(int, int);
 struct GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 hkxSparselyAnimatedEnumClass;
+extern GlobalObjectO2_00d472a0 hkxSparselyAnimatedEnumClass; // src: XBOX_RETAIL_PDB 0x0126c5f0 (old: DAT_0126c5f0/g_0126c5f0)
 void __stdcall Runtime_ForwardCall_00e5c5f0(int a);
 struct FUN_00e459c0_class
 {
@@ -145,11 +145,11 @@ extern const char* const g_0126c5f0_arg1;
 void __stdcall FindResourceWithExpectedName(int, int);
 void __stdcall Runtime_ForwardCall_00e5c5d0(int a);
 struct GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 hkxAnimatedFloatClass;
+extern GlobalObjectO2_00d472a0 hkxAnimatedFloatClass; // src: XBOX_RETAIL_PDB 0x0126eb10 (old: DAT_0126eb10/g_0126eb10)
 void __stdcall FindResourceWithExpectedName(int a, GlobalObjectO2_00d472a0* b);
 void __stdcall Runtime_ForwardCall_00e5c630(int a);
 struct GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 hkxAnimatedMatrixClass;
+extern GlobalObjectO2_00d472a0 hkxAnimatedMatrixClass; // src: XBOX_RETAIL_PDB 0x0126eac8 (old: DAT_0126eac8/g_0126eac8)
 void __stdcall FindResourceWithExpectedName(int, GlobalObjectO2_00d472a0*);
 void __stdcall CallWithGlobalObject(int a);
 struct FUN_00e406d0_cls

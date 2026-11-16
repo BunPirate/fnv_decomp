@@ -3275,7 +3275,7 @@ void C87A10WorldObject::bhkAction_Link(bool abAttach)
     UpdateReference(abAttach);
 }
 
-extern int WeaponObject_ms_RTTI;
+extern int WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 // @fnv 0x00c88370
 // src: COMMUNITY 0x00c88370
@@ -3334,7 +3334,7 @@ FUN_00c88380::FUN_00c88380(hkReferencedObject* pkObject)
     ++g_iC88380WrapperCount;
 }
 
-extern int bhkLimitedHingeConstraint_ms_RTTI;
+extern int bhkLimitedHingeConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126831c (old: DAT_0126831c/g_0126831c)
 
 // @fnv 0x00c88400
 // src: COMMUNITY 0x00c88400
@@ -11659,7 +11659,7 @@ int C8B540Group::GetSelectedResult(int iArg)
     return result;
 }
 
-extern int bhkBlendCollisionObjectAddRotation_ms_RTTI;
+extern int bhkBlendCollisionObjectAddRotation_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012681cc (old: DAT_012681cc/g_012681cc)
 
 // @fnv 0x00c8ff70
 // src: COMMUNITY 0x00c8ff70
@@ -15349,7 +15349,7 @@ struct TypeInfoLocal
     const char* name;
     TypeInfoLocal* base;
 };
-extern TypeInfoLocal g_012682e8, g_012682dc, g_012686a0, bhkBoxShape_ms_RTTI;
+extern TypeInfoLocal g_012682e8, g_012682dc, g_012686a0, bhkBoxShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268264 (old: g_01268264/g_aabbPhantomRttiName/ms_kRTTI)
 struct ShapeLocal
 {
     virtual void v0();
@@ -15965,9 +15965,9 @@ extern const double DAT_01017a40;
 // pdb: structure BLENDKEY, size 0xc, 3 members
 struct BLENDKEY
 {
-    float fTime;
-    float fGain;
-    float fVelGain;
+    float fTime; // src: XBOX_RETAIL_PDB +0x0 (old: fA)
+    float fGain; // src: XBOX_RETAIL_PDB +0x4 (old: fB)
+    float fVelGain; // src: XBOX_RETAIL_PDB +0x8 (old: fC)
     void Set(float a, float b, float c)
     {
         fTime = a;

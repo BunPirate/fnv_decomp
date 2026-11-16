@@ -16,11 +16,11 @@ class NiTransformData : public NiObject
     unsigned short m_usNumScaleKeys;
     unsigned char layoutPaddingE[2];
     NiAnimationKey::KeyType m_eRotationKeyType;
-    NiAnimationKey::KeyType m_ePosType;
-    NiAnimationKey::KeyType m_eScaleType;
-    unsigned char m_ucRotSize;
-    unsigned char m_ucPosSize;
-    unsigned char m_ucScaleSize;
+    NiAnimationKey::KeyType m_ePosType; // src: XBOX_RETAIL_PDB +0x14 (old: m_ePositionKeyType)
+    NiAnimationKey::KeyType m_eScaleType; // src: XBOX_RETAIL_PDB +0x18 (old: m_eScaleKeyType)
+    unsigned char m_ucRotSize; // src: XBOX_RETAIL_PDB +0x1c (old: m_ucRotationKeySize)
+    unsigned char m_ucPosSize; // src: XBOX_RETAIL_PDB +0x1d (old: m_ucPositionKeySize)
+    unsigned char m_ucScaleSize; // src: XBOX_RETAIL_PDB +0x1e (old: m_ucScaleKeySize)
     unsigned char layoutPadding1F[1];
     TimedRotationKey* m_pkRotationKeys;
     PositionKeyInterpolator* m_pkPositionKeys;

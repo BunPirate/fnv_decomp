@@ -41,7 +41,7 @@ class NiAlphaProperty : public NiProperty
     void* FUN_004392f0(unsigned int flags);
 
 
-    unsigned short m_uFlags;
-    unsigned char m_ucAlphaTestRef;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_usAlphaArg)
+    unsigned char m_ucAlphaTestRef; // src: XBOX_RETAIL_PDB +0x1a (old: m_ucAlphaArg2)
     unsigned char m_ucPad1b;
 };

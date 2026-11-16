@@ -2019,7 +2019,7 @@ class AGListItem
     }
     static void operator delete(void* p);
 };
-class RefValueAction : public AGListItem
+class RefValueAction : public AGListItem // src: EXE (old: AGValueItem)
 {
   public:
     virtual ~RefValueAction();

@@ -65,5 +65,5 @@ public:
 
     __forceinline hkReal getRadius() const { return m_radius; }
 
-    hkReal m_radius;
+    hkReal m_radius; // src: XBOX_RETAIL_PDB +0x10 (old: m_fSphereRadius)
 };

@@ -14,7 +14,7 @@ class NiPoint3;
 class TESObjectLAND : public TESForm, public TESChildCell
 {
 public:
-    unsigned char Data[0x10];
+    unsigned char Data[0x10]; // src: XBOX_RETAIL_PDB +0x1c (old: formData)
 
     TESObjectLAND();
     void InitializeForCell(TESObjectCELL* cell);

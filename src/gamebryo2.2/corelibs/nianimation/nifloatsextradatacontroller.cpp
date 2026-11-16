@@ -193,7 +193,7 @@ char* __fastcall GetFloatsExtraDataControllerID(NiFloatsExtraDataController* con
     return controller->m_kCtlrID.m_kHandle;
 }
 
-extern float NiInterpController_INVALID_TIME;
+extern float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // @fnv 0x00a4f0c0
 void __fastcall UpdateFloatsExtraDataController(NiFloatsExtraDataController* controller, void*, float* updateData)

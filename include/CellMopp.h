@@ -14,7 +14,7 @@ namespace Local { class NiPoint3; }
 class CellMopp : public NiRefObject
 {
 public:
-    NiTObjectArray<NiPointer<bhkRigidBody> > spRigidBodyA;
+    NiTObjectArray<NiPointer<bhkRigidBody> > spRigidBodyA; // src: XBOX_RETAIL_PDB +0x8 (old: m_kThirdFollowingStreamField)
 
     virtual ~CellMopp();
 

@@ -13,7 +13,7 @@ public:
     virtual ~BGSEntryPointFunctionDataActivateChoice();
     virtual void InitItem(TESForm* apOwner);
 
-    char* pActivateChoiceLabel;
+    char* pActivateChoiceLabel; // src: XBOX_RETAIL_PDB +0x4 (old: choiceText)
     union
     {
         struct
@@ -45,7 +45,7 @@ public:
             unsigned int unk58;
         };
     };
-    unsigned short cFlags;
+    unsigned short cFlags; // src: XBOX_RETAIL_PDB +0x5c (old: flags)
     unsigned short unk5E;
 
     void InitializeComponent();

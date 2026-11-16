@@ -8,6 +8,6 @@ class NiBSplineCompPoint3Interpolator : public NiBSplinePoint3Interpolator
 public:
     virtual void LoadBinary(NiStream& kStream);
 
-    float m_afCompScalars;
+    float m_afCompScalars; // src: XBOX_RETAIL_PDB +0x2c (old: m_fSequenceOffset)
     float m_fDecodeScale;
 };

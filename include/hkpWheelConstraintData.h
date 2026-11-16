@@ -23,7 +23,7 @@ public:
     virtual void vf15();
 
     char padC[0x4];
-    hkpWheelConstraintDataAtoms m_atoms;
-    hkVector4 m_initialAxleInB;
-    hkVector4 m_initialSteeringAxisInB;
+    hkpWheelConstraintDataAtoms m_atoms; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
+    hkVector4 m_initialAxleInB; // src: XBOX_RETAIL_PDB +0x140 (old: m_kAxleDirectionInBodyB)
+    hkVector4 m_initialSteeringAxisInB; // src: XBOX_RETAIL_PDB +0x150 (old: m_kSteeringDirectionInBodyB)
 };

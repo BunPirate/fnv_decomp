@@ -29,5 +29,5 @@ public:
     void GetValue(float* value);
     void GetPoseValue(bool& value);
 
-    NiPointer<NiInterpolator> m_spInterpolator;
+    NiPointer<NiInterpolator> m_spInterpolator; // src: XBOX_RETAIL_PDB +0x34 (old: m_spControllerInterpolator)
 };

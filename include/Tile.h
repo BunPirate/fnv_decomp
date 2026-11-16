@@ -225,13 +225,13 @@ class Tile
     void Tile_PlayTileSound(int trait);
     bool RadialTile_SpecialBoundsCheck(float fx, float fy);
 
-    NiTPointerList_Tile___ xChildren;
-    BSSimpleArray<Tile__Value*, 8> xTraits;
-    BSStringT<char> xName;
+    NiTPointerList_Tile___ xChildren; // src: XBOX_RETAIL_PDB +0x4 (old: m_kChildTileList)
+    BSSimpleArray<Tile__Value*, 8> xTraits; // src: XBOX_RETAIL_PDB +0x10 (old: m_kValues)
+    BSStringT<char> xName; // src: XBOX_RETAIL_PDB +0x20 (old: StringProvider)
     Tile* pParent;
-    NiPointer<NiNode> spModel;
+    NiPointer<NiNode> spModel; // src: XBOX_RETAIL_PDB +0x2c (old: m_pRenderedNodeEntry)
     unsigned int uiFlags;
-    bool bNeedsNiUpdate;
-    bool bSpeechChallengeFailure;
+    bool bNeedsNiUpdate; // src: XBOX_RETAIL_PDB +0x34 (old: m_bFlagAfterUiFlags)
+    bool bSpeechChallengeFailure; // src: XBOX_RETAIL_PDB +0x35 (old: m_bSpeechChallengeFailure)
     unsigned char layoutPadding36[2];
 };

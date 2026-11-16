@@ -16,7 +16,7 @@ public:
     unsigned int unk44;
     unsigned int unk48;
     unsigned int unk4C;
-    const void* m_rootCollidable;
+    const void* m_rootCollidable; // src: XBOX_RETAIL_PDB +0x50 (old: m_pRootCollidable)
 
     hkpWorldRayCastOutput()
     {

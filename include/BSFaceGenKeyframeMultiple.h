@@ -46,6 +46,6 @@ public:
     bool InsertIntoKeyframeList(NiTPointerList<BSFaceGenKeyframe*>* list);
     bool AddToCompatibleList(NiTPointerList<BSFaceGenKeyframe*>* list);
 
-    float* pQuantities;
-    unsigned int iNumQuantities;
+    float* pQuantities; // src: XBOX_RETAIL_PDB +0xc (old: m_pfFaceGenValues)
+    unsigned int iNumQuantities; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiFaceGenValueCount)
 };

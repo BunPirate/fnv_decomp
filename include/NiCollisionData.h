@@ -44,16 +44,16 @@ class NiCollisionData : public NiCollisionObject
     int m_ePropagationMode;
     int m_eCollisionMode;
     NiBoundingVolume* m_pkModelABV;
-    NiBoundingVolume* m_pkWorldABV;
-    void* m_pkOBBRoot;
-    unsigned int m_pfnCollideCallback;
-    unsigned int m_pvCollideCallbackData;
-    void* m_pkWorldVertex;
-    void* m_pkWorldNormal;
-    unsigned char m_bWorldVerticesNeedUpdate;
-    unsigned char m_bWorldNormalsNeedUpdate;
-    unsigned short m_usNumVertices;
-    unsigned short m_usNumTriangles;
-    unsigned char m_bAuxCallbacks;
+    NiBoundingVolume* m_pkWorldABV; // src: XBOX_RETAIL_PDB +0x30 (old: unk30)
+    void* m_pkOBBRoot; // src: XBOX_RETAIL_PDB +0x34 (old: m_pCollisionObject)
+    unsigned int m_pfnCollideCallback; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    unsigned int m_pvCollideCallbackData; // src: XBOX_RETAIL_PDB +0x3c (old: unk3C)
+    void* m_pkWorldVertex; // src: XBOX_RETAIL_PDB +0x40 (old: m_pWorldVertices)
+    void* m_pkWorldNormal; // src: XBOX_RETAIL_PDB +0x44 (old: unk44)
+    unsigned char m_bWorldVerticesNeedUpdate; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
+    unsigned char m_bWorldNormalsNeedUpdate; // src: XBOX_RETAIL_PDB +0x49 (old: unk49)
+    unsigned short m_usNumVertices; // src: XBOX_RETAIL_PDB +0x4a (old: unk4A)
+    unsigned short m_usNumTriangles; // src: XBOX_RETAIL_PDB +0x4c (old: unk4C)
+    unsigned char m_bAuxCallbacks; // src: XBOX_RETAIL_PDB +0x4e (old: unk4E)
     unsigned char unk4F;
 };

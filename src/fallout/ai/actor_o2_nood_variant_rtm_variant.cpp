@@ -3600,7 +3600,7 @@ using ::_mm_mul_ps;
 }
 typedef RecordHardware::LocalM128 ReviewedVector;
 struct ReviewedRTTI { const char* name; ReviewedRTTI* parent; };
-extern ReviewedRTTI WeaponObject_ms_RTTI;
+extern ReviewedRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 struct ReviewedNode {
     virtual void slot00();
     virtual void slot04();

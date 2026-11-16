@@ -3,7 +3,7 @@
 
 // src/bsshader/tileshaderproperty.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/bsshader/tileshaderproperty.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
-extern "C" void* TileShaderProperty_ms_RTTI;
+extern "C" void* TileShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007d8 (old: DAT_012007d8/g_012007d8)
 void* __cdecl TileShaderProperty_GetRTTI();
 
 extern float DAT_0106ec38;

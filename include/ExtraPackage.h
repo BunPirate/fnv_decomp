@@ -56,7 +56,7 @@ public:
             unsigned short unk16;
         };
     };
-    char bActionComplete;
-    char bActivated;
-    unsigned short bDoneOnce;
+    char bActionComplete; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    char bActivated; // src: XBOX_RETAIL_PDB +0x19 (old: unk19)
+    unsigned short bDoneOnce; // src: XBOX_RETAIL_PDB +0x1a (old: unk1A)
 };

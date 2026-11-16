@@ -71,8 +71,8 @@ class hkpCdPointCollector;
 class hkpCachingShapePhantom : public hkpShapePhantom
 {
 public:
-    hkArray<CollisionAgentPair> m_collisionDetails;
-    hkBool m_orderDirty;
+    hkArray<CollisionAgentPair> m_collisionDetails; // src: XBOX_RETAIL_PDB +0x160 (old: m_kCollisionDetails)
+    hkBool m_orderDirty; // src: XBOX_RETAIL_PDB +0x16c (old: m_bOrderDirty)
 
     static void* operator new(unsigned int uiSize) throw();
     static void operator delete(void* p) throw();
@@ -471,16 +471,16 @@ inline hkpCollisionInput::hkpCollisionInput(const hkpCollisionInput& other)
 // pdb: structure hkpProcessCollisionInput, size 0x80, bases: hkpCollisionInput, 7 members
 struct hkpProcessCollisionInput : public hkpCollisionInput
 {
-    hkReal m_stepInfo;
+    hkReal m_stepInfo; // src: XBOX_RETAIL_PDB +0x50 (old: m_uiStartTime)
     hkReal m_fEndTime;
     hkReal m_fTimeStep;
     hkReal m_fInverseDeltaTime;
-    hkpCollisionQualityInfo* m_collisionQualityInfo;
-    void* m_spareAgentSector;
-    void* m_dynamicsInfo;
-    hkBool m_enableDeprecatedWelding;
-    hkBool m_allowToSkipConfirmedCallbacks;
-    void* m_config;
+    hkpCollisionQualityInfo* m_collisionQualityInfo; // src: XBOX_RETAIL_PDB +0x60 (old: m_pCollisionQualityInfo)
+    void* m_spareAgentSector; // src: XBOX_RETAIL_PDB +0x64 (old: m_pAgent1nSector)
+    void* m_dynamicsInfo; // src: XBOX_RETAIL_PDB +0x68 (old: m_pCollisionFilter)
+    hkBool m_enableDeprecatedWelding; // src: XBOX_RETAIL_PDB +0x6c (old: m_bEnableDeprecatedWelding)
+    hkBool m_allowToSkipConfirmedCallbacks; // src: XBOX_RETAIL_PDB +0x6d (old: m_bAllowToSkipConfirmedCallbacks)
+    void* m_config; // src: XBOX_RETAIL_PDB +0x70 (old: m_pConfiguration)
 
     __forceinline static void* operator new(size_t, void* storage) { return storage; }
 

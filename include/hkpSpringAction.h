@@ -10,13 +10,13 @@ typedef float hkReal;
 class hkpSpringAction : public hkpBinaryAction
 {
 public:
-    hkVector4 m_lastForce;
-    hkVector4 m_positionAinA;
-    hkVector4 m_positionBinB;
-    hkReal m_restLength;
-    hkReal m_strength;
-    hkReal m_damping;
-    hkBool m_onCompression;
-    hkBool m_onExtension;
+    hkVector4 m_lastForce; // src: XBOX_RETAIL_PDB +0x20 (old: m_kLastForce)
+    hkVector4 m_positionAinA; // src: XBOX_RETAIL_PDB +0x30 (old: m_kPositionA)
+    hkVector4 m_positionBinB; // src: XBOX_RETAIL_PDB +0x40 (old: m_kPositionB)
+    hkReal m_restLength; // src: XBOX_RETAIL_PDB +0x50 (old: m_fRestLength)
+    hkReal m_strength; // src: XBOX_RETAIL_PDB +0x54 (old: m_fSpringStrength)
+    hkReal m_damping; // src: XBOX_RETAIL_PDB +0x58 (old: m_fMotorDamping)
+    hkBool m_onCompression; // src: XBOX_RETAIL_PDB +0x5c (old: m_bSpringEnabled)
+    hkBool m_onExtension; // src: XBOX_RETAIL_PDB +0x5d (old: m_bElastic)
     char pad5E[0x2];
 };

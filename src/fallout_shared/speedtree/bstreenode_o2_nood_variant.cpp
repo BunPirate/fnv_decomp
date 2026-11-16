@@ -1052,7 +1052,7 @@ struct TlsGuard_t
         thread->m_2b4 = m_saved;
     }
 };
-extern unsigned int bhkMultiSphereShape_ms_RTTI;
+extern unsigned int bhkMultiSphereShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012683e0 (old: DAT_012683e0/g_012683e0)
 extern float DAT_011b1cd4;
 extern char str_010c8900[];
 extern char str_010c88f8[];

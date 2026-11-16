@@ -24,8 +24,8 @@ class hkStepInfo
     hkStepInfo(float startTime, float endTime) { set(startTime, endTime); }
 
   public:
-    __declspec(align(16)) hkPadSpu<float> m_startTime;   // hkPadSpu<hkTime> m_startTime
-    hkPadSpu<float> m_endTime;                            // hkPadSpu<hkTime> m_endTime
-    hkPadSpu<float> m_deltaTime;                           // hkPadSpu<hkReal> m_deltaTime
-    hkPadSpu<float> m_invDeltaTime;                   // hkPadSpu<hkReal> m_invDeltaTime
+    __declspec(align(16)) hkPadSpu<float> m_startTime;   // hkPadSpu<hkTime> m_startTime // src: XBOX_RETAIL_PDB +0x0 (old: m_uiStartTime)
+    hkPadSpu<float> m_endTime;                            // hkPadSpu<hkTime> m_endTime // src: XBOX_RETAIL_PDB +0x4 (old: m_fEndTime)
+    hkPadSpu<float> m_deltaTime;                           // hkPadSpu<hkReal> m_deltaTime // src: XBOX_RETAIL_PDB +0x8 (old: m_fTimeStep)
+    hkPadSpu<float> m_invDeltaTime;                   // hkPadSpu<hkReal> m_invDeltaTime // src: XBOX_RETAIL_PDB +0xc (old: m_fInverseDeltaTime)
 };

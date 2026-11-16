@@ -335,10 +335,10 @@ struct AudioMessageStack
     void SetBottomless(bool);
     void* __vecDelDtor(unsigned int);
     unsigned int iCount;
-    bool bBottomless;
+    bool bBottomless; // src: XBOX_RETAIL_PDB +0x4 (old: m_bBottomless)
     char _pad_5[3];
     SoundMessageRecord* pTop;
-    unsigned int iTimeLastAllocated;
+    unsigned int iTimeLastAllocated; // src: XBOX_RETAIL_PDB +0xc (old: m_uiStackLimit)
 };
 typedef char _sizecheck_AudioMessageStack[sizeof(AudioMessageStack) == 16 ? 1 : -1];
 struct FUN_00ae7510_shell : public AudioMessageStack

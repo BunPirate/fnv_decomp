@@ -2184,12 +2184,12 @@ public:
         int unk2058;
         const PathingRequest* m_pPathingRequest;
     };
-    int StartNode;
+    int StartNode; // src: XBOX_RETAIL_PDB +0x205c (old: unk205c)
     int unk2060;
     int unk2064;
     int unk2068;
     int unk206c;
-    int GoalNode;
+    int GoalNode; // src: XBOX_RETAIL_PDB +0x2070 (old: unk2070)
     int unk2074;
     int unk2078;
     int unk207c;
@@ -2204,7 +2204,7 @@ public:
         int unk2088;
         BSSimpleArray<NavMeshInfo*, 1024>* m_pNavMeshInfos;
     };
-    int TempDoorLock;
+    int TempDoorLock; // src: XBOX_RETAIL_PDB +0x208c (old: unk208c)
     int unk2090;
     int unk2094;
     int unk2098;

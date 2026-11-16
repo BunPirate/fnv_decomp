@@ -11,8 +11,8 @@ class TESForm;
 class LocationDescriptor
 {
   public:
-    char eLocType;
-    unsigned int iRad;
+    char eLocType; // src: XBOX_RETAIL_PDB +0x0 (old: m_ucLocationType)
+    unsigned int iRad; // src: XBOX_RETAIL_PDB +0x4 (old: m_pLocationData)
     union
     {
         TESForm* pObject;

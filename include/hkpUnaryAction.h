@@ -13,5 +13,5 @@ public:
     hkpUnaryAction(hkpEntity* entity, unsigned int userData);
     hkpUnaryAction(FinishingFlag flag);
 
-    hkpEntity* m_entity;
+    hkpEntity* m_entity; // src: XBOX_RETAIL_PDB +0x18 (old: m_pEntity)
 };

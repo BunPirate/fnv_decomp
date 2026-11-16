@@ -12,5 +12,5 @@ public:
     hkpConstraintChainInstanceAction(hkpConstraintInstance* pkInstance) throw();
     virtual ~hkpConstraintChainInstanceAction() throw();
 
-    hkpConstraintChainInstance* m_constraintInstance;
+    hkpConstraintChainInstance* m_constraintInstance; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintChainInstance)
 };

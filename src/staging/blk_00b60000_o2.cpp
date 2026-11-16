@@ -984,7 +984,7 @@ void FUN_00b6f520_class::BSShaderNoLightingProperty_PrecacheTextures()
     }
 }
 
-extern void* BSShaderNoLightingProperty_ms_RTTI;
+extern void* BSShaderNoLightingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa05c (old: g_011fa05c/g_kFalloffRTTI)
 // @fnv 0x00b6fd00
 // src: XBOX_PDB 0x00b6fd00
 void* __cdecl BSShaderNoLightingProperty_GetRTTI()
@@ -1343,7 +1343,7 @@ void B60A50Effect::CloneTo(B60A50Effect* pkDest, B60A50CloningProcess& kCloning)
     pkDest->m_iFlags = m_iFlags;
 }
 
-extern int TallGrassShaderProperty_ms_RTTI;
+extern int TallGrassShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f9f00 (old: g_011f9f00/g_unk011f9f00)
 
 // @fnv 0x00b60d60
 // src: COMMUNITY 0x00b60d60
@@ -7436,7 +7436,7 @@ FUN_00b6abb0* EntityManagerB6::CreateObject(int context)
     return object;
 }
 
-extern NiRTTI NiRenderedCubeMap_ms_RTTI;
+extern NiRTTI NiRenderedCubeMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012708e4 (old: DAT_012708e4/g_012708e4/g_sentinel_012708e4)
 
 struct FUN_00b6b180_Fmt
 {
@@ -13497,7 +13497,7 @@ struct Rtti
     const char* name;
     Rtti* parent;
 };
-extern Rtti NiRenderedCubeMap_ms_RTTI;
+extern Rtti NiRenderedCubeMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012708e4 (old: DAT_012708e4/g_012708e4/g_sentinel_012708e4)
 struct Ref
 {
     virtual void Slot0();

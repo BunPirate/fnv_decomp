@@ -725,11 +725,11 @@ float __cdecl InterfaceManager_GetScreenSafeY(void);
 extern const double DAT_0106e7f8;
 
 // @fnv 0x0078b9b0
-// src: EXE 0x0078b9b0
-// pdb: LoadingMenu::CalcLoadScreenTypeTextWindowFaces | LoadingMenu.obj | retail, object-file run extension, high, not renamed: the function's own message names it LoadingMenu::CalcLoadScreenTypeTextWindowVerts
+// src: XBOX_DEBUG_PDB 0x0078b9b0 (was EXE)
+// pdb: LoadingMenu::CalcLoadScreenTypeTextWindowFaces | LoadingMenu.obj | retail, object-file run extension, high; confirmed by the debug build, whose CalcLoadScreenTypeTextWindowFaces prints the same warning (the message keeps the older name CalcLoadScreenTypeTextWindowVerts; neither PDB has a Verts function)
 // pdb params: apData
 // pdb locals: fSafeWidth, fConvertedYPos, fSafeHeight, fConvertedHeight, fCurrentScreenWidth, fCurrentScreenHeight, fConvertedWidth, fConvertedXPos
-void LoadingMenu::CalcLoadScreenTypeTextWindowVerts(void* apData)
+void LoadingMenu::CalcLoadScreenTypeTextWindowFaces(void* apData)
 {
     if (apData == 0)
     {
@@ -2611,7 +2611,7 @@ void LoadingMenu::UpdatePlayerTileSettings(BGSPerkEntry* pLoadScreen)
     if (((fnv_0078bb60::PerkEntryX*)pLoadScreen)->FUN_005f36f0())
     {
         int x = ((fnv_0078bb60::PerkEntryX*)pLoadScreen)->TESLoadScreen_GetTypeData();
-        CalcLoadScreenTypeTextWindowVerts(x);
+        CalcLoadScreenTypeTextWindowFaces(x);
         switch (((fnv_0078bb60::PerkEntryX*)pLoadScreen)->FUN_005a7130())
         {
         case 4:

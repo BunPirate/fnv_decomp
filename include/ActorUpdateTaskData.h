@@ -10,7 +10,7 @@ class ActorUpdateTaskData : public MobileObjectTaskletData
 public:
     ActorUpdateTaskData(BSTFreeList<MobileObjectTaskletContext>* apList);
 
-    unsigned int iUpdated;
+    unsigned int iUpdated; // src: XBOX_RETAIL_PDB +0x38 (old: uiRunCount)
 
     void UpdateActorTask(MobileObject* apMob);
 };

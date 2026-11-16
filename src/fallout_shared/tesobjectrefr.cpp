@@ -690,18 +690,18 @@ struct ModelLoader
     static int GetIOFileIndexForArchiveTypeIndex(int);
     void AddModelToMap(Model*, char*);
     void* FNV64_VectorDeletingDestructor(unsigned int);
-    void* pModelMap;
-    void* pKFModelMap;
-    void* pQueuedReferencesMap;
-    void* pReferencesToQueueMap;
-    void* pQueuedAnimIdleMap;
-    void* pQueuedReplacementKFListMap;
-    void* pQueuedHelmetMap;
-    void* pAttachDistant3DTaskQueue;
-    void* pQueuedTextureMap;
-    void* pLoadedFileMap;
-    BackgroundCloneThread* pBackgroundCloneThread;
-    bool bHasDelayedFree;
+    void* pModelMap; // src: XBOX_RETAIL_PDB +0x0 (old: m_pLoadedModelMap)
+    void* pKFModelMap; // src: XBOX_RETAIL_PDB +0x4 (old: m_pLoadedKFModelMap)
+    void* pQueuedReferencesMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_pQueuedReferenceMap)
+    void* pReferencesToQueueMap; // src: XBOX_RETAIL_PDB +0xc (old: m_pQueuedReferenceUpdateMap)
+    void* pQueuedAnimIdleMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_pQueuedAnimIdleMap)
+    void* pQueuedReplacementKFListMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pQueuedReplacementKFListMap)
+    void* pQueuedHelmetMap; // src: XBOX_RETAIL_PDB +0x18 (old: m_pQueuedHelmetMap)
+    void* pAttachDistant3DTaskQueue; // src: XBOX_RETAIL_PDB +0x1c (old: m_pDistant3DTaskQueue)
+    void* pQueuedTextureMap; // src: XBOX_RETAIL_PDB +0x20 (old: m_pQueuedTextureMap)
+    void* pLoadedFileMap; // src: XBOX_RETAIL_PDB +0x24 (old: m_pLoadedFileMap)
+    BackgroundCloneThread* pBackgroundCloneThread; // src: XBOX_RETAIL_PDB +0x28 (old: m_pBackgroundCloneThread)
+    bool bHasDelayedFree; // src: XBOX_RETAIL_PDB +0x2c (old: m_bLoadTexturesDegraded)
     char _pad_2d[3];
 };
 typedef char _sizecheck_ModelLoader[sizeof(ModelLoader) == 48 ? 1 : -1];
@@ -12304,7 +12304,7 @@ extern void FNV2062_bhkCollisionObject_FUN_006fa820_target();
 #undef FNV2062_bhkCollisionObject_FUN_006fa820
 #define FNV2062_bhkCollisionObject_FUN_006fa820 ((bhkWorldObject* (__thiscall *)(bhkCollisionObject*))FNV2062_bhkCollisionObject_FUN_006fa820_target)
 extern const void* const DAT_011f9140;
-extern NiRTTI WeaponObject_ms_RTTI;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 extern const char* const g_012683c8_arg1;
 struct RefIsActorStandIn
 {

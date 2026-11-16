@@ -20,7 +20,7 @@ public:
     virtual void Start();
     virtual void Finish();
 
-    GO spSpring;
+    GO spSpring; // src: XBOX_RETAIL_PDB +0x4c (old: m_4c)
     union
     {
         float m_50;

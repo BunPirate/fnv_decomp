@@ -971,7 +971,7 @@ struct PropHelper
 };
 void* DynamicCastByRTTI(const NiRTTI*, NiProperty*);
 extern int DAT_011f49e0;
-extern const char* const SkyShaderProperty_ms_RTTI;
+extern const char* const SkyShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005b8 (old: DAT_012005b8/g_012005b8)
 struct FUN_00642940_class
 {
     int a;
@@ -1738,8 +1738,8 @@ namespace std {
 struct exception
 {
     virtual ~exception() throw();
-    const char* _Mywhat;
-    bool _Mydofree;
+    const char* _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: message)
+    bool _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: ownsMessage)
 };
 struct bad_alloc : public exception
 {

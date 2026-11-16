@@ -7,10 +7,10 @@ class SkinStream;
 class NiSphere
 {
 public:
-    float m_kCenter;
+    float m_kCenter; // src: XBOX_RETAIL_PDB +0x0 (old: x)
     float y;
     float z;
-    float m_fRadius;
+    float m_fRadius; // src: XBOX_RETAIL_PDB +0xc (old: r)
 
     void LoadBinary(NiStream& kStream);
     void SaveBinary(NiStream& kStream);

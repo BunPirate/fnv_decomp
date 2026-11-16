@@ -9,7 +9,7 @@ class SavedCombatState;
 class CombatTarget
 {
 public:
-    char pActor[0x68];
+    char pActor[0x68]; // src: XBOX_RETAIL_PDB +0x0 (old: m_data)
 
     void SetValue(unsigned int key, unsigned int x, unsigned int y);
     bool Lookup(unsigned int key, CombatPair* val);

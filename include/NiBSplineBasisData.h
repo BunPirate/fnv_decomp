@@ -23,5 +23,5 @@ class NiBSplineBasisData : public NiObject
 
     NiBSplineBasis_float_3_& GetBSplineBasis();
 
-    BSplineBasis<float, 3> m_kBasisDegree3;
+    BSplineBasis<float, 3> m_kBasisDegree3; // src: XBOX_RETAIL_PDB +0x8 (old: m_kBSplineBasis)
 };

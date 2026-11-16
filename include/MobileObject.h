@@ -21,23 +21,23 @@ enum PROCESS_TYPE;
 class MobileObject : public TESObjectREFR
 {
 public:
-    BaseProcess* pCurrentProcess;
-    TESObjectREFR* pTalkingActivator;
-    MobileObject* pDialogueItemTarget;
-    float fUpdateTargetTimer;
-    float fSayToFailVoiceTimer;
-    bool bSpeakingDone;
-    bool bTalkingToPlayer;
-    bool bIgnoreChangeAnimationCall;
-    bool bSoundFileDone;
-    bool bVoiceFileDone;
-    bool bTalkingActivator;
-    bool bInTempChangeList;
-    bool bDoNotRunSayToCallBack;
-    char cSoundCallBackSet;
-    bool bSoundCallBackSuccess;
-    bool bUseEmotion;
-    bool bRunsInLow;
+    BaseProcess* pCurrentProcess; // src: XBOX_RETAIL_PDB +0x68 (old: m_pBaseProcess)
+    TESObjectREFR* pTalkingActivator; // src: XBOX_RETAIL_PDB +0x6c (old: m_pLinkedReference)
+    MobileObject* pDialogueItemTarget; // src: XBOX_RETAIL_PDB +0x70 (old: m_pMobileObject)
+    float fUpdateTargetTimer; // src: XBOX_RETAIL_PDB +0x74 (old: ProcessReferenceState)
+    float fSayToFailVoiceTimer; // src: XBOX_RETAIL_PDB +0x78 (old: ReferenceMobileState)
+    bool bSpeakingDone; // src: XBOX_RETAIL_PDB +0x7c (old: m_bFirstFlag)
+    bool bTalkingToPlayer; // src: XBOX_RETAIL_PDB +0x7d (old: m_bSecondBooleanValue)
+    bool bIgnoreChangeAnimationCall; // src: XBOX_RETAIL_PDB +0x7e (old: m_bThirdFlag)
+    bool bSoundFileDone; // src: XBOX_RETAIL_PDB +0x7f (old: m_bFourthBooleanValue)
+    bool bVoiceFileDone; // src: XBOX_RETAIL_PDB +0x80 (old: m_bFifthFlag)
+    bool bTalkingActivator; // src: XBOX_RETAIL_PDB +0x81 (old: m_bSixthFlag)
+    bool bInTempChangeList; // src: XBOX_RETAIL_PDB +0x82 (old: m_bSeventhFlag)
+    bool bDoNotRunSayToCallBack; // src: XBOX_RETAIL_PDB +0x83 (old: m_bEighthFlag)
+    char cSoundCallBackSet; // src: XBOX_RETAIL_PDB +0x84 (old: m_cCharacterValue)
+    bool bSoundCallBackSuccess; // src: XBOX_RETAIL_PDB +0x85 (old: m_bNinthFlag)
+    bool bUseEmotion; // src: XBOX_RETAIL_PDB +0x86 (old: m_bTenthFlag)
+    bool bRunsInLow; // src: XBOX_RETAIL_PDB +0x87 (old: m_bThirdActorFlag)
 
     virtual void StartHighProcess(void);
     virtual void Unk_91(void);

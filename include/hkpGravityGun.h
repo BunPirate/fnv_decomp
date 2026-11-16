@@ -17,14 +17,14 @@ class GunArg3;
 class hkpGravityGun : public hkpFirstPersonGun
 {
 public:
-    hkArray<void*> m_grabbedBodies;
-    hkInt32 m_maxNumObjectsPicked;
-    hkReal m_maxMassOfObjectPicked;
-    hkReal m_maxDistOfObjectPicked;
-    hkReal m_impulseAppliedWhenObjectNotPicked;
-    hkReal m_throwVelocity;
-    hkVector4 m_capturedObjectPosition;
-    hkVector4 m_capturedObjectsOffset;
+    hkArray<void*> m_grabbedBodies; // src: XBOX_RETAIL_PDB +0x20 (old: m_kPickedBodies)
+    hkInt32 m_maxNumObjectsPicked; // src: XBOX_RETAIL_PDB +0x2c (old: m_iMaxPickedBodies)
+    hkReal m_maxMassOfObjectPicked; // src: XBOX_RETAIL_PDB +0x30 (old: m_fMaxPickMass)
+    hkReal m_maxDistOfObjectPicked; // src: XBOX_RETAIL_PDB +0x34 (old: m_fMaxPickDistance)
+    hkReal m_impulseAppliedWhenObjectNotPicked; // src: XBOX_RETAIL_PDB +0x38 (old: m_fPickAngle)
+    hkReal m_throwVelocity; // src: XBOX_RETAIL_PDB +0x3c (old: m_fHoldDistance)
+    hkVector4 m_capturedObjectPosition; // src: XBOX_RETAIL_PDB +0x40 (old: m_kGrabPosition)
+    hkVector4 m_capturedObjectsOffset; // src: XBOX_RETAIL_PDB +0x50 (old: m_kTargetPosition)
 
     hkpGravityGun() throw();
     hkpGravityGun(FinishingFlag);

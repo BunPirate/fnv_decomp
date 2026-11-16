@@ -32,7 +32,7 @@ public:
     bool CompareFormData(TESLoadScreen* apCompare);
     bool CompareLoadScreenData(void* apCompare);
 
-    BSSimpleList<WorldCellRecord*> LoadFormList;
-    TESLoadScreenType* pLoadScreenType;
-    BSStringT<char> cDescText;
+    BSSimpleList<WorldCellRecord*> LoadFormList; // src: XBOX_RETAIL_PDB +0x2c (old: m_kWorldCellRecordList)
+    TESLoadScreenType* pLoadScreenType; // src: XBOX_RETAIL_PDB +0x34 (old: m_pLoadScreenType)
+    BSStringT<char> cDescText; // src: XBOX_RETAIL_PDB +0x38 (old: m_kLoadScreenText)
 };

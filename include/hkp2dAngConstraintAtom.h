@@ -9,6 +9,6 @@ public:
     hkp2dAngConstraintAtom(FinishingFlag f);
     hkp2dAngConstraintAtom() : hkpConstraintAtom(FinishingFlag()) {}
 
-    unsigned char m_freeRotationAxis;
+    unsigned char m_freeRotationAxis; // src: XBOX_RETAIL_PDB +0x2 (old: m_ucFreeRotationAxis)
     char unk03;
 };

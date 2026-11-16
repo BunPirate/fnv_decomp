@@ -46,8 +46,8 @@ class CoordinateTriple
 class EdgeExtraInfo
 {
   public:
-    int eType;
-    int Portal;
+    int eType; // src: XBOX_RETAIL_PDB +0x0 (old: type)
+    int Portal; // src: XBOX_RETAIL_PDB +0x4 (old: portal)
     int reserved;
     bool IsEdgeFlagSet();
     unsigned short GetEdgeExtraInfo_0068f2c0();

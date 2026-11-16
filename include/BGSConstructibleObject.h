@@ -13,6 +13,6 @@ public:
     void* __thiscall FUN_004f94b0();
     void* __thiscall Destroy(unsigned int flags);
 
-    void* pRequiredItems;
-    void* pCreatedItem;
+    void* pRequiredItems; // src: XBOX_RETAIL_PDB +0xac (old: m_pCreatedObject)
+    void* pCreatedItem; // src: XBOX_RETAIL_PDB +0xb0 (old: m_pWorkbenchKeyword)
 };

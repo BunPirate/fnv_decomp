@@ -17,10 +17,10 @@ public:
         CONTACT_IS_DISABLED = 8
     };
 
-    unsigned int m_userData;
-    QuantizedFloat8 m_friction;
-    unsigned char m_restitution;
-    QuantizedFloat8 m_maxImpulse;
+    unsigned int m_userData; // src: XBOX_RETAIL_PDB +0x0 (old: m_ulUserData)
+    QuantizedFloat8 m_friction; // src: XBOX_RETAIL_PDB +0x4 (old: m_fSlipAngle)
+    unsigned char m_restitution; // src: XBOX_RETAIL_PDB +0x5 (old: m_fElasticity)
+    QuantizedFloat8 m_maxImpulse; // src: XBOX_RETAIL_PDB +0x6 (old: m_usFlags)
     unsigned char m_flags;
 
     static const ClassMemberDescriptor Members[];

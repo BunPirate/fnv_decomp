@@ -656,7 +656,7 @@ struct Sdedf10_Collector
     virtual float GetHitDistance(const Sdedf10_TreeNode* leaf) = 0;
 };
 
-struct ClosestPointCollector : Sdedf10_Collector
+struct ClosestPointCollector : Sdedf10_Collector // src: EXE (old: Sdedf10_ClosestPointCollector)
 {
     __forceinline ClosestPointCollector(const hkVector4& point, float initDistanceSquared)
         : m_kPoint(point), m_fValue(initDistanceSquared)
@@ -669,7 +669,7 @@ struct ClosestPointCollector : Sdedf10_Collector
     float m_fValue;
 };
 
-struct NearestFeaturePolicy : ClosestPointCollector
+struct NearestFeaturePolicy : ClosestPointCollector // src: EXE (old: Sdedf10_NearestFeaturePolicy)
 {
     __forceinline NearestFeaturePolicy(const hkVector4& point, float maxDistance)
         : ClosestPointCollector(point, maxDistance), m_nearest(0)

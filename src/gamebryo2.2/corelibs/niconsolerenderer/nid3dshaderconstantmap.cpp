@@ -392,7 +392,7 @@ unsigned int __cdecl NiShaderConstantMap_LookUpPredefinedMappingType(const char*
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiD3DShaderConstantMap_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiD3DShaderConstantMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126f7c4 (old: g_0126f7c4)
 // @fnv 0x00b7e400
 // src: COMMUNITY 0x00b7e400
 GlobalObjectO2_00a7b610* __cdecl NiD3DShaderConstantMap_GetRTTI()
@@ -1654,8 +1654,8 @@ unsigned int ShaderConstantMap_83650::NiD3DShaderConstantMap_AddConstantEntry(co
 }
 
 class GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiFloatsExtraData_ms_RTTI;
-extern GlobalObjectO2_00a7b610 NiColorExtraData_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiFloatsExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b60 (old: g_011f5b60)
+extern GlobalObjectO2_00a7b610 NiColorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b68 (old: g_011f5b68)
 
 bool __cdecl NiObject_IsExactKindOf(void*, void*);
 

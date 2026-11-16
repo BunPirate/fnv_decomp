@@ -112,14 +112,14 @@ public:
     void removeObjectBatch(RemovedHandleList* removeObjectList, int delPairsOut);
 
     unsigned char unk10[0x10];
-    int m_aabb[4];
+    int m_aabb[4]; // src: XBOX_RETAIL_PDB +0x20 (old: lowBound)
     int highBound[4];
     union { __m128 offset; __m128 m_negSrc; };
-    __m128 m_offsetHigh;
+    __m128 m_offsetHigh; // src: XBOX_RETAIL_PDB +0x50 (old: offset2)
     union { __m128 scale; __m128 m_recipSrc; };
-    __m128 m_offsetLow32bit;
-    __m128 m_offsetHigh32bit;
-    __m128 m_scale32bit;
+    __m128 m_offsetLow32bit; // src: XBOX_RETAIL_PDB +0x70 (old: m_v70)
+    __m128 m_offsetHigh32bit; // src: XBOX_RETAIL_PDB +0x80 (old: m_v80)
+    __m128 m_scale32bit; // src: XBOX_RETAIL_PDB +0x90 (old: unk90)
     union
     {
         NodeArray m_kNodeCollection;
@@ -159,5 +159,5 @@ public:
         struct { unsigned short shiftBits; unsigned short unkD6; };
     };
     union { OverlappingMarkerInfo* m_pOverlappingMarkerInfo; void* unkD8; char* m_markerBase; };
-    float m_intToFloatFloorCorrection;
+    float m_intToFloatFloorCorrection; // src: XBOX_RETAIL_PDB +0xdc (old: correction)
 };

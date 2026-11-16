@@ -1522,11 +1522,11 @@ public:
 class hkp1Lin2AngJacobian {
 public:
     __forceinline const float& getRHS() const { return m_linear0(3); }
-    hkVector4 m_linear0;
-    hkVector4 m_angular[2];
+    hkVector4 m_linear0; // src: XBOX_RETAIL_PDB +0x0 (old: m_kLinearJacobian)
+    hkVector4 m_angular[2]; // src: XBOX_RETAIL_PDB +0x10 (old: m_kAngularVelocity)
 };
 // Local definition retained: include/hkpConstraintChainMatrixTriple.h is not available.
-struct hkpConstraintChainMatrixTriple { hkMatrix3 m_lower, m_diagonalInv, m_upper; };
+struct hkpConstraintChainMatrixTriple { hkMatrix3 m_lower, m_diagonalInv, m_upper; }; // src: XBOX_RETAIL_PDB +0x30 (old: m_kMiddle)
 // Local definition retained: include/hkpJacobianBallSocketChainSchema.h is not available.
 // pdb: class hkpJacobianBallSocketChainSchema, size 0x10, 5 members
 struct hkpJacobianBallSocketChainSchema {
@@ -1534,11 +1534,11 @@ struct hkpJacobianBallSocketChainSchema {
     __forceinline hkpConstraintChainMatrixTriple* getMatrixBuffer() { return reinterpret_cast<hkpConstraintChainMatrixTriple*>(hkAddByteOffsetQ(getJacobians(this), m_padding * 3 * sizeof(hkp1Lin2AngJacobian))); }
     __forceinline hkVector4* getTempBuffer() { return reinterpret_cast<hkVector4*>(hkAddByteOffsetQ(getMatrixBuffer(), m_padding * sizeof(hkpConstraintChainMatrixTriple))); }
     __forceinline hkpVelocityAccumulatorOffset* getAccumulatorOffsetsBase() { return reinterpret_cast<hkpVelocityAccumulatorOffset*>(hkAddByteOffsetQ(getTempBuffer(), (m_padding + 1) * sizeof(hkVector4))); }
-    short m_numConstraints;
-    unsigned short m_padding;
-    int m_size;
-    float m_tau;
-    float m_damping;
+    short m_numConstraints; // src: XBOX_RETAIL_PDB +0x0 (old: m_schemaType)
+    unsigned short m_padding; // src: XBOX_RETAIL_PDB +0x2 (old: m_iConstraintCount)
+    int m_size; // src: XBOX_RETAIL_PDB +0x4 (old: m_iElementCount)
+    float m_tau; // src: XBOX_RETAIL_PDB +0x8 (old: m_fTau)
+    float m_damping; // src: XBOX_RETAIL_PDB +0xc (old: m_fMotorDamping)
 };
 // Local definition retained: include/hkpSolverInfo.h is not available.
 struct hkpSolverInfo { int u00,u04,u08,u0c,u10,u14,u18,u1c,u20,u24,u28,u2c,u30,u34,u38,u3c; hkVector4 GetTimeStepFactor; };

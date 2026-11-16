@@ -219,7 +219,7 @@ void ColorDataBinarySaver::SaveColorKeys(NiStream* stream)
     }
 }
 
-extern void* NiColorData_ms_RTTI;
+extern void* NiColorData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3750 (old: DAT_011f3750/g_011f3750)
 
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
 void* __cdecl NiGetViewerString_00a7d510(const char* s, unsigned int count);

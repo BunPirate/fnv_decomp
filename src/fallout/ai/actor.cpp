@@ -88992,7 +88992,7 @@ struct FaceActor
     void UpdateFaceAnimation(float);
 };
 extern FaceActor* DAT_011dea3c;
-extern int DAT_011d5bf8, NiGeomMorpherController_ms_RTTI, DAT_011f3e58;
+extern int DAT_011d5bf8, NiGeomMorpherController_ms_RTTI, DAT_011f3e58; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 void* FixedStrings_QRaceHeadBiped();
 void* FixedStrings_QRaceHeadSkinned();
 void* FixedStrings_QHeadAnims();
@@ -96387,7 +96387,7 @@ class MyProcess
 
 class GlobalObjectO2_00a7b610;
 extern GlobalObjectO2_00a7b610 g_01267e64;
-extern GlobalObjectO2_00a7b610 bhkBlendCollisionObjectAddRotation_ms_RTTI;
+extern GlobalObjectO2_00a7b610 bhkBlendCollisionObjectAddRotation_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012681cc (old: DAT_012681cc/g_012681cc)
 extern ::NiMatrix3 DAT_011a9448;
 extern int kWeaponAnimTypes[];
 
@@ -129569,7 +129569,7 @@ struct ActorWeaponData
 int* FixedStrings_QWeapon();
 ::NiAVObject* BSUtilities_GetObjectByName_004ade00(::NiAVObject*, int*);
 ::NiAVObject* FindFirstCollisionObject(::NiAVObject*);
-extern NiRTTI WeaponObject_ms_RTTI;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 ::WeaponObject* NiObject_DynamicCast(const NiRTTI*, ::NiAVObject*);
 ::WeaponObject* CreateResourceObject(void*, ::NiAVObject*, ::NiAVObject*, bool);

@@ -13,7 +13,7 @@ public:
     bool bIsActive;
     unsigned char layoutPadding5;
     unsigned short layoutPadding6;
-    CACHEDRIVE_STATUS eCacheDriveStatus_;
-    char cCacheDriveDir[1055];
+    CACHEDRIVE_STATUS eCacheDriveStatus_; // src: XBOX_RETAIL_PDB +0x8 (old: m_eDriveStatus)
+    char cCacheDriveDir[1055]; // src: XBOX_RETAIL_PDB +0xc (old: m_acDrivePath)
     unsigned char layoutPadding42B;
 };

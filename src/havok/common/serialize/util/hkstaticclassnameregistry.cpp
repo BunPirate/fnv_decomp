@@ -45,15 +45,15 @@ SlotEntry* FUN_00db7ae0_cls::FindSlotByKey(void* className)
 }
 
 // pdb: class hkStaticClassNameRegistry, size 0x18, bases: hkClassNameRegistry, 4 members
-struct hkStaticClassNameRegistry
+struct hkStaticClassNameRegistry // src: EXE (old: FUN_00db7b40)
 {
     virtual void v0();
     unsigned short unk04;
     unsigned short unk06;
-    int m_name;
-    int m_classes;
-    int m_classVersion;
-    int m_ready;
+    int m_name; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    int m_classes; // src: XBOX_RETAIL_PDB +0xc (old: unk0c)
+    int m_classVersion; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    int m_ready; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
     hkStaticClassNameRegistry(int a, int b, int c);
 };
 // Initializes the object: sets unk06 to 1, stores a, b and c into unk0c, unk10 and unk08, and clears unk14.

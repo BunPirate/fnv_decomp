@@ -11,7 +11,7 @@ struct InlineStorageString;
 class hkOstream : public hkReferencedObject
 {
 public:
-    hkStreamWriter* m_writer;
+    hkStreamWriter* m_writer; // src: XBOX_RETAIL_PDB +0x8 (old: m_pStreamWriter)
 
     static const ClassMemberDescriptor Members[];
 

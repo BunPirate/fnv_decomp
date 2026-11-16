@@ -36,9 +36,9 @@ public:
         USE_COMBAT_ITEM = 11
     };
 
-    CombatController* pCombatController;
+    CombatController* pCombatController; // src: XBOX_RETAIL_PDB +0x4 (old: m_pCombatController)
     int eStatus;
-    const char* pFailureReason;
+    const char* pFailureReason; // src: XBOX_RETAIL_PDB +0xc (old: m_pcProcedureName)
 
     CombatProcedure();
 

@@ -3125,8 +3125,8 @@ struct ColorName
 // pdb: structure ColorPair, size 0x8, 2 members
 struct ColorPair
 {
-    ColorName iID;
-    unsigned int iColor;
+    ColorName iID; // src: XBOX_RETAIL_PDB +0x0 (old: m_name)
+    unsigned int iColor; // src: XBOX_RETAIL_PDB +0x4 (old: m_kDiffuseColor)
 };
 struct TextureColors
 {

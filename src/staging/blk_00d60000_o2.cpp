@@ -78,7 +78,7 @@ struct Registry_00dd9380
 };
 
 extern int DAT_01269cd0;
-extern void* hkpInactiveContactPointViewer_s_tag;
+extern void* hkpInactiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x01269008 (old: DAT_01269008)
 
 // @fnv 0x00d68800
 // src: XBOX_RETAIL_PDB 0x00d68800
@@ -91,7 +91,7 @@ void hkpInactiveContactPointViewer_registerViewer()
 
 namespace fnv_00d688d0 {
 void hkpActiveContactPointViewer_create();
-extern int hkpActiveContactPointViewer_s_tag;
+extern int hkpActiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x0126900c (old: DAT_0126900c)
 struct Registry_00dd9380_StandIn
 {
     void* hkProcessFactory_registerProcess(const char*, void(__cdecl*)());
@@ -260,7 +260,7 @@ void* __cdecl hkpActiveContactPointViewer_create(int contexts)
 // FUN_00d688f0 : tiny global getter.
 // Reads the 4-byte global at DAT_0126900c and returns it in eax.
 
-extern int hkpActiveContactPointViewer_s_tag;
+extern int hkpActiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x0126900c (old: DAT_0126900c)
 
 // @fnv 0x00d688f0
 // src: GUESS 0x00d688f0 (confidence: low)
@@ -296,7 +296,7 @@ D68910Object* D68910Object::DestroyAndFree(unsigned int uiFlags)
 }
 }  // namespace fnv_00d68910
 
-extern char hkpConstraintInstanceSmallArraySerializeOverrideTypeClass;
+extern char hkpConstraintInstanceSmallArraySerializeOverrideTypeClass; // src: XBOX_RETAIL_PDB 0x0126905c (old: DAT_0126905c/g_0126905c)
 
 // @fnv 0x00d6ade0
 // src: GUESS 0x00d6ade0 (confidence: low)
@@ -354,7 +354,7 @@ int __cdecl Runtime_ForwardCall_00d6aeb0(VtblForwarder* p)
     return p->v0(0);
 }
 
-extern int hkpWorldCinfoClass;
+extern int hkpWorldCinfoClass; // src: XBOX_RETAIL_PDB 0x01269104 (old: DAT_01269104/g_01269104)
 
 // @fnv 0x00d6aee0
 // src: GUESS 0x00d6aee0 (confidence: low)
@@ -447,7 +447,7 @@ void FUN_00d76f90_cls::ForwardCall_00d76f90()
 }
 
 namespace fnv_00d68820 {
-extern int hkpInactiveContactPointViewer_s_tag;
+extern int hkpInactiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x01269008 (old: DAT_01269008)
 
 // @fnv 0x00d68820
 // src: GUESS 0x00d68820 (confidence: low)
@@ -512,7 +512,7 @@ void __cdecl ConstructHkDerived(void* pvObject, int iFinishFlag)
 
 // RTTI identifies vtable 0x010cad0c as hkMemoryBlockServer; hkReferencedObject uses 0x0102e388.
 // pdb: class hkMemoryBlockServer, size 0x8 (here 0x4), 1 members
-class hkMemoryBlockServer
+class hkMemoryBlockServer // src: EXE (old: MemoryBlockServerState)
 {
   public:
     hkMemoryBlockServer(FinishingFlag flag);
@@ -1397,7 +1397,7 @@ class FUN_00dd9380_class
 
 void __cdecl hkpWorldMemoryViewer_create();
 
-extern void* hkpWorldMemoryViewer_m_tag;
+extern void* hkpWorldMemoryViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268fc8 (old: DAT_01268fc8)
 
 // @fnv 0x00d63400
 // src: XBOX_RETAIL_PDB 0x00d63400
@@ -1409,7 +1409,7 @@ void __cdecl hkpWorldMemoryViewer_registerViewer()
 }
 }  // namespace fnv_00d63400
 
-extern int hkpWorldMemoryViewer_m_tag;
+extern int hkpWorldMemoryViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268fc8 (old: DAT_01268fc8)
 // @fnv 0x00d63420
 // src: GUESS 0x00d63420 (confidence: low)
 int __cdecl Object_GetDAT_01268fc8_00d63420()

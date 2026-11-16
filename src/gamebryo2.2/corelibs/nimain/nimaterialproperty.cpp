@@ -249,7 +249,7 @@ struct MaterialViewerStringsArray
     }
 };
 
-extern NiRTTI NiMaterialProperty_ms_RTTI;
+extern NiRTTI NiMaterialProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a5c (old: DAT_011f4a5c/g_011f4a5c)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* __cdecl NiGetViewerString_00a7d550(const char* pcPrefix, float fValue);
 

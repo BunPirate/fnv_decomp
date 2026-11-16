@@ -37,7 +37,7 @@ class ImageSpaceShaderParam : public HdrEffectParamLocalForm
     void* m_pPixelShaderConstantMap;
     bool m_bTextureFlags[3];
     unsigned char layoutPadding57;
-    unsigned char pInputTextures[48];
+    unsigned char pInputTextures[48]; // src: XBOX_RETAIL_PDB +0x58 (old: inputArraysAndStates)
     ImageSpaceShaderParam();
     static void* operator new(size_t size)
     {
@@ -57,7 +57,7 @@ class ImageSpaceEffect
     NiTArray<ImageSpaceEffect*, NiTMallocInterface<ImageSpaceEffect*> > pEffectList;
     NiTArray<HdrEffectParamLocalForm*, NiTMallocInterface<HdrEffectParamLocalForm*> > pEffectParamList;
     NiTArray<ImageSpaceTexture*, NiTMallocInterface<ImageSpaceTexture*> > pTextures;
-    unsigned char pEffectInputs[32];
+    unsigned char pEffectInputs[32]; // src: XBOX_RETAIL_PDB +0x38 (old: remainingArrays)
     void SetTextureArrayCount(int);
     void SetEffectAt(int, ImageSpaceEffect*, HdrEffectParamLocalForm*, int);
 };

@@ -15,7 +15,7 @@ public:
     // TESForm vftable slot 5 (0x01024cec[5] = 0x004fbb50): clears soundLoop; called directly by the ctor
     virtual void InitializeComponent();
 
-    TESSound* pSoundLoop;
+    TESSound* pSoundLoop; // src: XBOX_RETAIL_PDB +0x6c (old: soundLoop)
     unsigned char data;
     unsigned char unk71[3];
 };

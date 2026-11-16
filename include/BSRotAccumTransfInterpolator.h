@@ -32,5 +32,5 @@ public:
     BSRotAccumTransfInterpolator* FUN_00a43df0(unsigned char);
     TimedRotationKey* GetRotData(unsigned int&, int&, unsigned char&) const;
 
-    NiQuaternion PrevKeyRot;
+    NiQuaternion PrevKeyRot; // src: XBOX_RETAIL_PDB +0x48 (old: m_kAccumulatedRotation)
 };

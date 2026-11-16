@@ -13425,7 +13425,7 @@ struct FUN_0041c5e0_str_cls
 };
 
 // pdb: class ExtraEditorID, size 0x14 (here 0x10), bases: BSExtraData, 1 members
-struct ExtraEditorID : FUN_0041c5e0_base_cls
+struct ExtraEditorID : FUN_0041c5e0_base_cls // src: EXE (old: FUN_0041c5e0_cls)
 {
     FUN_0041c5e0_str_cls str;
     ExtraEditorID(const char* s);
@@ -17339,7 +17339,7 @@ ExtraHolder418* ExtraList418::ExtraDataList_SetLightPtr(OwnedExtraPayload* apLig
 // pdb: class ExtraSound, size 0x18, bases: BSExtraData, 1 members
 struct ExtraSound : LegacyExtraData
 {
-    BSSoundHandle pHandle;
+    BSSoundHandle pHandle; // src: XBOX_RETAIL_PDB +0xc (old: kHandle)
     ExtraSound(BSSoundHandle);
     static void* operator new(unsigned int);
     static void operator delete(void*, unsigned int);

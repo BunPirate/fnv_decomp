@@ -8,6 +8,6 @@ typedef unsigned char hkUint8;
 class hkpAngConstraintAtom : public hkpConstraintAtom
 {
 public:
-    hkUint8 m_firstConstrainedAxis;
-    hkUint8 m_numConstrainedAxes;
+    hkUint8 m_firstConstrainedAxis; // src: XBOX_RETAIL_PDB +0x2 (old: m_ucFirstConstrainedAxis)
+    hkUint8 m_numConstrainedAxes; // src: XBOX_RETAIL_PDB +0x3 (old: m_ucNumConstrainedAxes)
 };

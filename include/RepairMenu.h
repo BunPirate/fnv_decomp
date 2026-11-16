@@ -9,8 +9,8 @@ class RepairTile;
 class RepairMenu : public Menu
 {
 public:
-    Tile* pTiles[13];
-    ListBox_ItemChange___ lbRepairList;
+    Tile* pTiles[13]; // src: XBOX_RETAIL_PDB +0x28 (old: m_pTiles)
+    ListBox_ItemChange___ lbRepairList; // src: XBOX_RETAIL_PDB +0x5c (old: m_kItemList)
 
     __declspec(property(get=GetRepairList)) ListBox_ItemChange___& m_kRepairList;
     ListBox_ItemChange___& GetRepairList() { return lbRepairList; }

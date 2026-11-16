@@ -28,5 +28,5 @@ public:
     void SetFileName_00c3cee0(const char* apFileName);
 
     char* pFileName;
-    BSFileEntry* pFileEntry;
+    BSFileEntry* pFileEntry; // src: XBOX_RETAIL_PDB +0x2c (old: m_pFileEntry)
 };

@@ -6,7 +6,7 @@ class GlobalObjectO2_00a7b610
 {
 };
 
-extern GlobalObjectO2_00a7b610 BSOrderedNode_ms_RTTI;
+extern GlobalObjectO2_00a7b610 BSOrderedNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f84 (old: DAT_01201f84/g_01201f84)
 
 // @fnv 0x00bc2bc0
 // src: XBOX_PDB 0x00bc2bc0

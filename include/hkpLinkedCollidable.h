@@ -32,5 +32,5 @@ public:
     static void* __cdecl operator new(std::size_t nbytes);
     const hkArray<CollisionKeyEntry>& getCollisionEntriesDeterministicUnchecked() const;
 
-    hkArray<char> m_collisionEntries;
+    hkArray<char> m_collisionEntries; // src: XBOX_RETAIL_PDB +0x50 (old: m_kCollisionEntries)
 };

@@ -307,8 +307,8 @@ struct $SG2686
 struct FUN_00626060 : FUN_0056d6c0_class
 {
     void* pad;
-    void* pFile;
-    unsigned char bOwned;
+    void* pFile; // src: XBOX_RETAIL_PDB +0x8 (old: p)
+    unsigned char bOwned; // src: XBOX_RETAIL_PDB +0xc (old: flag)
     virtual ~FUN_00626060();
 };
 // @fnv 0x00626060
@@ -322,8 +322,8 @@ FUN_00626060::~FUN_00626060()
 struct FUN_00626280_shell : FUN_0056d6c0_class
 {
     const char* pStr;
-    void* pFile;
-    unsigned char bOwned;
+    void* pFile; // src: XBOX_RETAIL_PDB +0x8 (old: p)
+    unsigned char bOwned; // src: XBOX_RETAIL_PDB +0xc (old: b)
     virtual ~FUN_00626280_shell();
 };
 // If p is set and b is true, deletes the object pointed to by p.

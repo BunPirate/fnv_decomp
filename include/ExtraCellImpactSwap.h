@@ -16,5 +16,5 @@ public:
     void* FUN_0040f1e0(unsigned int flags);
     bool ExtraCellImpactSwap_Compare(BSExtraData* apCompare);
 
-    CellImpactSwapValue* pImpactSwap;
+    CellImpactSwapValue* pImpactSwap; // src: XBOX_RETAIL_PDB +0xc (old: m_pCellImpactSwapValue)
 };

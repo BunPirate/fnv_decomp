@@ -57,63 +57,63 @@ public:
     void ResetMenuState();
     bool Pick_007fb790(void* pkUnused, float* pfX, float* pfY);
 
-    NiPointer<NiGeometry> spScreenTriShape;
-    NiPointer<NiAVObject> spScreenParent;
-    NiPointer<NiScreenElements> spPartialScreenGeometry;
-    NiPointer<NiTexture> spDefaultTex;
+    NiPointer<NiGeometry> spScreenTriShape; // src: XBOX_RETAIL_PDB +0x4 (old: m_pMenuBackgroundScreenGeometry)
+    NiPointer<NiAVObject> spScreenParent; // src: XBOX_RETAIL_PDB +0x8 (old: m_pMenuRoot)
+    NiPointer<NiScreenElements> spPartialScreenGeometry; // src: XBOX_RETAIL_PDB +0xc (old: m_pScreenGeometry)
+    NiPointer<NiTexture> spDefaultTex; // src: XBOX_RETAIL_PDB +0x10 (old: m_pDefaultTexture)
     NiPointer<NiAVObject> m_pRenderedMenuObject;
-    Tile* pMenuTile;
-    NiPointer<NiPointLight> spLight;
-    ShadowSceneNode* pLightShadowSceneNode;
-    NiPointer<NiCamera> spCamera;
+    Tile* pMenuTile; // src: XBOX_RETAIL_PDB +0x18 (old: m_pFourthMenuObject)
+    NiPointer<NiPointLight> spLight; // src: XBOX_RETAIL_PDB +0x1c (old: m_pMenuLight)
+    ShadowSceneNode* pLightShadowSceneNode; // src: XBOX_RETAIL_PDB +0x20 (old: m_pSecondaryMenuObject)
+    NiPointer<NiCamera> spCamera; // src: XBOX_RETAIL_PDB +0x24 (old: m_pMenuLightParameters)
     bool bInitialized;
-    bool bScaledTexCoords;
-    bool bUsePartialScreenGeometry;
+    bool bScaledTexCoords; // src: XBOX_RETAIL_PDB +0x29 (old: m_bUseMenuImageSpaceEffects)
+    bool bUsePartialScreenGeometry; // src: XBOX_RETAIL_PDB +0x2a (old: m_bEnableFlicker)
     unsigned char unk2B[1];
-    NiColor ScreenLightColor;
+    NiColor ScreenLightColor; // src: XBOX_RETAIL_PDB +0x2c (old: m_kScreenLightColor)
     float fScreenLightBaseIntensity;
-    float fScreenLightFlickerIntensity;
+    float fScreenLightFlickerIntensity; // src: XBOX_RETAIL_PDB +0x3c (old: m_fFlicker)
     float fBlurRadius;
     float fBlurIntensity;
-    float fScanlineScale;
-    bool bDoScanlines;
+    float fScanlineScale; // src: XBOX_RETAIL_PDB +0x48 (old: m_fScanlineScale)
+    bool bDoScanlines; // src: XBOX_RETAIL_PDB +0x4c (old: m_bDoScanlines)
     bool m_bBurstActive;
     unsigned char unk4E[2];
-    float fBurstStartTime;
+    float fBurstStartTime; // src: XBOX_RETAIL_PDB +0x50 (old: m_fBurstElapsedTime)
     float fBurstDuration;
-    float fBurstMaximumIntensity;
-    float fBurstCurrentIntensity;
-    bool bVertHoldActive;
+    float fBurstMaximumIntensity; // src: XBOX_RETAIL_PDB +0x58 (old: m_fBurstIntensity)
+    float fBurstCurrentIntensity; // src: XBOX_RETAIL_PDB +0x5c (old: m_fBurstSoundChance)
+    bool bVertHoldActive; // src: XBOX_RETAIL_PDB +0x60 (old: m_bBurstSoundPlayed)
     unsigned char unk61[3];
-    float fVertHoldStartTime;
-    float fVertHoldDuration;
-    float fVertHoldSpeed;
-    float fVertHoldCurrentPosition;
-    bool bShudderActive;
+    float fVertHoldStartTime; // src: XBOX_RETAIL_PDB +0x64 (old: m_fShudderIntensity)
+    float fVertHoldDuration; // src: XBOX_RETAIL_PDB +0x68 (old: m_fShudderDuration)
+    float fVertHoldSpeed; // src: XBOX_RETAIL_PDB +0x6c (old: m_fShudderFrequency)
+    float fVertHoldCurrentPosition; // src: XBOX_RETAIL_PDB +0x70 (old: m_fVerticalHoldDuration)
+    bool bShudderActive; // src: XBOX_RETAIL_PDB +0x74 (old: m_bVerticalHoldActive)
     unsigned char unk75[3];
-    float fShudderStartTime;
-    float fShudderDuration;
-    float fShudderIntensity;
-    float fShudderFrequency;
-    float fShudderCurrentPosition;
-    float fPulseCurrentBrighten;
-    float fPulseCurrentRadius;
-    bool bPulseAffectsLight;
-    bool bDistortActive;
+    float fShudderStartTime; // src: XBOX_RETAIL_PDB +0x78 (old: m_fVerticalHoldSpeed)
+    float fShudderDuration; // src: XBOX_RETAIL_PDB +0x7c (old: m_fVerticalHoldRate)
+    float fShudderIntensity; // src: XBOX_RETAIL_PDB +0x80 (old: m_fVerticalHoldChance)
+    float fShudderFrequency; // src: XBOX_RETAIL_PDB +0x84 (old: m_fShudderChance)
+    float fShudderCurrentPosition; // src: XBOX_RETAIL_PDB +0x88 (old: m_fPulseRadiusIntensity)
+    float fPulseCurrentBrighten; // src: XBOX_RETAIL_PDB +0x8c (old: m_fPulseBrightenIntensity)
+    float fPulseCurrentRadius; // src: XBOX_RETAIL_PDB +0x90 (old: m_fPulseRate)
+    bool bPulseAffectsLight; // src: XBOX_RETAIL_PDB +0x94 (old: m_bPulseActive)
+    bool bDistortActive; // src: XBOX_RETAIL_PDB +0x95 (old: m_bShudderActive)
     unsigned char unk96[2];
-    float fDistortStartTime;
-    float fDistortPosition;
+    float fDistortStartTime; // src: XBOX_RETAIL_PDB +0x98 (old: m_fDistortHorizontalScale)
+    float fDistortPosition; // src: XBOX_RETAIL_PDB +0x9c (old: m_fDistortVerticalScale)
     float fDistortDuration;
-    float fNextDistortTime;
+    float fNextDistortTime; // src: XBOX_RETAIL_PDB +0xa4 (old: m_fDistortTimeRemaining)
     NiColorA BackgroundColor;
-    bool bMenuOpen;
-    bool bMenuRendering;
+    bool bMenuOpen; // src: XBOX_RETAIL_PDB +0xb8 (old: m_bMenuLightEnabled)
+    bool bMenuRendering; // src: XBOX_RETAIL_PDB +0xb9 (old: m_bMenuLightCreated)
     unsigned char unkBA[2];
-    NiPointer<NiTexture> spScanlinesTexture;
-    NiColorA TintColor;
-    bool bHidQuantity;
-    bool bHidTutorial;
-    bool bHidMessage;
+    NiPointer<NiTexture> spScanlinesTexture; // src: XBOX_RETAIL_PDB +0xbc (old: m_pMenuLightShadowNode)
+    NiColorA TintColor; // src: XBOX_RETAIL_PDB +0xc0 (old: m_kMenuLightColor)
+    bool bHidQuantity; // src: XBOX_RETAIL_PDB +0xd0 (old: m_bMenuLightVisible)
+    bool bHidTutorial; // src: XBOX_RETAIL_PDB +0xd1 (old: m_bMenuLightShadowed)
+    bool bHidMessage; // src: XBOX_RETAIL_PDB +0xd2 (old: m_bMenuLightAttached)
     unsigned char unkD3[1];
-    NiPointer<BSShaderAccumulator> spAccumulator;
+    NiPointer<BSShaderAccumulator> spAccumulator; // src: XBOX_RETAIL_PDB +0xd4 (old: m_pMenuLightNode)
 };

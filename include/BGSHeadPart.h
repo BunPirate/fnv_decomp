@@ -36,5 +36,5 @@ public:
 
     unsigned char cFlags;
     unsigned char padding[3];
-    BSSimpleList<BGSHeadPart*> ExtraParts;
+    BSSimpleList<BGSHeadPart*> ExtraParts; // src: XBOX_RETAIL_PDB +0x48 (old: m_kExtraParts)
 };

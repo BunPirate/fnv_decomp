@@ -65,7 +65,7 @@ void __thiscall FUN_00c29d50_shell::NiPSysModifierActiveCtlr_GetTargetBoolValue(
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiPSysModifierActiveCtlr_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiPSysModifierActiveCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026d0 (old: g_012026d0)
 
 // @fnv 0x00c29d40
 // src: COMMUNITY 0x00c29d40
@@ -111,7 +111,7 @@ bool StandIn::NiPSysModifierActiveCtlr_InterpTargetIsCorrectType(NiObjectNET* pk
 
 extern "C" void* __cdecl NiViewerStrings_NiGetViewerString_Title(const void*);
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiPSysModifierActiveCtlr_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiPSysModifierActiveCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026d0 (old: g_012026d0)
 // pdb: class NiPSysModifierActiveCtlr, size 0x40, bases: NiPSysModifierBoolCtlr, 0 members
 class NiPSysModifierActiveCtlr : public NiPSysModifierBoolCtlr
 {

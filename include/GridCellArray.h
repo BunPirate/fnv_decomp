@@ -54,10 +54,10 @@ public:
     void ClearCanopyShadowMaskTexture();
     void RecreateCanopyShadowMaskTexture();
 
-    GridCell* pGridCellA;
-    float WorldCenter;
+    GridCell* pGridCellA; // src: XBOX_RETAIL_PDB +0x10 (old: m_pGridCells)
+    float WorldCenter; // src: XBOX_RETAIL_PDB +0x14 (old: fX)
     float fY;
     int unk1c;
-    int bLandAttached;
-    GridCellObjectRefView spTexRendered;
+    int bLandAttached; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
+    GridCellObjectRefView spTexRendered; // src: XBOX_RETAIL_PDB +0x24 (old: spRT)
 };

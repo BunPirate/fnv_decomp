@@ -25,11 +25,11 @@ public:
     void Disarmed_009d1dc0(Actor* apOpponent);
     void CombatProcedure_SetFailed(const char* str);
 
-    unsigned int eState;
-    NiPoint3 TargetedPoint;
-    TimeoutTimer ExplosiveProjectileBlockedTimer;
-    TimeoutTimer FiringTimer;
-    TimeoutTimer CooldownTimer;
-    TimeoutTimer FireDelayTimer;
-    TimeoutTimer SuppressiveFireTimer;
+    unsigned int eState; // src: XBOX_RETAIL_PDB +0x10 (old: m_10)
+    NiPoint3 TargetedPoint; // src: XBOX_RETAIL_PDB +0x14 (old: m_14)
+    TimeoutTimer ExplosiveProjectileBlockedTimer; // src: XBOX_RETAIL_PDB +0x20 (old: m_20)
+    TimeoutTimer FiringTimer; // src: XBOX_RETAIL_PDB +0x28 (old: m_28)
+    TimeoutTimer CooldownTimer; // src: XBOX_RETAIL_PDB +0x30 (old: m_30)
+    TimeoutTimer FireDelayTimer; // src: XBOX_RETAIL_PDB +0x38 (old: m_38)
+    TimeoutTimer SuppressiveFireTimer; // src: XBOX_RETAIL_PDB +0x40 (old: m_40)
 };

@@ -2175,7 +2175,7 @@ struct Entry31910
     unsigned short unk0e;
 };
 
-extern Rtti31910 DAT_011f36bc, DAT_011f36e4, NiDefaultAVObjectPalette_ms_RTTI, g_011f36ec;
+extern Rtti31910 DAT_011f36bc, DAT_011f36e4, NiDefaultAVObjectPalette_ms_RTTI, g_011f36ec; // src: XBOX_RETAIL_PDB 0x011f4a04 (old: DAT_011f4a04/g_011f4a04/resetPaletteRTTI)
 extern unsigned int DAT_011f36c8, DAT_011f36d0;
 extern const char* DAT_011f36c4;
 extern const char* DAT_011f36cc;

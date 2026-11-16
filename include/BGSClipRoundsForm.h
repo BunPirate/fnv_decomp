@@ -26,6 +26,6 @@ public:
     int GetClipRounds();
     void SetFormClipRounds(int rounds);
 
-    unsigned char cClipRounds;
+    unsigned char cClipRounds; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucClipRounds)
     unsigned char layoutPadding5[3];
 };

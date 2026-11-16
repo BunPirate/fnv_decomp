@@ -15,8 +15,8 @@ class Creature : public Actor
 public:
     bool bRagDoll;
     char _pdbpad_1b5[3];
-    float fArmorRating;
-    float fArmorThreshold;
+    float fArmorRating; // src: XBOX_RETAIL_PDB +0x1b8 (old: m_fFirstResetValue)
+    float fArmorThreshold; // src: XBOX_RETAIL_PDB +0x1bc (old: m_fSecondValue)
 
     virtual void LoadGame(BGSLoadFormBuffer* buffer);
     virtual float CalculateRunSpeed();

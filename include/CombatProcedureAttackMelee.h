@@ -93,22 +93,22 @@ public:
     int GetSection();
     int GetAudioBackendData();
 
-    int eManeuverState;
-    int eCombatState;
-    int eLastCombatState;
-    int eCurrentAttack;
-    TimeoutTimer MeleeTimer;
-    TimeoutTimer ManeuverTimer;
-    TimeoutTimer DodgeTimer;
-    TimeoutTimer AdvanceTimer;
-    TimeoutTimer CloseTimer;
-    TimeoutTimer TargetUnreachableTimer;
-    bool bRangedAllyWantsToShoot;
+    int eManeuverState; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    int eCombatState; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
+    int eLastCombatState; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    int eCurrentAttack; // src: XBOX_RETAIL_PDB +0x1c (old: unk1C)
+    TimeoutTimer MeleeTimer; // src: XBOX_RETAIL_PDB +0x20 (old: pt20)
+    TimeoutTimer ManeuverTimer; // src: XBOX_RETAIL_PDB +0x28 (old: pt28)
+    TimeoutTimer DodgeTimer; // src: XBOX_RETAIL_PDB +0x30 (old: pt30)
+    TimeoutTimer AdvanceTimer; // src: XBOX_RETAIL_PDB +0x38 (old: pt38)
+    TimeoutTimer CloseTimer; // src: XBOX_RETAIL_PDB +0x40 (old: pt40)
+    TimeoutTimer TargetUnreachableTimer; // src: XBOX_RETAIL_PDB +0x48 (old: pt48)
+    bool bRangedAllyWantsToShoot; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
     unsigned char unk51[3];
-    int iAdvanceMoveMode;
-    float fCurrentAttackReach;
-    float fFacingTargetDistance;
-    CombatTargetTimestamp fAttackPickFailedTimestamp;
-    CombatMeleeData MovementRestrictions;
+    int iAdvanceMoveMode; // src: XBOX_RETAIL_PDB +0x54 (old: unk54)
+    float fCurrentAttackReach; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
+    float fFacingTargetDistance; // src: XBOX_RETAIL_PDB +0x5c (old: unk5C)
+    CombatTargetTimestamp fAttackPickFailedTimestamp; // src: XBOX_RETAIL_PDB +0x60 (old: val60)
+    CombatMeleeData MovementRestrictions; // src: XBOX_RETAIL_PDB +0x64 (old: data64)
     unsigned char unk68[0x20];
 };

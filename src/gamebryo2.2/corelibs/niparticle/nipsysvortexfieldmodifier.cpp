@@ -22,7 +22,7 @@ void* __cdecl NiPSysVortexFieldModifier_GetRTTI()
 // pdb: class NiPSysVortexFieldModifier, size 0x3c, bases: NiPSysFieldModifier, 1 members
 struct NiPSysVortexFieldModifier : NiPSysFieldModifier
 {
-    NiColor m_kDirection;
+    NiColor m_kDirection; // src: XBOX_RETAIL_PDB +0x30 (old: m_kFogTint)
     void LoadBinary_00c267d0(NiStream& stream);
 };
 // @fnv 0x00c267d0

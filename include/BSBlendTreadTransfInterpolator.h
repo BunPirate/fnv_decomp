@@ -13,5 +13,5 @@ class BSBlendTreadTransfInterpolator : public NiBlendInterpolator
     bool UpdateSingleInterpolator(float, NiObjectNET*, NiQuatTransform&);
     bool UpdateAccumulatedTransform(float, NiObjectNET*, NiQuatTransform&);
 
-    float fCurrLerp;
+    float fCurrLerp; // src: XBOX_RETAIL_PDB +0x30 (old: m_fPhase)
 };

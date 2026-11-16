@@ -2204,8 +2204,8 @@ class exception
 {
   public:
     void* vptr;
-    int _Mywhat;
-    int _Mydofree;
+    int _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: a)
+    int _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: b)
 };
 class logic_error : public exception
 {

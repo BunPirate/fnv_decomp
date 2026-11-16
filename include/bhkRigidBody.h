@@ -17,7 +17,7 @@ class hkTransform;
 class bhkRigidBody : public bhkEntity
 {
 public:
-    BSSimpleList<NiPointer<bhkSerializable> > ActionConstraint;
+    BSSimpleList<NiPointer<bhkSerializable> > ActionConstraint; // src: XBOX_RETAIL_PDB +0x14 (old: m_kSerializableList)
 
     virtual const NiRTTI* GetRTTI() const;
     virtual unsigned int slotA8();

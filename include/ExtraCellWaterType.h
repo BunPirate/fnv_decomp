@@ -9,5 +9,5 @@ class ExtraCellWaterType : public BSExtraData
 public:
     ExtraCellWaterType();
 
-    TESWaterForm* pWater;
+    TESWaterForm* pWater; // src: XBOX_RETAIL_PDB +0xc (old: m_pWaterForm)
 };

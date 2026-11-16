@@ -242,7 +242,7 @@ unsigned int D10AB0NextOdd(const unsigned int* puiValue)
     return Runtime_EvaluateValue_00d10ab0(*puiValue);
 }
 
-extern int hkpEntitySmallArraySerializeOverrideTypeClass;
+extern int hkpEntitySmallArraySerializeOverrideTypeClass; // src: XBOX_RETAIL_PDB 0x01268838 (old: DAT_01268838/g_01268838)
 
 // @fnv 0x00d1f110
 // src: GUESS 0x00d1f110 (confidence: low)
@@ -251,7 +251,7 @@ int* __cdecl Runtime_GetDAT01268838Address()
     return &hkpEntitySmallArraySerializeOverrideTypeClass;
 }
 
-extern int hkpEntitySpuCollisionCallbackClass;
+extern int hkpEntitySpuCollisionCallbackClass; // src: XBOX_RETAIL_PDB 0x01268868 (old: g_01268868/g_unk01268868)
 
 // @fnv 0x00d1f130
 // src: GUESS 0x00d1f130 (confidence: low)
@@ -261,7 +261,7 @@ void* __cdecl Runtime_GetUnk01268868Address()
 }
 
 // FUN_00d1f140 : a one-line function - getter
-extern int hkpEntityExtendedListenersClass;
+extern int hkpEntityExtendedListenersClass; // src: XBOX_RETAIL_PDB 0x01268898 (old: g_01268898/g_target_00d1f140)
 // @fnv 0x00d1f140
 // src: GUESS 0x00d1f140 (confidence: low)
 void* Object_GetGlobalObjectAddress_00d1f140()

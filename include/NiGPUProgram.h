@@ -25,5 +25,5 @@ class NiGPUProgram : public NiRefObject
     void IncRefCount() throw();
     void DecRefCount() throw();
 
-    ProgramType m_eProgramType;
+    ProgramType m_eProgramType; // src: XBOX_RETAIL_PDB +0x8 (old: m_iProgramType)
 };

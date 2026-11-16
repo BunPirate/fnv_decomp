@@ -31,5 +31,5 @@ public:
     void SetState();
 
     TESBoundObject* pItem;
-    bool bAnimating;
+    bool bAnimating; // src: XBOX_RETAIL_PDB +0x14 (old: m_bItemFlag)
 };

@@ -57,6 +57,6 @@ public:
                                                               hkVector4& p, hkVector4& q);
 
     char pad14[0xC];
-    hkVector4 m_vertexA;
-    hkVector4 m_vertexB;
+    hkVector4 m_vertexA; // src: XBOX_RETAIL_PDB +0x20 (old: m_kVertexA)
+    hkVector4 m_vertexB; // src: XBOX_RETAIL_PDB +0x30 (old: m_kVertexB)
 };

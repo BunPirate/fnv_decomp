@@ -17,7 +17,7 @@ class hkpHingeConstraintData : public hkpConstraintData
 {
 public:
     char padC[4];
-    char m_atoms[0xA0];
+    char m_atoms[0xA0]; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 
     void setMaxLinearImpulse(float value);
     float getMaxLinearImpulse();

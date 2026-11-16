@@ -21,7 +21,7 @@ class TESCasinoChips : public TESBoundObject,
                        public BGSPickupPutdownSounds
 {
 public:
-    BSStringT<char> cDesc;
+    BSStringT<char> cDesc; // src: XBOX_RETAIL_PDB +0x94 (old: m_kPrimaryString)
 
     TESCasinoChips();
 

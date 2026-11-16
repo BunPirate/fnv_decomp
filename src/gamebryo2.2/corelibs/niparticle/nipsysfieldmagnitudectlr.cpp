@@ -17,7 +17,7 @@ void __thiscall NiPSysFieldMagnitudeCtlr::UpdateFields_00c29ea0(float& fValue)
     fValue = *(float*)((char*)m_pkModifier + 0x1C);
 }
 
-extern "C" void* NiPSysFieldMagnitudeCtlr_ms_RTTI;
+extern "C" void* NiPSysFieldMagnitudeCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202718 (old: g_01202718)
 
 // @fnv 0x00c2b140
 // src: COMMUNITY 0x00c2b140

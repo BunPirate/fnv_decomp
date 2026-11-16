@@ -8,7 +8,7 @@ extern unsigned int DAT_010a2480;
 class ContainerItemExtra
 {
   public:
-    unsigned int pOwnerForm[3];
+    unsigned int pOwnerForm[3]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ContainerItemExtra();
     void ContainerItemExtra_AdjustHealthPercent(float);
     void ContainerItemExtra_InitItem(TESForm*);

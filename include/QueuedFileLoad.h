@@ -18,7 +18,7 @@ public:
     void FUN_00441d20();
     void* FUN_00441cf0(unsigned int flags);
 
-    char spLoadedFile[4];
+    char spLoadedFile[4]; // src: XBOX_RETAIL_PDB +0x30 (old: m_pLoadedFile)
     union
     {
         int m_iLoadPriority;

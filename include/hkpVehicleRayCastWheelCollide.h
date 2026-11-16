@@ -48,7 +48,7 @@ public:
     hkpVehicleRayCastWheelCollide* Clone(hkpWorldObject* newChassis,
                                        const hkArray<hkpAabbPhantom*>& newPhantoms);
 
-    hkUint32 m_wheelCollisionFilterInfo;
-    hkpAabbPhantom* m_phantom;
-    hkpRejectChassisListener m_rejectRayChassisListener;
+    hkUint32 m_wheelCollisionFilterInfo; // src: XBOX_RETAIL_PDB +0xc (old: m_uiWheelCount)
+    hkpAabbPhantom* m_phantom; // src: XBOX_RETAIL_PDB +0x10 (old: m_pPhantom)
+    hkpRejectChassisListener m_rejectRayChassisListener; // src: XBOX_RETAIL_PDB +0x14 (old: m_kChassisRejectionListener)
 };

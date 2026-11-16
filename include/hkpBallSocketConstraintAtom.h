@@ -9,7 +9,7 @@ typedef float hkReal;
 class hkpBallSocketConstraintAtom : public hkpConstraintAtom
 {
 public:
-    hkUint8 m_bodiesToNotify;
-    hkUint8 m_stabilizationFactor;
-    hkReal m_maxImpulse;
+    hkUint8 m_bodiesToNotify; // src: XBOX_RETAIL_PDB +0x2 (old: m_ucBodiesToNotify)
+    hkUint8 m_stabilizationFactor; // src: XBOX_RETAIL_PDB +0x3 (old: m_solvingMethod)
+    hkReal m_maxImpulse; // src: XBOX_RETAIL_PDB +0x4 (old: m_usFlags)
 };

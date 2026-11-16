@@ -34,5 +34,5 @@ public:
     void FUN_006d1bc0(const PathingLocation&);
     void PathingRequest_SetNoDestination();
 
-    float fMinFleeDistance;
+    float fMinFleeDistance; // src: XBOX_RETAIL_PDB +0xb0 (old: fleeRadius)
 };

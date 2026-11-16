@@ -4207,7 +4207,7 @@ struct Location
 // pdb: structure Segment, size 0x18, 2 members
 struct Segment
 {
-    NiPoint3 Start, End;
+    NiPoint3 Start, End; // src: XBOX_RETAIL_PDB End +0xc (old: end); Start +0x0 (old: start)
 };
 struct Vertex
 {

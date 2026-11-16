@@ -53,7 +53,7 @@ class NiPSysDragModifier : public NiPSysModifier
     NiObject* CloneDragModifier(CloningProcess* process);
     void GetDragViewerStrings(StreamArray& pkStrings);
 
-    NiAVObject* m_pkDragObj;
+    NiAVObject* m_pkDragObj; // src: XBOX_RETAIL_PDB +0x18 (old: m_pParent)
     NiPoint3 m_kDragDirection;
     float m_fDragStrength;
     float m_fFirstLightParameter;

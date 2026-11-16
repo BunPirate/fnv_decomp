@@ -43,9 +43,9 @@ public:
     virtual ~BGSQuestObjective();
 
     unsigned int iIndex;
-    ObjectiveDisplayText cDisplayText;
+    ObjectiveDisplayText cDisplayText; // src: XBOX_RETAIL_PDB +0x8 (old: m_kDisplayText)
     TESQuest* m_pOwnerQuest;
-    BSSimpleList<RegionObjectEntry*> ListTargets;
+    BSSimpleList<RegionObjectEntry*> ListTargets; // src: XBOX_RETAIL_PDB +0x14 (old: m_kTargetList)
     bool bInitialized;
     unsigned char layoutPadding1D[3];
     QUEST_OBJECTIVE_STATE eState;

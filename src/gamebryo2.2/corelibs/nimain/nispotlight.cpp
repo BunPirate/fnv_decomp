@@ -12,7 +12,7 @@
 struct GlobalObjectO2_00a7b610
 {
 };
-extern GlobalObjectO2_00a7b610 NiSpotLight_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiSpotLight_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ec4 (old: g_011f5ec4)
 
 // @fnv 0x00a94d50
 // src: COMMUNITY 0x00a94d50

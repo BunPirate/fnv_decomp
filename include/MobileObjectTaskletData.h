@@ -22,10 +22,10 @@ public:
     virtual void ProcessMobileObject(MobileObject* apObject);
     virtual void SetThreadNumber(unsigned int auiThreadNumber);
 
-    BSSimpleList<MobileObject*>* pmoblist;
-    BSTCommonLLMessageQueue<MobileObjectTaskletContext> msgqueue;
-    unsigned int uiHighActorCount;
-    unsigned int iThread;
+    BSSimpleList<MobileObject*>* pmoblist; // src: XBOX_RETAIL_PDB +0x18 (old: pMobList)
+    BSTCommonLLMessageQueue<MobileObjectTaskletContext> msgqueue; // src: XBOX_RETAIL_PDB +0x1c (old: kMessageQueue)
+    unsigned int uiHighActorCount; // src: XBOX_RETAIL_PDB +0x30 (old: MobileObjectTaskletState)
+    unsigned int iThread; // src: XBOX_RETAIL_PDB +0x34 (old: eType)
 
     void FUN_008c83a0();
     bool HandleMessage(void* apMessage, int aiThread);

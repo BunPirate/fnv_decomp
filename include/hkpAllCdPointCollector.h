@@ -22,5 +22,5 @@ public:
     void FUN_006211b0();
     void* FUN_00621140(unsigned int aiFlags);
 
-    ContactArray289 m_hits;
+    ContactArray289 m_hits; // src: XBOX_RETAIL_PDB +0x10 (old: contacts)
 };

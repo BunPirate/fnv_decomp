@@ -4,7 +4,7 @@
 class BSSystemUtilitiesStrings
 {
 public:
-    char* pcStrings[8];
+    char* pcStrings[8]; // src: XBOX_RETAIL_PDB +0x4 (old: m_pStringFunctions)
 
     virtual ~BSSystemUtilitiesStrings();
     virtual void Initialize();

@@ -11,7 +11,7 @@ typedef CrimeList CrimeNode;
 class AlarmPackage : public TESPackage
 {
 public:
-    BSSimpleList<Actor*> Crimes;  // 0x80
+    BSSimpleList<Actor*> Crimes;  // 0x80 // src: XBOX_RETAIL_PDB +0x80 (old: list)
 
     AlarmPackage();
     AlarmPackage(Actor* actor);

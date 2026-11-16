@@ -656,7 +656,7 @@ virtual void ActionRemovedCallback(hkpAction*action);
 protected:
 static int m_ucOperationType;
 static const int ms_iProcessTag;
-hkArray<class hkpVehicleInstance*>m_vehicles;
+hkArray<class hkpVehicleInstance*>m_vehicles; // src: XBOX_RETAIL_PDB +0x30 (old: m_ppVehicles)
 };
 
 template<typename T>

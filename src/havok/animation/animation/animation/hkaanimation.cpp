@@ -27,8 +27,8 @@ class hkaAnnotationTrack
   public:
     struct Annotation
     {
-        hkReal m_time;
-        FUN_00cb0c30_s m_text;
+        hkReal m_time; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiCommandId)
+        FUN_00cb0c30_s m_text; // src: XBOX_RETAIL_PDB +0x4 (old: m_pText)
 
         Annotation& operator=(const Annotation& kOther)
         {
@@ -41,8 +41,8 @@ class hkaAnnotationTrack
     ~hkaAnnotationTrack();
     hkaAnnotationTrack& operator=(const hkaAnnotationTrack& other);
 
-    FUN_00cb0c30_s m_trackName;
-    hkArray<Annotation> m_annotations;
+    FUN_00cb0c30_s m_trackName; // src: XBOX_RETAIL_PDB +0x0 (old: m_kTrackName)
+    hkArray<Annotation> m_annotations; // src: XBOX_RETAIL_PDB +0x4 (old: m_kAnnotations)
 };
 class hkaAnimatedReferenceFrame;
 

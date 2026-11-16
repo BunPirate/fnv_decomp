@@ -520,7 +520,7 @@ struct FUN_00d0c8d0_cls {
     void ReportMemoryUsage(ReportSink* collector, int cls);
 };
 unsigned int hkStatisticsCollector_getAllocatedSize(void* p, unsigned int size);
-extern char hkpSimulationClass;
+extern char hkpSimulationClass; // src: XBOX_RETAIL_PDB 0x01269514 (old: DAT_01269514/g_01269514)
 struct InfoBlock {
     unsigned int unk00;
     unsigned short unk04;

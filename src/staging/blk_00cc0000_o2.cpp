@@ -3205,7 +3205,7 @@ FUN_00cc2a00_obj* FUN_00cc2a00_cls::bhkShapePhantom_CreateCInfo(bool* arCreated)
     return m_0c;
 }
 
-extern int bhkSpringAction_ms_RTTI;
+extern int bhkSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685b0 (old: DAT_012685b0/g_012685b0/g_pcCC31C0ClassName)
 
 // @fnv 0x00cc2b30
 // src: COMMUNITY 0x00cc2b30
@@ -4197,7 +4197,7 @@ FUN_00cc39b0::~FUN_00cc39b0()
     DAT_012685c4--;
 }
 
-extern int bhkDashpotAction_ms_RTTI;
+extern int bhkDashpotAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685c8 (old: DAT_012685c8/g_012685c8)
 
 // @fnv 0x00cc3a20
 // src: COMMUNITY 0x00cc3a20
@@ -5886,7 +5886,7 @@ FUN_00cc5090::~FUN_00cc5090()
     DAT_012685e8--;
 }
 
-extern int bhkWheelConstraint_ms_RTTI;
+extern int bhkWheelConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685ec (old: g_012685ec/g_unk012685ec)
 
 // @fnv 0x00cc5100
 // src: COMMUNITY 0x00cc5100
@@ -7080,7 +7080,7 @@ FUN_00cc8480::~FUN_00cc8480()
     DAT_01268630--;
 }
 
-extern int bhkHingeLimitsConstraint_ms_RTTI;
+extern int bhkHingeLimitsConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268634 (old: g_01268634/g_unk01268634)
 
 // @fnv 0x00cc84f0
 // src: COMMUNITY 0x00cc84f0
@@ -7248,7 +7248,7 @@ int __cdecl Object_ComputeValue_00cc8d60()
     return 44;
 }
 
-extern int bhkConstraintChain_ms_RTTI;
+extern int bhkConstraintChain_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268f84 (old: DAT_01268f84/g_01268f84)
 
 // @fnv 0x00cc8d70
 // src: COMMUNITY 0x00cc8d70
@@ -9023,7 +9023,7 @@ void FUN_00ccb080_cls::AddNameToArray(StrArr* pkArray)
     AppendStringReference(pkArray, pcName);
 }
 
-extern int bhkPlaneShape_ms_RTTI;
+extern int bhkPlaneShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268670 (old: DAT_01268670/g_01268670)
 // @fnv 0x00ccb130
 // src: COMMUNITY 0x00ccb130
 void* __cdecl bhkPlaneShape_GetRTTI() {
@@ -9783,7 +9783,7 @@ CCB730Child* CCB730Owner::bhkPlaneShape_CreateCinfo(bool* arCreated)
     return m_pkChild;
 }
 
-extern int bhkExtendedMeshShapeData_ms_RTTI;
+extern int bhkExtendedMeshShapeData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268684 (old: DAT_01268684/g_01268684)
 
 // @fnv 0x00ccb990
 // src: COMMUNITY 0x00ccb990
@@ -9961,7 +9961,7 @@ FUN_00ccbaa0::FUN_00ccbaa0(RefObjCC* apObject)
     m_sp = apObject;
 }
 
-extern int bhkExtendedMeshShape_ms_RTTI;
+extern int bhkExtendedMeshShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126867c (old: DAT_0126867c/g_0126867c/g_pcCCCFD0Name)
 
 // @fnv 0x00ccbb30
 // src: COMMUNITY 0x00ccbb30
@@ -10632,7 +10632,7 @@ void CCCF00RigidBody::bhkExtendedMeshShape_SaveBinary(NiStream& arStream) {
 }
 
 // FUN_00ccd0f0 : a one-line function - getter
-extern int bhkCylinderShape_ms_RTTI;
+extern int bhkCylinderShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268694 (old: DAT_01268694/g_01268694/g_target_00ccd0f0)
 // @fnv 0x00ccd0f0
 // src: GUESS 0x00ccd0f0 (confidence: low)
 void* Runtime_GetTarget00ccd0f0Address() { return &bhkCylinderShape_ms_RTTI; }
@@ -12321,7 +12321,7 @@ void Holder403::AppendTransformStrings(StrArr* strings) {
  }
 }
 
-extern int bhkConvexSweepShape_ms_RTTI;
+extern int bhkConvexSweepShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686b8 (old: DAT_012686b8/g_012686b8)
 
 // @fnv 0x00ccf550
 // src: COMMUNITY 0x00ccf550
@@ -12375,7 +12375,7 @@ NiObject* __cdecl bhkConvexSweepShape::CreateObject()
 }
 
 
-extern int bhkConvexListShape_ms_RTTI;
+extern int bhkConvexListShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686c4 (old: DAT_012686c4/g_012686c4)
 
 // @fnv 0x00ccf7b0
 // src: COMMUNITY 0x00ccf7b0
@@ -13522,7 +13522,7 @@ inline void Add(StrArr* array,char* value) {
 }
 struct CountInterface { virtual void unused(); virtual int count(); };
 struct CountObject { int unk00,unk04,unk08,unk0c,unk10; CountInterface value; };
-extern char* bhkConvexListShape_ms_RTTI;
+extern char* bhkConvexListShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686c4 (old: DAT_012686c4/g_012686c4)
 extern const char DAT_010c41b0[];
 extern const char DAT_010c6040[];
 char* NiViewerStrings_NiGetViewerString_Title(char*);
@@ -13882,7 +13882,7 @@ FUN_00cd7e80::FUN_00cd7e80(unsigned int auiValue) {
 }
 }  // namespace fnv_00cd7e80
 
-extern int bhkCharControllerShape_ms_RTTI;
+extern int bhkCharControllerShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686e8 (old: DAT_012686e8/g_012686e8)
 
 // @fnv 0x00cd7f20
 // src: COMMUNITY 0x00cd7f20
@@ -18176,7 +18176,7 @@ void hkObjCC08::hkResource_getContents_class_hkRootLevelContainer()
 }
 
 struct CpuOpaque;
-extern CpuOpaque bhkPoseArray_ms_RTTI;
+extern CpuOpaque bhkPoseArray_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268590 (old: DAT_01268590/g_01268590)
 // @fnv 0x00cc1280
 // src: COMMUNITY 0x00cc1280
 CpuOpaque* __cdecl bhkPoseArray_GetRTTI()

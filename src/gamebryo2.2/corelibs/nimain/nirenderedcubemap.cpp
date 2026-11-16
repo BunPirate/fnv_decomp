@@ -23,7 +23,7 @@ int __fastcall NiRenderedCubeMap_GetHeight(NiRenderedCubeMap* cubeMap)
     return *(int*)((char*)p + 0xc);
 }
 
-extern "C" void* NiRenderedCubeMap_ms_RTTI;
+extern "C" void* NiRenderedCubeMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012708e4 (old: DAT_012708e4/g_012708e4/g_sentinel_012708e4)
 
 // @fnv 0x00ee82a0
 // src: COMMUNITY 0x00ee82a0

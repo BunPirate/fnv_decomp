@@ -10,5 +10,5 @@ class ExtraAshPileRef : public BSExtraData
 public:
     ExtraAshPileRef();
 
-    TESObjectREFR* pAshPileRef;
+    TESObjectREFR* pAshPileRef; // src: XBOX_RETAIL_PDB +0xc (old: m_pAshPileRef)
 };

@@ -3908,8 +3908,8 @@ class exception
   public:
     virtual ~exception();
     virtual const char* what() const;
-    const char* _Mywhat;
-    int _Mydofree;
+    const char* _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: _m_what)
+    int _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: _m_doFree)
 };
 class logic_error : public exception
 {

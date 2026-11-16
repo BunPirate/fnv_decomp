@@ -6,11 +6,11 @@ class ScriptRunner;
 class TESObjectREFR;
 
 // pdb: class ScriptRunManager, size 0x8, 2 members
-class ScriptRunManager
+class ScriptRunManager // src: XBOX_RETAIL_PDB (old: ScriptExecutor)
 {
 public:
-    ScriptRunner* m_pScriptRunner;
-    ScriptRunner* pCurrentRunner;
+    ScriptRunner* m_pScriptRunner; // src: XBOX_RETAIL_PDB +0x0 (old: m_pReusableScriptRunner)
+    ScriptRunner* pCurrentRunner; // src: XBOX_RETAIL_PDB +0x4 (old: m_pActiveScriptRunner)
 
     ScriptRunManager();
     ~ScriptRunManager();

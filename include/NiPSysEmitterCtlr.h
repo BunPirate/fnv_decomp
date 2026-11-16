@@ -23,10 +23,10 @@ public:
     void BSPSysMultiTargetEmitterCtlr_CopyMembers(NiPSysEmitterCtlr* destination, void* process);
     NiPSysEmitterCtlr* BSPSysMultiTargetEmitterCtlr_CreateClone(void* process);
 
-    NiPointer<NiInterpolator> m_spEmitterActiveInterpolator;
-    NiInterpolator* m_pkLastBirthRateInterpolator;
-    float m_fLastScaledTime;
-    bool m_bLastActive;
+    NiPointer<NiInterpolator> m_spEmitterActiveInterpolator; // src: XBOX_RETAIL_PDB +0x40 (old: m_spVisibilityInterpolator)
+    NiInterpolator* m_pkLastBirthRateInterpolator; // src: XBOX_RETAIL_PDB +0x44 (old: m_pEmitterActiveInterpolator)
+    float m_fLastScaledTime; // src: XBOX_RETAIL_PDB +0x48 (old: m_fScaledLastTime)
+    bool m_bLastActive; // src: XBOX_RETAIL_PDB +0x4c (old: m_bIsInitialized)
     unsigned char layoutPadding4D[3];
-    NiTPrimitiveSet_float_ m_kParticleAges;
+    NiTPrimitiveSet_float_ m_kParticleAges; // src: XBOX_RETAIL_PDB +0x50 (old: m_kBirthRateKeys)
 };

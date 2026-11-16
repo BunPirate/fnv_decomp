@@ -854,13 +854,13 @@ struct ConstraintCAB : BaseCAB0, BaseCAB1, BaseCAB2
     ConstraintCAB(int info);
 };
 // pdb: class ahkpCharacterProxy, size 0xd0, bases: hkpCharacterProxy, 1 members
-struct ahkpCharacterProxy : ConstraintCAB
+struct ahkpCharacterProxy : ConstraintCAB // src: EXE (old: FUN_00cabec0)
 {
     __m128 m_40;
     int m_50, m_54, m_58, m_5c, m_60, m_64, m_68, m_6c, m_70, m_74, m_78, m_7c;
     int m_80, m_84, m_88, m_8c, m_90, m_94, m_98, m_9c, m_a0, m_a4, m_a8, m_ac;
     int m_b0, m_b4, m_b8, m_bc;
-    int m_userData;
+    int m_userData; // src: XBOX_RETAIL_PDB +0xc0 (old: m_c0)
     ahkpCharacterProxy(int a);
     virtual void v00();
     virtual void v10();

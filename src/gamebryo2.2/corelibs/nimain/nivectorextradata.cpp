@@ -7,7 +7,7 @@
 // src/gamebryo2.2/corelibs/nimain/nivectorextradata.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nimain/nivectorextradata.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern int NiVectorExtraData_ms_RTTI;
+extern int NiVectorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5e84 (old: g_011f5e84)
 
 // @fnv 0x00a92070
 // src: COMMUNITY 0x00a92070
@@ -19,7 +19,7 @@ int* __cdecl NiVectorExtraData_GetRTTI()
 // pdb: class NiVectorExtraData, size 0x1c, bases: NiExtraData, 1 members
 struct NiVectorExtraData : NiExtraData
 {
-    float m_afVector[4];
+    float m_afVector[4]; // src: XBOX_RETAIL_PDB +0xc (old: m_afVectorComponents)
     bool IsEqual_00a92020(NiObject* pObject);
 };
 

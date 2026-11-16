@@ -83,7 +83,7 @@ __forceinline T& hkArrayBase<T>::_expandOne(hkMemoryAllocator& a)
     new (m_data + m_iElementCount) T();
     return m_data[m_iElementCount++];
 }
-extern int hkRootLevelContainerClass;
+extern int hkRootLevelContainerClass; // src: XBOX_RETAIL_PDB 0x01268b54 (old: DAT_01268b54/g_01268b54)
 // The game ABI passes aggregate result storage as the first stack argument.
 void __cdecl hkpHavokSnapshot_save(hkResult* result, const void* object, const void* pClassInfo, int a3, int a4, int a5, int a6);
 

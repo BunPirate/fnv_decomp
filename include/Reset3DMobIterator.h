@@ -9,8 +9,8 @@ class TESBoundObject;
 class Reset3DMobIterator : public MobIterOperator
 {
 public:
-    TESBoundObject* pActorBase;
-    bool cFlags;
+    TESBoundObject* pActorBase; // src: XBOX_RETAIL_PDB +0x8 (old: base)
+    bool cFlags; // src: XBOX_RETAIL_PDB +0xc (old: reset)
 
     Reset3DMobIterator();
     void Tesscriptfunctions_UpdateState_005d8b10();

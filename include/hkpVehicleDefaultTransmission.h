@@ -17,11 +17,11 @@ public:
     virtual void vf07();
     virtual hkReal getTransmissionRatio(const Vehicle* vehicle, const void* input) const;
 
-    hkReal m_downshiftRPM;
-    hkReal m_upshiftRPM;
-    hkReal m_primaryTransmissionRatio;
-    hkReal m_clutchDelayTime;
-    hkReal m_reverseGearRatio;
-    hkArray<hkReal> m_gearsRatio;
-    hkArray<hkReal> m_wheelsTorqueRatio;
+    hkReal m_downshiftRPM; // src: XBOX_RETAIL_PDB +0x8 (old: m_fDownshiftRPM)
+    hkReal m_upshiftRPM; // src: XBOX_RETAIL_PDB +0xc (old: m_fUpshiftRPM)
+    hkReal m_primaryTransmissionRatio; // src: XBOX_RETAIL_PDB +0x10 (old: m_fPrimaryTransmissionRatio)
+    hkReal m_clutchDelayTime; // src: XBOX_RETAIL_PDB +0x14 (old: m_fClutchDelayTime)
+    hkReal m_reverseGearRatio; // src: XBOX_RETAIL_PDB +0x18 (old: m_fReverseGearRatio)
+    hkArray<hkReal> m_gearsRatio; // src: XBOX_RETAIL_PDB +0x1c (old: m_kGearRatios)
+    hkArray<hkReal> m_wheelsTorqueRatio; // src: XBOX_RETAIL_PDB +0x28 (old: m_kWheelTorqueRatios)
 };

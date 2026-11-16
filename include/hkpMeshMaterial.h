@@ -6,5 +6,5 @@ typedef unsigned int hkUint32;
 class hkpMeshMaterial
 {
 public:
-    hkUint32 m_filterInfo;
+    hkUint32 m_filterInfo; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiFilterInfo)
 };

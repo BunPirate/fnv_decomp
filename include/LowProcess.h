@@ -141,34 +141,34 @@ public:
     virtual TESObjectREFR* vfn_814(Actor*, TESPackage*, bool);
     virtual void vfn_818(Actor*);
 
-    unsigned char m_uFlags;
+    unsigned char m_uFlags; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiObjectFlags)
     unsigned char layoutPadding31;
     unsigned short layoutPadding32;
-    TESBoundObject* pItemBeingUsed;
-    TimeoutTimer fCombatDelayTimer;
+    TESBoundObject* pItemBeingUsed; // src: XBOX_RETAIL_PDB +0x34 (old: m_pCurrentWeapon)
+    TimeoutTimer fCombatDelayTimer; // src: XBOX_RETAIL_PDB +0x38 (old: m_kProcessData38)
     TESObjectREFR* pTarget;
-    TESObjectREFR* pGenericLocation;
-    TESObjectREFR* pGenericSecondLocation;
-    BGSListForm* pTargetFormList;
-    short sFormListNumb;
+    TESObjectREFR* pGenericLocation; // src: XBOX_RETAIL_PDB +0x44 (old: m_pReference40)
+    TESObjectREFR* pGenericSecondLocation; // src: XBOX_RETAIL_PDB +0x48 (old: m_pReference44)
+    BGSListForm* pTargetFormList; // src: XBOX_RETAIL_PDB +0x4c (old: m_pFormList)
+    short sFormListNumb; // src: XBOX_RETAIL_PDB +0x50 (old: m_sFourthValue)
     unsigned short layoutPadding52;
-    TESObjectREFR* pPatrolLocation;
-    int iNumberItemsActivate;
-    BSSimpleList<TargetDoorController*> ObjectList;
-    TargetDoorController* pAcquireObject;
-    TargetDoorController* pSavedAcquireObject;
-    BSSimpleList<TESObjectREFR*> GenericLocationsList;
-    BSSimpleList<TargetDoorController*> TempObjectList;
-    BSSimpleList<TESObjectREFR*> TempLocList;
-    TESBoundObject* pObjecttoAcquire;
-    TESBoundObject* pObjectForLocation;
-    PACKAGE_OBJECT_TYPE eFormType;
-    TESFaction* pFactiontoAquire;
-    ActorValueModifierList pDamageModifiers;
-    float fEssentialDownTimer;
-    float fDeathTime;
-    float fTrackedDamage;
-    bool bSkippedTimeStampForPathing;
+    TESObjectREFR* pPatrolLocation; // src: XBOX_RETAIL_PDB +0x54 (old: m_pObjectReference)
+    int iNumberItemsActivate; // src: XBOX_RETAIL_PDB +0x58 (old: m_iValue58)
+    BSSimpleList<TargetDoorController*> ObjectList; // src: XBOX_RETAIL_PDB +0x5c (old: ReferenceListNode)
+    TargetDoorController* pAcquireObject; // src: XBOX_RETAIL_PDB +0x64 (old: m_pDetectionData60)
+    TargetDoorController* pSavedAcquireObject; // src: XBOX_RETAIL_PDB +0x68 (old: m_pDetectionData64)
+    BSSimpleList<TESObjectREFR*> GenericLocationsList; // src: XBOX_RETAIL_PDB +0x6c (old: m_kReferenceList68)
+    BSSimpleList<TargetDoorController*> TempObjectList; // src: XBOX_RETAIL_PDB +0x74 (old: m_kDetectionDataList)
+    BSSimpleList<TESObjectREFR*> TempLocList; // src: XBOX_RETAIL_PDB +0x7c (old: m_kReferenceList70)
+    TESBoundObject* pObjecttoAcquire; // src: XBOX_RETAIL_PDB +0x84 (old: m_pBoundObject74)
+    TESBoundObject* pObjectForLocation; // src: XBOX_RETAIL_PDB +0x88 (old: m_pBoundObject78)
+    PACKAGE_OBJECT_TYPE eFormType; // src: XBOX_RETAIL_PDB +0x8c (old: m_eReferenceTypeInfo)
+    TESFaction* pFactiontoAquire; // src: XBOX_RETAIL_PDB +0x90 (old: PackageFactionTarget)
+    ActorValueModifierList pDamageModifiers; // src: XBOX_RETAIL_PDB +0x94 (old: m_kActorValueModifiers)
+    float fEssentialDownTimer; // src: XBOX_RETAIL_PDB +0xa4 (old: m_fValue88)
+    float fDeathTime; // src: XBOX_RETAIL_PDB +0xa8 (old: m_fValue8C)
+    float fTrackedDamage; // src: XBOX_RETAIL_PDB +0xac (old: m_fValue90)
+    bool bSkippedTimeStampForPathing; // src: XBOX_RETAIL_PDB +0xb0 (old: m_bHasBoundObject)
     unsigned char layoutPaddingB1;
     unsigned short layoutPaddingB2;
 

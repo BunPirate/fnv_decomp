@@ -64,9 +64,9 @@ struct SnapshotAllocationInfo
 class hkDebugMemorySnapshot
 {
 public:
-    hkSnapshotAddress* m_pointers;
+    hkSnapshotAddress* m_pointers; // src: XBOX_RETAIL_PDB +0x0 (old: m_pAddressList)
     SnapshotAllocationInfo* m_info;
-    int m_numPointers;
+    int m_numPointers; // src: XBOX_RETAIL_PDB +0x8 (old: m_iElementCount)
 
     void FreeBuffers();
     void Sort();

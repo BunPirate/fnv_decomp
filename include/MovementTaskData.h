@@ -14,7 +14,7 @@ public:
     virtual void ProcessMobileObject(MobileObject* apObject);
     virtual void SetThreadNumber(unsigned int auiThreadNumber);
 
-    unsigned int iUpdated;
+    unsigned int iUpdated; // src: XBOX_RETAIL_PDB +0x38 (old: uiRunCount)
 
     void UpdateMovementTask(HighProcess* apMob);
 };

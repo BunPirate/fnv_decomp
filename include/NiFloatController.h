@@ -31,6 +31,6 @@ public:
     bool NiTimeController_IsEqual(NiFloatController* other);
     void FUN_00a6d830(StrArr* strings);
 
-    unsigned int m_uiLastIdx;
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
     NiFloatData* m_spFloatData;
 };

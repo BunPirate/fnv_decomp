@@ -9,7 +9,7 @@ extern int DAT_0109ec0c;
 #include "../../../../include/NiExtraData.h"
 #include "../../../../include/NiFloatsExtraData.h"
 
-extern "C" void* NiFloatsExtraData_ms_RTTI;
+extern "C" void* NiFloatsExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b60 (old: g_011f5b60)
 
 // @fnv 0x00a89120
 // src: COMMUNITY 0x00a89120
@@ -337,7 +337,7 @@ void NiFloatsExtraData::SaveBinary_00a89210(NiStream& stream)
     A89210BinaryStreamSave(*kStream.m_pBackingStream, m_pfValue, m_uiSize);
 }
 
-extern "C" void* NiFloatsExtraData_ms_RTTI;
+extern "C" void* NiFloatsExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b60 (old: g_011f5b60)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* __cdecl NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);
 char* __cdecl NiGetViewerString_00a7d550(const char* pcPrefix, float fValue);

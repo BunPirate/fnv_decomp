@@ -18,5 +18,5 @@ public:
     void FUN_00e98710();
     void* Destroy(unsigned int);
 
-    NiTPointerMap<unsigned int, NiVBSet*> m_kSets;
+    NiTPointerMap<unsigned int, NiVBSet*> m_kSets; // src: XBOX_RETAIL_PDB +0xc (old: map)
 };

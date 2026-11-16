@@ -346,15 +346,15 @@ class DialogueResponse
   public:
     DialogueResponse();
     void DialogueResponse_LoadGame();
-    BSStringT<char> cText;
+    BSStringT<char> cText; // src: XBOX_RETAIL_PDB +0x0 (old: m_kResponseText)
     unsigned int eEmotion;
-    unsigned int uiEmotion;
-    BSStringT<char> cVoice;
-    TESIdleForm* pSpeakerIdle;
-    TESIdleForm* pListenIdle;
-    TESTopic* pVoiceSound;
-    TESTopicInfo* bUseEmotion;
-    TESQuest* nResponseID;
+    unsigned int uiEmotion; // src: XBOX_RETAIL_PDB +0xc (old: m_uiEmotionValue)
+    BSStringT<char> cVoice; // src: XBOX_RETAIL_PDB +0x10 (old: m_kResponseNotes)
+    TESIdleForm* pSpeakerIdle; // src: XBOX_RETAIL_PDB +0x18 (old: m_pFirstIdleForm)
+    TESIdleForm* pListenIdle; // src: XBOX_RETAIL_PDB +0x1c (old: m_pSecondIdleForm)
+    TESTopic* pVoiceSound; // src: XBOX_RETAIL_PDB +0x20 (old: pTopic)
+    TESTopicInfo* bUseEmotion; // src: XBOX_RETAIL_PDB +0x24 (old: pInfo)
+    TESQuest* nResponseID; // src: XBOX_RETAIL_PDB +0x28 (old: pQuest)
 };
 // Reads response count, current index, topic info, topic, quest, and speaker IDs from the save stream into the dialogue item.
 // @fnv 0x0083cc10

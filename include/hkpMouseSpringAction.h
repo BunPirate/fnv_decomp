@@ -13,12 +13,12 @@ public:
     void ApplySpringForce(void*);
 
     char pad1C[0x4];
-    hkVector4 m_positionInRbLocal;
-    hkVector4 m_mousePositionInWorld;
-    hkReal m_springDamping;
-    hkReal m_springElasticity;
-    hkReal m_maxRelativeForce;
-    hkReal m_objectDamping;
-    hkUint32 m_shapeKey;
-    hkArray<char> m_applyCallbacks;
+    hkVector4 m_positionInRbLocal; // src: XBOX_RETAIL_PDB +0x20 (old: m_kMousePositionInWorld)
+    hkVector4 m_mousePositionInWorld; // src: XBOX_RETAIL_PDB +0x30 (old: m_kGrabPointInBodySpace)
+    hkReal m_springDamping; // src: XBOX_RETAIL_PDB +0x40 (old: m_fSpringDamping)
+    hkReal m_springElasticity; // src: XBOX_RETAIL_PDB +0x44 (old: m_fSpringElasticity)
+    hkReal m_maxRelativeForce; // src: XBOX_RETAIL_PDB +0x48 (old: m_fMaxRelativeForce)
+    hkReal m_objectDamping; // src: XBOX_RETAIL_PDB +0x4c (old: m_fTau)
+    hkUint32 m_shapeKey; // src: XBOX_RETAIL_PDB +0x50 (old: m_uiCollisionShapeKey)
+    hkArray<char> m_applyCallbacks; // src: XBOX_RETAIL_PDB +0x54 (old: m_kAppliedCallbacks)
 };

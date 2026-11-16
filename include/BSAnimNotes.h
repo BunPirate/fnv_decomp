@@ -12,6 +12,6 @@ public:
     void BSAnimNotes_dtor();
     void* DestroyIfFlagged(unsigned int auiFlags);
 
-    NiObject** NoteA;
-    unsigned short usNumNotes;
+    NiObject** NoteA; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppNotes)
+    unsigned short usNumNotes; // src: XBOX_RETAIL_PDB +0xc (old: m_usNumAnimNotes)
 };

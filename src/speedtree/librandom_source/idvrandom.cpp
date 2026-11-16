@@ -44,7 +44,7 @@ int Random::vf06()
     return 1;
 }
 
-extern Random SIdvRandomImpl_m_cUniform;
+extern Random SIdvRandomImpl_m_cUniform; // src: XBOX_RETAIL_PDB 0x011f8ebc (old: DAT_011f8ebc)
 // Linearly interpolates between fMin and afMax using a random sample.
 // @fnv 0x00b3f130
 // pdb: CIdvRandom::GetUniform | IdvRandom.obj | retail, call graph, high

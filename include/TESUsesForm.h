@@ -19,6 +19,6 @@ public:
     int GetFormUses();
     void SetFormUses(int uses);
 
-    unsigned char iUses;
+    unsigned char iUses; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucUses)
     char _pad_5[3];
 };

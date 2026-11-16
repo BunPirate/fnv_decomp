@@ -17,7 +17,7 @@ public:
     bool LoadForm(TESFile* file);
     void ReadTypedData(TESFile* apFile, void* apData, unsigned short ausSize);
 
-    TESModelTextureSwap modelArrayList[10];
-    TESTexture textureArrayList[11];
+    TESModelTextureSwap modelArrayList[10]; // src: XBOX_RETAIL_PDB +0x24 (old: m_kModelTextureSwaps)
+    TESTexture textureArrayList[11]; // src: XBOX_RETAIL_PDB +0x164 (old: m_kIconTextures)
     EndianConvertibleData data;
 };

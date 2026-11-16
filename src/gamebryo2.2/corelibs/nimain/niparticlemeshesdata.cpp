@@ -12,7 +12,7 @@
 #include "../../../../include/NiMatrix3.h"
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 NiParticleMeshesData_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiParticleMeshesData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f0c (old: DAT_011f5f0c/g_011f5f0c)
 
 // @fnv 0x00a98b00
 // src: COMMUNITY 0x00a98b00

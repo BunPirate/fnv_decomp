@@ -22,11 +22,11 @@ class TESTopic : public TESForm, public TESFullName
 public:
     // Allocation size 0x48 (object_sizes.csv); members to 0x40 as in the original include/TESTopic.h layout.
     DialogueTopicData m_Data;                           // +0x24
-    float m_fPriority;                               // +0x28
-    BSSimpleList<QuestDialogueInfo*> m_listQuestInfo;  // +0x2C
-    BSStringT<char> cDummyPrompt;                     // +0x34
-    int m_iJournalIndex;                                  // +0x3C
-    unsigned int cFormEditorID;                                 // +0x40
+    float m_fPriority;                               // +0x28 // src: XBOX_RETAIL_PDB +0x28 (old: m_fTopicParamB)
+    BSSimpleList<QuestDialogueInfo*> m_listQuestInfo;  // +0x2C // src: XBOX_RETAIL_PDB +0x2c (old: m_kQuestInfoList)
+    BSStringT<char> cDummyPrompt;                     // +0x34 // src: XBOX_RETAIL_PDB +0x34 (old: m_kDummyPrompt)
+    int m_iJournalIndex;                                  // +0x3C // src: XBOX_RETAIL_PDB +0x3c (old: m_iTopicFlags)
+    unsigned int cFormEditorID;                                 // +0x40 // src: XBOX_RETAIL_PDB +0x40 (old: unk40)
     unsigned int unk44;                                 // +0x44
 
     TESTopic(int);

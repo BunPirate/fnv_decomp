@@ -8,8 +8,8 @@ class BGSReconstructCellSubBlocksMap;
 class BGSReconstructCellBlocksMap : public NiTMap<unsigned int, BGSReconstructCellSubBlocksMap*>
 {
 public:
-    int pPersistentCell;
-    bool bExteriors;
+    int pPersistentCell; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    bool bExteriors; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
 
     BGSReconstructCellBlocksMap(bool abExteriors);
     ~BGSReconstructCellBlocksMap();

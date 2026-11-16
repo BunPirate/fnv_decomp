@@ -11,5 +11,5 @@ public:
     ~BGSZoneTargetListener();
     void SetFlags(int flags, bool set);
 
-    int pZones;
+    int pZones; // src: XBOX_RETAIL_PDB +0x4 (old: m_flags)
 };

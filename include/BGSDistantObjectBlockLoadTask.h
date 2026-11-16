@@ -48,11 +48,11 @@ public:
     union { int iX; int m_iX; };
     union { int iY; int m_iY; };
     union { int iLevel; int m_iZ; };
-    BGSDistantObjectBlock* pBlock;
-    TESWorldSpace* pWorldSpace;
-    NiPointer<NiAVObject> spMesh;
-    NiPointer<NiAVObject> spNode;
-    unsigned char bCanceled;
+    BGSDistantObjectBlock* pBlock; // src: XBOX_RETAIL_PDB +0x40 (old: m_pParent)
+    TESWorldSpace* pWorldSpace; // src: XBOX_RETAIL_PDB +0x44 (old: m_pContainingWorldspace)
+    NiPointer<NiAVObject> spMesh; // src: XBOX_RETAIL_PDB +0x48 (old: m_spNode)
+    NiPointer<NiAVObject> spNode; // src: XBOX_RETAIL_PDB +0x4c (old: m_spLand)
+    unsigned char bCanceled; // src: XBOX_RETAIL_PDB +0x50 (old: m_bLoadComplete)
     union { bool m_bLOD; bool bSkipLoad; };
     unsigned char unk52[2];
     int unk54;

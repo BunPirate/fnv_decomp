@@ -32,5 +32,5 @@ public:
     char* GetSoundFile();
     const char* GetSoundFile() const;
 
-    BSStringT<char> cSoundFile;
+    BSStringT<char> cSoundFile; // src: XBOX_RETAIL_PDB +0x4 (old: m_kSoundFile)
 };

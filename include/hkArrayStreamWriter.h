@@ -17,7 +17,7 @@ public:
 
     int Seek(int offset, int whence);
 
-    hkArray<char>* m_arr;
+    hkArray<char>* m_arr; // src: XBOX_RETAIL_PDB +0x8 (old: m_aiIndexedValues)
     int m_offset;
-    int m_ownerShip;
+    int m_ownerShip; // src: XBOX_RETAIL_PDB +0x10 (old: m_ownership)
 };

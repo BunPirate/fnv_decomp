@@ -27,7 +27,7 @@ public:
     NiColorA Color;
     NiPoint3 m_kRadii;
     NiPointer<NiGeometry> m_kGeometry;
-    NiPointer<NiLines> spFrame;
+    NiPointer<NiLines> spFrame; // src: XBOX_RETAIL_PDB +0x28 (old: m_kLines)
     NiPointer<BSFadeNode> m_pController;
-    unsigned int iScaleHandlesEnabled;
+    unsigned int iScaleHandlesEnabled; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiPrimitiveFlags)
 };

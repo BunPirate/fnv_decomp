@@ -30,7 +30,7 @@ void NiLightDimmerController::GetLightDimmer(float& fValue)
 
 struct GlobalObjectO2_00a7b610;
 
-extern GlobalObjectO2_00a7b610 NiLightDimmerController_ms_RTTI;
+extern GlobalObjectO2_00a7b610 NiLightDimmerController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3fa0 (old: g_011f3fa0)
 
 // @fnv 0x00a4cf90
 // src: COMMUNITY 0x00a4cf90
@@ -107,7 +107,7 @@ void* FloatInterpOwner::CreateFloatInterpController(int arg)
 }
 
 extern NiRTTI DAT_011f4a28;
-extern const float NiInterpController_INVALID_TIME;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 inline bool GetManagerControlled(const NiLightDimmerController* controller)
 {

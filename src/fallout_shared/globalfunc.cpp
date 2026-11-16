@@ -1049,7 +1049,7 @@ float NiPoint3::Dot(void* apPoint)
 
 int __cdecl BSstrcmp(const char*, const char*);
 extern NiRTTI DAT_011f9140;
-extern NiRTTI WeaponObject_ms_RTTI;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 // Skips incrementing the counter at data+0xc when the object matches the RTTI checks or is an Arrow; otherwise increments it.
 // @fnv 0x004b6740
@@ -1320,7 +1320,7 @@ const char* const* __thiscall FUN_004b51d0_shell::GetRTTI()
     return &g_0126812c_arg1;
 }
 
-extern const NiRTTI bhkMouseSpringAction_ms_RTTI;
+extern const NiRTTI bhkMouseSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126812c (old: DAT_0126812c/g_0126812c)
 
 struct FUN_004b5210_shell
 {
@@ -1770,7 +1770,7 @@ float __cdecl NiASin_004b54c0(float fValue)
     }
 }
 
-extern NiRTTI NiGeomMorpherController_ms_RTTI;
+extern NiRTTI NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 // Returns true if object or any descendant NiNode child has a controller matching g_011f3728; recurses through children.
 // @fnv 0x004b5bf0
 // src: XBOX_PDB 0x004b5bf0
@@ -2180,7 +2180,7 @@ namespace fnv_004b68a0 {
 int __cdecl BSstrcmp(char const*, char const*);
 
 extern void const* const DAT_011f9140;
-extern NiRTTI WeaponObject_ms_RTTI;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 // Exe 0x004b68a0: local storage view; GetFlags binds the folded DWORD-at-+8 accessor 0x0044ddc0.
 struct GlobalfuncOffset08View
@@ -2250,7 +2250,7 @@ struct FUN_004b6a00_data
 };
 
 extern NiRTTI DAT_011f9140;
-extern NiRTTI WeaponObject_ms_RTTI;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 int __cdecl BSstrcmp(char const*, char const*);
 

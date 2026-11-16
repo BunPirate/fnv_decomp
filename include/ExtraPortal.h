@@ -9,5 +9,5 @@ class BSPortalNode;
 class ExtraPortal : public BSExtraData
 {
 public:
-    NiPointer<BSPortalNode> spPortal;
+    NiPointer<BSPortalNode> spPortal; // src: XBOX_RETAIL_PDB +0xc (old: m_pPortalNode)
 };

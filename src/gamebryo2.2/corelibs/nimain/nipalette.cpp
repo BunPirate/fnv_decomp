@@ -5,7 +5,7 @@
 #include "../../../../include/BSFadeNode.h"
 #include "../../../../include/NiPalette.h"
 
-extern "C" void* NiPalette_ms_RTTI;
+extern "C" void* NiPalette_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5c08 (old: g_011f5c08)
 
 // @fnv 0x00a8b070
 // src: COMMUNITY 0x00a8b070

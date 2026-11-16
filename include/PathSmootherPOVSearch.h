@@ -56,23 +56,23 @@ public:
     };
 
     PathingRequest* pRequest;
-    PathingSolution* pSolution;
+    PathingSolution* pSolution; // src: XBOX_RETAIL_PDB +0x205c (old: m_pOutputSolution)
     NiPoint3 m_kPathStartPosition;
-    NiPoint3 GoalLocation;
-    bool bUnderWaterPath;
+    NiPoint3 GoalLocation; // src: XBOX_RETAIL_PDB +0x206c (old: m_kGoalPosition)
+    bool bUnderWaterPath; // src: XBOX_RETAIL_PDB +0x2078 (old: m_bUnderwaterPath)
     const BSSimpleArray<NavMeshTriangleReference, 1024>* Triangles;
     const BSSimpleArray<NavMeshTriangleEdgeReference, 1024>* Edges;
     BSSimpleArray<PathSmootherPOVPoint*, 1024> m_kPrimaryPathPoints;
     BSSimpleArray<PathSmootherPOVPoint*, 1024> m_kSecondaryPathPoints;
     BSSimpleArray<PathSmootherPOVPoint*, 1024> m_kRequestPathPoints;
-    BSSimpleArray<PathSmootherPOVPoint*, 1024> allPOVs;
-    PathSmootherPOVPoint* pStartPov;
-    PathSmootherPOVPoint* pGoalPov;
+    BSSimpleArray<PathSmootherPOVPoint*, 1024> allPOVs; // src: XBOX_RETAIL_PDB +0x20b4 (old: m_kPathPoints)
+    PathSmootherPOVPoint* pStartPov; // src: XBOX_RETAIL_PDB +0x20c4 (old: m_pStartPoint)
+    PathSmootherPOVPoint* pGoalPov; // src: XBOX_RETAIL_PDB +0x20c8 (old: m_pGoalPoint)
     BSSimpleArray<PathSmootherPOVAvoidanceNode, 1024> Nodes;
     BSSimpleArray<NavMeshEdgeSegment, 1024> Links;
     BSSimpleArray<NavMeshEdgeRecord, 1024> m_kPrimaryEdgeRecords;
     BSSimpleArray<NavMeshEdgeRecord, 1024> m_kSecondaryEdgeRecords;
-    BSSimpleArray<const NavMeshInfo*, 1024>* pDetailedPathInfos;
+    BSSimpleArray<const NavMeshInfo*, 1024>* pDetailedPathInfos; // src: XBOX_RETAIL_PDB +0x210c (old: m_pNavMeshInfos)
 
     bool CheckSegmentAgainstNavMesh(const NavMeshEdgePoint&, const NiPoint3&, NavMeshEdgePoint&, float&);
     bool SmoothPath(PathingRequest*, const BSSimpleArray<NavMeshTriangleReference, 1024>&,

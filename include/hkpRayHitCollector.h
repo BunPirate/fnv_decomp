@@ -15,5 +15,5 @@ public:
 
     void reset();
 
-    float m_earlyOutHitFraction;
+    float m_earlyOutHitFraction; // src: XBOX_RETAIL_PDB +0x4 (old: m_fEarlyOutHitFraction)
 };

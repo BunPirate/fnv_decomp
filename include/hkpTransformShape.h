@@ -27,9 +27,9 @@ public:
     const hkpShape* GetShapeForKey() const;
     const hkTransform& getTransform() const;
 
-    hkpSingleShapeContainer m_childShape;
-    int m_childShapeSize;
+    hkpSingleShapeContainer m_childShape; // src: XBOX_RETAIL_PDB +0x10 (old: m_pContainedShape)
+    int m_childShapeSize; // src: XBOX_RETAIL_PDB +0x18 (old: m_iChildShapeSize)
     char pad1C[4];
     hkQuaternion m_rotation;
-    hkTransform m_transform;
+    hkTransform m_transform; // src: XBOX_RETAIL_PDB +0x30 (old: m_kMotionTransform)
 };

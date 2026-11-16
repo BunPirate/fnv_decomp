@@ -13,7 +13,7 @@
 class NiShader;
 
 typedef NiTStringTemplateMap<NiTPointerMap<const char*, NiShader*>, NiShader*> CreatorMap;
-extern CreatorMap* NiD3DShaderProgramFactory_ms_pkShaderCreators;
+extern CreatorMap* NiD3DShaderProgramFactory_ms_pkShaderCreators; // src: XBOX_RETAIL_PDB 0x0126fa14 (old: DAT_0126fa14)
 extern "C" const char* __cdecl strchr(const char*, int);
 extern "C" int __cdecl tolower(int);
 struct DirectoryEntry
@@ -55,7 +55,7 @@ bool NiD3DShaderProgramFactory::RegisterCreator(const char* pcName, NiD3DShaderP
 }
 
 struct Program;
-extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 // @fnv 0x00e92eb0
 // src: COMMUNITY 0x00e92eb0
 Program* NiD3DShaderProgramFactory_GetInstance()
@@ -67,7 +67,7 @@ struct Program
 {
     virtual void Destroy(int);
 };
-extern Program* NiD3DShaderProgramFactory_ms_pkFactory;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 // @fnv 0x00e92ec0
 // pdb: NiD3DShaderProgramFactory::Shutdown | NiD3DShaderProgramFactory.obj | retail, call graph, medium
 void DestroyProgram()

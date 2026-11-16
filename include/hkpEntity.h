@@ -94,27 +94,27 @@ public:
     void activate();
     void deactivate();
 
-    hkpMaterial m_material;
-    void* m_limitContactImpulseUtil;
-    hkReal m_damageMultiplier;
-    hkpBreakableBody* m_breakableBody;
-    hkUint32 m_solverData;
-    hkUint16 m_storageIndex;
-    hkUint16 m_contactPointCallbackDelay;
-    hkpEntitySmallArraySerializeOverrideType m_constraintsMaster;
-    hkArray<hkpConstraintInstance*> m_constraintsSlave;
-    hkArray<hkUint8> m_constraintRuntime;
-    hkpSimulationIsland* m_simulationIsland;
-    hkInt8 m_autoRemoveLevel;
-    hkUint8 m_numShapeKeysInContactPointProperties;
-    hkUint8 m_responseModifierFlags;
+    hkpMaterial m_material; // src: XBOX_RETAIL_PDB +0x8c (old: m_iMaterialIndex)
+    void* m_limitContactImpulseUtil; // src: XBOX_RETAIL_PDB +0x98 (old: m_pEntityUserData)
+    hkReal m_damageMultiplier; // src: XBOX_RETAIL_PDB +0x9c (old: m_fBulletSpread)
+    hkpBreakableBody* m_breakableBody; // src: XBOX_RETAIL_PDB +0xa0 (old: m_pShape)
+    hkUint32 m_solverData; // src: XBOX_RETAIL_PDB +0xa4 (old: m_uiFilterInfo)
+    hkUint16 m_storageIndex; // src: XBOX_RETAIL_PDB +0xa8 (old: m_usStorageIndex)
+    hkUint16 m_contactPointCallbackDelay; // src: XBOX_RETAIL_PDB +0xaa (old: m_usNextProcessCallbackDelay)
+    hkpEntitySmallArraySerializeOverrideType m_constraintsMaster; // src: XBOX_RETAIL_PDB +0xac (old: m_eSmallArraySerializeOverrideType)
+    hkArray<hkpConstraintInstance*> m_constraintsSlave; // src: XBOX_RETAIL_PDB +0xb4 (old: m_kSlaveConstraints)
+    hkArray<hkUint8> m_constraintRuntime; // src: XBOX_RETAIL_PDB +0xc0 (old: m_pByteBuffer)
+    hkpSimulationIsland* m_simulationIsland; // src: XBOX_RETAIL_PDB +0xcc (old: m_pSimulationIsland)
+    hkInt8 m_autoRemoveLevel; // src: XBOX_RETAIL_PDB +0xd0 (old: m_iAutoRemoveLevel)
+    hkUint8 m_numShapeKeysInContactPointProperties; // src: XBOX_RETAIL_PDB +0xd1 (old: m_ucNumShapeKeysInContactPointProperties)
+    hkUint8 m_responseModifierFlags; // src: XBOX_RETAIL_PDB +0xd2 (old: m_ucResponseModifierFlags)
     char padD3[1];
-    hkUint32 m_uid;
-    hkpEntitySpuCollisionCallback m_spuCollisionCallback;
-    hkpMaxSizeMotion m_motion;
-    hkpEntitySmallArraySerializeOverrideType m_contactListeners;
-    ActionArray m_actions;
-    hkLocalFrame* m_localFrame;
-    mutable hkpEntityExtendedListeners* m_extendedListeners;
+    hkUint32 m_uid; // src: XBOX_RETAIL_PDB +0xd4 (old: m_uiUniqueId)
+    hkpEntitySpuCollisionCallback m_spuCollisionCallback; // src: XBOX_RETAIL_PDB +0xd8 (old: m_kSpuCollisionCallback)
+    hkpMaxSizeMotion m_motion; // src: XBOX_RETAIL_PDB +0xe0 (old: m_pMotionState)
+    hkpEntitySmallArraySerializeOverrideType m_contactListeners; // src: XBOX_RETAIL_PDB +0x200 (old: m_kContactListeners)
+    ActionArray m_actions; // src: XBOX_RETAIL_PDB +0x208 (old: m_ppActions)
+    hkLocalFrame* m_localFrame; // src: XBOX_RETAIL_PDB +0x210 (old: m_pLocalFrame)
+    mutable hkpEntityExtendedListeners* m_extendedListeners; // src: XBOX_RETAIL_PDB +0x214 (old: m_pExtendedListeners)
     char pad218[8];
 };

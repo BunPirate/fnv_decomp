@@ -23,7 +23,7 @@ public:
 class NiNode;
 
 // pdb: class CharacterProgression, size 0x4, 1 members
-class CharacterProgression
+class CharacterProgression // src: XBOX_RETAIL_PDB (old: NiNodeBooleanState_falloutcharacterprogression)
 {
 public:
     NiPointer<NiNode> pData;

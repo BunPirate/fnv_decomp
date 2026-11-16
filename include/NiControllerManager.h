@@ -56,11 +56,11 @@ public:
     NiControllerSequence* GetSequenceAt_00495d20(unsigned int index);
     bool NiTimeController_GetActive();
 
-    NiTObjectArray<NiPointer<NiControllerSequence> > m_kSequenceArray;
+    NiTObjectArray<NiPointer<NiControllerSequence> > m_kSequenceArray; // src: XBOX_RETAIL_PDB +0x34 (old: m_kSequences)
     NiTPrimitiveSet<NiControllerSequence*> m_kPlayingSequences;
-    NiTStringPointerMap<NiControllerSequence*> m_kStringMap;
-    BSAnimNoteListener* pListener;
-    bool m_bCumulative;
+    NiTStringPointerMap<NiControllerSequence*> m_kStringMap; // src: XBOX_RETAIL_PDB +0x50 (old: m_kObjectMap)
+    BSAnimNoteListener* pListener; // src: XBOX_RETAIL_PDB +0x64 (old: m_pAudioListener)
+    bool m_bCumulative; // src: XBOX_RETAIL_PDB +0x68 (old: m_bUseCumulativeAnimation)
     NiTObjectSet<NiPointer<NiControllerSequence> > m_kSequenceSet;
     NiPointer<NiAVObjectPalette> m_spControllerManager;
 };

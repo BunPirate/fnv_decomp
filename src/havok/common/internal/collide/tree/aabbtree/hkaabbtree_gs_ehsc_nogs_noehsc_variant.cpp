@@ -45,8 +45,8 @@ struct Obj_d9be20 {
 };
 // pdb: class Key, size 0x8, 2 members
 struct Key {
-    int m_sKeyName;
-    int m_pChildren;
+    int m_sKeyName; // src: XBOX_RETAIL_PDB +0x0 (old: a)
+    int m_pChildren; // src: XBOX_RETAIL_PDB +0x4 (old: b)
     Key& operator=(const Key& o) { m_sKeyName = o.m_sKeyName; m_pChildren = o.m_pChildren; m_sKeyName = o.m_sKeyName; return *this; }
 };
 struct Elem {

@@ -24,11 +24,11 @@ public:
     void __thiscall ReleaseReference_00a95590();
     void* __thiscall FUN_00a95740(unsigned int);
 
-    RendererDataRecord* m_kScreenRects;
+    RendererDataRecord* m_kScreenRects; // src: XBOX_RETAIL_PDB +0x8 (old: m_pBase)
     unsigned int m_uiElementCount;
     unsigned int m_uiAllocatedCapacity;
-    NiTexturingProperty* m_spTexProp;
-    unsigned short m_usDirtyFlags;
+    NiTexturingProperty* m_spTexProp; // src: XBOX_RETAIL_PDB +0x14 (old: m_pTexturingProperty)
+    unsigned short m_usDirtyFlags; // src: XBOX_RETAIL_PDB +0x18 (old: flags)
     unsigned short unk1A;
-    void* m_pkBuffData;
+    void* m_pkBuffData; // src: XBOX_RETAIL_PDB +0x1c (old: m_pkGeometryRendererData)
 };

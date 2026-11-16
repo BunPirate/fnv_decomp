@@ -17,13 +17,13 @@ enum NiTextureTransformController__TransformMember
 class NiTextureTransformController : public NiFloatInterpController
 {
 public:
-    unsigned int m_uiLastIdx;
-    NiTexturingProperty__Map* m_pkMap;
-    bool m_bShaderMap;
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x38 (old: m_uiLastKeyIndex)
+    NiTexturingProperty__Map* m_pkMap; // src: XBOX_RETAIL_PDB +0x3c (old: m_pTaskMap)
+    bool m_bShaderMap; // src: XBOX_RETAIL_PDB +0x40 (old: m_bIsBumpMap)
     unsigned char layoutPadding41[3];
-    unsigned int m_uiMapIndex;
-    NiTextureTransformController__TransformMember m_eMember;
-    mutable char* m_pcCtlrID;
+    unsigned int m_uiMapIndex; // src: XBOX_RETAIL_PDB +0x44 (old: m_uiTextureMapIndex)
+    NiTextureTransformController__TransformMember m_eMember; // src: XBOX_RETAIL_PDB +0x48 (old: m_eTransformMember)
+    mutable char* m_pcCtlrID; // src: XBOX_RETAIL_PDB +0x4c (old: m_pCachedControllerID)
 
     virtual const char* GetControllerID() const;
     virtual void Update(NiUpdateData& UpdateData);

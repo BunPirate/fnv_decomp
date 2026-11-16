@@ -14,7 +14,7 @@ class TESObjectREFR;
 class PackageTargetRecord
 {
   public:
-    unsigned char eTargType;    // +0x00 PACK_TARG_TYPE: 0 reference, 1 object, 2 object type, ...
+    unsigned char eTargType;    // +0x00 PACK_TARG_TYPE: 0 reference, 1 object, 2 object type, ... // src: XBOX_RETAIL_PDB +0x0 (old: m_uiTargetType)
     unsigned char layoutPadding1[3];
     union
     {
@@ -24,7 +24,7 @@ class PackageTargetRecord
         PACKAGE_OBJECT_TYPE eObjType;                         // +0x04 type 2 (PACKAGE_OBJECT_TYPE)
     };
     int iValue;                      // +0x08 count / distance
-    float fAcquireRadius;            // +0x0C acquire radius
+    float fAcquireRadius;            // +0x0C acquire radius // src: XBOX_RETAIL_PDB +0xc (old: m_fTargetValue)
 
     PackageTargetRecord();                                  // 0x0067ff70
     ~PackageTargetRecord();

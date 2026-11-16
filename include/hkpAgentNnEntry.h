@@ -12,13 +12,13 @@ public:
     unsigned char m_ucNnTrackType;
     unsigned char m_usNumContactPoints;
     unsigned char m_iElementCount;
-    unsigned short m_agentIndexOnCollidable[2];
-    hkpContactMgr* m_contactMgr;
-    unsigned char m_collisionQualityIndex;
-    unsigned char m_forceCollideOntoPpu;
-    unsigned char m_padding;
+    unsigned short m_agentIndexOnCollidable[2]; // src: XBOX_RETAIL_PDB +0x4 (old: m_ausAgentData)
+    hkpContactMgr* m_contactMgr; // src: XBOX_RETAIL_PDB +0x8 (old: m_pContactManager)
+    unsigned char m_collisionQualityIndex; // src: XBOX_RETAIL_PDB +0xc (old: m_cAgentType)
+    unsigned char m_forceCollideOntoPpu; // src: XBOX_RETAIL_PDB +0xd (old: m_uiForceCollideOntoPpu)
+    unsigned char m_padding; // src: XBOX_RETAIL_PDB +0xe (old: m_ucHeaderByte)
     unsigned char m_usHeaderWord;
-    hkpLinkedCollidable* m_collidable[2];
+    hkpLinkedCollidable* m_collidable[2]; // src: XBOX_RETAIL_PDB +0x10 (old: m_kCollidable)
 
     inline hkpCdBody* getCollidableA()
     {

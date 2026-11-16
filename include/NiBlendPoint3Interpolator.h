@@ -28,5 +28,5 @@ class NiBlendPoint3Interpolator : public NiBlendInterpolator
     NiBlendPoint3Interpolator& operator=(const NiBlendPoint3Interpolator& other);
 
     NiPoint3 m_kPoint3Value;
-    bool m_bValidValue;
+    bool m_bValidValue; // src: XBOX_RETAIL_PDB +0x3c (old: m_bValueValid)
 };

@@ -431,27 +431,27 @@ int __cdecl hkString_strCmp(const void* a, const void* b);
 // pdb: class hkPackfileHeader, size 0x40, 11 members
 struct hkPackfileHeader
 {
-    unsigned int m_magic;
+    unsigned int m_magic; // src: XBOX_RETAIL_PDB +0x0 (old: m_magic0)
     unsigned int m_magic1;
-    int m_userTag;
-    int m_fileVersion;
-    unsigned char m_layoutRules;
+    int m_userTag; // src: XBOX_RETAIL_PDB +0x8 (old: m_uiUserTag)
+    int m_fileVersion; // src: XBOX_RETAIL_PDB +0xc (old: m_iFileVersion)
+    unsigned char m_layoutRules; // src: XBOX_RETAIL_PDB +0x10 (old: m_layoutRules_0)
     unsigned char m_layoutRules_1;
     unsigned char m_layoutRules_2;
     unsigned char m_layoutRules_3;
-    int m_numSections;
-    int m_contentsSectionIndex;
-    int m_contentsSectionOffset;
-    int m_contentsClassNameSectionIndex;
-    int m_contentsClassNameSectionOffset;
-    unsigned char m_contentsVersion;
+    int m_numSections; // src: XBOX_RETAIL_PDB +0x14 (old: m_iNumSections)
+    int m_contentsSectionIndex; // src: XBOX_RETAIL_PDB +0x18 (old: m_iContentsSectionIndex)
+    int m_contentsSectionOffset; // src: XBOX_RETAIL_PDB +0x1c (old: m_iContentsSectionOffset)
+    int m_contentsClassNameSectionIndex; // src: XBOX_RETAIL_PDB +0x20 (old: m_iContentsClassNameSectionIndex)
+    int m_contentsClassNameSectionOffset; // src: XBOX_RETAIL_PDB +0x24 (old: m_iContentsClassNameSectionOffset)
+    unsigned char m_contentsVersion; // src: XBOX_RETAIL_PDB +0x28 (old: m_contentsVersion_0)
     unsigned char unk29;
     unsigned char unk2a;
     unsigned char unk2b;
     unsigned int unk2c;
     unsigned int unk30;
     unsigned int unk34;
-    int m_pad;
+    int m_pad; // src: XBOX_RETAIL_PDB +0x38 (old: m_flags)
     int unk3c;
 
     hkPackfileHeader()
@@ -755,15 +755,15 @@ extern "C" int __cdecl Hkmap_ProcessEntries_00cb17f0(int);
 // pdb: class hkPackfileSectionHeader, size 0x30, 9 members
 struct hkPackfileSectionHeader
 {
-    char m_sectionTag[19];
-    char m_nullByte;
-    int m_absoluteDataStart;
-    int m_localFixupsOffset;
-    int m_globalFixupsOffset;
-    int m_virtualFixupsOffset;
-    int m_exportsOffset;
-    int m_importsOffset;
-    int m_endOffset;
+    char m_sectionTag[19]; // src: XBOX_RETAIL_PDB +0x0 (old: m_acSectionTag)
+    char m_nullByte; // src: XBOX_RETAIL_PDB +0x13 (old: m_cNullByte)
+    int m_absoluteDataStart; // src: XBOX_RETAIL_PDB +0x14 (old: m_iAbsoluteDataStart)
+    int m_localFixupsOffset; // src: XBOX_RETAIL_PDB +0x18 (old: m_iLocalFixupsOffset)
+    int m_globalFixupsOffset; // src: XBOX_RETAIL_PDB +0x1c (old: m_iGlobalFixupsOffset)
+    int m_virtualFixupsOffset; // src: XBOX_RETAIL_PDB +0x20 (old: m_iVirtualFixupsOffset)
+    int m_exportsOffset; // src: XBOX_RETAIL_PDB +0x24 (old: m_iExportsOffset)
+    int m_importsOffset; // src: XBOX_RETAIL_PDB +0x28 (old: m_iImportsOffset)
+    int m_endOffset; // src: XBOX_RETAIL_PDB +0x2c (old: m_iEndOffset)
 
     int getDataSize() const
     {

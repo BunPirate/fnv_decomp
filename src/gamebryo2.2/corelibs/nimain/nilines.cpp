@@ -47,7 +47,7 @@ struct NiCombatArray
     void SetSize(unsigned int);
     void SetAt(unsigned int, ActorCombatGroup*&);
 };
-extern GlobalObjectO2_00a7b610* NiLines_ms_RTTI;
+extern GlobalObjectO2_00a7b610* NiLines_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a48 (old: DAT_011f4a48/g_011f4a48)
 void __stdcall FUN_00a80e70(NiCombatArray*);
 ActorCombatGroup* __cdecl NiViewerStrings_NiGetViewerString_Title(GlobalObjectO2_00a7b610*);
 // @fnv 0x00a74830

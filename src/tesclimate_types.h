@@ -8,9 +8,9 @@ extern unsigned int __cdecl SetWarningState(bool);
 class WeatherEntry
 {
   public:
-    TESWeather* pWeather;
-    unsigned int uiChance;
-    TESGlobal* pChanceVar;
+    TESWeather* pWeather; // src: XBOX_RETAIL_PDB +0x0 (old: m_pWeatherObject)
+    unsigned int uiChance; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiWeatherChance)
+    TESGlobal* pChanceVar; // src: XBOX_RETAIL_PDB +0x8 (old: m_pWeatherChanceGlobal)
     WeatherEntry();
 };
 #include "../include/TESWeatherList.h"

@@ -783,7 +783,7 @@ S_00dcc9c0_Class* S_00dcc9c0_Class::ProcessAndReturnValue_00dcc9c0(S_00dcc9c0_Ta
 }
 }  // namespace fnv_00dcc9c0
 
-extern int hkpNamedMeshMaterialClass;
+extern int hkpNamedMeshMaterialClass; // src: XBOX_RETAIL_PDB 0x01269bb4 (old: g_01269bb4/g_unk01269bb4)
 
 // @fnv 0x00dccb00
 // src: GUESS 0x00dccb00 (confidence: low)
@@ -844,7 +844,7 @@ void __cdecl Object_ForwardCall_00dced30(FUN_00dced30_cls* pObject)
     pObject->m_v00(0);
 }
 
-extern int hkpBreakableConstraintDataClass;
+extern int hkpBreakableConstraintDataClass; // src: XBOX_RETAIL_PDB 0x01269c44 (old: DAT_01269c44/g_01269c44)
 
 // @fnv 0x00dced40
 // src: GUESS 0x00dced40 (confidence: low)
@@ -2437,7 +2437,7 @@ void MatchCaller()
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkpWeldingUtilityClass;
+extern CpuOpaque hkpWeldingUtilityClass; // src: XBOX_RETAIL_PDB 0x01269c14 (old: DAT_01269c14/g_01269c14)
 // @fnv 0x00dccb50
 // src: GUESS 0x00dccb50 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT01269c14Address()

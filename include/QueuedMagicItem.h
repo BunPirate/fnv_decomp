@@ -24,5 +24,5 @@ public:
     virtual void OnChildCompletion();
 
     MagicItem* pMagicItem;
-    EffectSetting* pEffectSetting;
+    EffectSetting* pEffectSetting; // src: XBOX_RETAIL_PDB +0x2c (old: m_pEffectSetting)
 };

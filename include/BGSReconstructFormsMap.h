@@ -8,7 +8,7 @@ class ReconstructFormData;
 class BGSReconstructFormsMap : public NiTMap<unsigned int, ReconstructFormData>
 {
 public:
-    int iFlags;
+    int iFlags; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
 
     BGSReconstructFormsMap();
     virtual ~BGSReconstructFormsMap();

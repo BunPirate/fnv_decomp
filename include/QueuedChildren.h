@@ -16,5 +16,5 @@ public:
     void AddFinishedChild();
     unsigned int GetChildCountFinished();
 
-    volatile unsigned int iNumChildrenFinished;
+    volatile unsigned int iNumChildrenFinished; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiChildCountFinished)
 };

@@ -55,11 +55,11 @@ class hkaMeshBinding : public hkReferencedObject
     virtual ~hkaMeshBinding() throw();
     void* FUN_00e34920(int flags);
 
-    hkE348::ReferenceCountedPointer<hkReferencedObject> m_mesh;
-    hkStringPtr m_originalSkeletonName;
-    hkE348::ReferenceCountedPointer<hkReferencedObject> m_skeleton;
-    hkArray<hkArray<short> > m_mappings;
-    hkArray<hkTransform> m_boneFromSkinMeshTransforms;
+    hkE348::ReferenceCountedPointer<hkReferencedObject> m_mesh; // src: XBOX_RETAIL_PDB +0x8 (old: m_pMesh)
+    hkStringPtr m_originalSkeletonName; // src: XBOX_RETAIL_PDB +0xc (old: m_name)
+    hkE348::ReferenceCountedPointer<hkReferencedObject> m_skeleton; // src: XBOX_RETAIL_PDB +0x10 (old: m_pSkeleton)
+    hkArray<hkArray<short> > m_mappings; // src: XBOX_RETAIL_PDB +0x14 (old: m_kMappings)
+    hkArray<hkTransform> m_boneFromSkinMeshTransforms; // src: XBOX_RETAIL_PDB +0x20 (old: m_kBoneFromSkinningTransforms)
 };
 
 // @fnv 0x00e34820

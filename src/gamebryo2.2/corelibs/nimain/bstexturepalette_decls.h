@@ -42,10 +42,10 @@ class BSTexMapItem
 {
   public:
     NiTexture* spTexture;
-    BSFileEntry* pFileEntry;
+    BSFileEntry* pFileEntry; // src: XBOX_RETAIL_PDB +0x4 (old: m_pFileEntry)
     BSTexMapItem* pNext;
-    unsigned short sPriority;
-    short sNameBaseOffset;
+    unsigned short sPriority; // src: XBOX_RETAIL_PDB +0xc (old: m_usTextureSizeLevel)
+    short sNameBaseOffset; // src: XBOX_RETAIL_PDB +0xe (old: m_sTextureCacheValue)
 
     void* operator new(size_t size);
 
@@ -75,7 +75,7 @@ class BSFileEntryMap
     void SetAt(const BSFileEntry*, BSTexMapItem*);
 };
 extern RecursiveSpinLock g_spinLock;
-extern TextureCacheMap* BSTexturePalette_pTexMapA;
+extern TextureCacheMap* BSTexturePalette_pTexMapA; // src: XBOX_RETAIL_PDB 0x011f4464 (old: DAT_011f4464)
 extern BSFileEntryMap* DAT_011f4468;
 unsigned int __cdecl GetTextureSizeLevel(NiTexture*);
 #endif

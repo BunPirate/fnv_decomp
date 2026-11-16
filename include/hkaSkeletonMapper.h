@@ -17,5 +17,5 @@ public:
     void __cdecl mapPose(const hkQsTransform* poseAModelSpace, const hkQsTransform* originalPoseBLocalSpace, hkQsTransform* poseBModelSpace, int source) const;
 
     char pad8[0x8];
-    hkaSkeletonMapperData m_mapping;
+    hkaSkeletonMapperData m_mapping; // src: XBOX_RETAIL_PDB +0x10 (old: m_kMappingData)
 };

@@ -17,8 +17,8 @@ enum PATHING_MESSAGE_TYPE
 class ActorPathingMessage
 {
   public:
-    int msgType;
-    NiPointer<WaitableObject> spSolution;
+    int msgType; // src: XBOX_RETAIL_PDB +0x0 (old: m_eMessageType)
+    NiPointer<WaitableObject> spSolution; // src: XBOX_RETAIL_PDB +0x4 (old: m_pPathingSolution)
     ActorPathingMessage(PATHING_MESSAGE_TYPE type, const NiPointer<PathingSolution>& solution);
     ~ActorPathingMessage();
     ActorPathingMessage& operator=(const ActorPathingMessage&);
@@ -86,8 +86,8 @@ struct DummyTimer
 class PathManager
 {
   public:
-    PathManagerImpl* pImpl;
-    PerformanceTimerManager PerformanceTimer;
+    PathManagerImpl* pImpl; // src: XBOX_RETAIL_PDB +0x0 (old: m_pPathManagerImpl)
+    PerformanceTimerManager PerformanceTimer; // src: XBOX_RETAIL_PDB +0x4 (old: m_kPerformanceTimerManager)
     PathManager();
     bool Initialize();
     bool BuildPath(NiPointer<PathingRequest> aspRequest, NiPointer<ActorPathingMessageQueue> aspMessageQueue,

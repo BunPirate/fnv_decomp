@@ -2107,7 +2107,7 @@ const void* __cdecl getVtablehkpVehicleInstance()
     return *reinterpret_cast<const void**>(&kObject);
 }
 
-class __declspec(align(16)) hkaBoneAttachment
+class __declspec(align(16)) hkaBoneAttachment // src: EXE (old: S00dfe5e0_Object)
 {
   public:
     hkaBoneAttachment(FinishingFlag flag)
@@ -2119,9 +2119,9 @@ class __declspec(align(16)) hkaBoneAttachment
     }
     virtual void vf00();
     int unk04;
-    FUN_00dfd9b0_sub m_originalSkeletonName;
+    FUN_00dfd9b0_sub m_originalSkeletonName; // src: XBOX_RETAIL_PDB +0x8 (old: m_kFirst)
     int unk0C;
-    int m_boneFromAttachment;
+    int m_boneFromAttachment; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
     int unk14;
     int unk18;
     int unk1C;
@@ -2137,9 +2137,9 @@ class __declspec(align(16)) hkaBoneAttachment
     int unk44;
     int unk48;
     int unk4C;
-    int m_attachment;
-    FUN_00dfd9b0_sub m_name;
-    int m_boneIndex;
+    int m_attachment; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
+    FUN_00dfd9b0_sub m_name; // src: XBOX_RETAIL_PDB +0x54 (old: m_kSecond)
+    int m_boneIndex; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
     int unk5C;
 };
 

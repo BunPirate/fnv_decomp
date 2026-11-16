@@ -11,8 +11,8 @@ class FormChangeMap;
 class BGSReconstructFormsInFileMap : public NiTMap<unsigned int, BGSReconstructFormsMap*>
 {
 public:
-    BGSReconstructCellBlocksMap* pInteriorCells;
-    BGSReconstructWorldSpacesMap* pWorldSpaces;
+    BGSReconstructCellBlocksMap* pInteriorCells; // src: XBOX_RETAIL_PDB +0x10 (old: m_pInteriorMap)
+    BGSReconstructWorldSpacesMap* pWorldSpaces; // src: XBOX_RETAIL_PDB +0x14 (old: m_pExteriorMap)
     int iCount;
 
     BGSReconstructFormsInFileMap();

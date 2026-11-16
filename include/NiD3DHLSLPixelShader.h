@@ -39,7 +39,7 @@ public:
     ID3DXConstantTable* GetShaderConstantTable();
 
 
-    const char* m_pcEntryPoint;
-    const char* m_pcShaderTarget;
-    ID3DXConstantTable* m_pkConstantTable;
+    const char* m_pcEntryPoint; // src: XBOX_RETAIL_PDB +0x30 (old: m_pcShaderEntryPoint)
+    const char* m_pcShaderTarget; // src: XBOX_RETAIL_PDB +0x34 (old: m_pcShaderProfile)
+    ID3DXConstantTable* m_pkConstantTable; // src: XBOX_RETAIL_PDB +0x38 (old: m_pShaderConstantTable)
 };

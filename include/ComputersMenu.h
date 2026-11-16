@@ -57,25 +57,25 @@ public:
             Tile* tile64;
         };
     };
-    ComputerEntryList lbMenuItems;
-    BSSimpleList<BGSTerminal*> TerminalStack;
-    unsigned int uiResultDisplayTimeout;
-    void* pCursorVis;
-    BGSTerminal* pTerminal;
-    TESObjectREFR* pTerminalRef;
-    int eMode;
-    StrMem strNoteText;
+    ComputerEntryList lbMenuItems; // src: XBOX_RETAIL_PDB +0x68 (old: entries)
+    BSSimpleList<BGSTerminal*> TerminalStack; // src: XBOX_RETAIL_PDB +0x98 (old: notes)
+    unsigned int uiResultDisplayTimeout; // src: XBOX_RETAIL_PDB +0xa0 (old: unka0)
+    void* pCursorVis; // src: XBOX_RETAIL_PDB +0xa4 (old: unka4)
+    BGSTerminal* pTerminal; // src: XBOX_RETAIL_PDB +0xa8 (old: terminal)
+    TESObjectREFR* pTerminalRef; // src: XBOX_RETAIL_PDB +0xac (old: reference)
+    int eMode; // src: XBOX_RETAIL_PDB +0xb0 (old: unkb0)
+    StrMem strNoteText; // src: XBOX_RETAIL_PDB +0xb4 (old: text)
     union
     {
         const char* m_pText;
         const char* unkbc;
     };
-    bool bTutorial;
-    bool bDisplayFlag;
+    bool bTutorial; // src: XBOX_RETAIL_PDB +0xc0 (old: unkc0)
+    bool bDisplayFlag; // src: XBOX_RETAIL_PDB +0xc1 (old: bRefreshed)
     unsigned char unkC2[2];
-    BSSoundHandle Sounds[3];
-    TextAnimator* pATManager;
-    void (*NoteActivationFn)();
+    BSSoundHandle Sounds[3]; // src: XBOX_RETAIL_PDB +0xc4 (old: sounds)
+    TextAnimator* pATManager; // src: XBOX_RETAIL_PDB +0xe8 (old: manager)
+    void (*NoteActivationFn)(); // src: XBOX_RETAIL_PDB +0xec (old: callbackec)
     void (*callbackf0)();
     void (*callbackf4)();
     int unkf8;

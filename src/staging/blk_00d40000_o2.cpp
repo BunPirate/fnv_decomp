@@ -854,7 +854,7 @@ int* __cdecl Object_GetGlobalObjectAddress_00d49520()
     return &DAT_01268bcc;
 }
 
-extern int hkpStorageSampledHeightFieldShapeClass;
+extern int hkpStorageSampledHeightFieldShapeClass; // src: XBOX_RETAIL_PDB 0x01268c14 (old: DAT_01268c14/g_01268c14)
 
 // @fnv 0x00d49590
 // src: GUESS 0x00d49590 (confidence: low)
@@ -983,7 +983,7 @@ void* FUN_00d49c50_cls::hkpStorageExtendedMeshShape_hkpStorageExtendedMeshShape(
     return this;
 }
 
-extern "C" int hkpStorageExtendedMeshShapeMaterialClass;
+extern "C" int hkpStorageExtendedMeshShapeMaterialClass; // src: XBOX_RETAIL_PDB 0x01268c8c (old: DAT_01268c8c/g_01268c8c/g_kHkpMeshMaterialClass)
 
 // @fnv 0x00d4b160
 // src: GUESS 0x00d4b160 (confidence: low)
@@ -1004,7 +1004,7 @@ void __cdecl Runtime_ProcessState_00d4b170(S_00d4b170* pTarget, int a)
         pTarget->SetVptr_00d4a170(a);
 }
 
-extern int hkpStorageExtendedMeshShapeMeshSubpartStorageClass;
+extern int hkpStorageExtendedMeshShapeMeshSubpartStorageClass; // src: XBOX_RETAIL_PDB 0x01268cbc (old: DAT_01268cbc/g_01268cbc)
 
 // @fnv 0x00d4b1c0
 // src: GUESS 0x00d4b1c0 (confidence: low)
@@ -1025,7 +1025,7 @@ void __cdecl Object_ProcessState_00d4b1d0(S_00d49c40* pObject, int a)
         pObject->SetVirtualTable_00d49c40(a);
 }
 
-extern int hkpStorageExtendedMeshShapeShapeSubpartStorageClass;
+extern int hkpStorageExtendedMeshShapeShapeSubpartStorageClass; // src: XBOX_RETAIL_PDB 0x01268d04 (old: DAT_01268d04/g_01268d04)
 
 // @fnv 0x00d4b220
 // src: GUESS 0x00d4b220 (confidence: low)
@@ -1049,7 +1049,7 @@ void __cdecl Runtime_ProcessState_00d4b230(FUN_00d4a180_cls* pTarget, int aiValu
         pTarget->FUN_00d4a180(aiValue);
 }
 
-extern int hkpStorageExtendedMeshShapeClass;
+extern int hkpStorageExtendedMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268d4c (old: DAT_01268d4c/g_01268d4c)
 // @fnv 0x00d4b280
 // src: GUESS 0x00d4b280 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00d4b280()
@@ -1065,7 +1065,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00d4b2a0()
     return &DAT_01268d94;
 }
 
-extern unsigned char hkpExtendedMeshShapeTrianglesSubpartClass;
+extern unsigned char hkpExtendedMeshShapeTrianglesSubpartClass; // src: XBOX_RETAIL_PDB 0x01268dc4 (old: DAT_01268dc4/g_01268dc4)
 // @fnv 0x00d4b2c0
 // src: GUESS 0x00d4b2c0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00d4b2c0()
@@ -1092,7 +1092,7 @@ void __cdecl hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart_ProcessState_00d4b
     }
 }
 
-extern int hkpExtendedMeshShapeShapesSubpartClass;
+extern int hkpExtendedMeshShapeShapesSubpartClass; // src: XBOX_RETAIL_PDB 0x01268df4 (old: DAT_01268df4/g_01268df4)
 
 // @fnv 0x00d4b2f0
 // src: GUESS 0x00d4b2f0 (confidence: low)
@@ -1228,7 +1228,7 @@ void Runtime_ProcessState_00d4be30(D4BE30World* pkWorld, void* pvEntity)
         pkWorld->UpdateEntity(pvEntity);
 }
 
-extern int hkpStorageMeshShapeSubpartStorageClass;
+extern int hkpStorageMeshShapeSubpartStorageClass; // src: XBOX_RETAIL_PDB 0x01268e6c (old: DAT_01268e6c/g_01268e6c)
 
 // @fnv 0x00d4be80
 // src: GUESS 0x00d4be80 (confidence: low)
@@ -1250,7 +1250,7 @@ void __cdecl Object_ProcessState_00d4be90(FUN_00d4ba30_class* pObject, int value
         pObject->FUN_00d4ba30(value);
 }
 
-extern int hkpStorageMeshShapeClass;
+extern int hkpStorageMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268eb4 (old: g_01268eb4/g_unk01268eb4)
 
 // @fnv 0x00d4bee0
 // src: GUESS 0x00d4bee0 (confidence: low)
@@ -1259,7 +1259,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00d4bee0()
     return &hkpStorageMeshShapeClass;
 }
 
-extern int hkpMeshShapeSubpartClass;
+extern int hkpMeshShapeSubpartClass; // src: XBOX_RETAIL_PDB 0x01268efc (old: g_01268efc/g_unk01268efc)
 
 // @fnv 0x00d4bf00
 // src: GUESS 0x00d4bf00 (confidence: low)
@@ -3393,7 +3393,7 @@ void __cdecl Object_ProcessState_00d47f40(FUN_00d48300_Obj* obj, int aiValue)
 }
 
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 hkRootLevelContainerNamedVariantClass;
+extern GlobalObjectO2_00d472a0 hkRootLevelContainerNamedVariantClass; // src: XBOX_RETAIL_PDB 0x01268b24 (old: g_01268b24)
 
 // @fnv 0x00d47f60
 // src: GUESS 0x00d47f60 (confidence: low)
@@ -3415,7 +3415,7 @@ void __cdecl Runtime_ProcessState_00d47f70(FnvCpu_FUN_00d47f70_CpuTarget* pCpuTa
 }
 
 struct CpuOpaque;
-extern CpuOpaque hkRootLevelContainerClass;
+extern CpuOpaque hkRootLevelContainerClass; // src: XBOX_RETAIL_PDB 0x01268b54 (old: DAT_01268b54/g_01268b54)
 // @fnv 0x00d47f90
 // src: GUESS 0x00d47f90 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT01268b54Address()

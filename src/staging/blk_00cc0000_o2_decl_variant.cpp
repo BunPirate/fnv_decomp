@@ -1644,7 +1644,7 @@ class FUN_00cc2a00_cls
     void Attach(FUN_00cc2a00_obj* arInfo);
     FUN_00cc2a00_obj* bhkShapePhantom_CreateCInfo(bool* arCreated);
 };
-extern int bhkSpringAction_ms_RTTI;
+extern int bhkSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685b0 (old: DAT_012685b0/g_012685b0/g_pcCC31C0ClassName)
 void* __cdecl bhkSpringAction_GetRTTI();
 struct Col4
 {
@@ -2213,7 +2213,7 @@ class FUN_00cc39b0 : public FUN_00cc39b0_base
     virtual ~FUN_00cc39b0();
     void unk08();
 };
-extern int bhkDashpotAction_ms_RTTI;
+extern int bhkDashpotAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685c8 (old: DAT_012685c8/g_012685c8)
 void* __cdecl bhkDashpotAction_GetRTTI();
 extern int DAT_010c970c;
 extern int DAT_012685c4;
@@ -3163,7 +3163,7 @@ struct FUN_00cc5090 : SpawnedBase
 {
     virtual ~FUN_00cc5090();
 };
-extern int bhkWheelConstraint_ms_RTTI;
+extern int bhkWheelConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685ec (old: g_012685ec/g_unk012685ec)
 void* __cdecl bhkWheelConstraint_GetRTTI(void);
 struct BinaryStream
 {
@@ -4103,7 +4103,7 @@ struct FUN_00cc8480 : bhkConstraint
 {
     ~FUN_00cc8480();
 };
-extern int bhkHingeLimitsConstraint_ms_RTTI;
+extern int bhkHingeLimitsConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268634 (old: g_01268634/g_unk01268634)
 void* __cdecl bhkHingeLimitsConstraint_GetRTTI();
 extern __declspec(thread) int g_iCC8770AllocTag;
 struct BCC8770AllocTagScope
@@ -4226,7 +4226,7 @@ struct FUN_00cc8ce0 : S_cc8ce0_Base
 extern int DAT_01268640;
 int* __cdecl bhkBallSocketConstraintChain_GetRTTI();
 int __cdecl Object_ComputeValue_00cc8d60();
-extern int bhkConstraintChain_ms_RTTI;
+extern int bhkConstraintChain_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268f84 (old: DAT_01268f84/g_01268f84)
 int* bhkConstraintChain_GetRTTI();
 template <class T> inline void SerializeValue(NiStream& stream, const T& value)
 {
@@ -5534,7 +5534,7 @@ class FUN_00ccb080_cls
     void bhkConvexShape_GetViewerStrings(BCCB080StringArray* pkArray);
     void AddNameToArray(BCCB080StringArray* pkArray);
 };
-extern int bhkPlaneShape_ms_RTTI;
+extern int bhkPlaneShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268670 (old: DAT_01268670/g_01268670)
 void* __cdecl bhkPlaneShape_GetRTTI();
 int __cdecl _sub_CCB140_GetCinfoSize();
 extern int g_unk01268f90;
@@ -5986,7 +5986,7 @@ struct CCB730Owner
     void bhkPlaneShape_CopyCinfo(CCB730Child* arInfo);
     CCB730Child* bhkPlaneShape_CreateCinfo(bool* arCreated);
 };
-extern int bhkExtendedMeshShapeData_ms_RTTI;
+extern int bhkExtendedMeshShapeData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268684 (old: DAT_01268684/g_01268684)
 void* __cdecl bhkExtendedMeshShapeData_GetRTTI();
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 struct FunObjBase_b9645
@@ -6137,7 +6137,7 @@ struct FUN_00ccbaa0
     NiPtrCC<RefObjCC> m_sp;
     FUN_00ccbaa0(RefObjCC* p);
 };
-extern int bhkExtendedMeshShape_ms_RTTI;
+extern int bhkExtendedMeshShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126867c (old: DAT_0126867c/g_0126867c/g_pcCCCFD0Name)
 int __cdecl bhkExtendedMeshShape_GetRTTI();
 int __cdecl bhkPackedNiTriStripsShape_GetCinfoSize();
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
@@ -6663,7 +6663,7 @@ class CCCF00RigidBody
     void bhkExtendedMeshShape_SaveBinary(CCCF00Stream& kStream);
 };
 // FUN_00ccd0f0 : a one-line function - getter
-extern int bhkCylinderShape_ms_RTTI;
+extern int bhkCylinderShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268694 (old: DAT_01268694/g_01268694/g_target_00ccd0f0)
 void* Runtime_GetTarget00ccd0f0Address();
 extern void* __cdecl Object_DispatchCommandFour(unsigned int size);
 struct FUN_00ccd100
@@ -7858,7 +7858,7 @@ struct Holder403
     }
     void AppendTransformStrings(StrArr*);
 };
-extern int bhkConvexSweepShape_ms_RTTI;
+extern int bhkConvexSweepShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686b8 (old: DAT_012686b8/g_012686b8)
 void* __cdecl bhkConvexSweepShape_GetRTTI();
 // FUN_00ccf560 - a virtual forwarder.
 //
@@ -7871,7 +7871,7 @@ void* __cdecl bhkConvexSweepShape_GetRTTI();
 //
 // The 47 dummy virtuals only place the forwarded virtual at vtable offset 0xbc:
 // the first virtual of a class sits at vptr+0, so offset 0xbc is the 48th slot.
-extern int bhkConvexListShape_ms_RTTI;
+extern int bhkConvexListShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686c4 (old: DAT_012686c4/g_012686c4)
 void* __cdecl bhkConvexListShape_GetRTTI();
 // FUN_00ccf810: thiscall, 21 bytes, 2 stack args.
 // test ecx,ecx / je end / mov ecx,[ecx+8] / test ecx,ecx / je end
@@ -8247,7 +8247,7 @@ struct FUN_00cd4260_cls
 
     FUN_00cd4260_cls* SetVirtualTable_00cd4260();
 };
-extern int bhkCharControllerShape_ms_RTTI;
+extern int bhkCharControllerShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686e8 (old: DAT_012686e8/g_012686e8)
 int* __cdecl bhkCharControllerShape_GetRTTI();
 extern float DAT_0101df44;
 class FUN_00cd8a10_cls
@@ -12862,7 +12862,7 @@ struct hkObjCC08
     void hkResource_getContents_class_hkRootLevelContainer();
 };
 struct CpuOpaque;
-extern CpuOpaque bhkPoseArray_ms_RTTI;
+extern CpuOpaque bhkPoseArray_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268590 (old: DAT_01268590/g_01268590)
 CpuOpaque* __cdecl bhkPoseArray_GetRTTI();
 struct FUN_00a5d2f0_shell
 {

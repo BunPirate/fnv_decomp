@@ -12,10 +12,10 @@ class TESGrass;
 class TESLandTexture : public TESForm
 {
 public:
-    BGSTextureSet* pTextureSet;
-    TextureParameterBlock HavokData;
-    unsigned char cSpecularExponent;
-    BSSimpleList<TESGrass*> TextureGrassList;
+    BGSTextureSet* pTextureSet; // src: XBOX_RETAIL_PDB +0x18 (old: m_pTextureSet)
+    TextureParameterBlock HavokData; // src: XBOX_RETAIL_PDB +0x1c (old: LandTextureParameters)
+    unsigned char cSpecularExponent; // src: XBOX_RETAIL_PDB +0x1f (old: m_ucTextureTiling)
+    BSSimpleList<TESGrass*> TextureGrassList; // src: XBOX_RETAIL_PDB +0x20 (old: m_kGrassList)
 
     TESLandTexture();
     virtual ~TESLandTexture();

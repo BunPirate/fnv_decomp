@@ -20,5 +20,5 @@ public:
     bool RemoveSequence(BSAnimGroupSequence* apSeq, bool abReleaseModelLoader);
     void __local_vftable_ctor_closure();
 
-    BSAnimGroupSequence* pSeq;
+    BSAnimGroupSequence* pSeq; // src: XBOX_RETAIL_PDB +0x4 (old: pForwardSequence)
 };

@@ -17,7 +17,7 @@ public:
 
     int unk08;
     int unk0C;
-    hkpRootCdPoint m_hitPoint;
+    hkpRootCdPoint m_hitPoint; // src: XBOX_RETAIL_PDB +0x10 (old: m_kHitPoint)
     hkpRootCdPoint m_unweldedHitPoint;
     int unk70;
     int unk74;

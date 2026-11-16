@@ -403,31 +403,31 @@ class ImageSpaceShaderParam
     int unk18;
     int unk1C;
     int unk20;
-    int iFiltermode;
-    int iClearFlags;
-    int fClearColor;
+    int iFiltermode; // src: XBOX_RETAIL_PDB +0x24 (old: unk24)
+    int iClearFlags; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
+    int fClearColor; // src: XBOX_RETAIL_PDB +0x2c (old: unk2C)
     int unk30;
     int unk34;
     int unk38;
-    int pfVertexConstantGroup;
-    int iVSize;
-    int pfPixelConstantGroup;
-    int iPSize;
-    int spVertexConstantMap;
-    int spPixelConstantMap;
-    char bUseTexOffset;
+    int pfVertexConstantGroup; // src: XBOX_RETAIL_PDB +0x3c (old: unk3C)
+    int iVSize; // src: XBOX_RETAIL_PDB +0x40 (old: unk40)
+    int pfPixelConstantGroup; // src: XBOX_RETAIL_PDB +0x44 (old: unk44)
+    int iPSize; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
+    int spVertexConstantMap; // src: XBOX_RETAIL_PDB +0x4c (old: unk4C)
+    int spPixelConstantMap; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
+    char bUseTexOffset; // src: XBOX_RETAIL_PDB +0x54 (old: unk54)
     char unk55;
     char unk56;
     char unk57;
-    int pInputTextures;
+    int pInputTextures; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
     int unk5C;
     int unk60;
     int unk64;
-    int pInputFilterModes;
+    int pInputFilterModes; // src: XBOX_RETAIL_PDB +0x68 (old: unk68)
     int unk6C;
     int unk70;
     int unk74;
-    int pRenderStates;
+    int pRenderStates; // src: XBOX_RETAIL_PDB +0x78 (old: unk78)
     int unk7C;
     int unk80;
     int unk84;

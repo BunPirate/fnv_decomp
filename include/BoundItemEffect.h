@@ -23,12 +23,12 @@ public:
     bool __thiscall IsTargetCharacter(MagicTarget* apTarget);
     void DoSummon();
 
-    InventoryStackRecord* pDisplacedWeapon;
-    InventoryStackRecord* pDisplacedItems[20];
-    float fAppearTime;
-    bool bItemSummoned;
-    bool bSpellModelCached;
-    bool bWeaponCached;
-    bool bWornCached;
-    bool bSetupItem;
+    InventoryStackRecord* pDisplacedWeapon; // src: XBOX_RETAIL_PDB +0x4c (old: m_pkWeaponEntry)
+    InventoryStackRecord* pDisplacedItems[20]; // src: XBOX_RETAIL_PDB +0x50 (old: m_apArmorEntries)
+    float fAppearTime; // src: XBOX_RETAIL_PDB +0xa0 (old: unka0)
+    bool bItemSummoned; // src: XBOX_RETAIL_PDB +0xa4 (old: m_bModifierActive)
+    bool bSpellModelCached; // src: XBOX_RETAIL_PDB +0xa5 (old: m_bShowShader)
+    bool bWeaponCached; // src: XBOX_RETAIL_PDB +0xa6 (old: m_bLoadWeaponModel)
+    bool bWornCached; // src: XBOX_RETAIL_PDB +0xa7 (old: m_bLoadArmorModel)
+    bool bSetupItem; // src: XBOX_RETAIL_PDB +0xa8 (old: pending)
 };

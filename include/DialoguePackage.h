@@ -81,8 +81,8 @@ public:
         Conversation* m_pkConversation;
         Q* p;
     };
-    DialogueItem* pCurrentItem;
-    DialogueResponse* pCurrentResponse;
+    DialogueItem* pCurrentItem; // src: XBOX_RETAIL_PDB +0xa8 (old: item)
+    DialogueResponse* pCurrentResponse; // src: XBOX_RETAIL_PDB +0xac (old: response)
     union
     {
         TESForm* quest;
@@ -94,18 +94,18 @@ public:
         MobileObject* pTargetActor;
         Actor* listener;
     };
-    MobileObject* pTalkingActivator;
-    unsigned char bActorHeadTrack;
-    unsigned char bCreatedPack;
-    unsigned char bContinueMoving;
-    unsigned char bTargetContinueMoving;
-    unsigned char bTargetMoveTowardStarter;
-    unsigned char bDoNotControlTargetMovement;
-    unsigned char bReachedAmbushLocation;
+    MobileObject* pTalkingActivator; // src: XBOX_RETAIL_PDB +0xb8 (old: m_pLinkedReference)
+    unsigned char bActorHeadTrack; // src: XBOX_RETAIL_PDB +0xbc (old: unkBC)
+    unsigned char bCreatedPack; // src: XBOX_RETAIL_PDB +0xbd (old: unkBD)
+    unsigned char bContinueMoving; // src: XBOX_RETAIL_PDB +0xbe (old: unkBE)
+    unsigned char bTargetContinueMoving; // src: XBOX_RETAIL_PDB +0xbf (old: unkBF)
+    unsigned char bTargetMoveTowardStarter; // src: XBOX_RETAIL_PDB +0xc0 (old: unkC0)
+    unsigned char bDoNotControlTargetMovement; // src: XBOX_RETAIL_PDB +0xc1 (old: unkC1)
+    unsigned char bReachedAmbushLocation; // src: XBOX_RETAIL_PDB +0xc2 (old: unkC2)
     unsigned char unkC3;
-    unsigned int iEmotion;
-    unsigned int iEmotionValue;
-    unsigned char bSoundFile;
+    unsigned int iEmotion; // src: XBOX_RETAIL_PDB +0xc4 (old: unkC4)
+    unsigned int iEmotionValue; // src: XBOX_RETAIL_PDB +0xc8 (old: unkC8)
+    unsigned char bSoundFile; // src: XBOX_RETAIL_PDB +0xcc (old: unkCC)
 
     void SavePackage();
     void TESForm_SaveGameDataOLD(void*, int);

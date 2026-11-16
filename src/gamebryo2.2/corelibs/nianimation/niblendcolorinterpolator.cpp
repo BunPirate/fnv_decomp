@@ -18,7 +18,7 @@ void NiBlendColorInterpolator::SaveBinary_00a56040(NiStream& kStream)
     m_kColorValue.SaveBinary(kStream);
 }
 
-extern "C" void* NiBlendColorInterpolator_ms_RTTI;
+extern "C" void* NiBlendColorInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4074 (old: g_011f4074)
 
 // @fnv 0x00a56060
 // src: COMMUNITY 0x00a56060
@@ -197,7 +197,7 @@ bool NiBlendColorInterpolator::IsEqual_00a564a0(void* pkOther)
     return bOk;
 }
 
-extern "C" void* NiBlendColorInterpolator_ms_RTTI;
+extern "C" void* NiBlendColorInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4074 (old: g_011f4074)
 extern int DAT_01096f1c;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 

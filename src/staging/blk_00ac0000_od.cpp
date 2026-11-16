@@ -5002,7 +5002,7 @@ struct FUN_00aca270
     FUN_00aca270(void* p);
 };
 
-struct failure : FUN_00aca270
+struct failure : FUN_00aca270 // src: EXE (old: FUN_00aca390)
 {
     failure(void* p);
     virtual ~failure();

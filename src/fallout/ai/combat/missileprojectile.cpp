@@ -792,7 +792,7 @@ struct SpawnedBase
 };
 
 // pdb: structure hkHingeConstraintCinfo, size 0x14 (here 0x4), bases: hkConstraintCinfo, 0 members
-struct hkHingeConstraintCinfo : SpawnedBase
+struct hkHingeConstraintCinfo : SpawnedBase // src: EXE (old: FUN_009ba550)
 {
     hkHingeConstraintCinfo();
     virtual ~hkHingeConstraintCinfo();

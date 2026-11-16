@@ -20,13 +20,13 @@ public:
         HK_RETARGETING_MAPPING = 1
     };
 
-    hkaSkeleton* m_skeletonA;
-    hkaSkeleton* m_skeletonB;
-    hkArray<hkaSkeletonMapperDataSimpleMapping> m_simpleMappings;
-    hkArray<hkaSkeletonMapperDataChainMapping> m_chainMappings;
-    hkArray<hkInt16> m_unmappedBones;
+    hkaSkeleton* m_skeletonA; // src: XBOX_RETAIL_PDB +0x0 (old: m_pSkeletonA)
+    hkaSkeleton* m_skeletonB; // src: XBOX_RETAIL_PDB +0x4 (old: m_pSkeletonB)
+    hkArray<hkaSkeletonMapperDataSimpleMapping> m_simpleMappings; // src: XBOX_RETAIL_PDB +0x8 (old: m_kSimpleMappings)
+    hkArray<hkaSkeletonMapperDataChainMapping> m_chainMappings; // src: XBOX_RETAIL_PDB +0x14 (old: m_kChainMappings)
+    hkArray<hkInt16> m_unmappedBones; // src: XBOX_RETAIL_PDB +0x20 (old: m_kUnmappedBones)
     char pad2C[0x4];
-    hkQsTransform m_extractedMotionMapping;
+    hkQsTransform m_extractedMotionMapping; // src: XBOX_RETAIL_PDB +0x30 (old: m_kExtractedMotionMapping)
     hkBool m_bKeepUnmappedLocal;
     char pad61[0x3];
     hkInt32 m_eMappingType;

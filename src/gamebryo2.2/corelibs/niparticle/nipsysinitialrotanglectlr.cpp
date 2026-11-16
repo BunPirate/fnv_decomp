@@ -8,7 +8,7 @@
 // src/gamebryo2.2/corelibs/niparticle/nipsysinitialrotanglectlr.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/niparticle/nipsysinitialrotanglectlr.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern NiRTTI NiPSysInitialRotAngleCtlr_ms_RTTI;
+extern NiRTTI NiPSysInitialRotAngleCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026f0 (old: g_012026f0)
 
 // @fnv 0x00c2a1a0
 // src: COMMUNITY 0x00c2a1a0

@@ -10,7 +10,7 @@ public:
     virtual void Update(float afSecondsElapsed);
     virtual bool IsEffectValid(MagicTarget* apTarget);
 
-    float fTimer;
+    float fTimer; // src: XBOX_RETAIL_PDB +0x48 (old: m_fPackageValue)
 
     ConcussionEffect(MagicCaster*, MagicItem*, EffectItem*);
     void CheckApplyConcussion(Actor* apTarget);
